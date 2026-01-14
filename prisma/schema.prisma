@@ -21,6 +21,13 @@ enum JobStatus {
   REJECTED
 }
 
+enum FetchRunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
 model User {
   id        String   @id @default(uuid()) @db.Uuid
   email     String?  @unique
@@ -35,6 +42,7 @@ model User {
 
   jobs          Job[]
   savedSearches SavedSearch[]
+  fetchRuns     FetchRun[]
 }
 
 model Account {
@@ -110,4 +118,31 @@ model SavedSearch {
   updatedAt DateTime @updatedAt
 
   @@index([userId, createdAt])
+}
+
+model FetchRun {
+  id        String         @id @default(uuid()) @db.Uuid
+  userId    String         @db.Uuid
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Snapshot for convenience (used by GitHub Actions to import to the correct user)
+  userEmail String
+
+  status        FetchRunStatus @default(QUEUED)
+  error         String?
+  importedCount Int            @default(0)
+
+  // Fetch parameters (JSON so we can evolve without migrations)
+  queries            Json
+  location           String?
+  hoursOld           Int?
+  resultsWanted      Int?
+  includeFromQueries Boolean @default(false)
+  filterDescription  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
 }

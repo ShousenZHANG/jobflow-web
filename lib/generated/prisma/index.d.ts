@@ -38,6 +38,11 @@ export type Job = $Result.DefaultSelection<Prisma.$JobPayload>
  * 
  */
 export type SavedSearch = $Result.DefaultSelection<Prisma.$SavedSearchPayload>
+/**
+ * Model FetchRun
+ * 
+ */
+export type FetchRun = $Result.DefaultSelection<Prisma.$FetchRunPayload>
 
 /**
  * Enums
@@ -51,11 +56,25 @@ export namespace $Enums {
 
 export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus]
 
+
+export const FetchRunStatus: {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED'
+};
+
+export type FetchRunStatus = (typeof FetchRunStatus)[keyof typeof FetchRunStatus]
+
 }
 
 export type JobStatus = $Enums.JobStatus
 
 export const JobStatus: typeof $Enums.JobStatus
+
+export type FetchRunStatus = $Enums.FetchRunStatus
+
+export const FetchRunStatus: typeof $Enums.FetchRunStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -223,6 +242,16 @@ export class PrismaClient<
     * ```
     */
   get savedSearch(): Prisma.SavedSearchDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.fetchRun`: Exposes CRUD operations for the **FetchRun** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FetchRuns
+    * const fetchRuns = await prisma.fetchRun.findMany()
+    * ```
+    */
+  get fetchRun(): Prisma.FetchRunDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -661,7 +690,8 @@ export namespace Prisma {
     Account: 'Account',
     Session: 'Session',
     Job: 'Job',
-    SavedSearch: 'SavedSearch'
+    SavedSearch: 'SavedSearch',
+    FetchRun: 'FetchRun'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -677,7 +707,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "savedSearch"
+      modelProps: "user" | "account" | "session" | "job" | "savedSearch" | "fetchRun"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1051,6 +1081,80 @@ export namespace Prisma {
           }
         }
       }
+      FetchRun: {
+        payload: Prisma.$FetchRunPayload<ExtArgs>
+        fields: Prisma.FetchRunFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FetchRunFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FetchRunFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>
+          }
+          findFirst: {
+            args: Prisma.FetchRunFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FetchRunFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>
+          }
+          findMany: {
+            args: Prisma.FetchRunFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>[]
+          }
+          create: {
+            args: Prisma.FetchRunCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>
+          }
+          createMany: {
+            args: Prisma.FetchRunCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FetchRunCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>[]
+          }
+          delete: {
+            args: Prisma.FetchRunDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>
+          }
+          update: {
+            args: Prisma.FetchRunUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>
+          }
+          deleteMany: {
+            args: Prisma.FetchRunDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FetchRunUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FetchRunUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>[]
+          }
+          upsert: {
+            args: Prisma.FetchRunUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FetchRunPayload>
+          }
+          aggregate: {
+            args: Prisma.FetchRunAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFetchRun>
+          }
+          groupBy: {
+            args: Prisma.FetchRunGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FetchRunGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FetchRunCountArgs<ExtArgs>
+            result: $Utils.Optional<FetchRunCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1164,6 +1268,7 @@ export namespace Prisma {
     session?: SessionOmit
     job?: JobOmit
     savedSearch?: SavedSearchOmit
+    fetchRun?: FetchRunOmit
   }
 
   /* Types for Logging */
@@ -1248,6 +1353,7 @@ export namespace Prisma {
     sessions: number
     jobs: number
     savedSearches: number
+    fetchRuns: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1255,6 +1361,7 @@ export namespace Prisma {
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
     jobs?: boolean | UserCountOutputTypeCountJobsArgs
     savedSearches?: boolean | UserCountOutputTypeCountSavedSearchesArgs
+    fetchRuns?: boolean | UserCountOutputTypeCountFetchRunsArgs
   }
 
   // Custom InputTypes
@@ -1294,6 +1401,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSavedSearchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SavedSearchWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountFetchRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FetchRunWhereInput
   }
 
 
@@ -1485,6 +1599,7 @@ export namespace Prisma {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     jobs?: boolean | User$jobsArgs<ExtArgs>
     savedSearches?: boolean | User$savedSearchesArgs<ExtArgs>
+    fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1524,6 +1639,7 @@ export namespace Prisma {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     jobs?: boolean | User$jobsArgs<ExtArgs>
     savedSearches?: boolean | User$savedSearchesArgs<ExtArgs>
+    fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1536,6 +1652,7 @@ export namespace Prisma {
       sessions: Prisma.$SessionPayload<ExtArgs>[]
       jobs: Prisma.$JobPayload<ExtArgs>[]
       savedSearches: Prisma.$SavedSearchPayload<ExtArgs>[]
+      fetchRuns: Prisma.$FetchRunPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1943,6 +2060,7 @@ export namespace Prisma {
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     jobs<T extends User$jobsArgs<ExtArgs> = {}>(args?: Subset<T, User$jobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     savedSearches<T extends User$savedSearchesArgs<ExtArgs> = {}>(args?: Subset<T, User$savedSearchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SavedSearchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    fetchRuns<T extends User$fetchRunsArgs<ExtArgs> = {}>(args?: Subset<T, User$fetchRunsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2460,6 +2578,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SavedSearchScalarFieldEnum | SavedSearchScalarFieldEnum[]
+  }
+
+  /**
+   * User.fetchRuns
+   */
+  export type User$fetchRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    where?: FetchRunWhereInput
+    orderBy?: FetchRunOrderByWithRelationInput | FetchRunOrderByWithRelationInput[]
+    cursor?: FetchRunWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FetchRunScalarFieldEnum | FetchRunScalarFieldEnum[]
   }
 
   /**
@@ -7042,6 +7184,1219 @@ export namespace Prisma {
 
 
   /**
+   * Model FetchRun
+   */
+
+  export type AggregateFetchRun = {
+    _count: FetchRunCountAggregateOutputType | null
+    _avg: FetchRunAvgAggregateOutputType | null
+    _sum: FetchRunSumAggregateOutputType | null
+    _min: FetchRunMinAggregateOutputType | null
+    _max: FetchRunMaxAggregateOutputType | null
+  }
+
+  export type FetchRunAvgAggregateOutputType = {
+    importedCount: number | null
+    hoursOld: number | null
+    resultsWanted: number | null
+  }
+
+  export type FetchRunSumAggregateOutputType = {
+    importedCount: number | null
+    hoursOld: number | null
+    resultsWanted: number | null
+  }
+
+  export type FetchRunMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    userEmail: string | null
+    status: $Enums.FetchRunStatus | null
+    error: string | null
+    importedCount: number | null
+    location: string | null
+    hoursOld: number | null
+    resultsWanted: number | null
+    includeFromQueries: boolean | null
+    filterDescription: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FetchRunMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    userEmail: string | null
+    status: $Enums.FetchRunStatus | null
+    error: string | null
+    importedCount: number | null
+    location: string | null
+    hoursOld: number | null
+    resultsWanted: number | null
+    includeFromQueries: boolean | null
+    filterDescription: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FetchRunCountAggregateOutputType = {
+    id: number
+    userId: number
+    userEmail: number
+    status: number
+    error: number
+    importedCount: number
+    queries: number
+    location: number
+    hoursOld: number
+    resultsWanted: number
+    includeFromQueries: number
+    filterDescription: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FetchRunAvgAggregateInputType = {
+    importedCount?: true
+    hoursOld?: true
+    resultsWanted?: true
+  }
+
+  export type FetchRunSumAggregateInputType = {
+    importedCount?: true
+    hoursOld?: true
+    resultsWanted?: true
+  }
+
+  export type FetchRunMinAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    status?: true
+    error?: true
+    importedCount?: true
+    location?: true
+    hoursOld?: true
+    resultsWanted?: true
+    includeFromQueries?: true
+    filterDescription?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FetchRunMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    status?: true
+    error?: true
+    importedCount?: true
+    location?: true
+    hoursOld?: true
+    resultsWanted?: true
+    includeFromQueries?: true
+    filterDescription?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FetchRunCountAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    status?: true
+    error?: true
+    importedCount?: true
+    queries?: true
+    location?: true
+    hoursOld?: true
+    resultsWanted?: true
+    includeFromQueries?: true
+    filterDescription?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FetchRunAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FetchRun to aggregate.
+     */
+    where?: FetchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FetchRuns to fetch.
+     */
+    orderBy?: FetchRunOrderByWithRelationInput | FetchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FetchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FetchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FetchRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FetchRuns
+    **/
+    _count?: true | FetchRunCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FetchRunAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FetchRunSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FetchRunMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FetchRunMaxAggregateInputType
+  }
+
+  export type GetFetchRunAggregateType<T extends FetchRunAggregateArgs> = {
+        [P in keyof T & keyof AggregateFetchRun]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFetchRun[P]>
+      : GetScalarType<T[P], AggregateFetchRun[P]>
+  }
+
+
+
+
+  export type FetchRunGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FetchRunWhereInput
+    orderBy?: FetchRunOrderByWithAggregationInput | FetchRunOrderByWithAggregationInput[]
+    by: FetchRunScalarFieldEnum[] | FetchRunScalarFieldEnum
+    having?: FetchRunScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FetchRunCountAggregateInputType | true
+    _avg?: FetchRunAvgAggregateInputType
+    _sum?: FetchRunSumAggregateInputType
+    _min?: FetchRunMinAggregateInputType
+    _max?: FetchRunMaxAggregateInputType
+  }
+
+  export type FetchRunGroupByOutputType = {
+    id: string
+    userId: string
+    userEmail: string
+    status: $Enums.FetchRunStatus
+    error: string | null
+    importedCount: number
+    queries: JsonValue
+    location: string | null
+    hoursOld: number | null
+    resultsWanted: number | null
+    includeFromQueries: boolean
+    filterDescription: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: FetchRunCountAggregateOutputType | null
+    _avg: FetchRunAvgAggregateOutputType | null
+    _sum: FetchRunSumAggregateOutputType | null
+    _min: FetchRunMinAggregateOutputType | null
+    _max: FetchRunMaxAggregateOutputType | null
+  }
+
+  type GetFetchRunGroupByPayload<T extends FetchRunGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FetchRunGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FetchRunGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FetchRunGroupByOutputType[P]>
+            : GetScalarType<T[P], FetchRunGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FetchRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    status?: boolean
+    error?: boolean
+    importedCount?: boolean
+    queries?: boolean
+    location?: boolean
+    hoursOld?: boolean
+    resultsWanted?: boolean
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["fetchRun"]>
+
+  export type FetchRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    status?: boolean
+    error?: boolean
+    importedCount?: boolean
+    queries?: boolean
+    location?: boolean
+    hoursOld?: boolean
+    resultsWanted?: boolean
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["fetchRun"]>
+
+  export type FetchRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    status?: boolean
+    error?: boolean
+    importedCount?: boolean
+    queries?: boolean
+    location?: boolean
+    hoursOld?: boolean
+    resultsWanted?: boolean
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["fetchRun"]>
+
+  export type FetchRunSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    status?: boolean
+    error?: boolean
+    importedCount?: boolean
+    queries?: boolean
+    location?: boolean
+    hoursOld?: boolean
+    resultsWanted?: boolean
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type FetchRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "userEmail" | "status" | "error" | "importedCount" | "queries" | "location" | "hoursOld" | "resultsWanted" | "includeFromQueries" | "filterDescription" | "createdAt" | "updatedAt", ExtArgs["result"]["fetchRun"]>
+  export type FetchRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type FetchRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type FetchRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $FetchRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FetchRun"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      userEmail: string
+      status: $Enums.FetchRunStatus
+      error: string | null
+      importedCount: number
+      queries: Prisma.JsonValue
+      location: string | null
+      hoursOld: number | null
+      resultsWanted: number | null
+      includeFromQueries: boolean
+      filterDescription: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["fetchRun"]>
+    composites: {}
+  }
+
+  type FetchRunGetPayload<S extends boolean | null | undefined | FetchRunDefaultArgs> = $Result.GetResult<Prisma.$FetchRunPayload, S>
+
+  type FetchRunCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FetchRunFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FetchRunCountAggregateInputType | true
+    }
+
+  export interface FetchRunDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FetchRun'], meta: { name: 'FetchRun' } }
+    /**
+     * Find zero or one FetchRun that matches the filter.
+     * @param {FetchRunFindUniqueArgs} args - Arguments to find a FetchRun
+     * @example
+     * // Get one FetchRun
+     * const fetchRun = await prisma.fetchRun.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FetchRunFindUniqueArgs>(args: SelectSubset<T, FetchRunFindUniqueArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FetchRun that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FetchRunFindUniqueOrThrowArgs} args - Arguments to find a FetchRun
+     * @example
+     * // Get one FetchRun
+     * const fetchRun = await prisma.fetchRun.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FetchRunFindUniqueOrThrowArgs>(args: SelectSubset<T, FetchRunFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FetchRun that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FetchRunFindFirstArgs} args - Arguments to find a FetchRun
+     * @example
+     * // Get one FetchRun
+     * const fetchRun = await prisma.fetchRun.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FetchRunFindFirstArgs>(args?: SelectSubset<T, FetchRunFindFirstArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FetchRun that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FetchRunFindFirstOrThrowArgs} args - Arguments to find a FetchRun
+     * @example
+     * // Get one FetchRun
+     * const fetchRun = await prisma.fetchRun.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FetchRunFindFirstOrThrowArgs>(args?: SelectSubset<T, FetchRunFindFirstOrThrowArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FetchRuns that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FetchRunFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FetchRuns
+     * const fetchRuns = await prisma.fetchRun.findMany()
+     * 
+     * // Get first 10 FetchRuns
+     * const fetchRuns = await prisma.fetchRun.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const fetchRunWithIdOnly = await prisma.fetchRun.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FetchRunFindManyArgs>(args?: SelectSubset<T, FetchRunFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FetchRun.
+     * @param {FetchRunCreateArgs} args - Arguments to create a FetchRun.
+     * @example
+     * // Create one FetchRun
+     * const FetchRun = await prisma.fetchRun.create({
+     *   data: {
+     *     // ... data to create a FetchRun
+     *   }
+     * })
+     * 
+     */
+    create<T extends FetchRunCreateArgs>(args: SelectSubset<T, FetchRunCreateArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FetchRuns.
+     * @param {FetchRunCreateManyArgs} args - Arguments to create many FetchRuns.
+     * @example
+     * // Create many FetchRuns
+     * const fetchRun = await prisma.fetchRun.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FetchRunCreateManyArgs>(args?: SelectSubset<T, FetchRunCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FetchRuns and returns the data saved in the database.
+     * @param {FetchRunCreateManyAndReturnArgs} args - Arguments to create many FetchRuns.
+     * @example
+     * // Create many FetchRuns
+     * const fetchRun = await prisma.fetchRun.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FetchRuns and only return the `id`
+     * const fetchRunWithIdOnly = await prisma.fetchRun.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FetchRunCreateManyAndReturnArgs>(args?: SelectSubset<T, FetchRunCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FetchRun.
+     * @param {FetchRunDeleteArgs} args - Arguments to delete one FetchRun.
+     * @example
+     * // Delete one FetchRun
+     * const FetchRun = await prisma.fetchRun.delete({
+     *   where: {
+     *     // ... filter to delete one FetchRun
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FetchRunDeleteArgs>(args: SelectSubset<T, FetchRunDeleteArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FetchRun.
+     * @param {FetchRunUpdateArgs} args - Arguments to update one FetchRun.
+     * @example
+     * // Update one FetchRun
+     * const fetchRun = await prisma.fetchRun.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FetchRunUpdateArgs>(args: SelectSubset<T, FetchRunUpdateArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FetchRuns.
+     * @param {FetchRunDeleteManyArgs} args - Arguments to filter FetchRuns to delete.
+     * @example
+     * // Delete a few FetchRuns
+     * const { count } = await prisma.fetchRun.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FetchRunDeleteManyArgs>(args?: SelectSubset<T, FetchRunDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FetchRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FetchRunUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FetchRuns
+     * const fetchRun = await prisma.fetchRun.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FetchRunUpdateManyArgs>(args: SelectSubset<T, FetchRunUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FetchRuns and returns the data updated in the database.
+     * @param {FetchRunUpdateManyAndReturnArgs} args - Arguments to update many FetchRuns.
+     * @example
+     * // Update many FetchRuns
+     * const fetchRun = await prisma.fetchRun.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FetchRuns and only return the `id`
+     * const fetchRunWithIdOnly = await prisma.fetchRun.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FetchRunUpdateManyAndReturnArgs>(args: SelectSubset<T, FetchRunUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FetchRun.
+     * @param {FetchRunUpsertArgs} args - Arguments to update or create a FetchRun.
+     * @example
+     * // Update or create a FetchRun
+     * const fetchRun = await prisma.fetchRun.upsert({
+     *   create: {
+     *     // ... data to create a FetchRun
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FetchRun we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FetchRunUpsertArgs>(args: SelectSubset<T, FetchRunUpsertArgs<ExtArgs>>): Prisma__FetchRunClient<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FetchRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FetchRunCountArgs} args - Arguments to filter FetchRuns to count.
+     * @example
+     * // Count the number of FetchRuns
+     * const count = await prisma.fetchRun.count({
+     *   where: {
+     *     // ... the filter for the FetchRuns we want to count
+     *   }
+     * })
+    **/
+    count<T extends FetchRunCountArgs>(
+      args?: Subset<T, FetchRunCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FetchRunCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FetchRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FetchRunAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FetchRunAggregateArgs>(args: Subset<T, FetchRunAggregateArgs>): Prisma.PrismaPromise<GetFetchRunAggregateType<T>>
+
+    /**
+     * Group by FetchRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FetchRunGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FetchRunGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FetchRunGroupByArgs['orderBy'] }
+        : { orderBy?: FetchRunGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FetchRunGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFetchRunGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FetchRun model
+   */
+  readonly fields: FetchRunFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FetchRun.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FetchRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FetchRun model
+   */
+  interface FetchRunFieldRefs {
+    readonly id: FieldRef<"FetchRun", 'String'>
+    readonly userId: FieldRef<"FetchRun", 'String'>
+    readonly userEmail: FieldRef<"FetchRun", 'String'>
+    readonly status: FieldRef<"FetchRun", 'FetchRunStatus'>
+    readonly error: FieldRef<"FetchRun", 'String'>
+    readonly importedCount: FieldRef<"FetchRun", 'Int'>
+    readonly queries: FieldRef<"FetchRun", 'Json'>
+    readonly location: FieldRef<"FetchRun", 'String'>
+    readonly hoursOld: FieldRef<"FetchRun", 'Int'>
+    readonly resultsWanted: FieldRef<"FetchRun", 'Int'>
+    readonly includeFromQueries: FieldRef<"FetchRun", 'Boolean'>
+    readonly filterDescription: FieldRef<"FetchRun", 'Boolean'>
+    readonly createdAt: FieldRef<"FetchRun", 'DateTime'>
+    readonly updatedAt: FieldRef<"FetchRun", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FetchRun findUnique
+   */
+  export type FetchRunFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which FetchRun to fetch.
+     */
+    where: FetchRunWhereUniqueInput
+  }
+
+  /**
+   * FetchRun findUniqueOrThrow
+   */
+  export type FetchRunFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which FetchRun to fetch.
+     */
+    where: FetchRunWhereUniqueInput
+  }
+
+  /**
+   * FetchRun findFirst
+   */
+  export type FetchRunFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which FetchRun to fetch.
+     */
+    where?: FetchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FetchRuns to fetch.
+     */
+    orderBy?: FetchRunOrderByWithRelationInput | FetchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FetchRuns.
+     */
+    cursor?: FetchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FetchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FetchRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FetchRuns.
+     */
+    distinct?: FetchRunScalarFieldEnum | FetchRunScalarFieldEnum[]
+  }
+
+  /**
+   * FetchRun findFirstOrThrow
+   */
+  export type FetchRunFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which FetchRun to fetch.
+     */
+    where?: FetchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FetchRuns to fetch.
+     */
+    orderBy?: FetchRunOrderByWithRelationInput | FetchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FetchRuns.
+     */
+    cursor?: FetchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FetchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FetchRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FetchRuns.
+     */
+    distinct?: FetchRunScalarFieldEnum | FetchRunScalarFieldEnum[]
+  }
+
+  /**
+   * FetchRun findMany
+   */
+  export type FetchRunFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which FetchRuns to fetch.
+     */
+    where?: FetchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FetchRuns to fetch.
+     */
+    orderBy?: FetchRunOrderByWithRelationInput | FetchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FetchRuns.
+     */
+    cursor?: FetchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FetchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FetchRuns.
+     */
+    skip?: number
+    distinct?: FetchRunScalarFieldEnum | FetchRunScalarFieldEnum[]
+  }
+
+  /**
+   * FetchRun create
+   */
+  export type FetchRunCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FetchRun.
+     */
+    data: XOR<FetchRunCreateInput, FetchRunUncheckedCreateInput>
+  }
+
+  /**
+   * FetchRun createMany
+   */
+  export type FetchRunCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FetchRuns.
+     */
+    data: FetchRunCreateManyInput | FetchRunCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FetchRun createManyAndReturn
+   */
+  export type FetchRunCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * The data used to create many FetchRuns.
+     */
+    data: FetchRunCreateManyInput | FetchRunCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FetchRun update
+   */
+  export type FetchRunUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FetchRun.
+     */
+    data: XOR<FetchRunUpdateInput, FetchRunUncheckedUpdateInput>
+    /**
+     * Choose, which FetchRun to update.
+     */
+    where: FetchRunWhereUniqueInput
+  }
+
+  /**
+   * FetchRun updateMany
+   */
+  export type FetchRunUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FetchRuns.
+     */
+    data: XOR<FetchRunUpdateManyMutationInput, FetchRunUncheckedUpdateManyInput>
+    /**
+     * Filter which FetchRuns to update
+     */
+    where?: FetchRunWhereInput
+    /**
+     * Limit how many FetchRuns to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FetchRun updateManyAndReturn
+   */
+  export type FetchRunUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * The data used to update FetchRuns.
+     */
+    data: XOR<FetchRunUpdateManyMutationInput, FetchRunUncheckedUpdateManyInput>
+    /**
+     * Filter which FetchRuns to update
+     */
+    where?: FetchRunWhereInput
+    /**
+     * Limit how many FetchRuns to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FetchRun upsert
+   */
+  export type FetchRunUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FetchRun to update in case it exists.
+     */
+    where: FetchRunWhereUniqueInput
+    /**
+     * In case the FetchRun found by the `where` argument doesn't exist, create a new FetchRun with this data.
+     */
+    create: XOR<FetchRunCreateInput, FetchRunUncheckedCreateInput>
+    /**
+     * In case the FetchRun was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FetchRunUpdateInput, FetchRunUncheckedUpdateInput>
+  }
+
+  /**
+   * FetchRun delete
+   */
+  export type FetchRunDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+    /**
+     * Filter which FetchRun to delete.
+     */
+    where: FetchRunWhereUniqueInput
+  }
+
+  /**
+   * FetchRun deleteMany
+   */
+  export type FetchRunDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FetchRuns to delete
+     */
+    where?: FetchRunWhereInput
+    /**
+     * Limit how many FetchRuns to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FetchRun without action
+   */
+  export type FetchRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FetchRun
+     */
+    select?: FetchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FetchRun
+     */
+    omit?: FetchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FetchRunInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7132,12 +8487,39 @@ export namespace Prisma {
   export type SavedSearchScalarFieldEnum = (typeof SavedSearchScalarFieldEnum)[keyof typeof SavedSearchScalarFieldEnum]
 
 
+  export const FetchRunScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    userEmail: 'userEmail',
+    status: 'status',
+    error: 'error',
+    importedCount: 'importedCount',
+    queries: 'queries',
+    location: 'location',
+    hoursOld: 'hoursOld',
+    resultsWanted: 'resultsWanted',
+    includeFromQueries: 'includeFromQueries',
+    filterDescription: 'filterDescription',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FetchRunScalarFieldEnum = (typeof FetchRunScalarFieldEnum)[keyof typeof FetchRunScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -7154,6 +8536,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -7218,6 +8609,41 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'FetchRunStatus'
+   */
+  export type EnumFetchRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FetchRunStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'FetchRunStatus[]'
+   */
+  export type ListEnumFetchRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FetchRunStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -7249,6 +8675,7 @@ export namespace Prisma {
     sessions?: SessionListRelationFilter
     jobs?: JobListRelationFilter
     savedSearches?: SavedSearchListRelationFilter
+    fetchRuns?: FetchRunListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -7263,6 +8690,7 @@ export namespace Prisma {
     sessions?: SessionOrderByRelationAggregateInput
     jobs?: JobOrderByRelationAggregateInput
     savedSearches?: SavedSearchOrderByRelationAggregateInput
+    fetchRuns?: FetchRunOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -7280,6 +8708,7 @@ export namespace Prisma {
     sessions?: SessionListRelationFilter
     jobs?: JobListRelationFilter
     savedSearches?: SavedSearchListRelationFilter
+    fetchRuns?: FetchRunListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -7634,6 +9063,108 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"SavedSearch"> | Date | string
   }
 
+  export type FetchRunWhereInput = {
+    AND?: FetchRunWhereInput | FetchRunWhereInput[]
+    OR?: FetchRunWhereInput[]
+    NOT?: FetchRunWhereInput | FetchRunWhereInput[]
+    id?: UuidFilter<"FetchRun"> | string
+    userId?: UuidFilter<"FetchRun"> | string
+    userEmail?: StringFilter<"FetchRun"> | string
+    status?: EnumFetchRunStatusFilter<"FetchRun"> | $Enums.FetchRunStatus
+    error?: StringNullableFilter<"FetchRun"> | string | null
+    importedCount?: IntFilter<"FetchRun"> | number
+    queries?: JsonFilter<"FetchRun">
+    location?: StringNullableFilter<"FetchRun"> | string | null
+    hoursOld?: IntNullableFilter<"FetchRun"> | number | null
+    resultsWanted?: IntNullableFilter<"FetchRun"> | number | null
+    includeFromQueries?: BoolFilter<"FetchRun"> | boolean
+    filterDescription?: BoolFilter<"FetchRun"> | boolean
+    createdAt?: DateTimeFilter<"FetchRun"> | Date | string
+    updatedAt?: DateTimeFilter<"FetchRun"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type FetchRunOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    status?: SortOrder
+    error?: SortOrderInput | SortOrder
+    importedCount?: SortOrder
+    queries?: SortOrder
+    location?: SortOrderInput | SortOrder
+    hoursOld?: SortOrderInput | SortOrder
+    resultsWanted?: SortOrderInput | SortOrder
+    includeFromQueries?: SortOrder
+    filterDescription?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type FetchRunWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FetchRunWhereInput | FetchRunWhereInput[]
+    OR?: FetchRunWhereInput[]
+    NOT?: FetchRunWhereInput | FetchRunWhereInput[]
+    userId?: UuidFilter<"FetchRun"> | string
+    userEmail?: StringFilter<"FetchRun"> | string
+    status?: EnumFetchRunStatusFilter<"FetchRun"> | $Enums.FetchRunStatus
+    error?: StringNullableFilter<"FetchRun"> | string | null
+    importedCount?: IntFilter<"FetchRun"> | number
+    queries?: JsonFilter<"FetchRun">
+    location?: StringNullableFilter<"FetchRun"> | string | null
+    hoursOld?: IntNullableFilter<"FetchRun"> | number | null
+    resultsWanted?: IntNullableFilter<"FetchRun"> | number | null
+    includeFromQueries?: BoolFilter<"FetchRun"> | boolean
+    filterDescription?: BoolFilter<"FetchRun"> | boolean
+    createdAt?: DateTimeFilter<"FetchRun"> | Date | string
+    updatedAt?: DateTimeFilter<"FetchRun"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type FetchRunOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    status?: SortOrder
+    error?: SortOrderInput | SortOrder
+    importedCount?: SortOrder
+    queries?: SortOrder
+    location?: SortOrderInput | SortOrder
+    hoursOld?: SortOrderInput | SortOrder
+    resultsWanted?: SortOrderInput | SortOrder
+    includeFromQueries?: SortOrder
+    filterDescription?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FetchRunCountOrderByAggregateInput
+    _avg?: FetchRunAvgOrderByAggregateInput
+    _max?: FetchRunMaxOrderByAggregateInput
+    _min?: FetchRunMinOrderByAggregateInput
+    _sum?: FetchRunSumOrderByAggregateInput
+  }
+
+  export type FetchRunScalarWhereWithAggregatesInput = {
+    AND?: FetchRunScalarWhereWithAggregatesInput | FetchRunScalarWhereWithAggregatesInput[]
+    OR?: FetchRunScalarWhereWithAggregatesInput[]
+    NOT?: FetchRunScalarWhereWithAggregatesInput | FetchRunScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"FetchRun"> | string
+    userId?: UuidWithAggregatesFilter<"FetchRun"> | string
+    userEmail?: StringWithAggregatesFilter<"FetchRun"> | string
+    status?: EnumFetchRunStatusWithAggregatesFilter<"FetchRun"> | $Enums.FetchRunStatus
+    error?: StringNullableWithAggregatesFilter<"FetchRun"> | string | null
+    importedCount?: IntWithAggregatesFilter<"FetchRun"> | number
+    queries?: JsonWithAggregatesFilter<"FetchRun">
+    location?: StringNullableWithAggregatesFilter<"FetchRun"> | string | null
+    hoursOld?: IntNullableWithAggregatesFilter<"FetchRun"> | number | null
+    resultsWanted?: IntNullableWithAggregatesFilter<"FetchRun"> | number | null
+    includeFromQueries?: BoolWithAggregatesFilter<"FetchRun"> | boolean
+    filterDescription?: BoolWithAggregatesFilter<"FetchRun"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"FetchRun"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"FetchRun"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email?: string | null
@@ -7646,6 +9177,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -7660,6 +9192,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -7674,6 +9207,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -7688,6 +9222,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -8080,6 +9615,124 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FetchRunCreateInput = {
+    id?: string
+    userEmail: string
+    status?: $Enums.FetchRunStatus
+    error?: string | null
+    importedCount?: number
+    queries: JsonNullValueInput | InputJsonValue
+    location?: string | null
+    hoursOld?: number | null
+    resultsWanted?: number | null
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutFetchRunsInput
+  }
+
+  export type FetchRunUncheckedCreateInput = {
+    id?: string
+    userId: string
+    userEmail: string
+    status?: $Enums.FetchRunStatus
+    error?: string | null
+    importedCount?: number
+    queries: JsonNullValueInput | InputJsonValue
+    location?: string | null
+    hoursOld?: number | null
+    resultsWanted?: number | null
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FetchRunUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    importedCount?: IntFieldUpdateOperationsInput | number
+    queries?: JsonNullValueInput | InputJsonValue
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    resultsWanted?: NullableIntFieldUpdateOperationsInput | number | null
+    includeFromQueries?: BoolFieldUpdateOperationsInput | boolean
+    filterDescription?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutFetchRunsNestedInput
+  }
+
+  export type FetchRunUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    importedCount?: IntFieldUpdateOperationsInput | number
+    queries?: JsonNullValueInput | InputJsonValue
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    resultsWanted?: NullableIntFieldUpdateOperationsInput | number | null
+    includeFromQueries?: BoolFieldUpdateOperationsInput | boolean
+    filterDescription?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FetchRunCreateManyInput = {
+    id?: string
+    userId: string
+    userEmail: string
+    status?: $Enums.FetchRunStatus
+    error?: string | null
+    importedCount?: number
+    queries: JsonNullValueInput | InputJsonValue
+    location?: string | null
+    hoursOld?: number | null
+    resultsWanted?: number | null
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FetchRunUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    importedCount?: IntFieldUpdateOperationsInput | number
+    queries?: JsonNullValueInput | InputJsonValue
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    resultsWanted?: NullableIntFieldUpdateOperationsInput | number | null
+    includeFromQueries?: BoolFieldUpdateOperationsInput | boolean
+    filterDescription?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FetchRunUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    importedCount?: IntFieldUpdateOperationsInput | number
+    queries?: JsonNullValueInput | InputJsonValue
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    resultsWanted?: NullableIntFieldUpdateOperationsInput | number | null
+    includeFromQueries?: BoolFieldUpdateOperationsInput | boolean
+    filterDescription?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -8153,6 +9806,12 @@ export namespace Prisma {
     none?: SavedSearchWhereInput
   }
 
+  export type FetchRunListRelationFilter = {
+    every?: FetchRunWhereInput
+    some?: FetchRunWhereInput
+    none?: FetchRunWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -8171,6 +9830,10 @@ export namespace Prisma {
   }
 
   export type SavedSearchOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FetchRunOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -8529,6 +10192,173 @@ export namespace Prisma {
     hoursOld?: SortOrder
   }
 
+  export type EnumFetchRunStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFetchRunStatusFilter<$PrismaModel> | $Enums.FetchRunStatus
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type FetchRunCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    importedCount?: SortOrder
+    queries?: SortOrder
+    location?: SortOrder
+    hoursOld?: SortOrder
+    resultsWanted?: SortOrder
+    includeFromQueries?: SortOrder
+    filterDescription?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FetchRunAvgOrderByAggregateInput = {
+    importedCount?: SortOrder
+    hoursOld?: SortOrder
+    resultsWanted?: SortOrder
+  }
+
+  export type FetchRunMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    importedCount?: SortOrder
+    location?: SortOrder
+    hoursOld?: SortOrder
+    resultsWanted?: SortOrder
+    includeFromQueries?: SortOrder
+    filterDescription?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FetchRunMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    importedCount?: SortOrder
+    location?: SortOrder
+    hoursOld?: SortOrder
+    resultsWanted?: SortOrder
+    includeFromQueries?: SortOrder
+    filterDescription?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FetchRunSumOrderByAggregateInput = {
+    importedCount?: SortOrder
+    hoursOld?: SortOrder
+    resultsWanted?: SortOrder
+  }
+
+  export type EnumFetchRunStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFetchRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.FetchRunStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFetchRunStatusFilter<$PrismaModel>
+    _max?: NestedEnumFetchRunStatusFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type AccountCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -8557,6 +10387,13 @@ export namespace Prisma {
     connect?: SavedSearchWhereUniqueInput | SavedSearchWhereUniqueInput[]
   }
 
+  export type FetchRunCreateNestedManyWithoutUserInput = {
+    create?: XOR<FetchRunCreateWithoutUserInput, FetchRunUncheckedCreateWithoutUserInput> | FetchRunCreateWithoutUserInput[] | FetchRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FetchRunCreateOrConnectWithoutUserInput | FetchRunCreateOrConnectWithoutUserInput[]
+    createMany?: FetchRunCreateManyUserInputEnvelope
+    connect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -8583,6 +10420,13 @@ export namespace Prisma {
     connectOrCreate?: SavedSearchCreateOrConnectWithoutUserInput | SavedSearchCreateOrConnectWithoutUserInput[]
     createMany?: SavedSearchCreateManyUserInputEnvelope
     connect?: SavedSearchWhereUniqueInput | SavedSearchWhereUniqueInput[]
+  }
+
+  export type FetchRunUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<FetchRunCreateWithoutUserInput, FetchRunUncheckedCreateWithoutUserInput> | FetchRunCreateWithoutUserInput[] | FetchRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FetchRunCreateOrConnectWithoutUserInput | FetchRunCreateOrConnectWithoutUserInput[]
+    createMany?: FetchRunCreateManyUserInputEnvelope
+    connect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -8657,6 +10501,20 @@ export namespace Prisma {
     deleteMany?: SavedSearchScalarWhereInput | SavedSearchScalarWhereInput[]
   }
 
+  export type FetchRunUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FetchRunCreateWithoutUserInput, FetchRunUncheckedCreateWithoutUserInput> | FetchRunCreateWithoutUserInput[] | FetchRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FetchRunCreateOrConnectWithoutUserInput | FetchRunCreateOrConnectWithoutUserInput[]
+    upsert?: FetchRunUpsertWithWhereUniqueWithoutUserInput | FetchRunUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FetchRunCreateManyUserInputEnvelope
+    set?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    disconnect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    delete?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    connect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    update?: FetchRunUpdateWithWhereUniqueWithoutUserInput | FetchRunUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FetchRunUpdateManyWithWhereWithoutUserInput | FetchRunUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FetchRunScalarWhereInput | FetchRunScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -8711,6 +10569,20 @@ export namespace Prisma {
     update?: SavedSearchUpdateWithWhereUniqueWithoutUserInput | SavedSearchUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: SavedSearchUpdateManyWithWhereWithoutUserInput | SavedSearchUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: SavedSearchScalarWhereInput | SavedSearchScalarWhereInput[]
+  }
+
+  export type FetchRunUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FetchRunCreateWithoutUserInput, FetchRunUncheckedCreateWithoutUserInput> | FetchRunCreateWithoutUserInput[] | FetchRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FetchRunCreateOrConnectWithoutUserInput | FetchRunCreateOrConnectWithoutUserInput[]
+    upsert?: FetchRunUpsertWithWhereUniqueWithoutUserInput | FetchRunUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FetchRunCreateManyUserInputEnvelope
+    set?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    disconnect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    delete?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    connect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+    update?: FetchRunUpdateWithWhereUniqueWithoutUserInput | FetchRunUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FetchRunUpdateManyWithWhereWithoutUserInput | FetchRunUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FetchRunScalarWhereInput | FetchRunScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -8779,6 +10651,36 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutSavedSearchesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSavedSearchesInput, UserUpdateWithoutSavedSearchesInput>, UserUncheckedUpdateWithoutSavedSearchesInput>
+  }
+
+  export type UserCreateNestedOneWithoutFetchRunsInput = {
+    create?: XOR<UserCreateWithoutFetchRunsInput, UserUncheckedCreateWithoutFetchRunsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFetchRunsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumFetchRunStatusFieldUpdateOperationsInput = {
+    set?: $Enums.FetchRunStatus
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type UserUpdateOneRequiredWithoutFetchRunsNestedInput = {
+    create?: XOR<UserCreateWithoutFetchRunsInput, UserUncheckedCreateWithoutFetchRunsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFetchRunsInput
+    upsert?: UserUpsertWithoutFetchRunsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFetchRunsInput, UserUpdateWithoutFetchRunsInput>, UserUncheckedUpdateWithoutFetchRunsInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -8984,6 +10886,86 @@ export namespace Prisma {
     _max?: NestedEnumJobStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumFetchRunStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFetchRunStatusFilter<$PrismaModel> | $Enums.FetchRunStatus
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedEnumFetchRunStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFetchRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.FetchRunStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFetchRunStatusFilter<$PrismaModel>
+    _max?: NestedEnumFetchRunStatusFilter<$PrismaModel>
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type AccountCreateWithoutUserInput = {
     id?: string
     type: string
@@ -9120,6 +11102,48 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FetchRunCreateWithoutUserInput = {
+    id?: string
+    userEmail: string
+    status?: $Enums.FetchRunStatus
+    error?: string | null
+    importedCount?: number
+    queries: JsonNullValueInput | InputJsonValue
+    location?: string | null
+    hoursOld?: number | null
+    resultsWanted?: number | null
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FetchRunUncheckedCreateWithoutUserInput = {
+    id?: string
+    userEmail: string
+    status?: $Enums.FetchRunStatus
+    error?: string | null
+    importedCount?: number
+    queries: JsonNullValueInput | InputJsonValue
+    location?: string | null
+    hoursOld?: number | null
+    resultsWanted?: number | null
+    includeFromQueries?: boolean
+    filterDescription?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FetchRunCreateOrConnectWithoutUserInput = {
+    where: FetchRunWhereUniqueInput
+    create: XOR<FetchRunCreateWithoutUserInput, FetchRunUncheckedCreateWithoutUserInput>
+  }
+
+  export type FetchRunCreateManyUserInputEnvelope = {
+    data: FetchRunCreateManyUserInput | FetchRunCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput
     update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
@@ -9248,6 +11272,42 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"SavedSearch"> | Date | string
   }
 
+  export type FetchRunUpsertWithWhereUniqueWithoutUserInput = {
+    where: FetchRunWhereUniqueInput
+    update: XOR<FetchRunUpdateWithoutUserInput, FetchRunUncheckedUpdateWithoutUserInput>
+    create: XOR<FetchRunCreateWithoutUserInput, FetchRunUncheckedCreateWithoutUserInput>
+  }
+
+  export type FetchRunUpdateWithWhereUniqueWithoutUserInput = {
+    where: FetchRunWhereUniqueInput
+    data: XOR<FetchRunUpdateWithoutUserInput, FetchRunUncheckedUpdateWithoutUserInput>
+  }
+
+  export type FetchRunUpdateManyWithWhereWithoutUserInput = {
+    where: FetchRunScalarWhereInput
+    data: XOR<FetchRunUpdateManyMutationInput, FetchRunUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type FetchRunScalarWhereInput = {
+    AND?: FetchRunScalarWhereInput | FetchRunScalarWhereInput[]
+    OR?: FetchRunScalarWhereInput[]
+    NOT?: FetchRunScalarWhereInput | FetchRunScalarWhereInput[]
+    id?: UuidFilter<"FetchRun"> | string
+    userId?: UuidFilter<"FetchRun"> | string
+    userEmail?: StringFilter<"FetchRun"> | string
+    status?: EnumFetchRunStatusFilter<"FetchRun"> | $Enums.FetchRunStatus
+    error?: StringNullableFilter<"FetchRun"> | string | null
+    importedCount?: IntFilter<"FetchRun"> | number
+    queries?: JsonFilter<"FetchRun">
+    location?: StringNullableFilter<"FetchRun"> | string | null
+    hoursOld?: IntNullableFilter<"FetchRun"> | number | null
+    resultsWanted?: IntNullableFilter<"FetchRun"> | number | null
+    includeFromQueries?: BoolFilter<"FetchRun"> | boolean
+    filterDescription?: BoolFilter<"FetchRun"> | boolean
+    createdAt?: DateTimeFilter<"FetchRun"> | Date | string
+    updatedAt?: DateTimeFilter<"FetchRun"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email?: string | null
@@ -9259,6 +11319,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -9272,6 +11333,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -9301,6 +11363,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -9314,6 +11377,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -9327,6 +11391,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -9340,6 +11405,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -9369,6 +11435,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -9382,6 +11449,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutJobsInput = {
@@ -9395,6 +11463,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJobsInput = {
@@ -9408,6 +11477,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJobsInput = {
@@ -9437,6 +11507,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJobsInput = {
@@ -9450,6 +11521,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSavedSearchesInput = {
@@ -9463,6 +11535,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSavedSearchesInput = {
@@ -9476,6 +11549,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSavedSearchesInput = {
@@ -9505,6 +11579,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedSearchesInput = {
@@ -9518,6 +11593,79 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutFetchRunsInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    jobs?: JobCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutFetchRunsInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutFetchRunsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutFetchRunsInput, UserUncheckedCreateWithoutFetchRunsInput>
+  }
+
+  export type UserUpsertWithoutFetchRunsInput = {
+    update: XOR<UserUpdateWithoutFetchRunsInput, UserUncheckedUpdateWithoutFetchRunsInput>
+    create: XOR<UserCreateWithoutFetchRunsInput, UserUncheckedCreateWithoutFetchRunsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutFetchRunsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutFetchRunsInput, UserUncheckedUpdateWithoutFetchRunsInput>
+  }
+
+  export type UserUpdateWithoutFetchRunsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    jobs?: JobUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutFetchRunsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -9564,6 +11712,22 @@ export namespace Prisma {
     query: string
     location?: string | null
     hoursOld?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FetchRunCreateManyUserInput = {
+    id?: string
+    userEmail: string
+    status?: $Enums.FetchRunStatus
+    error?: string | null
+    importedCount?: number
+    queries: JsonNullValueInput | InputJsonValue
+    location?: string | null
+    hoursOld?: number | null
+    resultsWanted?: number | null
+    includeFromQueries?: boolean
+    filterDescription?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -9708,6 +11872,54 @@ export namespace Prisma {
     query?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
     hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FetchRunUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    importedCount?: IntFieldUpdateOperationsInput | number
+    queries?: JsonNullValueInput | InputJsonValue
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    resultsWanted?: NullableIntFieldUpdateOperationsInput | number | null
+    includeFromQueries?: BoolFieldUpdateOperationsInput | boolean
+    filterDescription?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FetchRunUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    importedCount?: IntFieldUpdateOperationsInput | number
+    queries?: JsonNullValueInput | InputJsonValue
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    resultsWanted?: NullableIntFieldUpdateOperationsInput | number | null
+    includeFromQueries?: BoolFieldUpdateOperationsInput | boolean
+    filterDescription?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FetchRunUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    importedCount?: IntFieldUpdateOperationsInput | number
+    queries?: JsonNullValueInput | InputJsonValue
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    hoursOld?: NullableIntFieldUpdateOperationsInput | number | null
+    resultsWanted?: NullableIntFieldUpdateOperationsInput | number | null
+    includeFromQueries?: BoolFieldUpdateOperationsInput | boolean
+    filterDescription?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
