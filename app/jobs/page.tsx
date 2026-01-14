@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
+import { JobsClient } from "./JobsClient";
 
 export default async function JobsPage() {
   const session = await getServerSession(authOptions);
@@ -24,13 +25,7 @@ export default async function JobsPage() {
           </div>
         </section>
 
-        <section className="rounded border p-4">
-          <div className="text-sm text-zinc-600 mb-2">Next steps</div>
-          <ul className="list-disc pl-5">
-            <li>Open <code>/api/me</code> to verify session/userId</li>
-            <li>Open <code>/api/jobs</code> to see your isolated job list</li>
-          </ul>
-        </section>
+        <JobsClient />
       </div>
     </main>
   );

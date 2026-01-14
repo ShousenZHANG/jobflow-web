@@ -10,6 +10,7 @@ const QuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().uuid().optional(),
   status: z.enum(["NEW", "APPLIED", "REJECTED"]).optional(),
+  q: z.string().trim().min(1).max(80).optional(),
 });
 
 export async function GET(req: Request) {
@@ -28,10 +29,21 @@ export async function GET(req: Request) {
     );
   }
 
-  const { limit, cursor, status } = parsed.data;
+  const { limit, cursor, status, q } = parsed.data;
 
   const jobs = await prisma.job.findMany({
-    where: { userId, ...(status ? { status } : {}) },
+    where: {
+      userId,
+      ...(status ? { status } : {}),
+      ...(q
+        ? {
+            OR: [
+              { title: { contains: q, mode: "insensitive" } },
+              { company: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: limit,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
