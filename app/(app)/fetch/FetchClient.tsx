@@ -106,7 +106,7 @@ export function FetchClient() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded border p-4">
+      <div className="rounded border bg-white p-4">
         <div className="text-sm text-zinc-600 mb-2">Queries (comma or | separated)</div>
         <textarea
           className="w-full rounded border p-2"
@@ -117,7 +117,7 @@ export function FetchClient() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="rounded border p-4 flex flex-col gap-2">
+        <label className="rounded border bg-white p-4 flex flex-col gap-2">
           <div className="text-sm text-zinc-600">Location</div>
           <input
             className="rounded border p-2"
@@ -126,7 +126,7 @@ export function FetchClient() {
           />
         </label>
 
-        <label className="rounded border p-4 flex flex-col gap-2">
+        <label className="rounded border bg-white p-4 flex flex-col gap-2">
           <div className="text-sm text-zinc-600">Hours old</div>
           <input
             className="rounded border p-2"
@@ -136,7 +136,7 @@ export function FetchClient() {
           />
         </label>
 
-        <label className="rounded border p-4 flex flex-col gap-2">
+        <label className="rounded border bg-white p-4 flex flex-col gap-2">
           <div className="text-sm text-zinc-600">Results wanted (per query)</div>
           <input
             className="rounded border p-2"
@@ -146,7 +146,7 @@ export function FetchClient() {
           />
         </label>
 
-        <label className="rounded border p-4 flex items-center justify-between gap-2">
+        <label className="rounded border bg-white p-4 flex items-center justify-between gap-2">
           <div>
             <div className="text-sm text-zinc-600">Filter description</div>
             <div className="text-xs text-zinc-500">Exclude years-of-exp / work-rights jobs</div>
@@ -158,7 +158,7 @@ export function FetchClient() {
           />
         </label>
 
-        <label className="rounded border p-4 flex items-center justify-between gap-2 md:col-span-2">
+        <label className="rounded border bg-white p-4 flex items-center justify-between gap-2 md:col-span-2">
           <div>
             <div className="text-sm text-zinc-600">Include from queries</div>
             <div className="text-xs text-zinc-500">Require title to contain a query phrase</div>
@@ -185,7 +185,7 @@ export function FetchClient() {
         </button>
       </div>
 
-      <div className="rounded border p-4">
+      <div className="rounded border bg-white p-4">
         <div className="text-sm text-zinc-600">Run</div>
         <div className="font-mono text-sm">
           id={runId ?? "-"} status={status ?? "-"} imported={importedCount}

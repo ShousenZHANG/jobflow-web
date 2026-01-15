@@ -8,11 +8,14 @@ export default async function FetchPage() {
   if (!session?.user) redirect("/login?callbackUrl=/fetch");
 
   return (
-    <main className="min-h-screen p-8">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <main className="flex flex-col gap-6">
+      <section className="rounded border bg-white p-4">
         <h1 className="text-2xl font-semibold">Fetch jobs (JobSpy)</h1>
-        <FetchClient />
-      </div>
+        <p className="text-sm text-zinc-600 mt-1">
+          Provide your criteria and trigger a fetch run. Results will be imported into your dashboard.
+        </p>
+      </section>
+      <FetchClient />
     </main>
   );
 }

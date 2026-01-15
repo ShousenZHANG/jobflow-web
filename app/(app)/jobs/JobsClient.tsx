@@ -116,7 +116,7 @@ export function JobsClient() {
 
       {error ? <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
 
-      <div className="overflow-x-auto rounded border">
+      <div className="overflow-x-auto rounded border bg-white">
         <table className="w-full text-sm">
           <thead className="bg-zinc-50">
             <tr>

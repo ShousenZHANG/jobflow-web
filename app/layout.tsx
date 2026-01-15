@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Jobflow",
+    default: "Jobflow Dashboard",
     template: "%s | Jobflow",
   },
-  description: "Track and manage job applications with Jobflow.",
+  description: "Job tracking and automated discovery dashboard.",
 };
 
 export default function RootLayout({
