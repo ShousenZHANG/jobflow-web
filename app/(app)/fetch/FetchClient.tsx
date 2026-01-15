@@ -106,10 +106,10 @@ export function FetchClient() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded border bg-white p-4">
+      <div className="rounded-2xl border bg-white p-5 shadow-sm">
         <div className="text-sm text-zinc-600 mb-2">Queries (comma or | separated)</div>
         <textarea
-          className="w-full rounded border p-2"
+          className="w-full rounded-xl border p-3"
           rows={3}
           value={queriesText}
           onChange={(e) => setQueriesText(e.target.value)}
@@ -117,36 +117,36 @@ export function FetchClient() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="rounded border bg-white p-4 flex flex-col gap-2">
+        <label className="rounded-2xl border bg-white p-5 flex flex-col gap-2 shadow-sm">
           <div className="text-sm text-zinc-600">Location</div>
           <input
-            className="rounded border p-2"
+            className="rounded-xl border p-2"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
         </label>
 
-        <label className="rounded border bg-white p-4 flex flex-col gap-2">
+        <label className="rounded-2xl border bg-white p-5 flex flex-col gap-2 shadow-sm">
           <div className="text-sm text-zinc-600">Hours old</div>
           <input
-            className="rounded border p-2"
+            className="rounded-xl border p-2"
             type="number"
             value={hoursOld}
             onChange={(e) => setHoursOld(Number(e.target.value))}
           />
         </label>
 
-        <label className="rounded border bg-white p-4 flex flex-col gap-2">
+        <label className="rounded-2xl border bg-white p-5 flex flex-col gap-2 shadow-sm">
           <div className="text-sm text-zinc-600">Results wanted (per query)</div>
           <input
-            className="rounded border p-2"
+            className="rounded-xl border p-2"
             type="number"
             value={resultsWanted}
             onChange={(e) => setResultsWanted(Number(e.target.value))}
           />
         </label>
 
-        <label className="rounded border bg-white p-4 flex items-center justify-between gap-2">
+        <label className="rounded-2xl border bg-white p-5 flex items-center justify-between gap-2 shadow-sm">
           <div>
             <div className="text-sm text-zinc-600">Filter description</div>
             <div className="text-xs text-zinc-500">Exclude years-of-exp / work-rights jobs</div>
@@ -158,7 +158,7 @@ export function FetchClient() {
           />
         </label>
 
-        <label className="rounded border bg-white p-4 flex items-center justify-between gap-2 md:col-span-2">
+        <label className="rounded-2xl border bg-white p-5 flex items-center justify-between gap-2 shadow-sm md:col-span-2">
           <div>
             <div className="text-sm text-zinc-600">Include from queries</div>
             <div className="text-xs text-zinc-500">Require title to contain a query phrase</div>
@@ -173,19 +173,19 @@ export function FetchClient() {
 
       <div className="flex items-center gap-3">
         <button
-          className="rounded border px-4 py-2 disabled:opacity-50"
+          className="rounded-full border px-4 py-2 disabled:opacity-50"
           onClick={onSubmit}
           disabled={isSubmitting}
         >
           {isSubmitting ? "Starting..." : "Start fetch"}
         </button>
 
-        <button className="underline" onClick={() => router.push("/jobs")}>
+        <button className="text-sm underline" onClick={() => router.push("/jobs")}>
           View jobs
         </button>
       </div>
 
-      <div className="rounded border bg-white p-4">
+      <div className="rounded-2xl border bg-white p-5 shadow-sm">
         <div className="text-sm text-zinc-600">Run</div>
         <div className="font-mono text-sm">
           id={runId ?? "-"} status={status ?? "-"} imported={importedCount}

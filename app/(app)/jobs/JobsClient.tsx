@@ -26,14 +26,20 @@ export function JobsClient() {
 
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q), 300);
+    return () => clearTimeout(t);
+  }, [q]);
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
     sp.set("limit", "20");
     if (statusFilter !== "ALL") sp.set("status", statusFilter);
-    if (q.trim()) sp.set("q", q.trim());
+    if (debouncedQ.trim()) sp.set("q", debouncedQ.trim());
     return sp.toString();
-  }, [statusFilter, q]);
+  }, [statusFilter, debouncedQ]);
 
   async function fetchPage(cursor?: string | null, replace?: boolean) {
     setLoading(true);
@@ -80,97 +86,103 @@ export function JobsClient() {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
   }
 
+  const statusColor: Record<JobStatus, string> = {
+    NEW: "bg-emerald-500/10 text-emerald-700",
+    APPLIED: "bg-blue-500/10 text-blue-700",
+    REJECTED: "bg-rose-500/10 text-rose-700",
+  };
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end gap-3 justify-between">
-        <div className="flex flex-wrap gap-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-600">Search</span>
-            <input
-              className="rounded border px-3 py-2"
-              placeholder="title/company..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </label>
+    <div className="flex flex-col gap-5">
+      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-end gap-3 justify-between">
+          <div className="flex flex-wrap gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-zinc-600">Search</span>
+              <input
+                className="rounded-full border px-4 py-2"
+                placeholder="title/company..."
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-600">Status</span>
-            <select
-              className="rounded border px-3 py-2"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-            >
-              <option value="ALL">All</option>
-              <option value="NEW">NEW</option>
-              <option value="APPLIED">APPLIED</option>
-              <option value="REJECTED">REJECTED</option>
-            </select>
-          </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-zinc-600">Status</span>
+              <select
+                className="rounded-full border px-4 py-2"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+              >
+                <option value="ALL">All</option>
+                <option value="NEW">NEW</option>
+                <option value="APPLIED">APPLIED</option>
+                <option value="REJECTED">REJECTED</option>
+              </select>
+            </label>
+          </div>
+
+          <button
+            className="rounded-full border px-4 py-2 transition hover:bg-zinc-100"
+            onClick={() => signOut({ callbackUrl: "/login" })}
+          >
+            Sign out
+          </button>
         </div>
+      </section>
 
-        <button className="rounded border px-4 py-2" onClick={() => signOut({ callbackUrl: "/login" })}>
-          Sign out
-        </button>
-      </div>
+      {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
 
-      {error ? <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
+      <section className="grid gap-3">
+        {items.map((it) => (
+          <div key={it.id} className="rounded-2xl border bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-1">
+                <div className="text-lg font-semibold">{it.title}</div>
+                <div className="text-sm text-zinc-600">
+                  {it.company ?? "-"} · {it.location ?? "-"}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  {it.jobType ?? "Unknown"} · {it.jobLevel ?? "Unknown"}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColor[it.status]}`}>
+                  {it.status}
+                </span>
+                <select
+                  className="rounded-full border px-3 py-1 text-xs"
+                  value={it.status}
+                  onChange={(e) => updateStatus(it.id, e.target.value as JobStatus)}
+                >
+                  <option value="NEW">NEW</option>
+                  <option value="APPLIED">APPLIED</option>
+                  <option value="REJECTED">REJECTED</option>
+                </select>
+                <a className="text-xs underline" href={it.jobUrl} target="_blank" rel="noreferrer">
+                  Open link
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
 
-      <div className="overflow-x-auto rounded border bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-50">
-            <tr>
-              <th className="text-left p-3">Title</th>
-              <th className="text-left p-3">Company</th>
-              <th className="text-left p-3">Location</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Link</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((it) => (
-              <tr key={it.id} className="border-t">
-                <td className="p-3 font-medium">{it.title}</td>
-                <td className="p-3">{it.company ?? "-"}</td>
-                <td className="p-3">{it.location ?? "-"}</td>
-                <td className="p-3">
-                  <select
-                    className="rounded border px-2 py-1"
-                    value={it.status}
-                    onChange={(e) => updateStatus(it.id, e.target.value as JobStatus)}
-                  >
-                    <option value="NEW">NEW</option>
-                    <option value="APPLIED">APPLIED</option>
-                    <option value="REJECTED">REJECTED</option>
-                  </select>
-                </td>
-                <td className="p-3">
-                  <a className="underline" href={it.jobUrl} target="_blank" rel="noreferrer">
-                    open
-                  </a>
-                </td>
-              </tr>
-            ))}
-            {!items.length && !loading ? (
-              <tr>
-                <td className="p-3 text-zinc-500" colSpan={5}>
-                  No jobs yet.
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+        {!items.length && !loading ? (
+          <div className="rounded-2xl border bg-white p-6 text-sm text-zinc-500">
+            No jobs yet.
+          </div>
+        ) : null}
+      </section>
 
       <div className="flex items-center gap-3">
         <button
-          className="rounded border px-4 py-2 disabled:opacity-50"
+          className="rounded-full border px-4 py-2 disabled:opacity-50"
           disabled={loading || !nextCursor}
           onClick={() => fetchPage(nextCursor, false)}
         >
           {loading ? "Loading..." : nextCursor ? "Load more" : "No more"}
         </button>
-        <a className="underline" href="/fetch">
+        <a className="text-sm underline" href="/fetch">
           Fetch more
         </a>
       </div>
