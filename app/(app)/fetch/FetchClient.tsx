@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import * as Progress from "@radix-ui/react-progress";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -104,6 +105,8 @@ export function FetchClient() {
     }
   }
 
+  const progressValue = status === "SUCCEEDED" ? 100 : status === "RUNNING" ? 60 : 0;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-2xl border bg-white p-5 shadow-sm">
@@ -186,10 +189,37 @@ export function FetchClient() {
       </div>
 
       <div className="rounded-2xl border bg-white p-5 shadow-sm">
-        <div className="text-sm text-zinc-600">Run</div>
-        <div className="font-mono text-sm">
-          id={runId ?? "-"} status={status ?? "-"} imported={importedCount}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-zinc-600">Run</div>
+          <span className="text-xs text-zinc-500">{status ?? "-"}</span>
         </div>
+        <div className="font-mono text-sm mt-2">
+          id={runId ?? "-"} imported={importedCount}
+        </div>
+
+        <div className="mt-4">
+          <Progress.Root
+            className="relative h-2 w-full overflow-hidden rounded-full bg-zinc-100"
+            value={progressValue}
+          >
+            <Progress.Indicator
+              className={`h-full w-full rounded-full bg-zinc-900 transition ${
+                status === "RUNNING" ? "animate-pulse" : ""
+              }`}
+              style={{ transform: `translateX(-${100 - progressValue}%)` }}
+            />
+          </Progress.Root>
+          <div className="mt-2 text-xs text-zinc-500">
+            {status === "RUNNING"
+              ? "Fetching and importing..."
+              : status === "SUCCEEDED"
+                ? "Completed successfully"
+                : status === "FAILED"
+                  ? "Run failed"
+                  : "Idle"}
+          </div>
+        </div>
+
         {error ? <div className="text-sm text-red-600 mt-2">{error}</div> : null}
       </div>
     </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-50 via-white to-white">
+    <main className="min-h-screen bg-gradient-to-b from-zinc-50 via-white to-white animated-gradient">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-16">
         <header className="flex flex-col gap-5">
           <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-white px-3 py-1 text-xs font-medium text-zinc-600">

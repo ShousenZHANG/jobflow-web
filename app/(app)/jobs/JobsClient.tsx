@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { signOut } from "next-auth/react";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -94,13 +93,13 @@ export function JobsClient() {
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur">
         <div className="flex flex-wrap items-end gap-3 justify-between">
           <div className="flex flex-wrap gap-3">
             <label className="flex flex-col gap-1">
               <span className="text-xs text-zinc-600">Search</span>
               <input
-                className="rounded-full border px-4 py-2"
+                className="rounded-full border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                 placeholder="title/company..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -110,7 +109,7 @@ export function JobsClient() {
             <label className="flex flex-col gap-1">
               <span className="text-xs text-zinc-600">Status</span>
               <select
-                className="rounded-full border px-4 py-2"
+                className="rounded-full border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
               >
@@ -121,19 +120,19 @@ export function JobsClient() {
               </select>
             </label>
           </div>
-
-          <button
-            className="rounded-full border px-4 py-2 transition hover:bg-zinc-100"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-          >
-            Sign out
-          </button>
         </div>
       </section>
 
       {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
 
       <section className="grid gap-3">
+        {loading && items.length === 0 ? (
+          <>
+            <div className="rounded-2xl border bg-white p-4 shadow-sm shimmer h-24" />
+            <div className="rounded-2xl border bg-white p-4 shadow-sm shimmer h-24" />
+            <div className="rounded-2xl border bg-white p-4 shadow-sm shimmer h-24" />
+          </>
+        ) : null}
         {items.map((it) => (
           <div key={it.id} className="rounded-2xl border bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
