@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import * as Progress from "@radix-ui/react-progress";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -108,108 +114,110 @@ export function FetchClient() {
   const progressValue = status === "SUCCEEDED" ? 100 : status === "RUNNING" ? 60 : 0;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 shadow-sm glow">
-        <div className="text-sm text-zinc-400 mb-2">Queries (comma or | separated)</div>
-        <textarea
-          className="w-full rounded-xl border border-emerald-500/20 bg-zinc-950 p-3 text-emerald-100"
-          rows={3}
-          value={queriesText}
-          onChange={(e) => setQueriesText(e.target.value)}
-        />
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Fetch jobs</h1>
+        <p className="text-sm text-muted-foreground">
+          Configure JobSpy to import roles that match your search.
+        </p>
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Search queries</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Label>Queries (comma or | separated)</Label>
+          <Textarea rows={3} value={queriesText} onChange={(e) => setQueriesText(e.target.value)} />
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex flex-col gap-2 shadow-sm">
-          <div className="text-sm text-zinc-400">Location</div>
-          <input
-            className="rounded-xl border border-emerald-500/20 bg-zinc-950 p-2 text-emerald-100"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </label>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Location</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+          </CardContent>
+        </Card>
 
-        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex flex-col gap-2 shadow-sm">
-          <div className="text-sm text-zinc-400">Hours old</div>
-          <input
-            className="rounded-xl border border-emerald-500/20 bg-zinc-950 p-2 text-emerald-100"
-            type="number"
-            value={hoursOld}
-            onChange={(e) => setHoursOld(Number(e.target.value))}
-          />
-        </label>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Hours old</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="number"
+              value={hoursOld}
+              onChange={(e) => setHoursOld(Number(e.target.value))}
+            />
+          </CardContent>
+        </Card>
 
-        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex flex-col gap-2 shadow-sm">
-          <div className="text-sm text-zinc-400">Results wanted (per query)</div>
-          <input
-            className="rounded-xl border border-emerald-500/20 bg-zinc-950 p-2 text-emerald-100"
-            type="number"
-            value={resultsWanted}
-            onChange={(e) => setResultsWanted(Number(e.target.value))}
-          />
-        </label>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Results wanted</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="number"
+              value={resultsWanted}
+              onChange={(e) => setResultsWanted(Number(e.target.value))}
+            />
+          </CardContent>
+        </Card>
 
-        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex items-center justify-between gap-2 shadow-sm">
-          <div>
-            <div className="text-sm text-zinc-400">Filter description</div>
-            <div className="text-xs text-zinc-500">Exclude years-of-exp / work-rights jobs</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={filterDescription}
-            onChange={(e) => setFilterDescription(e.target.checked)}
-          />
-        </label>
-
-        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex items-center justify-between gap-2 shadow-sm md:col-span-2">
-          <div>
-            <div className="text-sm text-zinc-400">Include from queries</div>
-            <div className="text-xs text-zinc-500">Require title to contain a query phrase</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={includeFromQueries}
-            onChange={(e) => setIncludeFromQueries(e.target.checked)}
-          />
-        </label>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Filters</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium">Filter description</div>
+                <div className="text-xs text-muted-foreground">
+                  Exclude years-of-exp / work-rights jobs
+                </div>
+              </div>
+              <Switch checked={filterDescription} onCheckedChange={setFilterDescription} />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium">Include from queries</div>
+                <div className="text-xs text-muted-foreground">
+                  Require title to contain a query phrase
+                </div>
+              </div>
+              <Switch checked={includeFromQueries} onCheckedChange={setIncludeFromQueries} />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="flex items-center gap-3">
-        <button
-          className="rounded-full border border-emerald-500/30 px-4 py-2 text-emerald-200 disabled:opacity-50"
-          onClick={onSubmit}
-          disabled={isSubmitting}
-        >
+        <Button onClick={onSubmit} disabled={isSubmitting}>
           {isSubmitting ? "Starting..." : "Start fetch"}
-        </button>
-
-        <button className="text-sm text-emerald-200 underline" onClick={() => router.push("/jobs")}>
+        </Button>
+        <Button variant="outline" onClick={() => router.push("/jobs")}>
           View jobs
-        </button>
+        </Button>
       </div>
 
-      <div className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-zinc-400">Run</div>
-          <span className="text-xs text-zinc-500">{status ?? "-"}</span>
-        </div>
-        <div className="font-mono text-sm mt-2 text-emerald-200">
-          id={runId ?? "-"} imported={importedCount}
-        </div>
-
-        <div className="mt-4">
-          <Progress.Root
-            className="relative h-2 w-full overflow-hidden rounded-full bg-zinc-900"
-            value={progressValue}
-          >
-            <Progress.Indicator
-              className={`h-full w-full rounded-full bg-emerald-400 transition ${
-                status === "RUNNING" ? "animate-pulse" : ""
-              }`}
-              style={{ transform: `translateX(-${100 - progressValue}%)` }}
-            />
-          </Progress.Root>
-          <div className="mt-2 text-xs text-zinc-500">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Run status</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">State</span>
+            <span>{status ?? "-"}</span>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            id={runId ?? "-"} imported={importedCount}
+          </div>
+          <Progress value={progressValue} />
+          <div className="text-xs text-muted-foreground">
             {status === "RUNNING"
               ? "Fetching and importing..."
               : status === "SUCCEEDED"
@@ -218,10 +226,9 @@ export function FetchClient() {
                   ? "Run failed"
                   : "Idle"}
           </div>
-        </div>
-
-        {error ? <div className="text-sm text-rose-300 mt-2">{error}</div> : null}
-      </div>
+          {error ? <div className="text-sm text-destructive">{error}</div> : null}
+        </CardContent>
+      </Card>
     </div>
   );
 }

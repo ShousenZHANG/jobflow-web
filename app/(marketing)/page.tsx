@@ -1,32 +1,52 @@
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-zinc-950 tech-grid">
+    <main className="min-h-screen bg-background">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-16">
-        <header className="flex flex-col gap-5">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-500/30 bg-zinc-950 px-3 py-1 text-xs font-medium text-emerald-300 glow">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            Jobflow CLI Console
+        <header className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="flex flex-col gap-6">
+            <Badge className="w-fit" variant="secondary">
+              Jobflow for job seekers
+            </Badge>
+            <h1 className="text-4xl font-semibold leading-tight md:text-6xl">
+              A clean, focused job tracker built to help you land faster.
+            </h1>
+            <p className="max-w-2xl text-lg text-muted-foreground">
+              Organize applications, capture insights, and run curated job fetches with clarity.
+              Everything is designed around the way job seekers actually work.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/login">Sign in</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/jobs">Open dashboard</Link>
+              </Button>
+            </div>
           </div>
-          <h1 className="text-4xl font-semibold leading-tight text-zinc-100 md:text-6xl">
-            A command‑style job dashboard built for focus.
-          </h1>
-          <p className="max-w-2xl text-lg text-zinc-400">
-            Minimal UI, maximal clarity. Filter the noise, capture the signal,
-            and keep every opportunity in one terminal‑inspired workspace.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-5 py-2 text-emerald-200 transition hover:bg-emerald-500/20"
-              href="/login"
-            >
-              Sign in
-            </Link>
-            <Link className="rounded-full border border-emerald-500/20 px-5 py-2 text-emerald-200 transition hover:bg-emerald-500/10" href="/jobs">
-              Open dashboard
-            </Link>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>What you get</CardTitle>
+              <CardDescription>All the essentials in one clear workspace.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              {[
+                "Structured pipeline with status tracking",
+                "Smart search across title & company",
+                "Fast import with JobSpy automation",
+                "A clean UI optimized for focus",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2 text-sm">
+                  <span className="h-2 w-2 rounded-full bg-primary" />
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </header>
 
         <section className="grid gap-6 md:grid-cols-3">
@@ -47,21 +67,23 @@ export default function HomePage() {
                 "Trigger JobSpy runs with your criteria and import curated results instantly.",
             },
           ].map((card) => (
-            <div key={card.title} className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-6 shadow-sm">
-              <h2 className="text-base font-semibold text-emerald-200">{card.title}</h2>
-              <p className="mt-2 text-sm text-zinc-400">{card.copy}</p>
-            </div>
+            <Card key={card.title}>
+              <CardHeader>
+                <CardTitle className="text-base">{card.title}</CardTitle>
+                <CardDescription>{card.copy}</CardDescription>
+              </CardHeader>
+            </Card>
           ))}
         </section>
 
-        <section className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-8 shadow-sm">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-xl font-semibold text-emerald-200">Built for focus</h3>
-            <p className="text-sm text-zinc-400">
+        <Card>
+          <CardHeader>
+            <CardTitle>Built for focus</CardTitle>
+            <CardDescription>
               Jobflow removes noise, surfaces relevant roles, and lets you decide what to pursue.
-            </p>
-          </div>
-        </section>
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     </main>
   );

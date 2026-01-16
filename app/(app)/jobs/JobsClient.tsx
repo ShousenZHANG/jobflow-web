@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -22,6 +30,8 @@ export function JobsClient() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [pageIndex, setPageIndex] = useState(0);
 
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
@@ -40,7 +50,7 @@ export function JobsClient() {
     return sp.toString();
   }, [statusFilter, debouncedQ]);
 
-  async function fetchPage(cursor?: string | null, replace?: boolean) {
+  async function fetchPage(cursor: string | null, nextIndex: number) {
     setLoading(true);
     setError(null);
     try {
@@ -53,8 +63,14 @@ export function JobsClient() {
       const newItems = (json.items ?? []) as JobItem[];
       const newCursor = (json.nextCursor ?? null) as string | null;
 
-      setItems((prev) => (replace ? newItems : [...prev, ...newItems]));
+      setItems(newItems);
       setNextCursor(newCursor);
+      setPageIndex(nextIndex);
+      setCursorStack((prev) => {
+        const copy = [...prev];
+        copy[nextIndex] = cursor;
+        return copy;
+      });
     } catch (e: any) {
       setError(e?.message || "Failed");
     } finally {
@@ -63,10 +79,11 @@ export function JobsClient() {
   }
 
   useEffect(() => {
-    // When filters change, reload from scratch
     setItems([]);
     setNextCursor(null);
-    void fetchPage(null, true);
+    setCursorStack([null]);
+    setPageIndex(0);
+    void fetchPage(null, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString]);
 
@@ -85,109 +102,165 @@ export function JobsClient() {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
   }
 
-  const statusColor: Record<JobStatus, string> = {
-    NEW: "bg-emerald-500/10 text-emerald-700",
-    APPLIED: "bg-blue-500/10 text-blue-700",
-    REJECTED: "bg-rose-500/10 text-rose-700",
+  const statusClass: Record<JobStatus, string> = {
+    NEW: "bg-emerald-100 text-emerald-700",
+    APPLIED: "bg-blue-100 text-blue-700",
+    REJECTED: "bg-rose-100 text-rose-700",
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <section className="rounded-2xl border border-emerald-500/20 bg-zinc-950/80 p-5 shadow-sm backdrop-blur glow">
-        <div className="flex flex-wrap items-end gap-3 justify-between">
-          <div className="flex flex-wrap gap-3">
-            <label className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-600">Search</span>
-              <input
-                className="rounded-full border border-emerald-500/20 bg-zinc-950 px-4 py-2 text-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                placeholder="title/company..."
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span className="text-xs text-zinc-600">Status</span>
-              <select
-                className="rounded-full border border-emerald-500/20 bg-zinc-950 px-4 py-2 text-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-              >
-                <option value="ALL">All</option>
-                <option value="NEW">NEW</option>
-                <option value="APPLIED">APPLIED</option>
-                <option value="REJECTED">REJECTED</option>
-              </select>
-            </label>
-          </div>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Jobs</h1>
+          <p className="text-sm text-muted-foreground">Track and update your applications.</p>
         </div>
-      </section>
+        <Button asChild variant="secondary">
+          <a href="/fetch">Fetch jobs</a>
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Filters</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Search</div>
+            <Input
+              placeholder="Title or company"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Status</div>
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+              <SelectTrigger>
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All</SelectItem>
+                <SelectItem value="NEW">New</SelectItem>
+                <SelectItem value="APPLIED">Applied</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm">
+            <div className="text-muted-foreground">Showing</div>
+            <div className="text-lg font-semibold">{items.length}</div>
+          </div>
+        </CardContent>
+      </Card>
 
       {error ? (
-        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
-      <section className="grid gap-3">
-        {loading && items.length === 0 ? (
-          <>
-            <div className="rounded-2xl border border-emerald-500/10 bg-zinc-950 p-4 shadow-sm shimmer h-24" />
-            <div className="rounded-2xl border border-emerald-500/10 bg-zinc-950 p-4 shadow-sm shimmer h-24" />
-            <div className="rounded-2xl border border-emerald-500/10 bg-zinc-950 p-4 shadow-sm shimmer h-24" />
-          </>
-        ) : null}
-        {items.map((it) => (
-          <div key={it.id} className="rounded-2xl border border-emerald-500/15 bg-zinc-950 p-4 shadow-sm">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div className="space-y-1">
-                <div className="text-lg font-semibold text-emerald-100">{it.title}</div>
-                <div className="text-sm text-zinc-400">
-                  {it.company ?? "-"} · {it.location ?? "-"}
-                </div>
-                <div className="text-xs text-zinc-500">
-                  {it.jobType ?? "Unknown"} · {it.jobLevel ?? "Unknown"}
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColor[it.status]}`}>
-                  {it.status}
-                </span>
-                <select
-                  className="rounded-full border border-emerald-500/20 bg-zinc-950 px-3 py-1 text-xs text-emerald-100"
-                  value={it.status}
-                  onChange={(e) => updateStatus(it.id, e.target.value as JobStatus)}
-                >
-                  <option value="NEW">NEW</option>
-                  <option value="APPLIED">APPLIED</option>
-                  <option value="REJECTED">REJECTED</option>
-                </select>
-                <a className="text-xs text-emerald-200 underline" href={it.jobUrl} target="_blank" rel="noreferrer">
-                  Open link
-                </a>
-              </div>
-            </div>
-          </div>
-        ))}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Role</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading && items.length === 0 ? (
+                Array.from({ length: 6 }).map((_, idx) => (
+                  <TableRow key={`s-${idx}`}>
+                    <TableCell colSpan={6}>
+                      <Skeleton className="h-8 w-full" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : null}
+              {items.map((it) => (
+                <TableRow key={it.id}>
+                  <TableCell>
+                    <div className="font-medium">{it.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {it.jobLevel ?? "Unknown"}
+                    </div>
+                  </TableCell>
+                  <TableCell>{it.company ?? "-"}</TableCell>
+                  <TableCell>{it.location ?? "-"}</TableCell>
+                  <TableCell>{it.jobType ?? "Unknown"}</TableCell>
+                  <TableCell>
+                    <Badge className={statusClass[it.status]}>{it.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Select
+                        value={it.status}
+                        onValueChange={(v) => updateStatus(it.id, v as JobStatus)}
+                      >
+                        <SelectTrigger className="h-8 w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="NEW">New</SelectItem>
+                          <SelectItem value="APPLIED">Applied</SelectItem>
+                          <SelectItem value="REJECTED">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button asChild variant="ghost" size="sm">
+                        <a href={it.jobUrl} target="_blank" rel="noreferrer">
+                          Open
+                        </a>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {!items.length && !loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                    No jobs yet.
+                  </TableCell>
+                </TableRow>
+              ) : null}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-        {!items.length && !loading ? (
-          <div className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-6 text-sm text-zinc-400">
-            No jobs yet.
-          </div>
-        ) : null}
-      </section>
-
-      <div className="flex items-center gap-3">
-        <button
-          className="rounded-full border border-emerald-500/30 px-4 py-2 text-emerald-200 disabled:opacity-50"
-          disabled={loading || !nextCursor}
-          onClick={() => fetchPage(nextCursor, false)}
-        >
-          {loading ? "Loading..." : nextCursor ? "Load more" : "No more"}
-        </button>
-        <a className="text-sm text-emerald-200 underline" href="/fetch">
-          Fetch more
-        </a>
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">Page {pageIndex + 1}</div>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => {
+                  if (pageIndex > 0) {
+                    void fetchPage(cursorStack[pageIndex - 1] ?? null, pageIndex - 1);
+                  }
+                }}
+                aria-disabled={loading || pageIndex === 0}
+                className={loading || pageIndex === 0 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => {
+                  if (nextCursor) {
+                    void fetchPage(nextCursor, pageIndex + 1);
+                  }
+                }}
+                aria-disabled={loading || !nextCursor}
+                className={loading || !nextCursor ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
