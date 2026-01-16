@@ -38,6 +38,19 @@ export async function GET(req: Request) {
       ? [{ createdAt: "asc" as const }, { id: "asc" as const }]
       : [{ createdAt: "desc" as const }, { id: "desc" as const }];
 
+  const locationFilters = location?.startsWith("state:")
+    ? {
+        NSW: ["NSW", "New South Wales", "Sydney", "Newcastle", "Wollongong"],
+        VIC: ["VIC", "Victoria", "Melbourne", "Geelong"],
+        QLD: ["QLD", "Queensland", "Brisbane", "Gold Coast", "Sunshine Coast"],
+        WA: ["WA", "Western Australia", "Perth"],
+        SA: ["SA", "South Australia", "Adelaide"],
+        ACT: ["ACT", "Australian Capital Territory", "Canberra"],
+        TAS: ["TAS", "Tasmania", "Hobart"],
+        NT: ["NT", "Northern Territory", "Darwin"],
+      }[location.replace("state:", "") as keyof any] || []
+    : null;
+
   const jobs = await prisma.job.findMany({
     where: {
       userId,
@@ -51,7 +64,13 @@ export async function GET(req: Request) {
           }
         : {}),
       ...(location
-        ? { location: { contains: location, mode: "insensitive" } }
+        ? locationFilters && locationFilters.length
+          ? {
+              OR: locationFilters.map((loc) => ({
+                location: { contains: loc, mode: "insensitive" },
+              })),
+            }
+          : { location: { contains: location, mode: "insensitive" } }
         : {}),
     },
     orderBy,

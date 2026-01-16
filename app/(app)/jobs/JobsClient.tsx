@@ -187,7 +187,7 @@ export function JobsClient() {
       </div>
 
       <Card>
-        <CardContent className="grid gap-4 p-4 md:grid-cols-[1.2fr_1fr_1fr]">
+        <CardContent className="grid gap-4 p-4 md:grid-cols-[1.4fr_1fr_1fr]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Search</div>
             <Input
@@ -218,7 +218,23 @@ export function JobsClient() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All locations</SelectItem>
+                <SelectItem value="state:NSW">NSW</SelectItem>
+                <SelectItem value="state:VIC">VIC</SelectItem>
+                <SelectItem value="state:QLD">QLD</SelectItem>
+                <SelectItem value="state:WA">WA</SelectItem>
+                <SelectItem value="state:SA">SA</SelectItem>
+                <SelectItem value="state:ACT">ACT</SelectItem>
+                <SelectItem value="state:TAS">TAS</SelectItem>
+                <SelectItem value="state:NT">NT</SelectItem>
                 {[
+                  "Sydney, New South Wales, Australia",
+                  "Melbourne, Victoria, Australia",
+                  "Brisbane, Queensland, Australia",
+                  "Perth, Western Australia, Australia",
+                  "Adelaide, South Australia, Australia",
+                  "Canberra, Australian Capital Territory, Australia",
+                  "Hobart, Tasmania, Australia",
+                  "Darwin, Northern Territory, Australia",
                   "Sydney, NSW",
                   "Melbourne, VIC",
                   "Brisbane, QLD",
@@ -237,11 +253,6 @@ export function JobsClient() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="grid gap-4 p-4 md:grid-cols-[1fr_1fr_0.6fr]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Results per page</div>
             <Select
