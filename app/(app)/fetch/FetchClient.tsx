@@ -33,7 +33,7 @@ export function FetchClient() {
   const [jobTitle, setJobTitle] = useState("Software Engineer");
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
   const [hoursOld, setHoursOld] = useState(48);
-  const [resultsWanted, setResultsWanted] = useState(120);
+  const [resultsWanted, setResultsWanted] = useState(100);
   const [applyExcludes, setApplyExcludes] = useState(true);
   const [excludeTitleTerms, setExcludeTitleTerms] = useState<string[]>([
     "senior",
@@ -51,6 +51,7 @@ export function FetchClient() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const queries = useMemo(() => {
     return jobTitle.trim() ? [jobTitle.trim()] : [];
@@ -149,6 +150,7 @@ export function FetchClient() {
       const id = await createRun();
       setRunId(id);
       setStatus("QUEUED");
+      setElapsedSeconds(0);
       setDialogOpen(true);
       await triggerRun(id);
       setStatus("RUNNING");
@@ -159,8 +161,21 @@ export function FetchClient() {
     }
   }
 
+  useEffect(() => {
+    if (!dialogOpen) return;
+    if (status !== "RUNNING") return;
+    const t = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [status, dialogOpen]);
+
   const progressValue =
-    status === "SUCCEEDED" ? 100 : status === "RUNNING" ? 70 : status === "QUEUED" ? 15 : 0;
+    status === "SUCCEEDED"
+      ? 100
+      : status === "FAILED"
+        ? 0
+        : status === "RUNNING"
+          ? Math.min(92, 20 + Math.floor(elapsedSeconds * 2))
+          : 10;
   const isBlocking = status === "RUNNING" || status === "QUEUED";
 
   return (
@@ -190,7 +205,7 @@ export function FetchClient() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[1,2,3,4,5,6,7,8,9,10,12,24,48,72].map((h) => (
+                {[1, 6, 12, 24, 48, 72].map((h) => (
                   <SelectItem key={h} value={String(h)}>
                     {h} hours
                   </SelectItem>
@@ -205,7 +220,7 @@ export function FetchClient() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[20,50,80,100,150,200].map((n) => (
+                {[20, 50, 80, 100, 150, 200].map((n) => (
                   <SelectItem key={n} value={String(n)}>
                     {n} results
                   </SelectItem>
@@ -233,7 +248,7 @@ export function FetchClient() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Exclude title terms</div>
+              <div className="text-xs text-muted-foreground">Exclude title terms (dropdown)</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
@@ -273,7 +288,7 @@ export function FetchClient() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Exclude description rules</div>
+              <div className="text-xs text-muted-foreground">Exclude description rules (dropdown)</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
@@ -358,6 +373,7 @@ export function FetchClient() {
             <div className="text-sm text-slate-200">
               {progressValue}% complete
             </div>
+            <div className="text-xs text-slate-400">Elapsed: {elapsedSeconds}s</div>
             {error ? <div className="text-sm text-rose-300">{error}</div> : null}
           </div>
           <AlertDialogFooter>
