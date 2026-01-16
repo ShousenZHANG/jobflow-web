@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     const userId = user.id;
 
     const invalid: Array<{ reason: string }> = [];
-    const normalized = parsed.data.items
+    const normalizedRaw = parsed.data.items
       .map((it) => {
         const jobUrl = (it.jobUrl ?? it.job_url ?? "").trim();
         const title = it.title?.trim();
@@ -95,44 +95,55 @@ export async function POST(req: Request) {
       description: string | null;
     }>;
 
+    const seen = new Set<string>();
+    const normalized = normalizedRaw.filter((it) => {
+      if (seen.has(it.jobUrl)) return false;
+      seen.add(it.jobUrl);
+      return true;
+    });
+
     if (normalized.length === 0) {
       return NextResponse.json({ ok: true, imported: 0, invalid: invalid.length });
     }
 
-    const ops = normalized.map((it) =>
-      prisma.job.upsert({
-        where: { userId_jobUrl: { userId, jobUrl: it.jobUrl } },
-        update: {
-          title: it.title,
-          company: it.company,
-          location: it.location,
-          jobType: it.jobType,
-          jobLevel: it.jobLevel,
-          description: it.description,
-        },
-        create: {
-          userId,
-          jobUrl: it.jobUrl,
-          title: it.title,
-          company: it.company,
-          location: it.location,
-          jobType: it.jobType,
-          jobLevel: it.jobLevel,
-          description: it.description,
-          status: "NEW",
-        },
-        select: { id: true },
-      }),
-    );
-
-    // Batch to avoid huge transactions/timeouts
-    const BATCH = 50;
+    // Concurrency-limited upsert to improve throughput without tx timeouts
+    const CONCURRENCY = 5;
     let written = 0;
-    for (let i = 0; i < ops.length; i += BATCH) {
-      const slice = ops.slice(i, i + BATCH);
-      await prisma.$transaction(slice);
-      written += slice.length;
+    let index = 0;
+
+    async function worker() {
+      while (index < normalized.length) {
+        const current = normalized[index];
+        index += 1;
+        await prisma.job.upsert({
+          where: { userId_jobUrl: { userId, jobUrl: current.jobUrl } },
+          update: {
+            title: current.title,
+            company: current.company,
+            location: current.location,
+            jobType: current.jobType,
+            jobLevel: current.jobLevel,
+            description: current.description,
+          },
+          create: {
+            userId,
+            jobUrl: current.jobUrl,
+            title: current.title,
+            company: current.company,
+            location: current.location,
+            jobType: current.jobType,
+            jobLevel: current.jobLevel,
+            description: current.description,
+            status: "NEW",
+          },
+          select: { id: true },
+        });
+        written += 1;
+      }
     }
+
+    const workers = Array.from({ length: CONCURRENCY }, () => worker());
+    await Promise.all(workers);
 
     return NextResponse.json({ ok: true, imported: written, invalid: invalid.length });
   } catch (err: any) {
