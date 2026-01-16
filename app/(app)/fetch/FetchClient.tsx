@@ -48,6 +48,7 @@ export function FetchClient() {
 
   const [runId, setRunId] = useState<string | null>(null);
   const [status, setStatus] = useState<FetchRunStatus | null>(null);
+  const [importedCount, setImportedCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -114,6 +115,7 @@ export function FetchClient() {
         const r = await fetchRun(runId);
         if (!alive) return;
         setStatus(r.status);
+        setImportedCount(r.importedCount ?? 0);
         setError(r.error ?? null);
         if (r.status === "SUCCEEDED") {
           clearInterval(t);
@@ -135,8 +137,7 @@ export function FetchClient() {
   useEffect(() => {
     if (!dialogOpen) return;
     if (status === "SUCCEEDED" || status === "FAILED") {
-      const t = setTimeout(() => setDialogOpen(false), 1200);
-      return () => clearTimeout(t);
+      setElapsedSeconds((s) => s);
     }
   }, [status, dialogOpen]);
 
@@ -346,10 +347,10 @@ export function FetchClient() {
           setDialogOpen(open);
         }}
       >
-        <AlertDialogContent className="border-none bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
+        <AlertDialogContent className="border bg-background text-foreground shadow-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Fetching jobs</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">
+            <AlertDialogTitle>Fetching jobs</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               {status === "RUNNING"
                 ? "We are collecting and importing results."
                 : status === "SUCCEEDED"
@@ -360,29 +361,40 @@ export function FetchClient() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-3">
-            <div className="h-1 w-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 animate-pulse" />
-            <div className="flex items-center justify-between text-sm text-slate-300">
+            <div className="h-1 w-full rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 animate-pulse" />
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>Status</span>
               <span>{status ?? "QUEUED"}</span>
             </div>
             <Progress
               value={progressValue}
-              className="h-2 bg-slate-700"
-              indicatorClassName="bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 shadow-[0_0_12px_rgba(59,130,246,0.6)]"
+              className="h-2 bg-emerald-100"
+              indicatorClassName="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.45)]"
             />
-            <div className="text-sm text-slate-200">
+            <div className="text-sm text-foreground">
               {progressValue}% complete
             </div>
-            <div className="text-xs text-slate-400">Elapsed: {elapsedSeconds}s</div>
-            {error ? <div className="text-sm text-rose-300">{error}</div> : null}
+            <div className="text-xs text-muted-foreground">Elapsed: {elapsedSeconds}s</div>
+            {status === "SUCCEEDED" ? (
+              <div className="text-sm text-emerald-600">
+                Imported {importedCount} new jobs.
+              </div>
+            ) : null}
+            {error ? <div className="text-sm text-destructive">{error}</div> : null}
           </div>
           <AlertDialogFooter>
-            <AlertDialogAction
-              className="bg-rose-500 text-white hover:bg-rose-400"
-              onClick={cancelRun}
-            >
-              Cancel fetch
-            </AlertDialogAction>
+            {isBlocking ? (
+              <AlertDialogAction
+                className="bg-rose-500 text-white hover:bg-rose-400"
+                onClick={cancelRun}
+              >
+                Cancel fetch
+              </AlertDialogAction>
+            ) : (
+              <AlertDialogCancel className="border border-input bg-background hover:bg-accent">
+                Close
+              </AlertDialogCancel>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
