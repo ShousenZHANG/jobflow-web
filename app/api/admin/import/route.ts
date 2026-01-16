@@ -61,45 +61,85 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
-  const ops = parsed.data.items.map((it) => {
-    const jobUrl = (it.jobUrl ?? it.job_url ?? "").trim();
-    const jobType = it.jobType ?? it.job_type ?? null;
-    const jobLevel = it.jobLevel ?? it.job_level ?? null;
-
-    return prisma.job.upsert({
-      where: { userId_jobUrl: { userId, jobUrl } },
-      update: {
-        title: it.title,
+  const invalid: Array<{ reason: string }> = [];
+  const normalized = parsed.data.items
+    .map((it) => {
+      const jobUrl = (it.jobUrl ?? it.job_url ?? "").trim();
+      const title = it.title?.trim();
+      if (!jobUrl) {
+        invalid.push({ reason: "missing_job_url" });
+        return null;
+      }
+      if (!title) {
+        invalid.push({ reason: "missing_title" });
+        return null;
+      }
+      return {
+        jobUrl,
+        title,
         company: it.company ?? null,
         location: it.location ?? null,
-        jobType: jobType ?? null,
-        jobLevel: jobLevel ?? null,
+        jobType: it.jobType ?? it.job_type ?? null,
+        jobLevel: it.jobLevel ?? it.job_level ?? null,
         description: it.description ?? null,
+      };
+    })
+    .filter(Boolean) as Array<{
+    jobUrl: string;
+    title: string;
+    company: string | null;
+    location: string | null;
+    jobType: string | null;
+    jobLevel: string | null;
+    description: string | null;
+  }>;
+
+  if (normalized.length === 0) {
+    return NextResponse.json({ ok: true, imported: 0, invalid: invalid.length });
+  }
+
+  const ops = normalized.map((it) =>
+    prisma.job.upsert({
+      where: { userId_jobUrl: { userId, jobUrl: it.jobUrl } },
+      update: {
+        title: it.title,
+        company: it.company,
+        location: it.location,
+        jobType: it.jobType,
+        jobLevel: it.jobLevel,
+        description: it.description,
       },
       create: {
         userId,
-        jobUrl,
+        jobUrl: it.jobUrl,
         title: it.title,
-        company: it.company ?? null,
-        location: it.location ?? null,
-        jobType: jobType ?? null,
-        jobLevel: jobLevel ?? null,
-        description: it.description ?? null,
+        company: it.company,
+        location: it.location,
+        jobType: it.jobType,
+        jobLevel: it.jobLevel,
+        description: it.description,
         status: "NEW",
       },
       select: { id: true },
-    });
-  });
+    }),
+  );
 
   // Batch to avoid huge transactions/timeouts
   const BATCH = 50;
   let written = 0;
-  for (let i = 0; i < ops.length; i += BATCH) {
-    const slice = ops.slice(i, i + BATCH);
-    await prisma.$transaction(slice);
-    written += slice.length;
+  try {
+    for (let i = 0; i < ops.length; i += BATCH) {
+      const slice = ops.slice(i, i + BATCH);
+      await prisma.$transaction(slice);
+      written += slice.length;
+    }
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: "IMPORT_FAILED", details: err?.message || String(err) },
+      { status: 500 },
+    );
   }
 
-  return NextResponse.json({ ok: true, imported: written });
+  return NextResponse.json({ ok: true, imported: written, invalid: invalid.length });
 }
 
