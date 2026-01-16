@@ -35,10 +35,16 @@ EXCLUDE_RIGHTS_RE = re.compile(
     r'(?i)\b(?:'
     r'permanent\s+resident|permanent\s+residency|PR\s*(?:only|required)?|'
     r'citizen|citizenship|australian\s+citizen|au\s+citizen|nz\s+citizen|'
-    r'baseline\s+clearance|NV1|NV2|security\s+clearance|'
-    r'must\s+have\s+(?:full\s+)?work(?:ing)?\s+rights|'
-    r'sponsorship\s+not\s+available|no\s+sponsorship'
+    r'must\s+have\s+(?:full\s+)?work(?:ing)?\s+rights'
     r')\b'
+)
+
+EXCLUDE_CLEARANCE_RE = re.compile(
+    r'(?i)\b(?:baseline\s+clearance|NV1|NV2|security\s+clearance)\b'
+)
+
+EXCLUDE_SPONSORSHIP_RE = re.compile(
+    r'(?i)\b(?:sponsorship\s+not\s+available|no\s+sponsorship)\b'
 )
 
 
@@ -51,11 +57,27 @@ def _build_query_phrases(queries: List[str]) -> List[str]:
     return phrases
 
 
-def filter_title(df: pd.DataFrame, queries: List[str], enforce_include: bool) -> pd.DataFrame:
+def _build_exclude_title_re(terms: List[str]) -> Optional[re.Pattern]:
+    cleaned = [re.escape(t.strip().lower()) for t in terms if t and t.strip()]
+    if not cleaned:
+        return None
+    return re.compile(r'(?i)\\b(?:' + "|".join(cleaned) + r')\\b')
+
+
+def filter_title(
+    df: pd.DataFrame,
+    queries: List[str],
+    enforce_include: bool,
+    exclude_terms: Optional[List[str]] = None,
+) -> pd.DataFrame:
     if df.empty:
         return df
     t = df["title"].fillna("")
-    exc = t.apply(lambda s: bool(TITLE_EXCLUDE_PAT.search(s)))
+    exclude_re = _build_exclude_title_re(exclude_terms or [])
+    if exclude_re:
+        exc = t.apply(lambda s: bool(exclude_re.search(s)))
+    else:
+        exc = t.apply(lambda s: bool(TITLE_EXCLUDE_PAT.search(s)))
     out = df[~exc].copy()
     if enforce_include:
         phrases = _build_query_phrases(queries)
@@ -66,13 +88,49 @@ def filter_title(df: pd.DataFrame, queries: List[str], enforce_include: bool) ->
     return out
 
 
-def filter_description(df: pd.DataFrame) -> pd.DataFrame:
+def _build_exp_years_re(years: List[int]) -> Optional[re.Pattern]:
+    if not years:
+        return None
+    nums = "|".join(str(y) for y in sorted(set(years)))
+    pattern = rf'''(?ix)
+    (?:\\b|[^a-z])
+    (?:
+        (?:{nums})
+        (?:\\s*[\\+\\-–—]\\s*\\d+)? 
+    )
+    \\s*
+    (?:years?|yrs?|y[.]?)
+    (?:\\s*(?:of|in))?
+    (?:\\s+\\w{{0,3}}){{0,2}}?
+    \\s*(?:experience|exp|work\\s+experience)\\b
+    '''
+    return re.compile(pattern, re.UNICODE)
+
+
+def filter_description(
+    df: pd.DataFrame,
+    exclude_rights: bool,
+    exclude_clearance: bool,
+    exclude_sponsorship: bool,
+    exclude_years: Optional[List[int]] = None,
+) -> pd.DataFrame:
     if df.empty or "description" not in df.columns:
         return df
     desc = df["description"].fillna("")
-    years = desc.str.contains(EXCLUDE_EXP_YEARS_RE, na=False)
-    rights = desc.str.contains(EXCLUDE_RIGHTS_RE, na=False)
-    return df[~(years | rights)].copy()
+    years_re = _build_exp_years_re(exclude_years or [])
+    years = desc.str.contains(years_re, na=False) if years_re else pd.Series(False, index=desc.index)
+    rights = desc.str.contains(EXCLUDE_RIGHTS_RE, na=False) if exclude_rights else pd.Series(False, index=desc.index)
+    clearance = (
+        desc.str.contains(EXCLUDE_CLEARANCE_RE, na=False)
+        if exclude_clearance
+        else pd.Series(False, index=desc.index)
+    )
+    sponsorship = (
+        desc.str.contains(EXCLUDE_SPONSORSHIP_RE, na=False)
+        if exclude_sponsorship
+        else pd.Series(False, index=desc.index)
+    )
+    return df[~(years | rights | clearance | sponsorship)].copy()
 
 
 def keep_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -91,6 +149,32 @@ def keep_columns(df: pd.DataFrame) -> pd.DataFrame:
             out[c] = ""
 
     return out[["job_url", "title", "company", "location", "job_type", "job_level", "description"]].fillna("")
+
+
+def _clean_description_text(text: str) -> str:
+    if not text:
+        return ""
+    s = str(text)
+    # Remove HTML tags
+    s = re.sub(r"<[^>]+>", " ", s)
+    # Remove markdown emphasis and headers
+    s = re.sub(r"[*_`#]{1,}", "", s)
+    # Normalize bullets and separators
+    s = re.sub(r"\s*[•·]\s*", "\n- ", s)
+    s = re.sub(r"\s*-\s*", "\n- ", s)
+    # Collapse whitespace and blank lines
+    s = re.sub(r"[ \t\r\f\v]+", " ", s)
+    s = re.sub(r"\n\s*\n+", "\n\n", s)
+    s = s.strip()
+    return s
+
+
+def clean_description(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty or "description" not in df.columns:
+        return df
+    out = df.copy()
+    out["description"] = out["description"].fillna("").apply(_clean_description_text)
+    return out
 
 
 def fetch_linkedin(queries: List[str], location: str, hours_old: int, results_wanted: int) -> pd.DataFrame:
@@ -150,15 +234,39 @@ def main():
     run = cfg_res.json()["run"]
 
     user_email = run["userEmail"]
-    queries = run["queries"] or []
-    if not isinstance(queries, list):
-        raise RuntimeError("run.queries must be a list")
+    raw_queries = run["queries"] or {}
+    if isinstance(raw_queries, list):
+        queries = raw_queries
+        title_query = queries[0] if queries else ""
+        apply_excludes = bool(run.get("filterDescription") if run.get("filterDescription") is not None else True)
+        exclude_title_terms: List[str] = []
+        exclude_desc_rules: List[str] = []
+    elif isinstance(raw_queries, dict):
+        title_query = (raw_queries.get("title") or "").strip()
+        queries = raw_queries.get("queries") or ([title_query] if title_query else [])
+        apply_excludes = bool(raw_queries.get("applyExcludes", True))
+        exclude_title_terms = raw_queries.get("excludeTitleTerms") or []
+        exclude_desc_rules = raw_queries.get("excludeDescriptionRules") or []
+    else:
+        raise RuntimeError("run.queries must be a list or object")
 
     location = run.get("location") or "Sydney, New South Wales, Australia"
     hours_old = int(run.get("hoursOld") or 48)
     results_wanted = int(run.get("resultsWanted") or 120)
     include_from_queries = bool(run.get("includeFromQueries") or False)
-    filter_desc = bool(run.get("filterDescription") if run.get("filterDescription") is not None else True)
+    filter_desc = apply_excludes
+
+    exclude_rights = apply_excludes and "work_rights" in exclude_desc_rules
+    exclude_clearance = apply_excludes and "security_clearance" in exclude_desc_rules
+    exclude_sponsorship = apply_excludes and "no_sponsorship" in exclude_desc_rules
+    exclude_years: List[int] = []
+    if apply_excludes:
+        if "exp_4" in exclude_desc_rules:
+            exclude_years.append(4)
+        if "exp_5" in exclude_desc_rules:
+            exclude_years.append(5)
+        if "exp_7" in exclude_desc_rules:
+            exclude_years.append(7)
 
     # Mark running
     requests.patch(
@@ -169,13 +277,26 @@ def main():
     ).raise_for_status()
 
     t0 = time.time()
-    df = fetch_linkedin(queries, location, hours_old, results_wanted)
+    search_terms = [title_query] if title_query else queries
+    df = fetch_linkedin(search_terms, location, hours_old, results_wanted)
     if df.empty:
         items: List[Dict[str, Any]] = []
     else:
-        df = filter_title(df, queries, enforce_include=include_from_queries)
+        df = filter_title(
+            df,
+            search_terms,
+            enforce_include=include_from_queries,
+            exclude_terms=exclude_title_terms if apply_excludes else None,
+        )
         if filter_desc:
-            df = filter_description(df)
+            df = filter_description(
+                df,
+                exclude_rights=exclude_rights,
+                exclude_clearance=exclude_clearance,
+                exclude_sponsorship=exclude_sponsorship,
+                exclude_years=exclude_years,
+            )
+        df = clean_description(df)
         df = keep_columns(df)
         items = df.to_dict(orient="records")
 

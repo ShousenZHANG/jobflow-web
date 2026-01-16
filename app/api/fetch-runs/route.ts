@@ -6,28 +6,55 @@ import { prisma } from "@/lib/server/prisma";
 
 export const runtime = "nodejs";
 
-const CreateSchema = z.object({
-  queries: z
-    .union([z.array(z.string().min(1)), z.string().min(1)])
-    .optional()
-    .transform((v) => {
-      if (!v) return [];
-      if (typeof v === "string") {
-        // allow "a, b | c" style input
-        return v
-          .split("|")
-          .flatMap((chunk) => chunk.split(","))
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-      return v.map((s) => s.trim()).filter(Boolean);
-    }),
-  location: z.string().trim().min(1).optional(),
-  hoursOld: z.coerce.number().int().min(1).max(24 * 30).optional(),
-  resultsWanted: z.coerce.number().int().min(1).max(500).optional(),
-  includeFromQueries: z.coerce.boolean().optional().default(false),
-  filterDescription: z.coerce.boolean().optional().default(true),
-});
+const TitleExcludeEnum = z.enum([
+  "senior",
+  "lead",
+  "principal",
+  "staff",
+  "manager",
+  "director",
+  "head",
+  "architect",
+]);
+
+const DescExcludeEnum = z.enum([
+  "work_rights",
+  "security_clearance",
+  "no_sponsorship",
+  "exp_4",
+  "exp_5",
+  "exp_7",
+]);
+
+const CreateSchema = z
+  .object({
+    title: z.string().trim().min(1).optional(),
+    queries: z
+      .union([z.array(z.string().min(1)), z.string().min(1)])
+      .optional()
+      .transform((v) => {
+        if (!v) return [];
+        if (typeof v === "string") {
+          // allow "a, b | c" style input
+          return v
+            .split("|")
+            .flatMap((chunk) => chunk.split(","))
+            .map((s) => s.trim())
+            .filter(Boolean);
+        }
+        return v.map((s) => s.trim()).filter(Boolean);
+      }),
+    location: z.string().trim().min(1).optional(),
+    hoursOld: z.coerce.number().int().min(1).max(24 * 30).optional(),
+    resultsWanted: z.coerce.number().int().min(1).max(500).optional(),
+    applyExcludes: z.coerce.boolean().optional().default(true),
+    excludeTitleTerms: z.array(TitleExcludeEnum).optional().default([]),
+    excludeDescriptionRules: z.array(DescExcludeEnum).optional().default([]),
+  })
+  .refine((data) => (data.title ?? data.queries?.[0])?.trim(), {
+    message: "title is required",
+    path: ["title"],
+  });
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -46,18 +73,27 @@ export async function POST(req: Request) {
     );
   }
 
+  const title = parsed.data.title ?? parsed.data.queries?.[0] ?? "";
+  const queries = parsed.data.queries?.length ? parsed.data.queries : title ? [title] : [];
+
   const run = await prisma.fetchRun.create({
     data: {
       userId,
       userEmail: userEmail.toLowerCase(),
       status: "QUEUED",
       importedCount: 0,
-      queries: parsed.data.queries,
+      queries: {
+        title,
+        queries,
+        applyExcludes: parsed.data.applyExcludes,
+        excludeTitleTerms: parsed.data.excludeTitleTerms,
+        excludeDescriptionRules: parsed.data.excludeDescriptionRules,
+      },
       location: parsed.data.location ?? null,
       hoursOld: parsed.data.hoursOld ?? null,
       resultsWanted: parsed.data.resultsWanted ?? null,
-      includeFromQueries: parsed.data.includeFromQueries,
-      filterDescription: parsed.data.filterDescription,
+      includeFromQueries: false,
+      filterDescription: parsed.data.applyExcludes,
     },
     select: { id: true },
   });

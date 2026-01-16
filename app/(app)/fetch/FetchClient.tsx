@@ -8,20 +8,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
 export function FetchClient() {
   const router = useRouter();
-  const [queriesText, setQueriesText] = useState(
-    '"junior software engineer", "backend engineer", "java developer"',
-  );
+  const [jobTitle, setJobTitle] = useState("Software Engineer");
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
   const [hoursOld, setHoursOld] = useState(48);
   const [resultsWanted, setResultsWanted] = useState(120);
-  const [includeFromQueries, setIncludeFromQueries] = useState(false);
-  const [filterDescription, setFilterDescription] = useState(true);
+  const [applyExcludes, setApplyExcludes] = useState(true);
+  const [excludeTitleTerms, setExcludeTitleTerms] = useState<string[]>([
+    "senior",
+    "lead",
+  ]);
+  const [excludeDescriptionRules, setExcludeDescriptionRules] = useState<string[]>([
+    "work_rights",
+    "security_clearance",
+    "no_sponsorship",
+    "exp_4",
+  ]);
 
   const [runId, setRunId] = useState<string | null>(null);
   const [status, setStatus] = useState<FetchRunStatus | null>(null);
@@ -30,24 +42,22 @@ export function FetchClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const queries = useMemo(() => {
-    return queriesText
-      .split("|")
-      .flatMap((chunk) => chunk.split(","))
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }, [queriesText]);
+    return jobTitle.trim() ? [jobTitle.trim()] : [];
+  }, [jobTitle]);
 
   async function createRun() {
     const res = await fetch("/api/fetch-runs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        title: jobTitle.trim(),
         queries,
         location,
         hoursOld,
         resultsWanted,
-        includeFromQueries,
-        filterDescription,
+        applyExcludes,
+        excludeTitleTerms,
+        excludeDescriptionRules,
       }),
     });
     const json = await res.json().catch(() => ({}));
@@ -99,6 +109,9 @@ export function FetchClient() {
     setIsSubmitting(true);
     setError(null);
     try {
+      if (!jobTitle.trim()) {
+        throw new Error("Please enter one job title to search.");
+      }
       const id = await createRun();
       setRunId(id);
       setStatus("QUEUED");
@@ -124,11 +137,15 @@ export function FetchClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Search queries</CardTitle>
+          <CardTitle className="text-base">Job title</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Label>Queries (comma or | separated)</Label>
-          <Textarea rows={3} value={queriesText} onChange={(e) => setQueriesText(e.target.value)} />
+          <Label>Single title query</Label>
+          <Input
+            placeholder="e.g. Software Engineer"
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+          />
         </CardContent>
       </Card>
 
@@ -170,26 +187,97 @@ export function FetchClient() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Filters</CardTitle>
+            <CardTitle className="text-base">Exclusions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <div className="text-sm font-medium">Filter description</div>
+                <div className="text-sm font-medium">Apply exclusions</div>
                 <div className="text-xs text-muted-foreground">
-                  Exclude years-of-exp / work-rights jobs
+                  Toggle title and description filters.
                 </div>
               </div>
-              <Switch checked={filterDescription} onCheckedChange={setFilterDescription} />
+              <Switch checked={applyExcludes} onCheckedChange={setApplyExcludes} />
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="text-sm font-medium">Include from queries</div>
-                <div className="text-xs text-muted-foreground">
-                  Require title to contain a query phrase
-                </div>
-              </div>
-              <Switch checked={includeFromQueries} onCheckedChange={setIncludeFromQueries} />
+
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">Exclude title terms</div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
+                    {excludeTitleTerms.length ? `Selected (${excludeTitleTerms.length})` : "Select terms"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-64">
+                  {[
+                    { value: "senior", label: "Senior" },
+                    { value: "lead", label: "Lead" },
+                    { value: "principal", label: "Principal" },
+                    { value: "staff", label: "Staff" },
+                    { value: "manager", label: "Manager" },
+                    { value: "director", label: "Director" },
+                    { value: "head", label: "Head" },
+                    { value: "architect", label: "Architect" },
+                  ].map((opt) => {
+                    const checked = excludeTitleTerms.includes(opt.value);
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={opt.value}
+                        checked={checked}
+                        onCheckedChange={(value) => {
+                          setExcludeTitleTerms((prev) =>
+                            value
+                              ? [...prev, opt.value]
+                              : prev.filter((v) => v !== opt.value),
+                          );
+                        }}
+                      >
+                        {opt.label}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">Exclude description rules</div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
+                    {excludeDescriptionRules.length
+                      ? `Selected (${excludeDescriptionRules.length})`
+                      : "Select rules"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-72">
+                  {[
+                    { value: "work_rights", label: "Work rights / PR required" },
+                    { value: "security_clearance", label: "Security clearance" },
+                    { value: "no_sponsorship", label: "No sponsorship" },
+                    { value: "exp_4", label: "Experience 4+ years" },
+                    { value: "exp_5", label: "Experience 5+ years" },
+                    { value: "exp_7", label: "Experience 7+ years" },
+                  ].map((opt) => {
+                    const checked = excludeDescriptionRules.includes(opt.value);
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={opt.value}
+                        checked={checked}
+                        onCheckedChange={(value) => {
+                          setExcludeDescriptionRules((prev) =>
+                            value
+                              ? [...prev, opt.value]
+                              : prev.filter((v) => v !== opt.value),
+                          );
+                        }}
+                      >
+                        {opt.label}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </CardContent>
         </Card>
