@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -15,7 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { X } from "lucide-react";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -48,11 +46,9 @@ export function FetchClient() {
 
   const [runId, setRunId] = useState<string | null>(null);
   const [status, setStatus] = useState<FetchRunStatus | null>(null);
-  const [importedCount, setImportedCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPanel, setShowPanel] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [hasActiveRun, setHasActiveRun] = useState(false);
 
   const queries = useMemo(() => {
     return jobTitle.trim() ? [jobTitle.trim()] : [];
@@ -91,22 +87,6 @@ export function FetchClient() {
     return json.run as { status: FetchRunStatus; importedCount: number; error: string | null };
   }
 
-  async function cancelRun() {
-    if (!runId) {
-      setShowPanel(false);
-      return;
-    }
-    try {
-      const res = await fetch(`/api/fetch-runs/${runId}/cancel`, { method: "POST" });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to cancel run");
-      setStatus("FAILED");
-      setError("Cancelled by user");
-    } catch (e: any) {
-      setError(e?.message || "Failed to cancel run");
-    }
-  }
-
   useEffect(() => {
     if (!runId) return;
     let alive = true;
@@ -115,7 +95,6 @@ export function FetchClient() {
         const r = await fetchRun(runId);
         if (!alive) return;
         setStatus(r.status);
-        setImportedCount(r.importedCount ?? 0);
         setError(r.error ?? null);
         if (r.status === "SUCCEEDED") {
           clearInterval(t);
@@ -135,11 +114,16 @@ export function FetchClient() {
   }, [runId]);
 
   useEffect(() => {
-    if (!showPanel) return;
-    if (status === "SUCCEEDED" || status === "FAILED") {
-      setElapsedSeconds((s) => s);
+    const stored = localStorage.getItem("jobflow_fetch_run_id");
+    if (!stored) {
+      setHasActiveRun(false);
+      return;
     }
-  }, [status, showPanel]);
+    setHasActiveRun(true);
+    if (!runId) {
+      setRunId(stored);
+    }
+  }, [runId]);
 
   async function onSubmit() {
     setIsSubmitting(true);
@@ -151,8 +135,9 @@ export function FetchClient() {
       const id = await createRun();
       setRunId(id);
       setStatus("QUEUED");
-      setElapsedSeconds(0);
-      setShowPanel(true);
+      localStorage.setItem("jobflow_fetch_run_id", id);
+      localStorage.setItem("jobflow_fetch_started_at", String(Date.now()));
+      setHasActiveRun(true);
       await triggerRun(id);
       setStatus("RUNNING");
     } catch (e: any) {
@@ -162,22 +147,7 @@ export function FetchClient() {
     }
   }
 
-  useEffect(() => {
-    if (!showPanel) return;
-    if (status !== "RUNNING") return;
-    const t = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, [status, showPanel]);
-
-  const progressValue =
-    status === "SUCCEEDED"
-      ? 100
-      : status === "FAILED"
-        ? 0
-        : status === "RUNNING"
-          ? Math.min(92, 20 + Math.floor(elapsedSeconds * 2))
-          : 10;
-  const isRunning = status === "RUNNING" || status === "QUEUED";
+  const isRunning = status === "RUNNING" || status === "QUEUED" || hasActiveRun;
 
   return (
     <div className="flex flex-col gap-6">
@@ -342,54 +312,6 @@ export function FetchClient() {
           View jobs
         </Button>
       </div>
-
-      {showPanel ? (
-        <div className="fixed bottom-6 right-6 z-50 w-[320px] rounded-xl border bg-background p-4 shadow-xl">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold">Fetch progress</div>
-            {!isRunning ? (
-              <button
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => setShowPanel(false)}
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            ) : null}
-          </div>
-          <div className="mt-2 space-y-2">
-            <div className="text-xs text-muted-foreground">
-              {status === "RUNNING"
-                ? "We are collecting and importing results."
-                : status === "SUCCEEDED"
-                  ? "Completed successfully."
-                  : status === "FAILED"
-                    ? "Fetch failed or cancelled."
-                    : "Queued and starting soon."}
-            </div>
-            <Progress
-              value={progressValue}
-              className="h-2 bg-emerald-100"
-              indicatorClassName="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.45)]"
-            />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{progressValue}%</span>
-              <span>Elapsed {elapsedSeconds}s</span>
-            </div>
-            {status === "SUCCEEDED" ? (
-              <div className="text-sm text-emerald-600">
-                Imported {importedCount} new jobs.
-              </div>
-            ) : null}
-            {error ? <div className="text-sm text-destructive">{error}</div> : null}
-            {isRunning ? (
-              <Button variant="destructive" className="w-full" onClick={cancelRun}>
-                Cancel fetch
-              </Button>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
