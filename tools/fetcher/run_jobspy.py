@@ -94,15 +94,33 @@ def _build_exp_years_re(years: List[int]) -> Optional[re.Pattern]:
     nums = "|".join(str(y) for y in sorted(set(years)))
     pattern = rf'''(?ix)
     (?:\\b|[^a-z])
+    (?:minimum\\s+of|at\\s+least|minimum)?
+    \\s*
     (?:
         (?:{nums})
         (?:\\s*[\\+\\-–—]\\s*\\d+)? 
     )
     \\s*
     (?:years?|yrs?|y[.]?)
-    (?:\\s*(?:of|in))?
+    (?:\\s*(?:of))?
     (?:\\s+\\w{{0,3}}){{0,2}}?
-    \\s*(?:experience|exp|work\\s+experience)\\b
+    \\s*(?:
+        experience|exp|work\\s+experience|industry\\s+experience|professional\\s+experience|
+        relevant\\s+experience|hands[-\\s]?on\\s+experience
+    )\\b
+    |
+    (?:\\b|[^a-z])
+    (?:minimum\\s+of|at\\s+least|minimum)?
+    \\s*
+    (?:
+        (?:{nums})
+        (?:\\s*[\\+\\-–—]\\s*\\d+)? 
+    )
+    \\s*
+    (?:years?|yrs?|y[.]?)
+    \\s*(?:in|within|as|on)
+    (?:\\s+\\w{{0,4}}){{0,5}}?
+    \\s*(?:role|roles|position|industry|field|capacity|function|environment)\\b
     '''
     return re.compile(pattern, re.UNICODE)
 
