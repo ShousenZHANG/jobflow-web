@@ -98,6 +98,11 @@ export function JobsClient({
     }
   }
 
+  function scrollToTop() {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   useEffect(() => {
     if (
       skipInitialFetchRef.current &&
@@ -382,6 +387,7 @@ export function JobsClient({
               <PaginationPrevious
                 onClick={() => {
                   if (pageIndex > 0) {
+                    scrollToTop();
                     void fetchPage(cursorStack[pageIndex - 1] ?? null, pageIndex - 1);
                   }
                 }}
@@ -393,6 +399,7 @@ export function JobsClient({
               <PaginationNext
                 onClick={() => {
                   if (nextCursor) {
+                    scrollToTop();
                     void fetchPage(nextCursor, pageIndex + 1);
                   }
                 }}
