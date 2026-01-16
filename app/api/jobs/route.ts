@@ -54,28 +54,33 @@ export async function GET(req: Request) {
     : null;
   const locationFilters = stateKey ? STATE_LOCATION_MAP[stateKey] : null;
 
+  const andClauses: any[] = [];
+  if (q) {
+    andClauses.push({
+      OR: [
+        { title: { contains: q, mode: "insensitive" } },
+        { company: { contains: q, mode: "insensitive" } },
+        { location: { contains: q, mode: "insensitive" } },
+      ],
+    });
+  }
+  if (location) {
+    if (locationFilters && locationFilters.length) {
+      andClauses.push({
+        OR: locationFilters.map((loc) => ({
+          location: { contains: loc, mode: "insensitive" },
+        })),
+      });
+    } else {
+      andClauses.push({ location: { contains: location, mode: "insensitive" } });
+    }
+  }
+
   const jobs = await prisma.job.findMany({
     where: {
       userId,
       ...(status ? { status } : {}),
-      ...(q
-        ? {
-            OR: [
-              { title: { contains: q, mode: "insensitive" } },
-              { company: { contains: q, mode: "insensitive" } },
-              { location: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-      ...(location
-        ? locationFilters && locationFilters.length
-          ? {
-              OR: locationFilters.map((loc) => ({
-                location: { contains: loc, mode: "insensitive" },
-              })),
-            }
-          : { location: { contains: location, mode: "insensitive" } }
-        : {}),
+      ...(andClauses.length ? { AND: andClauses } : {}),
     },
     orderBy,
     take: limit,
