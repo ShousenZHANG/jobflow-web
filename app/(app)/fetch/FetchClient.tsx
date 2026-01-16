@@ -15,16 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { X } from "lucide-react";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -38,12 +29,21 @@ export function FetchClient() {
   const [excludeTitleTerms, setExcludeTitleTerms] = useState<string[]>([
     "senior",
     "lead",
+    "principal",
+    "staff",
+    "manager",
+    "director",
+    "head",
+    "architect",
   ]);
   const [excludeDescriptionRules, setExcludeDescriptionRules] = useState<string[]>([
     "work_rights",
     "security_clearance",
     "no_sponsorship",
+    "exp_3",
     "exp_4",
+    "exp_5",
+    "exp_7",
   ]);
 
   const [runId, setRunId] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export function FetchClient() {
   const [importedCount, setImportedCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const queries = useMemo(() => {
@@ -93,7 +93,7 @@ export function FetchClient() {
 
   async function cancelRun() {
     if (!runId) {
-      setDialogOpen(false);
+      setShowPanel(false);
       return;
     }
     try {
@@ -135,11 +135,11 @@ export function FetchClient() {
   }, [runId]);
 
   useEffect(() => {
-    if (!dialogOpen) return;
+    if (!showPanel) return;
     if (status === "SUCCEEDED" || status === "FAILED") {
       setElapsedSeconds((s) => s);
     }
-  }, [status, dialogOpen]);
+  }, [status, showPanel]);
 
   async function onSubmit() {
     setIsSubmitting(true);
@@ -152,7 +152,7 @@ export function FetchClient() {
       setRunId(id);
       setStatus("QUEUED");
       setElapsedSeconds(0);
-      setDialogOpen(true);
+      setShowPanel(true);
       await triggerRun(id);
       setStatus("RUNNING");
     } catch (e: any) {
@@ -163,11 +163,11 @@ export function FetchClient() {
   }
 
   useEffect(() => {
-    if (!dialogOpen) return;
+    if (!showPanel) return;
     if (status !== "RUNNING") return;
     const t = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
     return () => clearInterval(t);
-  }, [status, dialogOpen]);
+  }, [status, showPanel]);
 
   const progressValue =
     status === "SUCCEEDED"
@@ -177,7 +177,7 @@ export function FetchClient() {
         : status === "RUNNING"
           ? Math.min(92, 20 + Math.floor(elapsedSeconds * 2))
           : 10;
-  const isBlocking = status === "RUNNING" || status === "QUEUED";
+  const isRunning = status === "RUNNING" || status === "QUEUED";
 
   return (
     <div className="flex flex-col gap-6">
@@ -272,6 +272,7 @@ export function FetchClient() {
                       <DropdownMenuCheckboxItem
                         key={opt.value}
                         checked={checked}
+                        onSelect={(e) => e.preventDefault()}
                         onCheckedChange={(value) => {
                           setExcludeTitleTerms((prev) =>
                             value
@@ -313,6 +314,7 @@ export function FetchClient() {
                       <DropdownMenuCheckboxItem
                         key={opt.value}
                         checked={checked}
+                        onSelect={(e) => e.preventDefault()}
                         onCheckedChange={(value) => {
                           setExcludeDescriptionRules((prev) =>
                             value
@@ -333,7 +335,7 @@ export function FetchClient() {
       </Card>
 
       <div className="flex items-center gap-3">
-        <Button onClick={onSubmit} disabled={isSubmitting}>
+        <Button onClick={onSubmit} disabled={isSubmitting || isRunning}>
           {isSubmitting ? "Starting..." : "Start fetch"}
         </Button>
         <Button variant="outline" onClick={() => router.push("/jobs")}>
@@ -341,17 +343,22 @@ export function FetchClient() {
         </Button>
       </div>
 
-      <AlertDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          if (!open && isBlocking) return;
-          setDialogOpen(open);
-        }}
-      >
-        <AlertDialogContent className="border bg-background text-foreground shadow-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Fetching jobs</AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
+      {showPanel ? (
+        <div className="fixed bottom-6 right-6 z-50 w-[320px] rounded-xl border bg-background p-4 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold">Fetch progress</div>
+            {!isRunning ? (
+              <button
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setShowPanel(false)}
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
+          </div>
+          <div className="mt-2 space-y-2">
+            <div className="text-xs text-muted-foreground">
               {status === "RUNNING"
                 ? "We are collecting and importing results."
                 : status === "SUCCEEDED"
@@ -359,46 +366,30 @@ export function FetchClient() {
                   : status === "FAILED"
                     ? "Fetch failed or cancelled."
                     : "Queued and starting soon."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-3">
-            <div className="h-1 w-full rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 animate-pulse" />
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>Status</span>
-              <span>{status ?? "QUEUED"}</span>
             </div>
             <Progress
               value={progressValue}
               className="h-2 bg-emerald-100"
               indicatorClassName="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.45)]"
             />
-            <div className="text-sm text-foreground">
-              {progressValue}% complete
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{progressValue}%</span>
+              <span>Elapsed {elapsedSeconds}s</span>
             </div>
-            <div className="text-xs text-muted-foreground">Elapsed: {elapsedSeconds}s</div>
             {status === "SUCCEEDED" ? (
               <div className="text-sm text-emerald-600">
                 Imported {importedCount} new jobs.
               </div>
             ) : null}
             {error ? <div className="text-sm text-destructive">{error}</div> : null}
-          </div>
-          <AlertDialogFooter>
-            {isBlocking ? (
-              <AlertDialogAction
-                className="bg-rose-500 text-white hover:bg-rose-400"
-                onClick={cancelRun}
-              >
+            {isRunning ? (
+              <Button variant="destructive" className="w-full" onClick={cancelRun}>
                 Cancel fetch
-              </AlertDialogAction>
-            ) : (
-              <AlertDialogCancel className="border border-input bg-background hover:bg-accent">
-                Close
-              </AlertDialogCancel>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
