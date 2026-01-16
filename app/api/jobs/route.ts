@@ -35,8 +35,8 @@ export async function GET(req: Request) {
 
   const orderBy =
     sort === "oldest"
-      ? [{ createdAt: "asc" }, { id: "asc" }]
-      : [{ createdAt: "desc" }, { id: "desc" }];
+      ? [{ createdAt: "asc" as const }, { id: "asc" as const }]
+      : [{ createdAt: "desc" as const }, { id: "desc" as const }];
 
   const jobs = await prisma.job.findMany({
     where: {
