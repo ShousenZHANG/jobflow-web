@@ -38,18 +38,21 @@ export async function GET(req: Request) {
       ? [{ createdAt: "asc" as const }, { id: "asc" as const }]
       : [{ createdAt: "desc" as const }, { id: "desc" as const }];
 
-  const locationFilters = location?.startsWith("state:")
-    ? {
-        NSW: ["NSW", "New South Wales", "Sydney", "Newcastle", "Wollongong"],
-        VIC: ["VIC", "Victoria", "Melbourne", "Geelong"],
-        QLD: ["QLD", "Queensland", "Brisbane", "Gold Coast", "Sunshine Coast"],
-        WA: ["WA", "Western Australia", "Perth"],
-        SA: ["SA", "South Australia", "Adelaide"],
-        ACT: ["ACT", "Australian Capital Territory", "Canberra"],
-        TAS: ["TAS", "Tasmania", "Hobart"],
-        NT: ["NT", "Northern Territory", "Darwin"],
-      }[location.replace("state:", "") as keyof any] || []
+  const STATE_LOCATION_MAP = {
+    NSW: ["NSW", "New South Wales", "Sydney", "Newcastle", "Wollongong"],
+    VIC: ["VIC", "Victoria", "Melbourne", "Geelong"],
+    QLD: ["QLD", "Queensland", "Brisbane", "Gold Coast", "Sunshine Coast"],
+    WA: ["WA", "Western Australia", "Perth"],
+    SA: ["SA", "South Australia", "Adelaide"],
+    ACT: ["ACT", "Australian Capital Territory", "Canberra"],
+    TAS: ["TAS", "Tasmania", "Hobart"],
+    NT: ["NT", "Northern Territory", "Darwin"],
+  } as const;
+  type StateKey = keyof typeof STATE_LOCATION_MAP;
+  const stateKey = location?.startsWith("state:")
+    ? (location.replace("state:", "") as StateKey)
     : null;
+  const locationFilters = stateKey ? STATE_LOCATION_MAP[stateKey] : null;
 
   const jobs = await prisma.job.findMany({
     where: {
