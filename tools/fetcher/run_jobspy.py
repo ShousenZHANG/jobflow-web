@@ -155,6 +155,13 @@ def _clean_description_text(text: str) -> str:
     if not text:
         return ""
     s = str(text)
+    # Remove common escape backslashes (e.g., "2\+")
+    s = s.replace("\\+", "+").replace("\\-", "-").replace("\\&", "&")
+    s = s.replace("\\/", "/").replace("\\(", "(").replace("\\)", ")")
+    s = s.replace("\\_", "_").replace("\\*", "*").replace("\\#", "#")
+    s = s.replace("\\'", "'").replace('\\"', '"')
+    # Drop stray backslashes that remain
+    s = s.replace("\\", "")
     # Remove HTML tags
     s = re.sub(r"<[^>]+>", " ", s)
     # Remove markdown emphasis and headers
