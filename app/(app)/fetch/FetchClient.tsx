@@ -303,6 +303,7 @@ export function FetchClient() {
                     { value: "work_rights", label: "Work rights / PR required" },
                     { value: "security_clearance", label: "Security clearance" },
                     { value: "no_sponsorship", label: "No sponsorship" },
+                    { value: "exp_3", label: "Experience 3+ years" },
                     { value: "exp_4", label: "Experience 4+ years" },
                     { value: "exp_5", label: "Experience 5+ years" },
                     { value: "exp_7", label: "Experience 7+ years" },

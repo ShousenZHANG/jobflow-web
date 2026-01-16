@@ -261,21 +261,24 @@ def main():
     hours_old = int(run.get("hoursOld") or 48)
     results_wanted = int(run.get("resultsWanted") or 120)
     include_from_queries = bool(run.get("includeFromQueries") or False)
-    filter_desc = apply_excludes and bool(
-        exclude_rights or exclude_clearance or exclude_sponsorship or exclude_years
-    )
 
     exclude_rights = apply_excludes and "work_rights" in exclude_desc_rules
     exclude_clearance = apply_excludes and "security_clearance" in exclude_desc_rules
     exclude_sponsorship = apply_excludes and "no_sponsorship" in exclude_desc_rules
     exclude_years: List[int] = []
     if apply_excludes:
+        if "exp_3" in exclude_desc_rules:
+            exclude_years.append(3)
         if "exp_4" in exclude_desc_rules:
             exclude_years.append(4)
         if "exp_5" in exclude_desc_rules:
             exclude_years.append(5)
         if "exp_7" in exclude_desc_rules:
             exclude_years.append(7)
+
+    filter_desc = apply_excludes and bool(
+        exclude_rights or exclude_clearance or exclude_sponsorship or exclude_years
+    )
 
     # Mark running
     requests.patch(

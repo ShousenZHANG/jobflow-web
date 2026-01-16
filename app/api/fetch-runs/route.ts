@@ -21,6 +21,7 @@ const DescExcludeEnum = z.enum([
   "work_rights",
   "security_clearance",
   "no_sponsorship",
+  "exp_3",
   "exp_4",
   "exp_5",
   "exp_7",
