@@ -38,6 +38,9 @@ export function JobsClient() {
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
+  const [pageSize, setPageSize] = useState(20);
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [locationFilter, setLocationFilter] = useState("ALL");
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
@@ -46,11 +49,13 @@ export function JobsClient() {
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
-    sp.set("limit", "20");
+    sp.set("limit", String(pageSize));
     if (statusFilter !== "ALL") sp.set("status", statusFilter);
     if (debouncedQ.trim()) sp.set("q", debouncedQ.trim());
+    if (locationFilter !== "ALL") sp.set("location", locationFilter);
+    sp.set("sort", sortOrder);
     return sp.toString();
-  }, [statusFilter, debouncedQ]);
+  }, [statusFilter, debouncedQ, pageSize, sortOrder, locationFilter]);
 
   async function fetchPage(cursor: string | null, nextIndex: number) {
     setLoading(true);
@@ -182,7 +187,7 @@ export function JobsClient() {
       </div>
 
       <Card>
-        <CardContent className="grid gap-4 p-4 md:grid-cols-[1.5fr_1fr_0.6fr]">
+        <CardContent className="grid gap-4 p-4 md:grid-cols-[1.2fr_1fr_1fr]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Search</div>
             <Input
@@ -202,6 +207,66 @@ export function JobsClient() {
                 <SelectItem value="NEW">New</SelectItem>
                 <SelectItem value="APPLIED">Applied</SelectItem>
                 <SelectItem value="REJECTED">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Location</div>
+            <Select value={locationFilter} onValueChange={(v) => setLocationFilter(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="All locations" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All locations</SelectItem>
+                {[
+                  "Sydney, NSW",
+                  "Melbourne, VIC",
+                  "Brisbane, QLD",
+                  "Perth, WA",
+                  "Adelaide, SA",
+                  "Canberra, ACT",
+                  "Hobart, TAS",
+                  "Darwin, NT",
+                  "Gold Coast, QLD",
+                  "Newcastle, NSW",
+                ].map((loc) => (
+                  <SelectItem key={loc} value={loc}>
+                    {loc}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="grid gap-4 p-4 md:grid-cols-[1fr_1fr_0.6fr]">
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Results per page</div>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => setPageSize(Number(v))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Sort by time</div>
+            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as any)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
               </SelectContent>
             </Select>
           </div>

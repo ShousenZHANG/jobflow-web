@@ -11,6 +11,8 @@ const QuerySchema = z.object({
   cursor: z.string().uuid().optional(),
   status: z.enum(["NEW", "APPLIED", "REJECTED"]).optional(),
   q: z.string().trim().min(1).max(80).optional(),
+  location: z.string().trim().min(1).max(80).optional(),
+  sort: z.enum(["newest", "oldest"]).optional().default("newest"),
 });
 
 export async function GET(req: Request) {
@@ -29,7 +31,12 @@ export async function GET(req: Request) {
     );
   }
 
-  const { limit, cursor, status, q } = parsed.data;
+  const { limit, cursor, status, q, location, sort } = parsed.data;
+
+  const orderBy =
+    sort === "oldest"
+      ? [{ createdAt: "asc" }, { id: "asc" }]
+      : [{ createdAt: "desc" }, { id: "desc" }];
 
   const jobs = await prisma.job.findMany({
     where: {
@@ -43,8 +50,11 @@ export async function GET(req: Request) {
             ],
           }
         : {}),
+      ...(location
+        ? { location: { contains: location, mode: "insensitive" } }
+        : {}),
     },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    orderBy,
     take: limit,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     select: {
