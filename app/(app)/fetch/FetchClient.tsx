@@ -109,10 +109,10 @@ export function FetchClient() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-2xl border bg-white p-5 shadow-sm">
-        <div className="text-sm text-zinc-600 mb-2">Queries (comma or | separated)</div>
+      <div className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 shadow-sm glow">
+        <div className="text-sm text-zinc-400 mb-2">Queries (comma or | separated)</div>
         <textarea
-          className="w-full rounded-xl border p-3"
+          className="w-full rounded-xl border border-emerald-500/20 bg-zinc-950 p-3 text-emerald-100"
           rows={3}
           value={queriesText}
           onChange={(e) => setQueriesText(e.target.value)}
@@ -120,38 +120,38 @@ export function FetchClient() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="rounded-2xl border bg-white p-5 flex flex-col gap-2 shadow-sm">
-          <div className="text-sm text-zinc-600">Location</div>
+        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex flex-col gap-2 shadow-sm">
+          <div className="text-sm text-zinc-400">Location</div>
           <input
-            className="rounded-xl border p-2"
+            className="rounded-xl border border-emerald-500/20 bg-zinc-950 p-2 text-emerald-100"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
         </label>
 
-        <label className="rounded-2xl border bg-white p-5 flex flex-col gap-2 shadow-sm">
-          <div className="text-sm text-zinc-600">Hours old</div>
+        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex flex-col gap-2 shadow-sm">
+          <div className="text-sm text-zinc-400">Hours old</div>
           <input
-            className="rounded-xl border p-2"
+            className="rounded-xl border border-emerald-500/20 bg-zinc-950 p-2 text-emerald-100"
             type="number"
             value={hoursOld}
             onChange={(e) => setHoursOld(Number(e.target.value))}
           />
         </label>
 
-        <label className="rounded-2xl border bg-white p-5 flex flex-col gap-2 shadow-sm">
-          <div className="text-sm text-zinc-600">Results wanted (per query)</div>
+        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex flex-col gap-2 shadow-sm">
+          <div className="text-sm text-zinc-400">Results wanted (per query)</div>
           <input
-            className="rounded-xl border p-2"
+            className="rounded-xl border border-emerald-500/20 bg-zinc-950 p-2 text-emerald-100"
             type="number"
             value={resultsWanted}
             onChange={(e) => setResultsWanted(Number(e.target.value))}
           />
         </label>
 
-        <label className="rounded-2xl border bg-white p-5 flex items-center justify-between gap-2 shadow-sm">
+        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex items-center justify-between gap-2 shadow-sm">
           <div>
-            <div className="text-sm text-zinc-600">Filter description</div>
+            <div className="text-sm text-zinc-400">Filter description</div>
             <div className="text-xs text-zinc-500">Exclude years-of-exp / work-rights jobs</div>
           </div>
           <input
@@ -161,9 +161,9 @@ export function FetchClient() {
           />
         </label>
 
-        <label className="rounded-2xl border bg-white p-5 flex items-center justify-between gap-2 shadow-sm md:col-span-2">
+        <label className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 flex items-center justify-between gap-2 shadow-sm md:col-span-2">
           <div>
-            <div className="text-sm text-zinc-600">Include from queries</div>
+            <div className="text-sm text-zinc-400">Include from queries</div>
             <div className="text-xs text-zinc-500">Require title to contain a query phrase</div>
           </div>
           <input
@@ -176,34 +176,34 @@ export function FetchClient() {
 
       <div className="flex items-center gap-3">
         <button
-          className="rounded-full border px-4 py-2 disabled:opacity-50"
+          className="rounded-full border border-emerald-500/30 px-4 py-2 text-emerald-200 disabled:opacity-50"
           onClick={onSubmit}
           disabled={isSubmitting}
         >
           {isSubmitting ? "Starting..." : "Start fetch"}
         </button>
 
-        <button className="text-sm underline" onClick={() => router.push("/jobs")}>
+        <button className="text-sm text-emerald-200 underline" onClick={() => router.push("/jobs")}>
           View jobs
         </button>
       </div>
 
-      <div className="rounded-2xl border bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-zinc-600">Run</div>
+          <div className="text-sm text-zinc-400">Run</div>
           <span className="text-xs text-zinc-500">{status ?? "-"}</span>
         </div>
-        <div className="font-mono text-sm mt-2">
+        <div className="font-mono text-sm mt-2 text-emerald-200">
           id={runId ?? "-"} imported={importedCount}
         </div>
 
         <div className="mt-4">
           <Progress.Root
-            className="relative h-2 w-full overflow-hidden rounded-full bg-zinc-100"
+            className="relative h-2 w-full overflow-hidden rounded-full bg-zinc-900"
             value={progressValue}
           >
             <Progress.Indicator
-              className={`h-full w-full rounded-full bg-zinc-900 transition ${
+              className={`h-full w-full rounded-full bg-emerald-400 transition ${
                 status === "RUNNING" ? "animate-pulse" : ""
               }`}
               style={{ transform: `translateX(-${100 - progressValue}%)` }}
@@ -220,7 +220,7 @@ export function FetchClient() {
           </div>
         </div>
 
-        {error ? <div className="text-sm text-red-600 mt-2">{error}</div> : null}
+        {error ? <div className="text-sm text-rose-300 mt-2">{error}</div> : null}
       </div>
     </div>
   );

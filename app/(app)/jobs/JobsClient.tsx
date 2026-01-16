@@ -93,13 +93,13 @@ export function JobsClient() {
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur">
+      <section className="rounded-2xl border border-emerald-500/20 bg-zinc-950/80 p-5 shadow-sm backdrop-blur glow">
         <div className="flex flex-wrap items-end gap-3 justify-between">
           <div className="flex flex-wrap gap-3">
             <label className="flex flex-col gap-1">
               <span className="text-xs text-zinc-600">Search</span>
               <input
-                className="rounded-full border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                className="rounded-full border border-emerald-500/20 bg-zinc-950 px-4 py-2 text-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                 placeholder="title/company..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -109,7 +109,7 @@ export function JobsClient() {
             <label className="flex flex-col gap-1">
               <span className="text-xs text-zinc-600">Status</span>
               <select
-                className="rounded-full border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                className="rounded-full border border-emerald-500/20 bg-zinc-950 px-4 py-2 text-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
               >
@@ -123,22 +123,26 @@ export function JobsClient() {
         </div>
       </section>
 
-      {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
+      {error ? (
+        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">
+          {error}
+        </div>
+      ) : null}
 
       <section className="grid gap-3">
         {loading && items.length === 0 ? (
           <>
-            <div className="rounded-2xl border bg-white p-4 shadow-sm shimmer h-24" />
-            <div className="rounded-2xl border bg-white p-4 shadow-sm shimmer h-24" />
-            <div className="rounded-2xl border bg-white p-4 shadow-sm shimmer h-24" />
+            <div className="rounded-2xl border border-emerald-500/10 bg-zinc-950 p-4 shadow-sm shimmer h-24" />
+            <div className="rounded-2xl border border-emerald-500/10 bg-zinc-950 p-4 shadow-sm shimmer h-24" />
+            <div className="rounded-2xl border border-emerald-500/10 bg-zinc-950 p-4 shadow-sm shimmer h-24" />
           </>
         ) : null}
         {items.map((it) => (
-          <div key={it.id} className="rounded-2xl border bg-white p-4 shadow-sm">
+          <div key={it.id} className="rounded-2xl border border-emerald-500/15 bg-zinc-950 p-4 shadow-sm">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
-                <div className="text-lg font-semibold">{it.title}</div>
-                <div className="text-sm text-zinc-600">
+                <div className="text-lg font-semibold text-emerald-100">{it.title}</div>
+                <div className="text-sm text-zinc-400">
                   {it.company ?? "-"} · {it.location ?? "-"}
                 </div>
                 <div className="text-xs text-zinc-500">
@@ -150,7 +154,7 @@ export function JobsClient() {
                   {it.status}
                 </span>
                 <select
-                  className="rounded-full border px-3 py-1 text-xs"
+                  className="rounded-full border border-emerald-500/20 bg-zinc-950 px-3 py-1 text-xs text-emerald-100"
                   value={it.status}
                   onChange={(e) => updateStatus(it.id, e.target.value as JobStatus)}
                 >
@@ -158,7 +162,7 @@ export function JobsClient() {
                   <option value="APPLIED">APPLIED</option>
                   <option value="REJECTED">REJECTED</option>
                 </select>
-                <a className="text-xs underline" href={it.jobUrl} target="_blank" rel="noreferrer">
+                <a className="text-xs text-emerald-200 underline" href={it.jobUrl} target="_blank" rel="noreferrer">
                   Open link
                 </a>
               </div>
@@ -167,7 +171,7 @@ export function JobsClient() {
         ))}
 
         {!items.length && !loading ? (
-          <div className="rounded-2xl border bg-white p-6 text-sm text-zinc-500">
+          <div className="rounded-2xl border border-emerald-500/20 bg-zinc-950 p-6 text-sm text-zinc-400">
             No jobs yet.
           </div>
         ) : null}
@@ -175,13 +179,13 @@ export function JobsClient() {
 
       <div className="flex items-center gap-3">
         <button
-          className="rounded-full border px-4 py-2 disabled:opacity-50"
+          className="rounded-full border border-emerald-500/30 px-4 py-2 text-emerald-200 disabled:opacity-50"
           disabled={loading || !nextCursor}
           onClick={() => fetchPage(nextCursor, false)}
         >
           {loading ? "Loading..." : nextCursor ? "Load more" : "No more"}
         </button>
-        <a className="text-sm underline" href="/fetch">
+        <a className="text-sm text-emerald-200 underline" href="/fetch">
           Fetch more
         </a>
       </div>
