@@ -388,6 +388,7 @@ export function JobsClient({
                 onClick={() => {
                   if (pageIndex > 0) {
                     scrollToTop();
+                    setItems([]);
                     void fetchPage(cursorStack[pageIndex - 1] ?? null, pageIndex - 1);
                   }
                 }}
@@ -400,6 +401,7 @@ export function JobsClient({
                 onClick={() => {
                   if (nextCursor) {
                     scrollToTop();
+                    setItems([]);
                     void fetchPage(nextCursor, pageIndex + 1);
                   }
                 }}
