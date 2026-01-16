@@ -309,15 +309,21 @@ def main():
         df = keep_columns(df)
         items = df.to_dict(orient="records")
 
-    # Import into DB via Vercel API
-    imp_res = requests.post(
-        f"{base}/api/admin/import",
-        headers=headers_secret("IMPORT_SECRET", "x-import-secret"),
-        data=json.dumps({"userEmail": user_email, "items": items}),
-        timeout=120,
-    )
-    imp_res.raise_for_status()
-    imported = int(imp_res.json().get("imported", 0))
+    # Import into DB via Vercel API (chunked to avoid payload/time limits)
+    imported = 0
+    if items:
+        batch_size = 50
+        for i in range(0, len(items), batch_size):
+            batch = items[i : i + batch_size]
+            imp_res = requests.post(
+                f"{base}/api/admin/import",
+                headers=headers_secret("IMPORT_SECRET", "x-import-secret"),
+                data=json.dumps({"userEmail": user_email, "items": batch}),
+                timeout=120,
+            )
+            if not imp_res.ok:
+                raise RuntimeError(f"import failed status={imp_res.status_code} body={imp_res.text}")
+            imported += int(imp_res.json().get("imported", 0))
 
     # Update run
     requests.patch(
