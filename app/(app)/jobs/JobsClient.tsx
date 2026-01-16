@@ -3,12 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -164,80 +163,64 @@ export function JobsClient() {
         </div>
       ) : null}
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[30%]">Role</TableHead>
-                  <TableHead className="w-[18%]">Company</TableHead>
-                  <TableHead className="w-[18%]">Location</TableHead>
-                  <TableHead className="w-[12%]">Type</TableHead>
-                  <TableHead className="w-[10%]">Status</TableHead>
-                  <TableHead className="w-[12%] text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading && items.length === 0 ? (
-                  Array.from({ length: 8 }).map((_, idx) => (
-                    <TableRow key={`s-${idx}`}>
-                      <TableCell colSpan={6}>
-                        <Skeleton className="h-8 w-full" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : null}
-                {items.map((it) => (
-                  <TableRow key={it.id}>
-                    <TableCell>
-                      <div className="font-medium">{it.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {it.jobLevel ?? "Unknown"}
-                      </div>
-                    </TableCell>
-                    <TableCell>{it.company ?? "-"}</TableCell>
-                    <TableCell>{it.location ?? "-"}</TableCell>
-                    <TableCell>{it.jobType ?? "Unknown"}</TableCell>
-                    <TableCell>
-                      <Badge className={statusClass[it.status]}>{it.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Select
-                          value={it.status}
-                          onValueChange={(v) => updateStatus(it.id, v as JobStatus)}
-                        >
-                          <SelectTrigger className="h-8 w-28">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="NEW">New</SelectItem>
-                            <SelectItem value="APPLIED">Applied</SelectItem>
-                            <SelectItem value="REJECTED">Rejected</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button asChild variant="ghost" size="sm">
-                          <a href={it.jobUrl} target="_blank" rel="noreferrer">
-                            Open
-                          </a>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {!items.length && !loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                      No jobs yet.
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      <section className="grid gap-4">
+        {loading && items.length === 0 ? (
+          Array.from({ length: 6 }).map((_, idx) => (
+            <Card key={`s-${idx}`}>
+              <CardContent className="space-y-3 p-4">
+                <Skeleton className="h-5 w-2/3" />
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+            </Card>
+          ))
+        ) : null}
+        {items.map((it) => (
+          <Card key={it.id}>
+            <CardContent className="grid gap-4 p-4 md:grid-cols-[1.6fr_1fr] md:items-center">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-base font-semibold">{it.title}</h3>
+                  <Badge className={statusClass[it.status]}>{it.status}</Badge>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {it.company ?? "-"} · {it.location ?? "-"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {it.jobType ?? "Unknown"} · {it.jobLevel ?? "Unknown"}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                <Select
+                  value={it.status}
+                  onValueChange={(v) => updateStatus(it.id, v as JobStatus)}
+                >
+                  <SelectTrigger className="h-9 w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NEW">New</SelectItem>
+                    <SelectItem value="APPLIED">Applied</SelectItem>
+                    <SelectItem value="REJECTED">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button asChild variant="outline" size="sm">
+                  <a href={it.jobUrl} target="_blank" rel="noreferrer">
+                    Open job
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        {!items.length && !loading ? (
+          <Card>
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              No jobs yet.
+            </CardContent>
+          </Card>
+        ) : null}
+      </section>
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">Page {pageIndex + 1}</div>
