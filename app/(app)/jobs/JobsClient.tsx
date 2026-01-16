@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,10 +25,16 @@ type JobItem = {
   updatedAt: string;
 };
 
-export function JobsClient() {
+export function JobsClient({
+  initialItems = [],
+  initialCursor = null,
+}: {
+  initialItems?: JobItem[];
+  initialCursor?: string | null;
+}) {
   const { toast } = useToast();
-  const [items, setItems] = useState<JobItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [items, setItems] = useState<JobItem[]>(initialItems);
+  const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
@@ -57,6 +63,12 @@ export function JobsClient() {
     return sp.toString();
   }, [statusFilter, debouncedQ, pageSize, sortOrder, locationFilter]);
 
+  const initialQueryRef = useRef<string | null>(null);
+  if (initialQueryRef.current === null) {
+    initialQueryRef.current = queryString;
+  }
+  const skipInitialFetchRef = useRef<boolean>(initialItems.length > 0);
+
   async function fetchPage(cursor: string | null, nextIndex: number) {
     setLoading(true);
     setError(null);
@@ -73,6 +85,7 @@ export function JobsClient() {
       setItems(newItems);
       setNextCursor(newCursor);
       setPageIndex(nextIndex);
+      initialQueryRef.current = queryString;
       setCursorStack((prev) => {
         const copy = [...prev];
         copy[nextIndex] = cursor;
@@ -86,6 +99,13 @@ export function JobsClient() {
   }
 
   useEffect(() => {
+    if (
+      skipInitialFetchRef.current &&
+      initialQueryRef.current === queryString
+    ) {
+      skipInitialFetchRef.current = false;
+      return;
+    }
     setItems([]);
     setNextCursor(null);
     setCursorStack([null]);
