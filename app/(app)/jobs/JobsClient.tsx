@@ -191,7 +191,7 @@ export function JobsClient() {
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Search</div>
             <Input
-              placeholder="Search title or company"
+              placeholder="Search title, company, or location"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />

@@ -63,6 +63,7 @@ export async function GET(req: Request) {
             OR: [
               { title: { contains: q, mode: "insensitive" } },
               { company: { contains: q, mode: "insensitive" } },
+              { location: { contains: q, mode: "insensitive" } },
             ],
           }
         : {}),
