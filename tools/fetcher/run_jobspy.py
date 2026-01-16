@@ -61,7 +61,7 @@ def _build_exclude_title_re(terms: List[str]) -> Optional[re.Pattern]:
     cleaned = [re.escape(t.strip().lower()) for t in terms if t and t.strip()]
     if not cleaned:
         return None
-    return re.compile(r'(?i)\\b(?:' + "|".join(cleaned) + r')\\b')
+    return re.compile(r'(?i)\b(?:' + "|".join(cleaned) + r')\b')
 
 
 def filter_title(
