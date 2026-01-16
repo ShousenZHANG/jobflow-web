@@ -138,6 +138,7 @@ export function FetchClient() {
       localStorage.setItem("jobflow_fetch_run_id", id);
       localStorage.setItem("jobflow_fetch_started_at", String(Date.now()));
       setHasActiveRun(true);
+      window.dispatchEvent(new Event("jobflow-fetch-started"));
       await triggerRun(id);
       setStatus("RUNNING");
     } catch (e: any) {

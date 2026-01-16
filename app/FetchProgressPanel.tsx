@@ -34,6 +34,38 @@ export function FetchProgressPanel() {
     }
   }, []);
 
+  useEffect(() => {
+    function handleStart() {
+      const id = localStorage.getItem(RUN_ID_KEY);
+      const started = localStorage.getItem(STARTED_AT_KEY);
+      if (id) {
+        setRunId(id);
+        setOpen(true);
+      }
+      if (started) {
+        const ms = Number(started);
+        if (!Number.isNaN(ms)) {
+          const secs = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+          setElapsedSeconds(secs);
+        }
+      }
+    }
+
+    window.addEventListener("jobflow-fetch-started", handleStart);
+    window.addEventListener("storage", handleStart);
+    function handleVisibility() {
+      if (document.visibilityState === "visible") {
+        handleStart();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("jobflow-fetch-started", handleStart);
+      window.removeEventListener("storage", handleStart);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
   async function fetchRun(id: string) {
     const res = await fetch(`/api/fetch-runs/${id}`, { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
