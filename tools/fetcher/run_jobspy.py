@@ -300,6 +300,8 @@ def main():
             enforce_include=include_from_queries,
             exclude_terms=exclude_title_terms if apply_excludes else None,
         )
+        # Clean before description exclusion for more consistent matching
+        df = clean_description(df)
         if filter_desc:
             df = filter_description(
                 df,
@@ -308,7 +310,6 @@ def main():
                 exclude_sponsorship=exclude_sponsorship,
                 exclude_years=exclude_years,
             )
-        df = clean_description(df)
         df = keep_columns(df)
         items = df.to_dict(orient="records")
 
