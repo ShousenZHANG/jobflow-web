@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -25,10 +27,12 @@ type JobItem = {
 };
 
 export function JobsClient() {
+  const { toast } = useToast();
   const [items, setItems] = useState<JobItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
 
@@ -86,19 +90,105 @@ export function JobsClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString]);
 
-  async function updateStatus(id: string, status: JobStatus) {
+  function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function updateStatusRemote(id: string, status: JobStatus) {
     setError(null);
-    const res = await fetch(`/api/jobs/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setError(json?.error || "Failed to update status");
-      return;
+    try {
+      const res = await fetch(`/api/jobs/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to update status");
+    } catch (e: any) {
+      throw new Error(e?.message || "Failed to update status");
     }
+  }
+
+  async function updateStatusWithRetry(id: string, status: JobStatus) {
+    const attempts = 3;
+    for (let i = 0; i < attempts; i += 1) {
+      try {
+        await updateStatusRemote(id, status);
+        return;
+      } catch (e) {
+        if (i === attempts - 1) throw e;
+        await sleep(400 * Math.pow(2, i));
+      }
+    }
+  }
+
+  async function updateStatus(id: string, status: JobStatus) {
+    const previous = items.find((it) => it.id === id)?.status;
+    if (!previous || previous === status) return;
+
+    setError(null);
+    setUpdatingIds((prev) => new Set(prev).add(id));
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
+
+    let undoing = false;
+    const undo = async () => {
+      if (undoing) return;
+      undoing = true;
+      setUpdatingIds((prev) => new Set(prev).add(id));
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: previous } : it)));
+      try {
+        await updateStatusWithRetry(id, previous);
+        toast({
+          title: "Change reverted",
+          description: "Status restored to the previous value.",
+        });
+      } catch (e: any) {
+        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
+        toast({
+          title: "Undo failed",
+          description: e?.message || "We could not revert the change.",
+          variant: "destructive",
+        });
+      } finally {
+        setUpdatingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }
+    };
+
+    toast({
+      title: "Status updated",
+      description: `${previous} → ${status}`,
+      action: (
+        <ToastAction altText="Undo status change" onClick={undo}>
+          Undo
+        </ToastAction>
+      ),
+    });
+
+    try {
+      await updateStatusWithRetry(id, status);
+    } catch (e: any) {
+      if (!undoing) {
+        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: previous } : it)));
+      }
+      setError(e?.message || "Failed to update status");
+      toast({
+        title: "Update failed",
+        description: e?.message || "The change could not be saved.",
+        variant: "destructive",
+      });
+    } finally {
+      if (!undoing) {
+        setUpdatingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }
+    }
   }
 
   const statusClass: Record<JobStatus, string> = {
@@ -194,6 +284,7 @@ export function JobsClient() {
                 <Select
                   value={it.status}
                   onValueChange={(v) => updateStatus(it.id, v as JobStatus)}
+                  disabled={updatingIds.has(it.id)}
                 >
                   <SelectTrigger className="h-9 w-32">
                     <SelectValue />
