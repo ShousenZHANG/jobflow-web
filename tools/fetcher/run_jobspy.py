@@ -69,7 +69,6 @@ def filter_title(
     queries: List[str],
     enforce_include: bool,
     exclude_terms: Optional[List[str]] = None,
-    use_default_excludes: bool = False,
 ) -> pd.DataFrame:
     if df.empty:
         return df
@@ -77,8 +76,6 @@ def filter_title(
     exclude_re = _build_exclude_title_re(exclude_terms or [])
     if exclude_re:
         exc = t.apply(lambda s: bool(exclude_re.search(s)))
-    elif use_default_excludes:
-        exc = t.apply(lambda s: bool(TITLE_EXCLUDE_PAT.search(s)))
     else:
         exc = t.apply(lambda s: False)
     out = df[~exc].copy()
@@ -299,7 +296,6 @@ def main():
             search_terms,
             enforce_include=include_from_queries,
             exclude_terms=exclude_title_terms if apply_excludes else None,
-            use_default_excludes=False,
         )
         if filter_desc:
             df = filter_description(
@@ -313,21 +309,15 @@ def main():
         df = keep_columns(df)
         items = df.to_dict(orient="records")
 
-    # Import into DB via Vercel API (chunked to avoid payload/time limits)
-    imported = 0
-    if items:
-        batch_size = 50
-        for i in range(0, len(items), batch_size):
-            batch = items[i : i + batch_size]
-            imp_res = requests.post(
-                f"{base}/api/admin/import",
-                headers=headers_secret("IMPORT_SECRET", "x-import-secret"),
-                data=json.dumps({"userEmail": user_email, "items": batch}),
-                timeout=120,
-            )
-            if not imp_res.ok:
-                raise RuntimeError(f"import failed status={imp_res.status_code} body={imp_res.text}")
-            imported += int(imp_res.json().get("imported", 0))
+    # Import into DB via Vercel API
+    imp_res = requests.post(
+        f"{base}/api/admin/import",
+        headers=headers_secret("IMPORT_SECRET", "x-import-secret"),
+        data=json.dumps({"userEmail": user_email, "items": items}),
+        timeout=120,
+    )
+    imp_res.raise_for_status()
+    imported = int(imp_res.json().get("imported", 0))
 
     # Update run
     requests.patch(
