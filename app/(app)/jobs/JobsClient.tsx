@@ -111,24 +111,28 @@ export function JobsClient() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
+        <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Jobs</h1>
-          <p className="text-sm text-muted-foreground">Track and update your applications.</p>
+          <p className="text-sm text-muted-foreground">
+            Clear, modern tracking for your applications.
+          </p>
         </div>
-        <Button asChild variant="secondary">
-          <a href="/fetch">Fetch jobs</a>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <a href="/fetch">Fetch jobs</a>
+          </Button>
+          <Button onClick={() => void fetchPage(null, 0)} disabled={loading}>
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
+        <CardContent className="grid gap-4 p-4 md:grid-cols-[1.5fr_1fr_0.6fr]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Search</div>
             <Input
-              placeholder="Title or company"
+              placeholder="Search title or company"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -147,7 +151,7 @@ export function JobsClient() {
               </SelectContent>
             </Select>
           </div>
-          <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm">
+          <div className="flex flex-col justify-center rounded-md border bg-muted/40 px-4 py-3 text-sm">
             <div className="text-muted-foreground">Showing</div>
             <div className="text-lg font-semibold">{items.length}</div>
           </div>
@@ -162,74 +166,76 @@ export function JobsClient() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Role</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading && items.length === 0 ? (
-                Array.from({ length: 6 }).map((_, idx) => (
-                  <TableRow key={`s-${idx}`}>
-                    <TableCell colSpan={6}>
-                      <Skeleton className="h-8 w-full" />
+          <div className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[30%]">Role</TableHead>
+                  <TableHead className="w-[18%]">Company</TableHead>
+                  <TableHead className="w-[18%]">Location</TableHead>
+                  <TableHead className="w-[12%]">Type</TableHead>
+                  <TableHead className="w-[10%]">Status</TableHead>
+                  <TableHead className="w-[12%] text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading && items.length === 0 ? (
+                  Array.from({ length: 8 }).map((_, idx) => (
+                    <TableRow key={`s-${idx}`}>
+                      <TableCell colSpan={6}>
+                        <Skeleton className="h-8 w-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : null}
+                {items.map((it) => (
+                  <TableRow key={it.id}>
+                    <TableCell>
+                      <div className="font-medium">{it.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {it.jobLevel ?? "Unknown"}
+                      </div>
+                    </TableCell>
+                    <TableCell>{it.company ?? "-"}</TableCell>
+                    <TableCell>{it.location ?? "-"}</TableCell>
+                    <TableCell>{it.jobType ?? "Unknown"}</TableCell>
+                    <TableCell>
+                      <Badge className={statusClass[it.status]}>{it.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Select
+                          value={it.status}
+                          onValueChange={(v) => updateStatus(it.id, v as JobStatus)}
+                        >
+                          <SelectTrigger className="h-8 w-28">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="NEW">New</SelectItem>
+                            <SelectItem value="APPLIED">Applied</SelectItem>
+                            <SelectItem value="REJECTED">Rejected</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button asChild variant="ghost" size="sm">
+                          <a href={it.jobUrl} target="_blank" rel="noreferrer">
+                            Open
+                          </a>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              ) : null}
-              {items.map((it) => (
-                <TableRow key={it.id}>
-                  <TableCell>
-                    <div className="font-medium">{it.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {it.jobLevel ?? "Unknown"}
-                    </div>
-                  </TableCell>
-                  <TableCell>{it.company ?? "-"}</TableCell>
-                  <TableCell>{it.location ?? "-"}</TableCell>
-                  <TableCell>{it.jobType ?? "Unknown"}</TableCell>
-                  <TableCell>
-                    <Badge className={statusClass[it.status]}>{it.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Select
-                        value={it.status}
-                        onValueChange={(v) => updateStatus(it.id, v as JobStatus)}
-                      >
-                        <SelectTrigger className="h-8 w-28">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="NEW">New</SelectItem>
-                          <SelectItem value="APPLIED">Applied</SelectItem>
-                          <SelectItem value="REJECTED">Rejected</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button asChild variant="ghost" size="sm">
-                        <a href={it.jobUrl} target="_blank" rel="noreferrer">
-                          Open
-                        </a>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {!items.length && !loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                    No jobs yet.
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
+                ))}
+                {!items.length && !loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                      No jobs yet.
+                    </TableCell>
+                  </TableRow>
+                ) : null}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

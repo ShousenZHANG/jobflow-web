@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { JobsClient } from "./JobsClient";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default async function JobsPage() {
   const session = await getServerSession(authOptions);
@@ -10,14 +9,6 @@ export default async function JobsPage() {
 
   return (
     <main className="flex flex-col gap-6">
-      <Card>
-        <CardContent className="space-y-1 p-4">
-          <div className="text-sm text-muted-foreground">Signed in as</div>
-          <div className="font-medium">
-            {(session.user as any).email ?? "unknown"}
-          </div>
-        </CardContent>
-      </Card>
       <JobsClient />
     </main>
   );
