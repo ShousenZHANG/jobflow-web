@@ -9,6 +9,17 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -38,6 +49,7 @@ export function JobsClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
 
@@ -179,6 +191,40 @@ export function JobsClient({
       });
     } finally {
       setUpdatingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }
+
+  async function deleteJob(id: string) {
+    setError(null);
+    setDeletingIds((prev) => new Set(prev).add(id));
+    const previousItems = items;
+    setItems((prev) => prev.filter((it) => it.id !== id));
+    try {
+      const res = await fetch(`/api/jobs/${id}`, { method: "DELETE" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to delete job");
+      toast({
+        title: "Job removed",
+        description: "The job was deleted successfully.",
+        duration: 1800,
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
+    } catch (e: any) {
+      setItems(previousItems);
+      setError(e?.message || "Failed to delete job");
+      toast({
+        title: "Delete failed",
+        description: e?.message || "The job could not be removed.",
+        variant: "destructive",
+        duration: 2200,
+      });
+    } finally {
+      setDeletingIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
@@ -366,6 +412,27 @@ export function JobsClient({
                     Open job
                   </a>
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" disabled={deletingIds.has(it.id)}>
+                      Remove
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove this job?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete the job from your list.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteJob(it.id)}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>

@@ -51,3 +51,29 @@ export async function PATCH(
   return NextResponse.json({ ok: true });
 }
 
+export async function DELETE(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id as string | undefined;
+  if (!userId) {
+    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  }
+
+  const params = await ctx.params;
+  const parsedParams = ParamsSchema.safeParse(params);
+  if (!parsedParams.success) {
+    return NextResponse.json({ error: "INVALID_PARAMS" }, { status: 400 });
+  }
+
+  const deleted = await prisma.job.deleteMany({
+    where: { id: parsedParams.data.id, userId },
+  });
+
+  if (deleted.count === 0) {
+    return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
