@@ -1,46 +1,50 @@
 # Jobflow
 
-Jobflow is a modern job search dashboard that helps you fetch, review, and track job opportunities in one clean workflow. It combines a Next.js app, Prisma/Postgres, NextAuth, and an automated JobSpy-based fetcher that runs via GitHub Actions.
+A modern job-search command center for fast, focused hiring workflows. Jobflow combines a sleek Next.js dashboard with a resilient import pipeline, letting users fetch, review, and track opportunities in one clean, real-time experience.
 
-## Key Features
+## Why Jobflow
 
-- Clean dashboard for reviewing jobs and updating status
-- Fetch page to run curated searches with filters
-- Smart search across title, company, and location
-- Job-level filtering and pagination with smooth UX
-- Markdown-enhanced job descriptions with keyword highlighting
-- Async fetch progress with persistent panel
-- Robust import pipeline with retries and dedupe
+- **Curated job intake** with robust filtering and dedupe
+- **Two-pane review flow** for fast scanning and detail reading
+- **Instant status tracking** for NEW/APPLIED/REJECTED
+- **Rich descriptions** with markdown rendering and keyword highlighting
+- **Reliable import pipeline** with retries, tombstones, and safe upserts
+- **Fetch progress visibility** that persists across navigation
+
+## Product Highlights
+
+- **Jobs workspace**: split list + details layout, smooth scrolling, smart filters
+- **Fetch console**: real-time suggestions, flexible search, and tracked runs
+- **Dashboard**: focused entry points with modern, minimal UI
+- **Login**: simple, direct sign-in with Google and GitHub
 
 ## Tech Stack
 
-- Next.js App Router
-- Prisma + PostgreSQL (Neon)
-- NextAuth (Google, GitHub)
-- Tailwind CSS + shadcn/ui
-- JobSpy (Python) via GitHub Actions
+- **Next.js App Router** for SSR and routing
+- **Prisma + PostgreSQL** for data modeling and access
+- **NextAuth** (Google, GitHub) for auth
+- **Tailwind CSS + shadcn/ui** for UI design
+- **JobSpy (Python)** executed via GitHub Actions
 
-## Local Development
-
-Install dependencies and start the dev server:
+## Quick Start
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+Open `http://localhost:3000`
 
 ## Scripts
 
-- `npm run dev` - start dev server
-- `npm run lint` - lint
-- `npm run build` - production build
-- `npm run start` - start production server
+- `npm run dev` start dev server
+- `npm run lint` lint codebase
+- `npm run build` production build
+- `npm run start` start production server
 
 ## Environment Variables
 
-Create a `.env` file with the following (example names shown):
+Create a `.env` file in the project root.
 
 ### App + Auth
 
@@ -56,37 +60,36 @@ Create a `.env` file with the following (example names shown):
 
 - `GITHUB_OWNER`
 - `GITHUB_REPO`
-- `GITHUB_TOKEN` (PAT with workflow access)
-- `GITHUB_WORKFLOW_FILE` (default: `jobspy-fetch.yml`)
-- `GITHUB_REF` (default: `master`)
-- `JOBFLOW_WEB_URL` (public app URL for fetcher callbacks)
-- `FETCH_RUN_SECRET` (shared secret for fetcher config endpoint)
+- `GITHUB_TOKEN` (PAT with workflow scope)
+- `GITHUB_WORKFLOW_FILE` (default `jobspy-fetch.yml`)
+- `GITHUB_REF` (default `master`)
+- `JOBFLOW_WEB_URL` (public app URL for callbacks)
+- `FETCH_RUN_SECRET` (shared secret for run config endpoint)
 - `IMPORT_SECRET` (shared secret for import endpoint)
 
-## App Structure
+## Architecture Overview
 
-- `app/(marketing)` - landing/dashboard home
-- `app/(auth)` - login
-- `app/(app)` - authenticated app (jobs, fetch)
-- `app/api` - API routes
-- `tools/fetcher/run_jobspy.py` - JobSpy runner
-- `prisma/schema.prisma` - database schema
+- `app/(marketing)` marketing home
+- `app/(auth)` login
+- `app/(app)` authenticated app (jobs, fetch)
+- `app/api` API routes
+- `tools/fetcher/run_jobspy.py` JobSpy runner
+- `prisma/schema.prisma` database schema
 
 ## Fetch Flow (End-to-End)
 
 1. User starts a fetch in `/fetch`
 2. App creates a `FetchRun` and triggers GitHub Actions
 3. GitHub Action runs `run_jobspy.py`
-4. Fetcher pulls run config from `/api/fetch-runs/[id]/config`
-5. JobSpy scrapes jobs, cleans and filters descriptions
-6. Results import via `/api/admin/import` (chunked, deduped)
-7. Progress is updated in `/api/fetch-runs/[id]/update`
+4. Fetcher pulls config from `/api/fetch-runs/[id]/config`
+5. JobSpy scrapes, cleans, and filters descriptions
+6. Results import via `/api/admin/import` (deduped, tombstoned)
+7. Progress updates via `/api/fetch-runs/[id]/update`
 
 ## Jobs API
 
-`GET /api/jobs`
+`GET /api/jobs` supports:
 
-Supports:
 - `limit` (default 10)
 - `cursor`
 - `status` (`NEW`, `APPLIED`, `REJECTED`)
@@ -98,19 +101,22 @@ Supports:
 `PATCH /api/jobs/[id]` updates status  
 `DELETE /api/jobs/[id]` removes a job
 
-## Database Notes
+## Data & Safety Notes
 
-Jobs are deduped on `(userId, jobUrl)`. Re-running the same fetch will update existing records instead of creating duplicates.
+- Jobs are deduped by `(userId, jobUrl)`.
+- Deleted job URLs are tombstoned to prevent re-import.
+- Import counts reflect newly created jobs only.
 
 ## Deployment (Vercel)
 
-This project works with private GitHub repos. Set the repo connection in Vercel and configure all environment variables above. If you use a subdirectory, make sure Vercel’s root directory is set correctly.
+Connect the repo in Vercel and configure all env vars above.  
+If you deploy from a subdirectory, set Vercel’s root to `jobflow`.
 
 ## Troubleshooting
 
-- 403 GitHub Action dispatch: check PAT permissions (`workflow` scope).
-- Missing results: increase `resultsWanted` / `hoursOld`, or review exclusion rules.
-- Import failures: check `JOBFLOW_WEB_URL`, `FETCH_RUN_SECRET`, `IMPORT_SECRET`.
+- **403 GitHub Action dispatch**: confirm PAT has `workflow` scope.
+- **Low results**: increase `resultsWanted` or `hoursOld`, review exclusions.
+- **Import failures**: verify `JOBFLOW_WEB_URL`, `FETCH_RUN_SECRET`, `IMPORT_SECRET`.
 
 ## License
 
