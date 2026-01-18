@@ -39,6 +39,11 @@ export type Job = $Result.DefaultSelection<Prisma.$JobPayload>
  */
 export type DeletedJobUrl = $Result.DefaultSelection<Prisma.$DeletedJobUrlPayload>
 /**
+ * Model DailyCheckin
+ * 
+ */
+export type DailyCheckin = $Result.DefaultSelection<Prisma.$DailyCheckinPayload>
+/**
  * Model SavedSearch
  * 
  */
@@ -247,6 +252,16 @@ export class PrismaClient<
     * ```
     */
   get deletedJobUrl(): Prisma.DeletedJobUrlDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.dailyCheckin`: Exposes CRUD operations for the **DailyCheckin** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DailyCheckins
+    * const dailyCheckins = await prisma.dailyCheckin.findMany()
+    * ```
+    */
+  get dailyCheckin(): Prisma.DailyCheckinDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.savedSearch`: Exposes CRUD operations for the **SavedSearch** model.
@@ -706,6 +721,7 @@ export namespace Prisma {
     Session: 'Session',
     Job: 'Job',
     DeletedJobUrl: 'DeletedJobUrl',
+    DailyCheckin: 'DailyCheckin',
     SavedSearch: 'SavedSearch',
     FetchRun: 'FetchRun'
   };
@@ -723,7 +739,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "savedSearch" | "fetchRun"
+      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "savedSearch" | "fetchRun"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1097,6 +1113,80 @@ export namespace Prisma {
           }
         }
       }
+      DailyCheckin: {
+        payload: Prisma.$DailyCheckinPayload<ExtArgs>
+        fields: Prisma.DailyCheckinFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DailyCheckinFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DailyCheckinFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>
+          }
+          findFirst: {
+            args: Prisma.DailyCheckinFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DailyCheckinFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>
+          }
+          findMany: {
+            args: Prisma.DailyCheckinFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>[]
+          }
+          create: {
+            args: Prisma.DailyCheckinCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>
+          }
+          createMany: {
+            args: Prisma.DailyCheckinCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DailyCheckinCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>[]
+          }
+          delete: {
+            args: Prisma.DailyCheckinDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>
+          }
+          update: {
+            args: Prisma.DailyCheckinUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>
+          }
+          deleteMany: {
+            args: Prisma.DailyCheckinDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DailyCheckinUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DailyCheckinUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>[]
+          }
+          upsert: {
+            args: Prisma.DailyCheckinUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyCheckinPayload>
+          }
+          aggregate: {
+            args: Prisma.DailyCheckinAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDailyCheckin>
+          }
+          groupBy: {
+            args: Prisma.DailyCheckinGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DailyCheckinGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DailyCheckinCountArgs<ExtArgs>
+            result: $Utils.Optional<DailyCheckinCountAggregateOutputType> | number
+          }
+        }
+      }
       SavedSearch: {
         payload: Prisma.$SavedSearchPayload<ExtArgs>
         fields: Prisma.SavedSearchFieldRefs
@@ -1358,6 +1448,7 @@ export namespace Prisma {
     session?: SessionOmit
     job?: JobOmit
     deletedJobUrl?: DeletedJobUrlOmit
+    dailyCheckin?: DailyCheckinOmit
     savedSearch?: SavedSearchOmit
     fetchRun?: FetchRunOmit
   }
@@ -1446,6 +1537,7 @@ export namespace Prisma {
     savedSearches: number
     fetchRuns: number
     deletedJobUrls: number
+    dailyCheckins: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1455,6 +1547,7 @@ export namespace Prisma {
     savedSearches?: boolean | UserCountOutputTypeCountSavedSearchesArgs
     fetchRuns?: boolean | UserCountOutputTypeCountFetchRunsArgs
     deletedJobUrls?: boolean | UserCountOutputTypeCountDeletedJobUrlsArgs
+    dailyCheckins?: boolean | UserCountOutputTypeCountDailyCheckinsArgs
   }
 
   // Custom InputTypes
@@ -1508,6 +1601,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountDeletedJobUrlsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DeletedJobUrlWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountDailyCheckinsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DailyCheckinWhereInput
   }
 
 
@@ -1701,6 +1801,7 @@ export namespace Prisma {
     savedSearches?: boolean | User$savedSearchesArgs<ExtArgs>
     fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
     deletedJobUrls?: boolean | User$deletedJobUrlsArgs<ExtArgs>
+    dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1742,6 +1843,7 @@ export namespace Prisma {
     savedSearches?: boolean | User$savedSearchesArgs<ExtArgs>
     fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
     deletedJobUrls?: boolean | User$deletedJobUrlsArgs<ExtArgs>
+    dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1756,6 +1858,7 @@ export namespace Prisma {
       savedSearches: Prisma.$SavedSearchPayload<ExtArgs>[]
       fetchRuns: Prisma.$FetchRunPayload<ExtArgs>[]
       deletedJobUrls: Prisma.$DeletedJobUrlPayload<ExtArgs>[]
+      dailyCheckins: Prisma.$DailyCheckinPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2165,6 +2268,7 @@ export namespace Prisma {
     savedSearches<T extends User$savedSearchesArgs<ExtArgs> = {}>(args?: Subset<T, User$savedSearchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SavedSearchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     fetchRuns<T extends User$fetchRunsArgs<ExtArgs> = {}>(args?: Subset<T, User$fetchRunsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     deletedJobUrls<T extends User$deletedJobUrlsArgs<ExtArgs> = {}>(args?: Subset<T, User$deletedJobUrlsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    dailyCheckins<T extends User$dailyCheckinsArgs<ExtArgs> = {}>(args?: Subset<T, User$dailyCheckinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2730,6 +2834,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DeletedJobUrlScalarFieldEnum | DeletedJobUrlScalarFieldEnum[]
+  }
+
+  /**
+   * User.dailyCheckins
+   */
+  export type User$dailyCheckinsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    where?: DailyCheckinWhereInput
+    orderBy?: DailyCheckinOrderByWithRelationInput | DailyCheckinOrderByWithRelationInput[]
+    cursor?: DailyCheckinWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DailyCheckinScalarFieldEnum | DailyCheckinScalarFieldEnum[]
   }
 
   /**
@@ -7226,6 +7354,1051 @@ export namespace Prisma {
 
 
   /**
+   * Model DailyCheckin
+   */
+
+  export type AggregateDailyCheckin = {
+    _count: DailyCheckinCountAggregateOutputType | null
+    _min: DailyCheckinMinAggregateOutputType | null
+    _max: DailyCheckinMaxAggregateOutputType | null
+  }
+
+  export type DailyCheckinMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    localDate: string | null
+    checkedAt: Date | null
+  }
+
+  export type DailyCheckinMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    localDate: string | null
+    checkedAt: Date | null
+  }
+
+  export type DailyCheckinCountAggregateOutputType = {
+    id: number
+    userId: number
+    localDate: number
+    checkedAt: number
+    _all: number
+  }
+
+
+  export type DailyCheckinMinAggregateInputType = {
+    id?: true
+    userId?: true
+    localDate?: true
+    checkedAt?: true
+  }
+
+  export type DailyCheckinMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    localDate?: true
+    checkedAt?: true
+  }
+
+  export type DailyCheckinCountAggregateInputType = {
+    id?: true
+    userId?: true
+    localDate?: true
+    checkedAt?: true
+    _all?: true
+  }
+
+  export type DailyCheckinAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyCheckin to aggregate.
+     */
+    where?: DailyCheckinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyCheckins to fetch.
+     */
+    orderBy?: DailyCheckinOrderByWithRelationInput | DailyCheckinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DailyCheckinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyCheckins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyCheckins.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DailyCheckins
+    **/
+    _count?: true | DailyCheckinCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DailyCheckinMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DailyCheckinMaxAggregateInputType
+  }
+
+  export type GetDailyCheckinAggregateType<T extends DailyCheckinAggregateArgs> = {
+        [P in keyof T & keyof AggregateDailyCheckin]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDailyCheckin[P]>
+      : GetScalarType<T[P], AggregateDailyCheckin[P]>
+  }
+
+
+
+
+  export type DailyCheckinGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DailyCheckinWhereInput
+    orderBy?: DailyCheckinOrderByWithAggregationInput | DailyCheckinOrderByWithAggregationInput[]
+    by: DailyCheckinScalarFieldEnum[] | DailyCheckinScalarFieldEnum
+    having?: DailyCheckinScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DailyCheckinCountAggregateInputType | true
+    _min?: DailyCheckinMinAggregateInputType
+    _max?: DailyCheckinMaxAggregateInputType
+  }
+
+  export type DailyCheckinGroupByOutputType = {
+    id: string
+    userId: string
+    localDate: string
+    checkedAt: Date
+    _count: DailyCheckinCountAggregateOutputType | null
+    _min: DailyCheckinMinAggregateOutputType | null
+    _max: DailyCheckinMaxAggregateOutputType | null
+  }
+
+  type GetDailyCheckinGroupByPayload<T extends DailyCheckinGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DailyCheckinGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DailyCheckinGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DailyCheckinGroupByOutputType[P]>
+            : GetScalarType<T[P], DailyCheckinGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DailyCheckinSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    localDate?: boolean
+    checkedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dailyCheckin"]>
+
+  export type DailyCheckinSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    localDate?: boolean
+    checkedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dailyCheckin"]>
+
+  export type DailyCheckinSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    localDate?: boolean
+    checkedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dailyCheckin"]>
+
+  export type DailyCheckinSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    localDate?: boolean
+    checkedAt?: boolean
+  }
+
+  export type DailyCheckinOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "localDate" | "checkedAt", ExtArgs["result"]["dailyCheckin"]>
+  export type DailyCheckinInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type DailyCheckinIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type DailyCheckinIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $DailyCheckinPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DailyCheckin"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      localDate: string
+      checkedAt: Date
+    }, ExtArgs["result"]["dailyCheckin"]>
+    composites: {}
+  }
+
+  type DailyCheckinGetPayload<S extends boolean | null | undefined | DailyCheckinDefaultArgs> = $Result.GetResult<Prisma.$DailyCheckinPayload, S>
+
+  type DailyCheckinCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DailyCheckinFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DailyCheckinCountAggregateInputType | true
+    }
+
+  export interface DailyCheckinDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DailyCheckin'], meta: { name: 'DailyCheckin' } }
+    /**
+     * Find zero or one DailyCheckin that matches the filter.
+     * @param {DailyCheckinFindUniqueArgs} args - Arguments to find a DailyCheckin
+     * @example
+     * // Get one DailyCheckin
+     * const dailyCheckin = await prisma.dailyCheckin.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DailyCheckinFindUniqueArgs>(args: SelectSubset<T, DailyCheckinFindUniqueArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DailyCheckin that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DailyCheckinFindUniqueOrThrowArgs} args - Arguments to find a DailyCheckin
+     * @example
+     * // Get one DailyCheckin
+     * const dailyCheckin = await prisma.dailyCheckin.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DailyCheckinFindUniqueOrThrowArgs>(args: SelectSubset<T, DailyCheckinFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DailyCheckin that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyCheckinFindFirstArgs} args - Arguments to find a DailyCheckin
+     * @example
+     * // Get one DailyCheckin
+     * const dailyCheckin = await prisma.dailyCheckin.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DailyCheckinFindFirstArgs>(args?: SelectSubset<T, DailyCheckinFindFirstArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DailyCheckin that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyCheckinFindFirstOrThrowArgs} args - Arguments to find a DailyCheckin
+     * @example
+     * // Get one DailyCheckin
+     * const dailyCheckin = await prisma.dailyCheckin.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DailyCheckinFindFirstOrThrowArgs>(args?: SelectSubset<T, DailyCheckinFindFirstOrThrowArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DailyCheckins that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyCheckinFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DailyCheckins
+     * const dailyCheckins = await prisma.dailyCheckin.findMany()
+     * 
+     * // Get first 10 DailyCheckins
+     * const dailyCheckins = await prisma.dailyCheckin.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const dailyCheckinWithIdOnly = await prisma.dailyCheckin.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DailyCheckinFindManyArgs>(args?: SelectSubset<T, DailyCheckinFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DailyCheckin.
+     * @param {DailyCheckinCreateArgs} args - Arguments to create a DailyCheckin.
+     * @example
+     * // Create one DailyCheckin
+     * const DailyCheckin = await prisma.dailyCheckin.create({
+     *   data: {
+     *     // ... data to create a DailyCheckin
+     *   }
+     * })
+     * 
+     */
+    create<T extends DailyCheckinCreateArgs>(args: SelectSubset<T, DailyCheckinCreateArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DailyCheckins.
+     * @param {DailyCheckinCreateManyArgs} args - Arguments to create many DailyCheckins.
+     * @example
+     * // Create many DailyCheckins
+     * const dailyCheckin = await prisma.dailyCheckin.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DailyCheckinCreateManyArgs>(args?: SelectSubset<T, DailyCheckinCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DailyCheckins and returns the data saved in the database.
+     * @param {DailyCheckinCreateManyAndReturnArgs} args - Arguments to create many DailyCheckins.
+     * @example
+     * // Create many DailyCheckins
+     * const dailyCheckin = await prisma.dailyCheckin.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DailyCheckins and only return the `id`
+     * const dailyCheckinWithIdOnly = await prisma.dailyCheckin.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DailyCheckinCreateManyAndReturnArgs>(args?: SelectSubset<T, DailyCheckinCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DailyCheckin.
+     * @param {DailyCheckinDeleteArgs} args - Arguments to delete one DailyCheckin.
+     * @example
+     * // Delete one DailyCheckin
+     * const DailyCheckin = await prisma.dailyCheckin.delete({
+     *   where: {
+     *     // ... filter to delete one DailyCheckin
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DailyCheckinDeleteArgs>(args: SelectSubset<T, DailyCheckinDeleteArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DailyCheckin.
+     * @param {DailyCheckinUpdateArgs} args - Arguments to update one DailyCheckin.
+     * @example
+     * // Update one DailyCheckin
+     * const dailyCheckin = await prisma.dailyCheckin.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DailyCheckinUpdateArgs>(args: SelectSubset<T, DailyCheckinUpdateArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DailyCheckins.
+     * @param {DailyCheckinDeleteManyArgs} args - Arguments to filter DailyCheckins to delete.
+     * @example
+     * // Delete a few DailyCheckins
+     * const { count } = await prisma.dailyCheckin.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DailyCheckinDeleteManyArgs>(args?: SelectSubset<T, DailyCheckinDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DailyCheckins.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyCheckinUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DailyCheckins
+     * const dailyCheckin = await prisma.dailyCheckin.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DailyCheckinUpdateManyArgs>(args: SelectSubset<T, DailyCheckinUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DailyCheckins and returns the data updated in the database.
+     * @param {DailyCheckinUpdateManyAndReturnArgs} args - Arguments to update many DailyCheckins.
+     * @example
+     * // Update many DailyCheckins
+     * const dailyCheckin = await prisma.dailyCheckin.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DailyCheckins and only return the `id`
+     * const dailyCheckinWithIdOnly = await prisma.dailyCheckin.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DailyCheckinUpdateManyAndReturnArgs>(args: SelectSubset<T, DailyCheckinUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DailyCheckin.
+     * @param {DailyCheckinUpsertArgs} args - Arguments to update or create a DailyCheckin.
+     * @example
+     * // Update or create a DailyCheckin
+     * const dailyCheckin = await prisma.dailyCheckin.upsert({
+     *   create: {
+     *     // ... data to create a DailyCheckin
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DailyCheckin we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DailyCheckinUpsertArgs>(args: SelectSubset<T, DailyCheckinUpsertArgs<ExtArgs>>): Prisma__DailyCheckinClient<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DailyCheckins.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyCheckinCountArgs} args - Arguments to filter DailyCheckins to count.
+     * @example
+     * // Count the number of DailyCheckins
+     * const count = await prisma.dailyCheckin.count({
+     *   where: {
+     *     // ... the filter for the DailyCheckins we want to count
+     *   }
+     * })
+    **/
+    count<T extends DailyCheckinCountArgs>(
+      args?: Subset<T, DailyCheckinCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DailyCheckinCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DailyCheckin.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyCheckinAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DailyCheckinAggregateArgs>(args: Subset<T, DailyCheckinAggregateArgs>): Prisma.PrismaPromise<GetDailyCheckinAggregateType<T>>
+
+    /**
+     * Group by DailyCheckin.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyCheckinGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DailyCheckinGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DailyCheckinGroupByArgs['orderBy'] }
+        : { orderBy?: DailyCheckinGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DailyCheckinGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDailyCheckinGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DailyCheckin model
+   */
+  readonly fields: DailyCheckinFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DailyCheckin.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DailyCheckinClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DailyCheckin model
+   */
+  interface DailyCheckinFieldRefs {
+    readonly id: FieldRef<"DailyCheckin", 'String'>
+    readonly userId: FieldRef<"DailyCheckin", 'String'>
+    readonly localDate: FieldRef<"DailyCheckin", 'String'>
+    readonly checkedAt: FieldRef<"DailyCheckin", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DailyCheckin findUnique
+   */
+  export type DailyCheckinFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyCheckin to fetch.
+     */
+    where: DailyCheckinWhereUniqueInput
+  }
+
+  /**
+   * DailyCheckin findUniqueOrThrow
+   */
+  export type DailyCheckinFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyCheckin to fetch.
+     */
+    where: DailyCheckinWhereUniqueInput
+  }
+
+  /**
+   * DailyCheckin findFirst
+   */
+  export type DailyCheckinFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyCheckin to fetch.
+     */
+    where?: DailyCheckinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyCheckins to fetch.
+     */
+    orderBy?: DailyCheckinOrderByWithRelationInput | DailyCheckinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyCheckins.
+     */
+    cursor?: DailyCheckinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyCheckins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyCheckins.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyCheckins.
+     */
+    distinct?: DailyCheckinScalarFieldEnum | DailyCheckinScalarFieldEnum[]
+  }
+
+  /**
+   * DailyCheckin findFirstOrThrow
+   */
+  export type DailyCheckinFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyCheckin to fetch.
+     */
+    where?: DailyCheckinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyCheckins to fetch.
+     */
+    orderBy?: DailyCheckinOrderByWithRelationInput | DailyCheckinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyCheckins.
+     */
+    cursor?: DailyCheckinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyCheckins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyCheckins.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyCheckins.
+     */
+    distinct?: DailyCheckinScalarFieldEnum | DailyCheckinScalarFieldEnum[]
+  }
+
+  /**
+   * DailyCheckin findMany
+   */
+  export type DailyCheckinFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyCheckins to fetch.
+     */
+    where?: DailyCheckinWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyCheckins to fetch.
+     */
+    orderBy?: DailyCheckinOrderByWithRelationInput | DailyCheckinOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DailyCheckins.
+     */
+    cursor?: DailyCheckinWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyCheckins from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyCheckins.
+     */
+    skip?: number
+    distinct?: DailyCheckinScalarFieldEnum | DailyCheckinScalarFieldEnum[]
+  }
+
+  /**
+   * DailyCheckin create
+   */
+  export type DailyCheckinCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DailyCheckin.
+     */
+    data: XOR<DailyCheckinCreateInput, DailyCheckinUncheckedCreateInput>
+  }
+
+  /**
+   * DailyCheckin createMany
+   */
+  export type DailyCheckinCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DailyCheckins.
+     */
+    data: DailyCheckinCreateManyInput | DailyCheckinCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DailyCheckin createManyAndReturn
+   */
+  export type DailyCheckinCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * The data used to create many DailyCheckins.
+     */
+    data: DailyCheckinCreateManyInput | DailyCheckinCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DailyCheckin update
+   */
+  export type DailyCheckinUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DailyCheckin.
+     */
+    data: XOR<DailyCheckinUpdateInput, DailyCheckinUncheckedUpdateInput>
+    /**
+     * Choose, which DailyCheckin to update.
+     */
+    where: DailyCheckinWhereUniqueInput
+  }
+
+  /**
+   * DailyCheckin updateMany
+   */
+  export type DailyCheckinUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DailyCheckins.
+     */
+    data: XOR<DailyCheckinUpdateManyMutationInput, DailyCheckinUncheckedUpdateManyInput>
+    /**
+     * Filter which DailyCheckins to update
+     */
+    where?: DailyCheckinWhereInput
+    /**
+     * Limit how many DailyCheckins to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DailyCheckin updateManyAndReturn
+   */
+  export type DailyCheckinUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * The data used to update DailyCheckins.
+     */
+    data: XOR<DailyCheckinUpdateManyMutationInput, DailyCheckinUncheckedUpdateManyInput>
+    /**
+     * Filter which DailyCheckins to update
+     */
+    where?: DailyCheckinWhereInput
+    /**
+     * Limit how many DailyCheckins to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DailyCheckin upsert
+   */
+  export type DailyCheckinUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DailyCheckin to update in case it exists.
+     */
+    where: DailyCheckinWhereUniqueInput
+    /**
+     * In case the DailyCheckin found by the `where` argument doesn't exist, create a new DailyCheckin with this data.
+     */
+    create: XOR<DailyCheckinCreateInput, DailyCheckinUncheckedCreateInput>
+    /**
+     * In case the DailyCheckin was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DailyCheckinUpdateInput, DailyCheckinUncheckedUpdateInput>
+  }
+
+  /**
+   * DailyCheckin delete
+   */
+  export type DailyCheckinDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+    /**
+     * Filter which DailyCheckin to delete.
+     */
+    where: DailyCheckinWhereUniqueInput
+  }
+
+  /**
+   * DailyCheckin deleteMany
+   */
+  export type DailyCheckinDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyCheckins to delete
+     */
+    where?: DailyCheckinWhereInput
+    /**
+     * Limit how many DailyCheckins to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DailyCheckin without action
+   */
+  export type DailyCheckinDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyCheckin
+     */
+    select?: DailyCheckinSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyCheckin
+     */
+    omit?: DailyCheckinOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyCheckinInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model SavedSearch
    */
 
@@ -9656,6 +10829,16 @@ export namespace Prisma {
   export type DeletedJobUrlScalarFieldEnum = (typeof DeletedJobUrlScalarFieldEnum)[keyof typeof DeletedJobUrlScalarFieldEnum]
 
 
+  export const DailyCheckinScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    localDate: 'localDate',
+    checkedAt: 'checkedAt'
+  };
+
+  export type DailyCheckinScalarFieldEnum = (typeof DailyCheckinScalarFieldEnum)[keyof typeof DailyCheckinScalarFieldEnum]
+
+
   export const SavedSearchScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -9860,6 +11043,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchListRelationFilter
     fetchRuns?: FetchRunListRelationFilter
     deletedJobUrls?: DeletedJobUrlListRelationFilter
+    dailyCheckins?: DailyCheckinListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -9876,6 +11060,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchOrderByRelationAggregateInput
     fetchRuns?: FetchRunOrderByRelationAggregateInput
     deletedJobUrls?: DeletedJobUrlOrderByRelationAggregateInput
+    dailyCheckins?: DailyCheckinOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -9895,6 +11080,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchListRelationFilter
     fetchRuns?: FetchRunListRelationFilter
     deletedJobUrls?: DeletedJobUrlListRelationFilter
+    dailyCheckins?: DailyCheckinListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -10228,6 +11414,57 @@ export namespace Prisma {
     deletedAt?: DateTimeWithAggregatesFilter<"DeletedJobUrl"> | Date | string
   }
 
+  export type DailyCheckinWhereInput = {
+    AND?: DailyCheckinWhereInput | DailyCheckinWhereInput[]
+    OR?: DailyCheckinWhereInput[]
+    NOT?: DailyCheckinWhereInput | DailyCheckinWhereInput[]
+    id?: UuidFilter<"DailyCheckin"> | string
+    userId?: UuidFilter<"DailyCheckin"> | string
+    localDate?: StringFilter<"DailyCheckin"> | string
+    checkedAt?: DateTimeFilter<"DailyCheckin"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type DailyCheckinOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    localDate?: SortOrder
+    checkedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type DailyCheckinWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_localDate?: DailyCheckinUserIdLocalDateCompoundUniqueInput
+    AND?: DailyCheckinWhereInput | DailyCheckinWhereInput[]
+    OR?: DailyCheckinWhereInput[]
+    NOT?: DailyCheckinWhereInput | DailyCheckinWhereInput[]
+    userId?: UuidFilter<"DailyCheckin"> | string
+    localDate?: StringFilter<"DailyCheckin"> | string
+    checkedAt?: DateTimeFilter<"DailyCheckin"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId_localDate">
+
+  export type DailyCheckinOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    localDate?: SortOrder
+    checkedAt?: SortOrder
+    _count?: DailyCheckinCountOrderByAggregateInput
+    _max?: DailyCheckinMaxOrderByAggregateInput
+    _min?: DailyCheckinMinOrderByAggregateInput
+  }
+
+  export type DailyCheckinScalarWhereWithAggregatesInput = {
+    AND?: DailyCheckinScalarWhereWithAggregatesInput | DailyCheckinScalarWhereWithAggregatesInput[]
+    OR?: DailyCheckinScalarWhereWithAggregatesInput[]
+    NOT?: DailyCheckinScalarWhereWithAggregatesInput | DailyCheckinScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"DailyCheckin"> | string
+    userId?: UuidWithAggregatesFilter<"DailyCheckin"> | string
+    localDate?: StringWithAggregatesFilter<"DailyCheckin"> | string
+    checkedAt?: DateTimeWithAggregatesFilter<"DailyCheckin"> | Date | string
+  }
+
   export type SavedSearchWhereInput = {
     AND?: SavedSearchWhereInput | SavedSearchWhereInput[]
     OR?: SavedSearchWhereInput[]
@@ -10416,6 +11653,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -10432,6 +11670,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -10448,6 +11687,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -10464,6 +11704,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -10828,6 +12069,54 @@ export namespace Prisma {
     deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DailyCheckinCreateInput = {
+    id?: string
+    localDate: string
+    checkedAt?: Date | string
+    user: UserCreateNestedOneWithoutDailyCheckinsInput
+  }
+
+  export type DailyCheckinUncheckedCreateInput = {
+    id?: string
+    userId: string
+    localDate: string
+    checkedAt?: Date | string
+  }
+
+  export type DailyCheckinUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    localDate?: StringFieldUpdateOperationsInput | string
+    checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutDailyCheckinsNestedInput
+  }
+
+  export type DailyCheckinUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    localDate?: StringFieldUpdateOperationsInput | string
+    checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyCheckinCreateManyInput = {
+    id?: string
+    userId: string
+    localDate: string
+    checkedAt?: Date | string
+  }
+
+  export type DailyCheckinUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    localDate?: StringFieldUpdateOperationsInput | string
+    checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyCheckinUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    localDate?: StringFieldUpdateOperationsInput | string
+    checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type SavedSearchCreateInput = {
     id?: string
     name: string
@@ -11107,6 +12396,12 @@ export namespace Prisma {
     none?: DeletedJobUrlWhereInput
   }
 
+  export type DailyCheckinListRelationFilter = {
+    every?: DailyCheckinWhereInput
+    some?: DailyCheckinWhereInput
+    none?: DailyCheckinWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -11133,6 +12428,10 @@ export namespace Prisma {
   }
 
   export type DeletedJobUrlOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DailyCheckinOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11476,6 +12775,32 @@ export namespace Prisma {
     deletedAt?: SortOrder
   }
 
+  export type DailyCheckinUserIdLocalDateCompoundUniqueInput = {
+    userId: string
+    localDate: string
+  }
+
+  export type DailyCheckinCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    localDate?: SortOrder
+    checkedAt?: SortOrder
+  }
+
+  export type DailyCheckinMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    localDate?: SortOrder
+    checkedAt?: SortOrder
+  }
+
+  export type DailyCheckinMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    localDate?: SortOrder
+    checkedAt?: SortOrder
+  }
+
   export type SavedSearchCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -11726,6 +13051,13 @@ export namespace Prisma {
     connect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
   }
 
+  export type DailyCheckinCreateNestedManyWithoutUserInput = {
+    create?: XOR<DailyCheckinCreateWithoutUserInput, DailyCheckinUncheckedCreateWithoutUserInput> | DailyCheckinCreateWithoutUserInput[] | DailyCheckinUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DailyCheckinCreateOrConnectWithoutUserInput | DailyCheckinCreateOrConnectWithoutUserInput[]
+    createMany?: DailyCheckinCreateManyUserInputEnvelope
+    connect?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -11766,6 +13098,13 @@ export namespace Prisma {
     connectOrCreate?: DeletedJobUrlCreateOrConnectWithoutUserInput | DeletedJobUrlCreateOrConnectWithoutUserInput[]
     createMany?: DeletedJobUrlCreateManyUserInputEnvelope
     connect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+  }
+
+  export type DailyCheckinUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<DailyCheckinCreateWithoutUserInput, DailyCheckinUncheckedCreateWithoutUserInput> | DailyCheckinCreateWithoutUserInput[] | DailyCheckinUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DailyCheckinCreateOrConnectWithoutUserInput | DailyCheckinCreateOrConnectWithoutUserInput[]
+    createMany?: DailyCheckinCreateManyUserInputEnvelope
+    connect?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -11868,6 +13207,20 @@ export namespace Prisma {
     deleteMany?: DeletedJobUrlScalarWhereInput | DeletedJobUrlScalarWhereInput[]
   }
 
+  export type DailyCheckinUpdateManyWithoutUserNestedInput = {
+    create?: XOR<DailyCheckinCreateWithoutUserInput, DailyCheckinUncheckedCreateWithoutUserInput> | DailyCheckinCreateWithoutUserInput[] | DailyCheckinUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DailyCheckinCreateOrConnectWithoutUserInput | DailyCheckinCreateOrConnectWithoutUserInput[]
+    upsert?: DailyCheckinUpsertWithWhereUniqueWithoutUserInput | DailyCheckinUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: DailyCheckinCreateManyUserInputEnvelope
+    set?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    disconnect?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    delete?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    connect?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    update?: DailyCheckinUpdateWithWhereUniqueWithoutUserInput | DailyCheckinUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: DailyCheckinUpdateManyWithWhereWithoutUserInput | DailyCheckinUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: DailyCheckinScalarWhereInput | DailyCheckinScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -11952,6 +13305,20 @@ export namespace Prisma {
     deleteMany?: DeletedJobUrlScalarWhereInput | DeletedJobUrlScalarWhereInput[]
   }
 
+  export type DailyCheckinUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<DailyCheckinCreateWithoutUserInput, DailyCheckinUncheckedCreateWithoutUserInput> | DailyCheckinCreateWithoutUserInput[] | DailyCheckinUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DailyCheckinCreateOrConnectWithoutUserInput | DailyCheckinCreateOrConnectWithoutUserInput[]
+    upsert?: DailyCheckinUpsertWithWhereUniqueWithoutUserInput | DailyCheckinUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: DailyCheckinCreateManyUserInputEnvelope
+    set?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    disconnect?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    delete?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    connect?: DailyCheckinWhereUniqueInput | DailyCheckinWhereUniqueInput[]
+    update?: DailyCheckinUpdateWithWhereUniqueWithoutUserInput | DailyCheckinUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: DailyCheckinUpdateManyWithWhereWithoutUserInput | DailyCheckinUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: DailyCheckinScalarWhereInput | DailyCheckinScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -12018,6 +13385,20 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutDeletedJobUrlsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDeletedJobUrlsInput, UserUpdateWithoutDeletedJobUrlsInput>, UserUncheckedUpdateWithoutDeletedJobUrlsInput>
+  }
+
+  export type UserCreateNestedOneWithoutDailyCheckinsInput = {
+    create?: XOR<UserCreateWithoutDailyCheckinsInput, UserUncheckedCreateWithoutDailyCheckinsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDailyCheckinsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutDailyCheckinsNestedInput = {
+    create?: XOR<UserCreateWithoutDailyCheckinsInput, UserUncheckedCreateWithoutDailyCheckinsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDailyCheckinsInput
+    upsert?: UserUpsertWithoutDailyCheckinsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDailyCheckinsInput, UserUpdateWithoutDailyCheckinsInput>, UserUncheckedUpdateWithoutDailyCheckinsInput>
   }
 
   export type UserCreateNestedOneWithoutSavedSearchesInput = {
@@ -12547,6 +13928,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DailyCheckinCreateWithoutUserInput = {
+    id?: string
+    localDate: string
+    checkedAt?: Date | string
+  }
+
+  export type DailyCheckinUncheckedCreateWithoutUserInput = {
+    id?: string
+    localDate: string
+    checkedAt?: Date | string
+  }
+
+  export type DailyCheckinCreateOrConnectWithoutUserInput = {
+    where: DailyCheckinWhereUniqueInput
+    create: XOR<DailyCheckinCreateWithoutUserInput, DailyCheckinUncheckedCreateWithoutUserInput>
+  }
+
+  export type DailyCheckinCreateManyUserInputEnvelope = {
+    data: DailyCheckinCreateManyUserInput | DailyCheckinCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput
     update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
@@ -12737,6 +14140,32 @@ export namespace Prisma {
     deletedAt?: DateTimeFilter<"DeletedJobUrl"> | Date | string
   }
 
+  export type DailyCheckinUpsertWithWhereUniqueWithoutUserInput = {
+    where: DailyCheckinWhereUniqueInput
+    update: XOR<DailyCheckinUpdateWithoutUserInput, DailyCheckinUncheckedUpdateWithoutUserInput>
+    create: XOR<DailyCheckinCreateWithoutUserInput, DailyCheckinUncheckedCreateWithoutUserInput>
+  }
+
+  export type DailyCheckinUpdateWithWhereUniqueWithoutUserInput = {
+    where: DailyCheckinWhereUniqueInput
+    data: XOR<DailyCheckinUpdateWithoutUserInput, DailyCheckinUncheckedUpdateWithoutUserInput>
+  }
+
+  export type DailyCheckinUpdateManyWithWhereWithoutUserInput = {
+    where: DailyCheckinScalarWhereInput
+    data: XOR<DailyCheckinUpdateManyMutationInput, DailyCheckinUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type DailyCheckinScalarWhereInput = {
+    AND?: DailyCheckinScalarWhereInput | DailyCheckinScalarWhereInput[]
+    OR?: DailyCheckinScalarWhereInput[]
+    NOT?: DailyCheckinScalarWhereInput | DailyCheckinScalarWhereInput[]
+    id?: UuidFilter<"DailyCheckin"> | string
+    userId?: UuidFilter<"DailyCheckin"> | string
+    localDate?: StringFilter<"DailyCheckin"> | string
+    checkedAt?: DateTimeFilter<"DailyCheckin"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email?: string | null
@@ -12750,6 +14179,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -12765,6 +14195,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -12796,6 +14227,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -12811,6 +14243,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -12826,6 +14259,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -12841,6 +14275,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -12872,6 +14307,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -12887,6 +14323,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutJobsInput = {
@@ -12902,6 +14339,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJobsInput = {
@@ -12917,6 +14355,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJobsInput = {
@@ -12948,6 +14387,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJobsInput = {
@@ -12963,6 +14403,7 @@ export namespace Prisma {
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDeletedJobUrlsInput = {
@@ -12978,6 +14419,7 @@ export namespace Prisma {
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDeletedJobUrlsInput = {
@@ -12993,6 +14435,7 @@ export namespace Prisma {
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDeletedJobUrlsInput = {
@@ -13024,6 +14467,7 @@ export namespace Prisma {
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDeletedJobUrlsInput = {
@@ -13039,6 +14483,87 @@ export namespace Prisma {
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutDailyCheckinsInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    jobs?: JobCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutDailyCheckinsInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutDailyCheckinsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutDailyCheckinsInput, UserUncheckedCreateWithoutDailyCheckinsInput>
+  }
+
+  export type UserUpsertWithoutDailyCheckinsInput = {
+    update: XOR<UserUpdateWithoutDailyCheckinsInput, UserUncheckedUpdateWithoutDailyCheckinsInput>
+    create: XOR<UserCreateWithoutDailyCheckinsInput, UserUncheckedCreateWithoutDailyCheckinsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutDailyCheckinsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutDailyCheckinsInput, UserUncheckedUpdateWithoutDailyCheckinsInput>
+  }
+
+  export type UserUpdateWithoutDailyCheckinsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    jobs?: JobUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutDailyCheckinsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSavedSearchesInput = {
@@ -13054,6 +14579,7 @@ export namespace Prisma {
     jobs?: JobCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSavedSearchesInput = {
@@ -13069,6 +14595,7 @@ export namespace Prisma {
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSavedSearchesInput = {
@@ -13100,6 +14627,7 @@ export namespace Prisma {
     jobs?: JobUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedSearchesInput = {
@@ -13115,6 +14643,7 @@ export namespace Prisma {
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFetchRunsInput = {
@@ -13130,6 +14659,7 @@ export namespace Prisma {
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFetchRunsInput = {
@@ -13145,6 +14675,7 @@ export namespace Prisma {
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFetchRunsInput = {
@@ -13176,6 +14707,7 @@ export namespace Prisma {
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFetchRunsInput = {
@@ -13191,6 +14723,7 @@ export namespace Prisma {
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -13261,6 +14794,12 @@ export namespace Prisma {
     id?: string
     jobUrl: string
     deletedAt?: Date | string
+  }
+
+  export type DailyCheckinCreateManyUserInput = {
+    id?: string
+    localDate: string
+    checkedAt?: Date | string
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -13471,6 +15010,24 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     jobUrl?: StringFieldUpdateOperationsInput | string
     deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyCheckinUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    localDate?: StringFieldUpdateOperationsInput | string
+    checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyCheckinUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    localDate?: StringFieldUpdateOperationsInput | string
+    checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyCheckinUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    localDate?: StringFieldUpdateOperationsInput | string
+    checkedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

@@ -5,14 +5,17 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
+import "react-day-picker/dist/style.css";
 import { ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { DayPicker } from "react-day-picker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -99,6 +102,14 @@ function formatLocalDateTime(iso: string, timeZone: string | null) {
   return new Intl.DateTimeFormat(undefined, options).format(date);
 }
 
+function getUserTimeZone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+}
+
+function localDateToDate(localDate: string) {
+  return new Date(`${localDate}T00:00:00`);
+}
+
 export function JobsClient({
   initialItems = [],
   initialCursor = null,
@@ -132,6 +143,12 @@ export function JobsClient({
   const [detailError, setDetailError] = useState<string | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [timeZone, setTimeZone] = useState<string | null>(null);
+  const [checkinDates, setCheckinDates] = useState<string[]>([]);
+  const [checkinLocalDate, setCheckinLocalDate] = useState<string | null>(null);
+  const [remainingNewToday, setRemainingNewToday] = useState<number | null>(null);
+  const [checkedInToday, setCheckedInToday] = useState(false);
+  const [checkinLoading, setCheckinLoading] = useState(false);
+  const [checkinError, setCheckinError] = useState<string | null>(null);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -145,9 +162,35 @@ export function JobsClient({
   }, [q]);
 
   useEffect(() => {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tz = getUserTimeZone();
     setTimeZone(tz || null);
   }, []);
+
+  async function refreshCheckins() {
+    try {
+      setCheckinError(null);
+      const tz = timeZone ?? getUserTimeZone();
+      const res = await fetch("/api/checkins", {
+        headers: { "x-user-timezone": tz },
+        cache: "no-store",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to load check-ins");
+      setCheckinDates(Array.isArray(json?.dates) ? json.dates : []);
+      setCheckinLocalDate(typeof json?.localDate === "string" ? json.localDate : null);
+      setRemainingNewToday(
+        typeof json?.remainingNew === "number" ? json.remainingNew : null,
+      );
+      setCheckedInToday(Boolean(json?.checkedInToday));
+    } catch (e: unknown) {
+      setCheckinError(getErrorMessage(e, "Failed to load check-ins"));
+    }
+  }
+
+  useEffect(() => {
+    void refreshCheckins();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeZone]);
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
@@ -271,6 +314,7 @@ export function JobsClient({
 
     try {
       await updateStatusWithRetry(id, status);
+      void refreshCheckins();
       toast({
         title: "Status updated",
         description: `${previous} → ${status}`,
@@ -305,6 +349,7 @@ export function JobsClient({
       const res = await fetch(`/api/jobs/${id}`, { method: "DELETE" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to delete job");
+      void refreshCheckins();
       toast({
         title: "Job removed",
         description: "The job was deleted successfully.",
@@ -383,6 +428,20 @@ export function JobsClient({
     });
     return new RegExp(`(${patterns.join("|")})`, "gi");
   }, []);
+
+  const checkinDateObjects = useMemo(
+    () => checkinDates.map(localDateToDate),
+    [checkinDates],
+  );
+  const canCheckIn = remainingNewToday === 0 && !checkedInToday;
+  const checkinStatusText =
+    remainingNewToday === null
+      ? "Checking today's progress..."
+      : remainingNewToday > 0
+        ? `You still have ${remainingNewToday} NEW job(s) from today.`
+        : checkedInToday
+          ? "Checked in for today. Great work!"
+          : "All NEW jobs from today are done. You can check in.";
 
   function scrollDetailsToTop() {
     const container = detailsScrollRef.current;
@@ -466,6 +525,78 @@ export function JobsClient({
         <div className="rounded-full border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground">
           Search
         </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+        <Card className="border bg-card">
+          <CardHeader>
+            <CardTitle className="text-base">Daily check-in</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground">{checkinStatusText}</div>
+            {checkinError ? (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                {checkinError}
+              </div>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={async () => {
+                  if (!canCheckIn) return;
+                  setCheckinLoading(true);
+                  try {
+                    const tz = timeZone ?? getUserTimeZone();
+                    const res = await fetch("/api/checkins", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json", "x-user-timezone": tz },
+                    });
+                    const json = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                      throw new Error(json?.error || "Check-in failed");
+                    }
+                    await refreshCheckins();
+                    toast({
+                      title: "Checked in",
+                      description: "Today's check-in is saved.",
+                      duration: 1800,
+                      className:
+                        "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+                    });
+                  } catch (e: unknown) {
+                    setCheckinError(getErrorMessage(e, "Check-in failed"));
+                  } finally {
+                    setCheckinLoading(false);
+                  }
+                }}
+                disabled={!canCheckIn || checkinLoading}
+              >
+                {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
+              </Button>
+              <div className="text-xs text-muted-foreground">
+                {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border bg-card">
+          <CardHeader>
+            <CardTitle className="text-base">Check-in calendar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DayPicker
+              mode="multiple"
+              selected={checkinDateObjects}
+              showOutsideDays
+              modifiers={{ checked: checkinDateObjects }}
+              modifiersClassNames={{
+                checked:
+                  "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
+              }}
+              className="rounded-lg border bg-muted/20 p-3"
+            />
+          </CardContent>
+        </Card>
       </div>
 
       <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
