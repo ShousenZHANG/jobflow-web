@@ -332,11 +332,15 @@ export function JobsClient({
     return new RegExp(`(${patterns.join("|")})`, "gi");
   }, []);
 
-  useLayoutEffect(() => {
+  function scrollDetailsToTop() {
     const container = detailsScrollRef.current;
     if (!container) return;
     container.scrollTop = 0;
     container.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  useLayoutEffect(() => {
+    scrollDetailsToTop();
   }, [selectedId, detailLoadingId]);
 
   function highlightText(text: string) {
@@ -561,7 +565,11 @@ export function JobsClient({
                 <button
                   key={it.id}
                   type="button"
-                  onClick={() => setSelectedId(it.id)}
+                  onClick={() => {
+                    setSelectedId(it.id);
+                    requestAnimationFrame(() => scrollDetailsToTop());
+                    setTimeout(() => scrollDetailsToTop(), 60);
+                  }}
                   className={`w-full rounded-lg border-l-4 px-3 py-3 text-left transition ${
                     active
                       ? "border-l-primary border-primary/50 bg-primary/5 shadow-sm"
