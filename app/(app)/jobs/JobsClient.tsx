@@ -96,7 +96,7 @@ export function JobsClient({
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
-  const pageSize = 20;
+  const pageSize = 10;
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [locationFilter, setLocationFilter] = useState("ALL");
   const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
@@ -318,6 +318,7 @@ export function JobsClient({
   }, [items, selectedId]);
 
   const selectedJob = items.find((it) => it.id === selectedId) ?? null;
+  const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const selectedDescription = selectedJob ? detailsById[selectedJob.id]?.description ?? "" : "";
   const isLongDescription = selectedDescription.length > 600;
   const isExpanded =
@@ -553,7 +554,12 @@ export function JobsClient({
                 <button
                   key={it.id}
                   type="button"
-                  onClick={() => setSelectedId(it.id)}
+                  onClick={() => {
+                    setSelectedId(it.id);
+                    requestAnimationFrame(() => {
+                      detailsScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                    });
+                  }}
                   className={`w-full rounded-lg border-l-4 px-3 py-3 text-left transition ${
                     active
                       ? "border-l-primary border-primary/50 bg-primary/5 shadow-sm"
@@ -689,7 +695,7 @@ export function JobsClient({
               <div className="text-sm text-muted-foreground">Select a job to preview details.</div>
             )}
           </div>
-          <div className="flex-1 overflow-auto p-4">
+          <div ref={detailsScrollRef} className="flex-1 overflow-auto p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
