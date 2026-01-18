@@ -3,7 +3,6 @@ import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
-import { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -55,7 +54,11 @@ export async function GET(req: Request) {
     : null;
   const locationFilters = stateKey ? STATE_LOCATION_MAP[stateKey] : null;
 
-  const andClauses: Prisma.JobWhereInput[] = [];
+  type JobWhereClause = Exclude<
+    NonNullable<Parameters<typeof prisma.job.findMany>[0]>["where"],
+    undefined
+  >;
+  const andClauses: JobWhereClause[] = [];
   if (q) {
     andClauses.push({
       OR: [
@@ -77,12 +80,14 @@ export async function GET(req: Request) {
     }
   }
 
+  const where: JobWhereClause = {
+    userId,
+    ...(status ? { status } : {}),
+    ...(andClauses.length ? { AND: andClauses } : {}),
+  };
+
   const jobs = await prisma.job.findMany({
-    where: {
-      userId,
-      ...(status ? { status } : {}),
-      ...(andClauses.length ? { AND: andClauses } : {}),
-    },
+    where,
     orderBy,
     take: limit,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
