@@ -17,15 +17,7 @@ const TitleExcludeEnum = z.enum([
   "architect",
 ]);
 
-const DescExcludeEnum = z.enum([
-  "work_rights",
-  "security_clearance",
-  "no_sponsorship",
-  "exp_3",
-  "exp_4",
-  "exp_5",
-  "exp_7",
-]);
+const DescExcludeEnum = z.enum(["identity_requirement", "exp_3", "exp_4", "exp_5", "exp_7"]);
 
 const CreateSchema = z
   .object({

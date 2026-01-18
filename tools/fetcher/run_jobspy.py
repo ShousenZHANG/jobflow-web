@@ -38,8 +38,7 @@ EXCLUDE_EXP_YEARS_RE = re.compile(
 EXCLUDE_RIGHTS_RE = re.compile(
     r'(?i)\b(?:'
     r'permanent\s+resident|permanent\s+residency|PR\s*(?:only|required)?|'
-    r'citizen|citizenship|australian\s+citizen|au\s+citizen|nz\s+citizen|'
-    r'must\s+have\s+(?:full\s+)?work(?:ing)?\s+rights'
+    r'citizen|citizenship|australian\s+citizen|au\s+citizen|nz\s+citizen'
     r')\b'
 )
 
@@ -139,6 +138,39 @@ def _build_exp_years_re(years: List[int]) -> Optional[re.Pattern]:
     return re.compile(pattern, re.UNICODE)
 
 
+def _extract_min_years_from_text(text: str) -> Optional[int]:
+    if not text:
+        return None
+    s = str(text).lower()
+    s = s.replace("–", "-").replace("—", "-")
+    s = s.replace("＋", "+").replace("﹢", "+")
+    s = re.sub(r"\s+", " ", s)
+
+    candidates: List[int] = []
+
+    # at least / minimum of X years
+    for m in re.finditer(r"\b(?:at\s+least|minimum(?:\s+of)?)\s+(\d{1,2})\s*(?:years?|yrs?)\b", s):
+        candidates.append(int(m.group(1)))
+
+    # X+ years / X yrs+
+    for m in re.finditer(r"\b(\d{1,2})\s*\+\s*(?:years?|yrs?)\b", s):
+        candidates.append(int(m.group(1)))
+    for m in re.finditer(r"\b(\d{1,2})\s*(?:years?|yrs?)\s*\+\b", s):
+        candidates.append(int(m.group(1)))
+
+    # X-Y years / X to Y years
+    for m in re.finditer(r"\b(\d{1,2})\s*(?:-|\sto\s)\s*(\d{1,2})\s*(?:years?|yrs?)\b", s):
+        candidates.append(int(m.group(1)))
+
+    # X years of experience / X years experience
+    for m in re.finditer(r"\b(\d{1,2})\s*(?:years?|yrs?)\s*(?:of\s+)?(?:experience|exp)\b", s):
+        candidates.append(int(m.group(1)))
+
+    if not candidates:
+        return None
+    return min(candidates)
+
+
 def filter_description(
     df: pd.DataFrame,
     exclude_rights: bool,
@@ -149,8 +181,14 @@ def filter_description(
     if df.empty or "description" not in df.columns:
         return df
     desc = df["description"].fillna("")
-    years_re = _build_exp_years_re(exclude_years or [])
-    years = desc.str.contains(years_re, na=False) if years_re else pd.Series(False, index=desc.index)
+    if exclude_years:
+        thresholds = sorted(set(int(y) for y in exclude_years))
+        min_years = desc.apply(_extract_min_years_from_text)
+        years = min_years.apply(lambda v: v is not None and any(v >= y for y in thresholds))
+        matched_years_count = int(years.sum())
+    else:
+        years = pd.Series(False, index=desc.index)
+        matched_years_count = 0
     rights = desc.str.contains(EXCLUDE_RIGHTS_RE, na=False) if exclude_rights else pd.Series(False, index=desc.index)
     clearance = (
         desc.str.contains(EXCLUDE_CLEARANCE_RE, na=False)
@@ -162,7 +200,10 @@ def filter_description(
         if exclude_sponsorship
         else pd.Series(False, index=desc.index)
     )
-    return df[~(years | rights | clearance | sponsorship)].copy()
+    filtered = df[~(years | rights | clearance | sponsorship)].copy()
+    if exclude_years:
+        logger.info("Description filter: years matched=%s thresholds=%s", matched_years_count, thresholds)
+    return filtered
 
 
 def keep_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -187,6 +228,10 @@ def _clean_description_text(text: str) -> str:
     if not text:
         return ""
     s = str(text)
+    # Normalize punctuation and separators for consistent matching
+    s = s.replace("–", "-").replace("—", "-")
+    s = s.replace("＋", "+").replace("﹢", "+")
+    s = s.replace("：", ":")
     # Remove common escape backslashes (e.g., "2\+")
     s = s.replace("\\+", "+").replace("\\-", "-").replace("\\&", "&")
     s = s.replace("\\/", "/").replace("\\(", "(").replace("\\)", ")")
@@ -307,9 +352,9 @@ def main():
     results_wanted = int(run.get("resultsWanted") or 120)
     include_from_queries = bool(run.get("includeFromQueries") or False)
 
-    exclude_rights = apply_excludes and "work_rights" in exclude_desc_rules
-    exclude_clearance = apply_excludes and "security_clearance" in exclude_desc_rules
-    exclude_sponsorship = apply_excludes and "no_sponsorship" in exclude_desc_rules
+    exclude_rights = apply_excludes and "identity_requirement" in exclude_desc_rules
+    exclude_clearance = False
+    exclude_sponsorship = False
     exclude_years: List[int] = []
     if apply_excludes:
         if "exp_3" in exclude_desc_rules:

@@ -47,9 +47,7 @@ export function FetchClient() {
     "architect",
   ]);
   const [excludeDescriptionRules, setExcludeDescriptionRules] = useState<string[]>([
-    "work_rights",
-    "security_clearance",
-    "no_sponsorship",
+    "identity_requirement",
     "exp_3",
     "exp_4",
     "exp_5",
@@ -371,9 +369,7 @@ export function FetchClient() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-72">
                   {[
-                    { value: "work_rights", label: "Work rights / PR required" },
-                    { value: "security_clearance", label: "Security clearance" },
-                    { value: "no_sponsorship", label: "No sponsorship" },
+                    { value: "identity_requirement", label: "PR/Citizen requirement" },
                     { value: "exp_3", label: "Experience 3+ years" },
                     { value: "exp_4", label: "Experience 4+ years" },
                     { value: "exp_5", label: "Experience 5+ years" },
