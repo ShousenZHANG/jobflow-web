@@ -307,7 +307,7 @@ def main():
     ).raise_for_status()
 
     t0 = time.time()
-    search_terms = queries if queries else ([title_query] if title_query else [])
+    search_terms = [title_query] if title_query else queries
     df = fetch_linkedin(search_terms, location, hours_old, results_wanted)
     if df.empty:
         items: List[Dict[str, Any]] = []
