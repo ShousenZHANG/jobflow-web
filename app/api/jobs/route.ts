@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ const QuerySchema = z.object({
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
@@ -54,7 +55,7 @@ export async function GET(req: Request) {
     : null;
   const locationFilters = stateKey ? STATE_LOCATION_MAP[stateKey] : null;
 
-  const andClauses: any[] = [];
+  const andClauses: Prisma.JobWhereInput[] = [];
   if (q) {
     andClauses.push({
       OR: [
@@ -117,7 +118,7 @@ const CreateSchema = z.object({
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }

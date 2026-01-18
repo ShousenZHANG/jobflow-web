@@ -11,10 +11,16 @@ const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
 const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
+type DropdownMenuSubTriggerProps = React.ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.SubTrigger
+> & {
+  inset?: boolean;
+};
+
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger>
->(({ className, inset, children, ...props }: any, ref) => (
+  DropdownMenuSubTriggerProps
+>(({ className, inset, children, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
@@ -63,10 +69,14 @@ const DropdownMenuContent = React.forwardRef<
 ));
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
+type DropdownMenuItemProps = React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
+  inset?: boolean;
+};
+
 const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>
->(({ className, inset, ...props }: any, ref) => (
+  DropdownMenuItemProps
+>(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
@@ -124,10 +134,16 @@ const DropdownMenuRadioItem = React.forwardRef<
 ));
 DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
 
+type DropdownMenuLabelProps = React.ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.Label
+> & {
+  inset?: boolean;
+};
+
 const DropdownMenuLabel = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label>
->(({ className, inset, ...props }: any, ref) => (
+  DropdownMenuLabelProps
+>(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className)}

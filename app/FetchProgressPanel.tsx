@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -81,8 +81,12 @@ export function FetchProgressPanel() {
       if (!res.ok) throw new Error(json?.error || "Failed to cancel run");
       setStatus("FAILED");
       setError("Cancelled by user");
-    } catch (e: any) {
-      setError(e?.message || "Failed to cancel run");
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Failed to cancel run");
+      }
     }
   }
 
@@ -101,9 +105,13 @@ export function FetchProgressPanel() {
           localStorage.removeItem(RUN_ID_KEY);
           localStorage.removeItem(STARTED_AT_KEY);
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!alive) return;
-        setError(e?.message || "Polling failed");
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Polling failed");
+        }
       }
     }, 3000);
     return () => {

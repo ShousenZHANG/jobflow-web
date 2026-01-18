@@ -54,6 +54,12 @@ export function FetchClient() {
     return jobTitle.trim() ? [jobTitle.trim()] : [];
   }, [jobTitle]);
 
+  function getErrorMessage(err: unknown, fallback = "Failed") {
+    if (err instanceof Error) return err.message;
+    if (typeof err === "string") return err;
+    return fallback;
+  }
+
   async function createRun() {
     const res = await fetch("/api/fetch-runs", {
       method: "POST",
@@ -102,9 +108,9 @@ export function FetchClient() {
         if (r.status === "FAILED") {
           clearInterval(t);
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!alive) return;
-        setError(e?.message || "Polling failed");
+        setError(getErrorMessage(e, "Polling failed"));
       }
     }, 3000);
     return () => {
@@ -141,8 +147,8 @@ export function FetchClient() {
       window.dispatchEvent(new Event("jobflow-fetch-started"));
       await triggerRun(id);
       setStatus("RUNNING");
-    } catch (e: any) {
-      setError(e?.message || "Failed");
+    } catch (e: unknown) {
+      setError(getErrorMessage(e));
     } finally {
       setIsSubmitting(false);
     }
@@ -155,6 +161,12 @@ export function FetchClient() {
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold">Fetch jobs</h1>
       </div>
+
+      {error ? (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      ) : null}
 
       <Card>
         <CardContent className="grid gap-4 p-4 md:grid-cols-4">

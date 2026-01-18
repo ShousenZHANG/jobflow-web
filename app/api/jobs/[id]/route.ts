@@ -19,7 +19,7 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
@@ -56,7 +56,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
@@ -84,7 +84,7 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }

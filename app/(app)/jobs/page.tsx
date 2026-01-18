@@ -7,7 +7,7 @@ import { prisma } from "@/lib/server/prisma";
 export default async function JobsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login?callbackUrl=/jobs");
-  const userId = (session.user as any).id as string;
+  const userId = session.user.id;
 
   const itemsRaw = await prisma.job.findMany({
     where: { userId },

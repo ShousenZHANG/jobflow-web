@@ -59,7 +59,7 @@ const CreateSchema = z
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = session?.user?.id;
   const userEmail = session?.user?.email ?? null;
   if (!userId || !userEmail) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

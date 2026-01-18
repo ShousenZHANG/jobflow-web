@@ -146,9 +146,12 @@ export async function POST(req: Request) {
     await Promise.all(workers);
 
     return NextResponse.json({ ok: true, imported: written, invalid: invalid.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: "IMPORT_FAILED", details: err?.message || String(err) },
+      {
+        error: "IMPORT_FAILED",
+        details: err instanceof Error ? err.message : String(err),
+      },
       { status: 500 },
     );
   }

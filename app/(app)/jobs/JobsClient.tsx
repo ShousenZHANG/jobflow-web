@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -68,6 +67,12 @@ export function JobsClient({
   const [detailLoadingId, setDetailLoadingId] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
 
+  function getErrorMessage(err: unknown, fallback = "Failed") {
+    if (err instanceof Error) return err.message;
+    if (typeof err === "string") return err;
+    return fallback;
+  }
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
     return () => clearTimeout(t);
@@ -111,8 +116,8 @@ export function JobsClient({
         copy[nextIndex] = cursor;
         return copy;
       });
-    } catch (e: any) {
-      setError(e?.message || "Failed");
+    } catch (e: unknown) {
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -166,8 +171,8 @@ export function JobsClient({
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to update status");
-    } catch (e: any) {
-      throw new Error(e?.message || "Failed to update status");
+    } catch (e: unknown) {
+      throw new Error(getErrorMessage(e, "Failed to update status"));
     }
   }
 
@@ -201,12 +206,12 @@ export function JobsClient({
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: previous } : it)));
-      setError(e?.message || "Failed to update status");
+      setError(getErrorMessage(e, "Failed to update status"));
       toast({
         title: "Update failed",
-        description: e?.message || "The change could not be saved.",
+        description: getErrorMessage(e, "The change could not be saved."),
         variant: "destructive",
         duration: 2200,
       });
@@ -235,12 +240,12 @@ export function JobsClient({
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       setItems(previousItems);
-      setError(e?.message || "Failed to delete job");
+      setError(getErrorMessage(e, "Failed to delete job"));
       toast({
         title: "Delete failed",
-        description: e?.message || "The job could not be removed.",
+        description: getErrorMessage(e, "The job could not be removed."),
         variant: "destructive",
         duration: 2200,
       });
@@ -286,9 +291,9 @@ export function JobsClient({
           [selectedId]: { description: json.description ?? null },
         }));
       })
-      .catch((e: any) => {
-        if (e?.name === "AbortError") return;
-        setDetailError(e?.message || "Failed to load details");
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setDetailError(getErrorMessage(e, "Failed to load details"));
       })
       .finally(() => {
         setDetailLoadingId((prev) => (prev === selectedId ? null : prev));
@@ -386,7 +391,10 @@ export function JobsClient({
           </div>
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Status</div>
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => setStatusFilter(v as JobStatus | "ALL")}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All" />
               </SelectTrigger>
@@ -419,7 +427,7 @@ export function JobsClient({
               <SelectItem value="50">50 results</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as any)}>
+          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "newest" | "oldest")}>
             <SelectTrigger className="h-9 w-[170px] bg-muted/40">
               <SelectValue placeholder="Posted" />
             </SelectTrigger>
