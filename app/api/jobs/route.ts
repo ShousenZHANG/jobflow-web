@@ -12,6 +12,7 @@ const QuerySchema = z.object({
   status: z.enum(["NEW", "APPLIED", "REJECTED"]).optional(),
   q: z.string().trim().min(1).max(80).optional(),
   location: z.string().trim().min(1).max(80).optional(),
+  jobLevel: z.string().trim().min(1).max(80).optional(),
   sort: z.enum(["newest", "oldest"]).optional().default("newest"),
 });
 
@@ -31,7 +32,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const { limit, cursor, status, q, location, sort } = parsed.data;
+  const { limit, cursor, status, q, location, jobLevel, sort } = parsed.data;
 
   const orderBy =
     sort === "oldest"
@@ -78,6 +79,9 @@ export async function GET(req: Request) {
     } else {
       andClauses.push({ location: { contains: location, mode: "insensitive" } });
     }
+  }
+  if (jobLevel) {
+    andClauses.push({ jobLevel: { equals: jobLevel } });
   }
 
   const where: JobWhereClause = {

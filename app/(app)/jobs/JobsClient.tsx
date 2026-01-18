@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapPin, Search } from "lucide-react";
+import { ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,16 +56,17 @@ export function JobsClient({
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
-  const [pageSize, setPageSize] = useState(20);
+  const pageSize = 20;
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [locationFilter, setLocationFilter] = useState("ALL");
-  const [viewMode, setViewMode] = useState<"recommended" | "search">("search");
+  const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
   const [detailsById, setDetailsById] = useState<Record<string, { description: string | null }>>(
     {},
   );
   const [detailLoadingId, setDetailLoadingId] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -84,9 +85,10 @@ export function JobsClient({
     if (statusFilter !== "ALL") sp.set("status", statusFilter);
     if (debouncedQ.trim()) sp.set("q", debouncedQ.trim());
     if (locationFilter !== "ALL") sp.set("location", locationFilter);
+    if (jobLevelFilter !== "ALL") sp.set("jobLevel", jobLevelFilter);
     sp.set("sort", sortOrder);
     return sp.toString();
-  }, [statusFilter, debouncedQ, pageSize, sortOrder, locationFilter]);
+  }, [statusFilter, debouncedQ, pageSize, sortOrder, locationFilter, jobLevelFilter]);
 
   const initialQueryRef = useRef<string | null>(null);
   if (initialQueryRef.current === null) {
@@ -275,6 +277,36 @@ export function JobsClient({
   }, [items, selectedId]);
 
   const selectedJob = items.find((it) => it.id === selectedId) ?? null;
+  const selectedDescription = selectedJob ? detailsById[selectedJob.id]?.description ?? "" : "";
+  const isLongDescription = selectedDescription.length > 600;
+  const isExpanded =
+    selectedJob && expandedDescriptions[selectedJob.id] ? true : false;
+
+  function renderDescription(text: string) {
+    const blocks = text
+      .split(/\n\s*\n/g)
+      .map((block) => block.trim())
+      .filter(Boolean);
+    return blocks.map((block, index) => {
+      const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+      const isList = lines.every((line) => /^[-*•]/.test(line));
+      if (isList) {
+        return (
+          <ul key={`${index}-list`} className="list-disc space-y-2 pl-5 text-sm text-foreground/80">
+            {lines.map((line, lineIndex) => (
+              <li key={`${index}-${lineIndex}`}>{line.replace(/^[-*•]\s*/, "")}</li>
+            ))}
+          </ul>
+        );
+      }
+      const content = lines.join(" ");
+      return (
+        <p key={`${index}-p`} className="text-sm leading-7 text-foreground/80">
+          {content}
+        </p>
+      );
+    });
+  }
 
   useEffect(() => {
     if (!selectedId) return;
@@ -307,25 +339,8 @@ export function JobsClient({
         <div className="space-y-1">
           <h1 className="text-3xl font-semibold tracking-tight">Curated Jobs</h1>
         </div>
-        <div className="inline-flex items-center rounded-full border bg-muted/50 p-1 text-sm">
-          <button
-            type="button"
-            className={`rounded-full px-4 py-1.5 transition ${
-              viewMode === "recommended" ? "bg-background shadow-sm" : "text-muted-foreground"
-            }`}
-            onClick={() => setViewMode("recommended")}
-          >
-            Recommended
-          </button>
-          <button
-            type="button"
-            className={`rounded-full px-4 py-1.5 transition ${
-              viewMode === "search" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-            onClick={() => setViewMode("search")}
-          >
-            Search
-          </button>
+        <div className="rounded-full border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground">
+          Search
         </div>
       </div>
 
@@ -406,6 +421,28 @@ export function JobsClient({
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Job level</div>
+            <Select value={jobLevelFilter} onValueChange={setJobLevelFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All levels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All levels</SelectItem>
+                {Array.from(
+                  new Set(
+                    items
+                      .map((item) => item.jobLevel)
+                      .filter((level): level is string => Boolean(level)),
+                  ),
+                ).map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex items-end">
             <Button onClick={triggerSearch} disabled={loading} className="w-full lg:w-auto">
               Search
@@ -414,19 +451,6 @@ export function JobsClient({
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Select
-            value={String(pageSize)}
-            onValueChange={(v) => setPageSize(Number(v))}
-          >
-            <SelectTrigger className="h-9 w-[150px] bg-muted/40">
-              <SelectValue placeholder="Results" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10 results</SelectItem>
-              <SelectItem value="20">20 results</SelectItem>
-              <SelectItem value="50">50 results</SelectItem>
-            </SelectContent>
-          </Select>
           <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "newest" | "oldest")}>
             <SelectTrigger className="h-9 w-[170px] bg-muted/40">
               <SelectValue placeholder="Posted" />
@@ -573,18 +597,16 @@ export function JobsClient({
                       <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild size="sm" className="gap-1">
                     <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
+                      <ExternalLink className="h-4 w-4" />
                       Open job
                     </a>
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled={deletingIds.has(selectedJob.id)}
-                      >
+                      <Button variant="outline" size="sm" disabled={deletingIds.has(selectedJob.id)}>
+                        <Trash2 className="h-4 w-4" />
                         Remove
                       </Button>
                     </AlertDialogTrigger>
@@ -627,9 +649,39 @@ export function JobsClient({
                     <Skeleton className="h-4 w-3/4" />
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground whitespace-pre-wrap">
-                    {detailsById[selectedJob.id]?.description ??
-                      "No description available for this job yet."}
+                  <div className="rounded-lg border border-dashed bg-muted/30 p-5">
+                    {selectedDescription ? (
+                      <div className="space-y-3">
+                        <div
+                          className={`relative space-y-4 font-[450] ${
+                            !isExpanded ? "max-h-56 overflow-hidden" : ""
+                          }`}
+                        >
+                          {renderDescription(selectedDescription)}
+                          {!isExpanded && isLongDescription ? (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-muted/60 to-transparent" />
+                          ) : null}
+                        </div>
+                        {isLongDescription ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setExpandedDescriptions((prev) => ({
+                                ...prev,
+                                [selectedJob.id]: !isExpanded,
+                              }))
+                            }
+                          >
+                            {isExpanded ? "Show less" : "Show more"}
+                          </Button>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        No description available for this job yet.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
