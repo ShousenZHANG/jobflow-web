@@ -317,6 +317,25 @@ export function JobsClient({
     }
   }, [items, selectedId]);
 
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/jobs?limit=50", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (!alive) return;
+        const levels = (json.items ?? [])
+          .map((item: JobItem) => item.jobLevel)
+          .filter((level: string | null): level is string => Boolean(level));
+        setJobLevelOptions(Array.from(new Set(levels)));
+      })
+      .catch(() => {
+        if (!alive) return;
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const selectedJob = items.find((it) => it.id === selectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const selectedDescription = selectedJob ? detailsById[selectedJob.id]?.description ?? "" : "";

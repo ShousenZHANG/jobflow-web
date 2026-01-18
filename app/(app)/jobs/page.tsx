@@ -4,6 +4,9 @@ import { authOptions } from "@/auth";
 import { JobsClient } from "./JobsClient";
 import { prisma } from "@/lib/server/prisma";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function JobsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login?callbackUrl=/jobs");

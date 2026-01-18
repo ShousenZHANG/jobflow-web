@@ -22,6 +22,7 @@ export async function GET(req: Request) {
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
+  const ifNoneMatch = req.headers.get("if-none-match");
 
   const url = new URL(req.url);
   const parsed = QuerySchema.safeParse(Object.fromEntries(url.searchParams));
@@ -109,10 +110,26 @@ export async function GET(req: Request) {
     },
   });
 
-  return NextResponse.json({
-    items: jobs,
-    nextCursor: jobs.length ? jobs[jobs.length - 1].id : null,
-  });
+  const lastUpdated = jobs.length ? jobs[0].updatedAt?.toISOString?.() : "empty";
+  const etag = `W/"jobs:${userId}:${cursor ?? "start"}:${jobs.length}:${lastUpdated}"`;
+  if (ifNoneMatch && ifNoneMatch === etag) {
+    return new NextResponse(null, { status: 304 });
+  }
+
+  return new NextResponse(
+    JSON.stringify({
+      items: jobs,
+      nextCursor: jobs.length ? jobs[jobs.length - 1].id : null,
+    }),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ETag: etag,
+        "Cache-Control": "private, max-age=0, must-revalidate",
+      },
+    },
+  );
 }
 
 const CreateSchema = z.object({

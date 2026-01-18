@@ -12,6 +12,10 @@ from jobspy import scrape_jobs
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s %(name)s: %(message)s')
 logger = logging.getLogger("jobspy_runner")
 
+SCRAPE_RETRIES = 2
+SCRAPE_BACKOFF_SEC = 2
+IMPORT_RETRIES = 2
+
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
 
@@ -51,10 +55,20 @@ EXCLUDE_SPONSORSHIP_RE = re.compile(
 def _build_query_phrases(queries: List[str]) -> List[str]:
     phrases: List[str] = []
     for q in queries or []:
-        q2 = (q or "").strip().strip('"').strip("'")
+        q2 = _normalize_text((q or "").strip().strip('"').strip("'"))
         if q2:
             phrases.append(q2.lower())
     return phrases
+
+
+def _normalize_text(text: str) -> str:
+    if not text:
+        return ""
+    s = str(text).lower()
+    # Normalize separators so "full-stack" matches "full stack".
+    s = re.sub(r"[^a-z0-9]+", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
 
 def _build_exclude_title_re(terms: List[str]) -> Optional[re.Pattern]:
@@ -82,8 +96,8 @@ def filter_title(
     if enforce_include:
         phrases = _build_query_phrases(queries)
         if phrases:
-            low = out["title"].fillna("").str.lower()
-            mask = low.apply(lambda s: any(p in s for p in phrases))
+            norm = out["title"].fillna("").apply(_normalize_text)
+            mask = norm.apply(lambda s: any(p in s for p in phrases))
             out = out[mask].copy()
     return out
 
@@ -205,27 +219,40 @@ def clean_description(df: pd.DataFrame) -> pd.DataFrame:
 def fetch_linkedin(queries: List[str], location: str, hours_old: int, results_wanted: int) -> pd.DataFrame:
     dfs: List[pd.DataFrame] = []
     for term in queries:
-        try:
-            df = scrape_jobs(
-                site_name=["linkedin"],
-                search_term=term,
-                location=location,
-                hours_old=hours_old,
-                results_wanted=results_wanted,
-                verbose=0,
-                linkedin_fetch_description=True,
-            )
-        except Exception as e:
-            logger.error("scrape_jobs failed term=%s error=%s", term, e)
+        df = None
+        for attempt in range(SCRAPE_RETRIES + 1):
+            try:
+                df = scrape_jobs(
+                    site_name=["linkedin"],
+                    search_term=term,
+                    location=location,
+                    hours_old=hours_old,
+                    results_wanted=results_wanted,
+                    verbose=0,
+                    linkedin_fetch_description=True,
+                )
+                break
+            except Exception as e:
+                if attempt >= SCRAPE_RETRIES:
+                    logger.error("scrape_jobs failed term=%s error=%s", term, e)
+                    df = None
+                else:
+                    time.sleep(SCRAPE_BACKOFF_SEC * (attempt + 1))
+        if df is None:
             continue
         if df is None or df.empty:
             continue
         df = df.loc[:, df.notna().any(axis=0)]
+        if "job_url" in df.columns:
+            df = df.drop_duplicates(subset=["job_url"], keep="first")
         df["source_query"] = term
         dfs.append(df)
     if not dfs:
         return pd.DataFrame()
-    return pd.concat(dfs, ignore_index=True, sort=False)
+    out = pd.concat(dfs, ignore_index=True, sort=False)
+    if "job_url" in out.columns:
+        out = out.drop_duplicates(subset=["job_url"], keep="first")
+    return out
 
 
 def api_base() -> str:
@@ -312,12 +339,14 @@ def main():
     if df.empty:
         items: List[Dict[str, Any]] = []
     else:
+        logger.info("Fetched %s rows before filtering", len(df))
         df = filter_title(
             df,
             search_terms,
             enforce_include=include_from_queries,
             exclude_terms=exclude_title_terms if apply_excludes else None,
         )
+        logger.info("Rows after title filter: %s", len(df))
         # Clean before description exclusion for more consistent matching
         df = clean_description(df)
         if filter_desc:
@@ -328,6 +357,7 @@ def main():
                 exclude_sponsorship=exclude_sponsorship,
                 exclude_years=exclude_years,
             )
+            logger.info("Rows after description filter: %s", len(df))
         df = keep_columns(df)
         items = df.to_dict(orient="records")
 
@@ -337,14 +367,21 @@ def main():
         batch_size = 50
         for i in range(0, len(items), batch_size):
             batch = items[i : i + batch_size]
-            imp_res = requests.post(
-                f"{base}/api/admin/import",
-                headers=headers_secret("IMPORT_SECRET", "x-import-secret"),
-                data=json.dumps({"userEmail": user_email, "items": batch}),
-                timeout=120,
-            )
-            if not imp_res.ok:
-                raise RuntimeError(f"import failed status={imp_res.status_code} body={imp_res.text}")
+            imp_res = None
+            for attempt in range(IMPORT_RETRIES + 1):
+                imp_res = requests.post(
+                    f"{base}/api/admin/import",
+                    headers=headers_secret("IMPORT_SECRET", "x-import-secret"),
+                    data=json.dumps({"userEmail": user_email, "items": batch}),
+                    timeout=120,
+                )
+                if imp_res.ok:
+                    break
+                if attempt >= IMPORT_RETRIES:
+                    raise RuntimeError(
+                        f"import failed status={imp_res.status_code} body={imp_res.text}"
+                    )
+                time.sleep(2 * (attempt + 1))
             imported += int(imp_res.json().get("imported", 0))
 
     # Update run
