@@ -551,11 +551,10 @@ export function JobsClient({
                 <PaginationItem>
                   <PaginationNext
                     onClick={() => {
-                      if (nextCursor) {
-                        scrollToTop();
-                        setItems([]);
-                        void fetchPage(nextCursor, pageIndex + 1);
-                      }
+                      if (loading || !nextCursor) return;
+                      scrollToTop();
+                      setItems([]);
+                      void fetchPage(nextCursor, pageIndex + 1);
                     }}
                     aria-disabled={loading || !nextCursor}
                     className={loading || !nextCursor ? "pointer-events-none opacity-50" : ""}
