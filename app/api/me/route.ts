@@ -4,10 +4,11 @@ import { authOptions } from "@/auth";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
+  const timeZone = req.headers.get("x-user-timezone") ?? null;
   if (!session?.user) {
-    return NextResponse.json({ user: null }, { status: 200 });
+    return NextResponse.json({ user: null, timeZone }, { status: 200 });
   }
 
   return NextResponse.json({
@@ -16,6 +17,7 @@ export async function GET() {
       email: session.user.email ?? null,
       name: session.user.name ?? null,
     },
+    timeZone,
   });
 }
 

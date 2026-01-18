@@ -88,6 +88,17 @@ function formatInsertedTime(iso: string) {
   return `${diffDays} day ago`;
 }
 
+function formatLocalDateTime(iso: string, timeZone: string | null) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "unknown";
+  const options: Intl.DateTimeFormatOptions = {
+    dateStyle: "medium",
+    timeStyle: "short",
+    ...(timeZone ? { timeZone } : {}),
+  };
+  return new Intl.DateTimeFormat(undefined, options).format(date);
+}
+
 export function JobsClient({
   initialItems = [],
   initialCursor = null,
@@ -120,6 +131,7 @@ export function JobsClient({
   const [detailLoadingId, setDetailLoadingId] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [timeZone, setTimeZone] = useState<string | null>(null);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -131,6 +143,11 @@ export function JobsClient({
     const t = setTimeout(() => setDebouncedQ(q), 300);
     return () => clearTimeout(t);
   }, [q]);
+
+  useEffect(() => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setTimeZone(tz || null);
+  }, []);
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
@@ -613,7 +630,10 @@ export function JobsClient({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <Badge className={statusClass[it.status]}>{it.status}</Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span
+                      className="text-xs text-muted-foreground"
+                      title={formatLocalDateTime(it.createdAt, timeZone)}
+                    >
                       {formatInsertedTime(it.createdAt)}
                     </span>
                   </div>
