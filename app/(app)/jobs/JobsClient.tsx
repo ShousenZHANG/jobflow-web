@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -319,7 +319,6 @@ export function JobsClient({
 
   const selectedJob = items.find((it) => it.id === selectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
-  const detailsTopRef = useRef<HTMLDivElement | null>(null);
   const selectedDescription = selectedJob ? detailsById[selectedJob.id]?.description ?? "" : "";
   const isLongDescription = selectedDescription.length > 600;
   const isExpanded =
@@ -333,29 +332,12 @@ export function JobsClient({
     return new RegExp(`(${patterns.join("|")})`, "gi");
   }, []);
 
-  function scrollDetailsToTop() {
+  useLayoutEffect(() => {
     const container = detailsScrollRef.current;
-    if (container) {
-      container.scrollTop = 0;
-      container.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    detailsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  useEffect(() => {
-    if (!selectedId) return;
-    requestAnimationFrame(() => scrollDetailsToTop());
-    const t = setTimeout(() => scrollDetailsToTop(), 80);
-    return () => clearTimeout(t);
-  }, [selectedId]);
-
-  useEffect(() => {
-    if (!selectedId) return;
-    if (!detailsById[selectedId]) return;
-    requestAnimationFrame(() => scrollDetailsToTop());
-    const t = setTimeout(() => scrollDetailsToTop(), 80);
-    return () => clearTimeout(t);
-  }, [selectedId, detailsById]);
+    if (!container) return;
+    container.scrollTop = 0;
+    container.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedId, detailLoadingId]);
 
   function highlightText(text: string) {
     const parts = text.split(highlightRegex);
@@ -579,10 +561,7 @@ export function JobsClient({
                 <button
                   key={it.id}
                   type="button"
-                  onClick={() => {
-                    setSelectedId(it.id);
-                    requestAnimationFrame(() => scrollDetailsToTop());
-                  }}
+                  onClick={() => setSelectedId(it.id)}
                   className={`w-full rounded-lg border-l-4 px-3 py-3 text-left transition ${
                     active
                       ? "border-l-primary border-primary/50 bg-primary/5 shadow-sm"
@@ -719,7 +698,6 @@ export function JobsClient({
             )}
           </div>
           <div ref={detailsScrollRef} className="flex-1 overflow-auto p-4">
-            <div ref={detailsTopRef} />
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
