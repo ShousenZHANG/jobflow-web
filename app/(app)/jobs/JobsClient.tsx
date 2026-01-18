@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
 import { ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +40,42 @@ type JobItem = {
   updatedAt: string;
 };
 
+const HIGHLIGHT_KEYWORDS = [
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Node",
+  "Node.js",
+  "Python",
+  "Java",
+  "C#",
+  "C++",
+  "Go",
+  "AWS",
+  "Azure",
+  "GCP",
+  "Docker",
+  "Kubernetes",
+  "SQL",
+  "PostgreSQL",
+  "MySQL",
+  "MongoDB",
+  "Redis",
+  "GraphQL",
+  "REST",
+  "CI/CD",
+  "Git",
+  "Linux",
+  "Terraform",
+  "React Native",
+  "Tailwind",
+];
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function JobsClient({
   initialItems = [],
   initialCursor = null,
@@ -61,6 +101,7 @@ export function JobsClient({
   const [locationFilter, setLocationFilter] = useState("ALL");
   const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
+  const [jobLevelOptions, setJobLevelOptions] = useState<string[]>([]);
   const [detailsById, setDetailsById] = useState<Record<string, { description: string | null }>>(
     {},
   );
@@ -281,32 +322,51 @@ export function JobsClient({
   const isLongDescription = selectedDescription.length > 600;
   const isExpanded =
     selectedJob && expandedDescriptions[selectedJob.id] ? true : false;
+  const highlightRegex = useMemo(() => {
+    const patterns = HIGHLIGHT_KEYWORDS.map((keyword) => {
+      const escaped = escapeRegExp(keyword);
+      const isPlainWord = /^[a-z0-9.+#-]+$/i.test(keyword);
+      return isPlainWord ? `\\b${escaped}\\b` : escaped;
+    });
+    return new RegExp(`(${patterns.join("|")})`, "gi");
+  }, []);
 
-  function renderDescription(text: string) {
-    const blocks = text
-      .split(/\n\s*\n/g)
-      .map((block) => block.trim())
-      .filter(Boolean);
-    return blocks.map((block, index) => {
-      const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
-      const isList = lines.every((line) => /^[-*•]/.test(line));
-      if (isList) {
+  function highlightText(text: string) {
+    const parts = text.split(highlightRegex);
+    return parts.map((part, index) => {
+      if (highlightRegex.test(part)) {
         return (
-          <ul key={`${index}-list`} className="list-disc space-y-2 pl-5 text-sm text-foreground/80">
-            {lines.map((line, lineIndex) => (
-              <li key={`${index}-${lineIndex}`}>{line.replace(/^[-*•]\s*/, "")}</li>
-            ))}
-          </ul>
+          <mark
+            key={`${part}-${index}`}
+            className="rounded-sm bg-amber-200/70 px-1 py-0.5 font-medium text-amber-900"
+          >
+            {part}
+          </mark>
         );
       }
-      const content = lines.join(" ");
-      return (
-        <p key={`${index}-p`} className="text-sm leading-7 text-foreground/80">
-          {content}
-        </p>
-      );
+      return <span key={`${part}-${index}`}>{part}</span>;
     });
   }
+
+  function renderHighlighted(children: React.ReactNode): React.ReactNode {
+    if (typeof children === "string") return highlightText(children);
+    if (Array.isArray(children)) {
+      return children.map((child, index) => (
+        <span key={index}>{renderHighlighted(child)}</span>
+      ));
+    }
+    return children;
+  }
+
+  useEffect(() => {
+    if (!items.length) return;
+    const levels = items
+      .map((item) => item.jobLevel)
+      .filter((level): level is string => Boolean(level));
+    if (!levels.length) return;
+    setJobLevelOptions((prev) => Array.from(new Set([...prev, ...levels])));
+  }, [items]);
+
 
   useEffect(() => {
     if (!selectedId) return;
@@ -345,7 +405,7 @@ export function JobsClient({
       </div>
 
       <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_0.9fr_auto]">
+        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
             <div className="relative">
@@ -405,6 +465,22 @@ export function JobsClient({
             </div>
           </div>
           <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Job level</div>
+            <Select value={jobLevelFilter} onValueChange={setJobLevelFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All levels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All levels</SelectItem>
+                {jobLevelOptions.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Status</div>
             <Select
               value={statusFilter}
@@ -421,28 +497,6 @@ export function JobsClient({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Job level</div>
-            <Select value={jobLevelFilter} onValueChange={setJobLevelFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All levels" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All levels</SelectItem>
-                {Array.from(
-                  new Set(
-                    items
-                      .map((item) => item.jobLevel)
-                      .filter((level): level is string => Boolean(level)),
-                  ),
-                ).map((level) => (
-                  <SelectItem key={level} value={level}>
-                    {level}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="flex items-end">
             <Button onClick={triggerSearch} disabled={loading} className="w-full lg:w-auto">
               Search
@@ -450,24 +504,24 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "newest" | "oldest")}>
-            <SelectTrigger className="h-9 w-[170px] bg-muted/40">
-              <SelectValue placeholder="Posted" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Posted: newest</SelectItem>
-              <SelectItem value="oldest">Posted: oldest</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="ml-auto flex items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "newest" | "oldest")}>
+              <SelectTrigger className="h-9 w-[170px] bg-muted/40">
+                <SelectValue placeholder="Posted" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Posted: newest</SelectItem>
+                <SelectItem value="oldest">Posted: oldest</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="rounded-full border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
               {items.length} results
             </div>
-            <Button asChild variant="outline">
-              <a href="/fetch">Fetch jobs</a>
-            </Button>
           </div>
+          <Button asChild variant="outline">
+            <a href="/fetch">Fetch jobs</a>
+          </Button>
         </div>
       </div>
 
@@ -596,7 +650,7 @@ export function JobsClient({
                       <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button asChild size="sm" className="gap-1">
+                  <Button asChild size="sm" className="gap-1 bg-blue-600 text-white hover:bg-blue-700">
                     <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="h-4 w-4" />
                       Open job
@@ -604,7 +658,12 @@ export function JobsClient({
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={deletingIds.has(selectedJob.id)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={deletingIds.has(selectedJob.id)}
+                        className="gap-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                      >
                         <Trash2 className="h-4 w-4" />
                         Remove
                       </Button>
@@ -652,11 +711,38 @@ export function JobsClient({
                     {selectedDescription ? (
                       <div className="space-y-3">
                         <div
-                          className={`relative space-y-4 font-[450] ${
+                          className={`relative space-y-4 ${
                             !isExpanded ? "max-h-56 overflow-hidden" : ""
                           }`}
                         >
-                          {renderDescription(selectedDescription)}
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeHighlight]}
+                            components={{
+                              p: ({ children }) => (
+                                <p className="text-sm leading-7 text-foreground/80">
+                                  {renderHighlighted(children)}
+                                </p>
+                              ),
+                              li: ({ children }) => (
+                                <li className="text-sm leading-7 text-foreground/80">
+                                  {renderHighlighted(children)}
+                                </li>
+                              ),
+                              strong: ({ children }) => (
+                                <strong className="font-semibold text-foreground">
+                                  {renderHighlighted(children)}
+                                </strong>
+                              ),
+                              code: ({ children }) => (
+                                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">
+                                  {children}
+                                </code>
+                              ),
+                            }}
+                          >
+                            {selectedDescription}
+                          </ReactMarkdown>
                           {!isExpanded && isLongDescription ? (
                             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-muted/60 to-transparent" />
                           ) : null}
