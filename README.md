@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jobflow
 
-## Getting Started
+Jobflow is a modern job search dashboard that helps you fetch, review, and track job opportunities in one clean workflow. It combines a Next.js app, Prisma/Postgres, NextAuth, and an automated JobSpy-based fetcher that runs via GitHub Actions.
 
-First, run the development server:
+## Key Features
+
+- Clean dashboard for reviewing jobs and updating status
+- Fetch page to run curated searches with filters
+- Smart search across title, company, and location
+- Job-level filtering and pagination with smooth UX
+- Markdown-enhanced job descriptions with keyword highlighting
+- Async fetch progress with persistent panel
+- Robust import pipeline with retries and dedupe
+
+## Tech Stack
+
+- Next.js App Router
+- Prisma + PostgreSQL (Neon)
+- NextAuth (Google, GitHub)
+- Tailwind CSS + shadcn/ui
+- JobSpy (Python) via GitHub Actions
+
+## Local Development
+
+Install dependencies and start the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - start dev server
+- `npm run lint` - lint
+- `npm run build` - production build
+- `npm run start` - start production server
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env` file with the following (example names shown):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### App + Auth
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `DATABASE_URL`
+- `NEXTAUTH_SECRET` (or `AUTH_SECRET`)
+- `NEXTAUTH_URL` (optional for local dev)
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GITHUB_ID`
+- `GITHUB_SECRET`
 
-## Deploy on Vercel
+### Fetcher + GitHub Actions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `GITHUB_OWNER`
+- `GITHUB_REPO`
+- `GITHUB_TOKEN` (PAT with workflow access)
+- `GITHUB_WORKFLOW_FILE` (default: `jobspy-fetch.yml`)
+- `GITHUB_REF` (default: `master`)
+- `JOBFLOW_WEB_URL` (public app URL for fetcher callbacks)
+- `FETCH_RUN_SECRET` (shared secret for fetcher config endpoint)
+- `IMPORT_SECRET` (shared secret for import endpoint)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## App Structure
+
+- `app/(marketing)` - landing/dashboard home
+- `app/(auth)` - login
+- `app/(app)` - authenticated app (jobs, fetch)
+- `app/api` - API routes
+- `tools/fetcher/run_jobspy.py` - JobSpy runner
+- `prisma/schema.prisma` - database schema
+
+## Fetch Flow (End-to-End)
+
+1. User starts a fetch in `/fetch`
+2. App creates a `FetchRun` and triggers GitHub Actions
+3. GitHub Action runs `run_jobspy.py`
+4. Fetcher pulls run config from `/api/fetch-runs/[id]/config`
+5. JobSpy scrapes jobs, cleans and filters descriptions
+6. Results import via `/api/admin/import` (chunked, deduped)
+7. Progress is updated in `/api/fetch-runs/[id]/update`
+
+## Jobs API
+
+`GET /api/jobs`
+
+Supports:
+- `limit` (default 10)
+- `cursor`
+- `status` (`NEW`, `APPLIED`, `REJECTED`)
+- `q` (search across title/company/location)
+- `location`
+- `jobLevel`
+- `sort` (`newest`, `oldest`)
+
+`PATCH /api/jobs/[id]` updates status  
+`DELETE /api/jobs/[id]` removes a job
+
+## Database Notes
+
+Jobs are deduped on `(userId, jobUrl)`. Re-running the same fetch will update existing records instead of creating duplicates.
+
+## Deployment (Vercel)
+
+This project works with private GitHub repos. Set the repo connection in Vercel and configure all environment variables above. If you use a subdirectory, make sure Vercel’s root directory is set correctly.
+
+## Troubleshooting
+
+- 403 GitHub Action dispatch: check PAT permissions (`workflow` scope).
+- Missing results: increase `resultsWanted` / `hoursOld`, or review exclusion rules.
+- Import failures: check `JOBFLOW_WEB_URL`, `FETCH_RUN_SECRET`, `IMPORT_SECRET`.
+
+## License
+
+Private/internal use unless stated otherwise.
