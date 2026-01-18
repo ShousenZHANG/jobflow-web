@@ -14,14 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -29,10 +21,6 @@ export function FetchClient() {
   const router = useRouter();
   const [jobTitle, setJobTitle] = useState("Software Engineer");
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
-  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
   const [hoursOld, setHoursOld] = useState(48);
   const [resultsWanted, setResultsWanted] = useState(100);
   const [applyExcludes, setApplyExcludes] = useState(true);
@@ -64,39 +52,6 @@ export function FetchClient() {
 
   const queries = useMemo(() => {
     return jobTitle.trim() ? [jobTitle.trim()] : [];
-  }, [jobTitle]);
-
-  useEffect(() => {
-    const q = jobTitle.trim();
-    if (q.length < 2) {
-      setSuggestions([]);
-      setSuggestionsOpen(false);
-      return;
-    }
-    const controller = new AbortController();
-    setSuggestionsLoading(true);
-    setSuggestionsError(null);
-    const t = setTimeout(() => {
-      fetch(`/api/jobs/suggestions?q=${encodeURIComponent(q)}`, {
-        signal: controller.signal,
-        cache: "no-store",
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          setSuggestions(Array.isArray(json?.suggestions) ? json.suggestions : []);
-          setSuggestionsOpen(true);
-        })
-        .catch((err: unknown) => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          setSuggestionsError(getErrorMessage(err, "Failed to load suggestions"));
-          setSuggestionsOpen(true);
-        })
-        .finally(() => setSuggestionsLoading(false));
-    }, 200);
-    return () => {
-      clearTimeout(t);
-      controller.abort();
-    };
   }, [jobTitle]);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
@@ -217,47 +172,11 @@ export function FetchClient() {
         <CardContent className="grid gap-4 p-4 md:grid-cols-4">
           <div className="space-y-2">
             <Label>Job title</Label>
-            <div className="relative">
-              <Command className="w-full">
-                <CommandInput
-                  placeholder="e.g. Software Engineer"
-                  value={jobTitle}
-                  onValueChange={setJobTitle}
-                  onFocus={() => {
-                    if (jobTitle.trim().length >= 2) setSuggestionsOpen(true);
-                  }}
-                  onBlur={() => {
-                    setTimeout(() => setSuggestionsOpen(false), 150);
-                  }}
-                />
-                {suggestionsOpen ? (
-                  <CommandList className="absolute z-10 mt-1 w-full rounded-md border bg-popover shadow-sm">
-                    {suggestionsLoading ? (
-                      <CommandEmpty>Loading suggestions...</CommandEmpty>
-                    ) : suggestionsError ? (
-                      <CommandEmpty>{suggestionsError}</CommandEmpty>
-                    ) : suggestions.length ? (
-                      <CommandGroup heading="Suggestions">
-                        {suggestions.map((item) => (
-                          <CommandItem
-                            key={item}
-                            value={item}
-                            onSelect={(value) => {
-                              setJobTitle(value);
-                              setSuggestionsOpen(false);
-                            }}
-                          >
-                            {item}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    ) : (
-                      <CommandEmpty>No suggestions found.</CommandEmpty>
-                    )}
-                  </CommandList>
-                ) : null}
-              </Command>
-            </div>
+            <Input
+              placeholder="e.g. Software Engineer"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label>Location</Label>
