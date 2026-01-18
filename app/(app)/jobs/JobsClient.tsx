@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MapPin, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,6 +60,13 @@ export function JobsClient({
   const [pageSize, setPageSize] = useState(20);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [locationFilter, setLocationFilter] = useState("ALL");
+  const [viewMode, setViewMode] = useState<"recommended" | "search">("search");
+  const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
+  const [detailsById, setDetailsById] = useState<Record<string, { description: string | null }>>(
+    {},
+  );
+  const [detailLoadingId, setDetailLoadingId] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
@@ -113,6 +121,19 @@ export function JobsClient({
   function scrollToTop() {
     if (typeof window === "undefined") return;
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function triggerSearch() {
+    const trimmed = q.trim();
+    if (trimmed !== debouncedQ) {
+      setDebouncedQ(trimmed);
+      return;
+    }
+    setItems([]);
+    setNextCursor(null);
+    setCursorStack([null]);
+    setPageIndex(0);
+    void fetchPage(null, 0);
   }
 
   useEffect(() => {
@@ -238,34 +259,130 @@ export function JobsClient({
     REJECTED: "bg-rose-100 text-rose-700",
   };
 
+  useEffect(() => {
+    if (items.length === 0) {
+      setSelectedId(null);
+      return;
+    }
+    if (!selectedId || !items.some((it) => it.id === selectedId)) {
+      setSelectedId(items[0]?.id ?? null);
+    }
+  }, [items, selectedId]);
+
+  const selectedJob = items.find((it) => it.id === selectedId) ?? null;
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (detailsById[selectedId]) return;
+    const controller = new AbortController();
+    setDetailLoadingId(selectedId);
+    setDetailError(null);
+    fetch(`/api/jobs/${selectedId}`, { signal: controller.signal })
+      .then(async (res) => {
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.error || "Failed to load details");
+        setDetailsById((prev) => ({
+          ...prev,
+          [selectedId]: { description: json.description ?? null },
+        }));
+      })
+      .catch((e: any) => {
+        if (e?.name === "AbortError") return;
+        setDetailError(e?.message || "Failed to load details");
+      })
+      .finally(() => {
+        setDetailLoadingId((prev) => (prev === selectedId ? null : prev));
+      });
+    return () => controller.abort();
+  }, [selectedId, detailsById]);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">Jobs</h1>
-          <p className="text-sm text-muted-foreground">
-            Clear, modern tracking for your applications.
-          </p>
+          <h1 className="text-3xl font-semibold tracking-tight">Curated Jobs</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
-            <a href="/fetch">Fetch jobs</a>
-          </Button>
-          <Button onClick={() => void fetchPage(null, 0)} disabled={loading}>
-            Refresh
-          </Button>
+        <div className="inline-flex items-center rounded-full border bg-muted/50 p-1 text-sm">
+          <button
+            type="button"
+            className={`rounded-full px-4 py-1.5 transition ${
+              viewMode === "recommended" ? "bg-background shadow-sm" : "text-muted-foreground"
+            }`}
+            onClick={() => setViewMode("recommended")}
+          >
+            Recommended
+          </button>
+          <button
+            type="button"
+            className={`rounded-full px-4 py-1.5 transition ${
+              viewMode === "search" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+            }`}
+            onClick={() => setViewMode("search")}
+          >
+            Search
+          </button>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="grid gap-4 p-4 md:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
+        <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_0.9fr_auto]">
           <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Search</div>
-            <Input
-              placeholder="Search title, company, or location"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
+            <div className="text-xs text-muted-foreground">Title or Keywords</div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                className="pl-9"
+                placeholder="e.g. software engineer"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">Location</div>
+            <div className="relative">
+              <MapPin className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Select value={locationFilter} onValueChange={(v) => setLocationFilter(v)}>
+                <SelectTrigger className="pl-9">
+                  <SelectValue placeholder="All locations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All locations</SelectItem>
+                  <SelectItem value="state:NSW">NSW</SelectItem>
+                  <SelectItem value="state:VIC">VIC</SelectItem>
+                  <SelectItem value="state:QLD">QLD</SelectItem>
+                  <SelectItem value="state:WA">WA</SelectItem>
+                  <SelectItem value="state:SA">SA</SelectItem>
+                  <SelectItem value="state:ACT">ACT</SelectItem>
+                  <SelectItem value="state:TAS">TAS</SelectItem>
+                  <SelectItem value="state:NT">NT</SelectItem>
+                  {[
+                    "Sydney, New South Wales, Australia",
+                    "Melbourne, Victoria, Australia",
+                    "Brisbane, Queensland, Australia",
+                    "Perth, Western Australia, Australia",
+                    "Adelaide, South Australia, Australia",
+                    "Canberra, Australian Capital Territory, Australia",
+                    "Hobart, Tasmania, Australia",
+                    "Darwin, Northern Territory, Australia",
+                    "Sydney, NSW",
+                    "Melbourne, VIC",
+                    "Brisbane, QLD",
+                    "Perth, WA",
+                    "Adelaide, SA",
+                    "Canberra, ACT",
+                    "Hobart, TAS",
+                    "Darwin, NT",
+                    "Gold Coast, QLD",
+                    "Newcastle, NSW",
+                  ].map((loc) => (
+                    <SelectItem key={loc} value={loc}>
+                      {loc}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Status</div>
@@ -281,83 +398,46 @@ export function JobsClient({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Location</div>
-            <Select value={locationFilter} onValueChange={(v) => setLocationFilter(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="All locations" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All locations</SelectItem>
-                <SelectItem value="state:NSW">NSW</SelectItem>
-                <SelectItem value="state:VIC">VIC</SelectItem>
-                <SelectItem value="state:QLD">QLD</SelectItem>
-                <SelectItem value="state:WA">WA</SelectItem>
-                <SelectItem value="state:SA">SA</SelectItem>
-                <SelectItem value="state:ACT">ACT</SelectItem>
-                <SelectItem value="state:TAS">TAS</SelectItem>
-                <SelectItem value="state:NT">NT</SelectItem>
-                {[
-                  "Sydney, New South Wales, Australia",
-                  "Melbourne, Victoria, Australia",
-                  "Brisbane, Queensland, Australia",
-                  "Perth, Western Australia, Australia",
-                  "Adelaide, South Australia, Australia",
-                  "Canberra, Australian Capital Territory, Australia",
-                  "Hobart, Tasmania, Australia",
-                  "Darwin, Northern Territory, Australia",
-                  "Sydney, NSW",
-                  "Melbourne, VIC",
-                  "Brisbane, QLD",
-                  "Perth, WA",
-                  "Adelaide, SA",
-                  "Canberra, ACT",
-                  "Hobart, TAS",
-                  "Darwin, NT",
-                  "Gold Coast, QLD",
-                  "Newcastle, NSW",
-                ].map((loc) => (
-                  <SelectItem key={loc} value={loc}>
-                    {loc}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-end">
+            <Button onClick={triggerSearch} disabled={loading} className="w-full lg:w-auto">
+              Search
+            </Button>
           </div>
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Results per page</div>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(v) => setPageSize(Number(v))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => setPageSize(Number(v))}
+          >
+            <SelectTrigger className="h-9 w-[150px] bg-muted/40">
+              <SelectValue placeholder="Results" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10 results</SelectItem>
+              <SelectItem value="20">20 results</SelectItem>
+              <SelectItem value="50">50 results</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as any)}>
+            <SelectTrigger className="h-9 w-[170px] bg-muted/40">
+              <SelectValue placeholder="Posted" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Posted: newest</SelectItem>
+              <SelectItem value="oldest">Posted: oldest</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="rounded-full border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+              {items.length} results
+            </div>
+            <Button asChild variant="outline">
+              <a href="/fetch">Fetch jobs</a>
+            </Button>
           </div>
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Sort by time</div>
-            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as any)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest first</SelectItem>
-                <SelectItem value="oldest">Oldest first</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col justify-center rounded-md border bg-muted/40 px-4 py-3 text-sm">
-            <div className="text-muted-foreground">Showing</div>
-            <div className="text-lg font-semibold">{items.length}</div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {error ? (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
@@ -365,120 +445,194 @@ export function JobsClient({
         </div>
       ) : null}
 
-      <section className="grid gap-4">
-        {loading && items.length === 0 ? (
-          Array.from({ length: 6 }).map((_, idx) => (
-            <Card key={`s-${idx}`}>
-              <CardContent className="space-y-3 p-4">
-                <Skeleton className="h-5 w-2/3" />
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardContent>
-            </Card>
-          ))
-        ) : null}
-        {items.map((it) => (
-          <Card key={it.id}>
-            <CardContent className="grid gap-4 p-4 md:grid-cols-[1.6fr_1fr] md:items-center">
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base font-semibold">{it.title}</h3>
-                  <Badge className={statusClass[it.status]}>{it.status}</Badge>
+      <section className="grid gap-4 lg:grid-cols-[380px_1fr]">
+        <div className="flex h-full min-h-[520px] flex-col rounded-xl border bg-card">
+          <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
+            <span>Results</span>
+            <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
+          </div>
+          <div className="flex-1 space-y-3 overflow-auto p-3">
+            {loading && items.length === 0 ? (
+              Array.from({ length: 6 }).map((_, idx) => (
+                <div key={`s-${idx}`} className="rounded-lg border p-3">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="mt-2 h-3 w-1/2" />
+                  <Skeleton className="mt-2 h-3 w-1/3" />
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {it.company ?? "-"} · {it.location ?? "-"}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {it.jobType ?? "Unknown"} · {it.jobLevel ?? "Unknown"}
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                <Select
-                  value={it.status}
-                  onValueChange={(v) => updateStatus(it.id, v as JobStatus)}
-                  disabled={updatingIds.has(it.id)}
+              ))
+            ) : null}
+            {items.map((it) => {
+              const active = it.id === selectedId;
+              return (
+                <button
+                  key={it.id}
+                  type="button"
+                  onClick={() => setSelectedId(it.id)}
+                  className={`w-full rounded-lg border-l-4 px-3 py-3 text-left transition ${
+                    active
+                      ? "border-l-primary border-primary/50 bg-primary/5 shadow-sm"
+                      : "border-l-transparent hover:border-muted-foreground/30 hover:bg-muted/40"
+                  }`}
                 >
-                  <SelectTrigger className="h-9 w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="NEW">New</SelectItem>
-                    <SelectItem value="APPLIED">Applied</SelectItem>
-                    <SelectItem value="REJECTED">Rejected</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button asChild variant="outline" size="sm">
-                  <a href={it.jobUrl} target="_blank" rel="noreferrer">
-                    Open job
-                  </a>
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" disabled={deletingIds.has(it.id)}>
-                      Remove
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Remove this job?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete the job from your list.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteJob(it.id)}>
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge className={statusClass[it.status]}>{it.status}</Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(it.createdAt).toLocaleDateString("en-AU", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-sm font-semibold">{it.title}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {it.company ?? "-"} · {it.location ?? "-"}
+                  </div>
+                  <div className="mt-2 text-[11px] text-muted-foreground">
+                    {it.jobType ?? "Unknown"} · {it.jobLevel ?? "Unknown"}
+                  </div>
+                </button>
+              );
+            })}
+            {!items.length && !loading ? (
+              <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                No jobs yet.
               </div>
-            </CardContent>
-          </Card>
-        ))}
-        {!items.length && !loading ? (
-          <Card>
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              No jobs yet.
-            </CardContent>
-          </Card>
-        ) : null}
-      </section>
+            ) : null}
+          </div>
+          <div className="border-t px-4 py-3">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => {
+                      if (pageIndex > 0) {
+                        scrollToTop();
+                        setItems([]);
+                        void fetchPage(cursorStack[pageIndex - 1] ?? null, pageIndex - 1);
+                      }
+                    }}
+                    aria-disabled={loading || pageIndex === 0}
+                    className={loading || pageIndex === 0 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => {
+                      if (nextCursor) {
+                        scrollToTop();
+                        setItems([]);
+                        void fetchPage(nextCursor, pageIndex + 1);
+                      }
+                    }}
+                    aria-disabled={loading || !nextCursor}
+                    className={loading || !nextCursor ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">Page {pageIndex + 1}</div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => {
-                  if (pageIndex > 0) {
-                    scrollToTop();
-                    setItems([]);
-                    void fetchPage(cursorStack[pageIndex - 1] ?? null, pageIndex - 1);
-                  }
-                }}
-                aria-disabled={loading || pageIndex === 0}
-                className={loading || pageIndex === 0 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => {
-                  if (nextCursor) {
-                    scrollToTop();
-                    setItems([]);
-                    void fetchPage(nextCursor, pageIndex + 1);
-                  }
-                }}
-                aria-disabled={loading || !nextCursor}
-                className={loading || !nextCursor ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+        <div className="flex h-full min-h-[520px] flex-col rounded-xl border bg-card">
+          <div className="border-b px-4 py-3">
+            {selectedJob ? (
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-lg font-semibold">{selectedJob.title}</h2>
+                    <Badge className={statusClass[selectedJob.status]}>{selectedJob.status}</Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedJob.company ?? "-"} · {selectedJob.location ?? "-"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {selectedJob.jobType ?? "Unknown"} · {selectedJob.jobLevel ?? "Unknown"}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select
+                    value={selectedJob.status}
+                    onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
+                    disabled={updatingIds.has(selectedJob.id)}
+                  >
+                    <SelectTrigger className="h-9 w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NEW">New</SelectItem>
+                      <SelectItem value="APPLIED">Applied</SelectItem>
+                      <SelectItem value="REJECTED">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
+                      Open job
+                    </a>
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={deletingIds.has(selectedJob.id)}
+                      >
+                        Remove
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remove this job?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the job from your list.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteJob(selectedJob.id)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">Select a job to preview details.</div>
+            )}
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            {selectedJob ? (
+              <div className="space-y-4 text-sm text-muted-foreground">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Job Description
+                </div>
+                {detailError ? (
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                    {detailError}
+                  </div>
+                ) : null}
+                {detailLoadingId === selectedJob.id && !detailsById[selectedJob.id] ? (
+                  <div className="space-y-3 rounded-lg border border-dashed bg-muted/30 p-4">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground whitespace-pre-wrap">
+                    {detailsById[selectedJob.id]?.description ??
+                      "No description available for this job yet."}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                Use the list on the left to choose a job.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

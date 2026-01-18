@@ -51,6 +51,34 @@ export async function PATCH(
   return NextResponse.json({ ok: true });
 }
 
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id as string | undefined;
+  if (!userId) {
+    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  }
+
+  const params = await ctx.params;
+  const parsedParams = ParamsSchema.safeParse(params);
+  if (!parsedParams.success) {
+    return NextResponse.json({ error: "INVALID_PARAMS" }, { status: 400 });
+  }
+
+  const job = await prisma.job.findFirst({
+    where: { id: parsedParams.data.id, userId },
+    select: { id: true, description: true },
+  });
+
+  if (!job) {
+    return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+  }
+
+  return NextResponse.json({ id: job.id, description: job.description ?? null });
+}
+
 export async function DELETE(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
