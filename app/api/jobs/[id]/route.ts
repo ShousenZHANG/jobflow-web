@@ -95,13 +95,23 @@ export async function DELETE(
     return NextResponse.json({ error: "INVALID_PARAMS" }, { status: 400 });
   }
 
-  const deleted = await prisma.job.deleteMany({
+  const job = await prisma.job.findFirst({
     where: { id: parsedParams.data.id, userId },
+    select: { id: true, jobUrl: true },
   });
 
-  if (deleted.count === 0) {
+  if (!job) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
+
+  await prisma.$transaction([
+    prisma.deletedJobUrl.upsert({
+      where: { userId_jobUrl: { userId, jobUrl: job.jobUrl } },
+      update: {},
+      create: { userId, jobUrl: job.jobUrl },
+    }),
+    prisma.job.delete({ where: { id: job.id } }),
+  ]);
 
   return NextResponse.json({ ok: true });
 }

@@ -95,9 +95,16 @@ export async function POST(req: Request) {
       description: string | null;
     }>;
 
+    const deletedUrls = await prisma.deletedJobUrl.findMany({
+      where: { userId },
+      select: { jobUrl: true },
+    });
+    const deletedSet = new Set(deletedUrls.map((it) => it.jobUrl));
+
     const seen = new Set<string>();
     const normalized = normalizedRaw.filter((it) => {
       if (seen.has(it.jobUrl)) return false;
+      if (deletedSet.has(it.jobUrl)) return false;
       seen.add(it.jobUrl);
       return true;
     });
@@ -115,17 +122,15 @@ export async function POST(req: Request) {
       while (index < normalized.length) {
         const current = normalized[index];
         index += 1;
-        await prisma.job.upsert({
+        const existing = await prisma.job.findUnique({
           where: { userId_jobUrl: { userId, jobUrl: current.jobUrl } },
-          update: {
-            title: current.title,
-            company: current.company,
-            location: current.location,
-            jobType: current.jobType,
-            jobLevel: current.jobLevel,
-            description: current.description,
-          },
-          create: {
+          select: { id: true },
+        });
+        if (existing) {
+          continue;
+        }
+        await prisma.job.create({
+          data: {
             userId,
             jobUrl: current.jobUrl,
             title: current.title,

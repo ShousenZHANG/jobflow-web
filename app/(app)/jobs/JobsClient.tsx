@@ -76,6 +76,18 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function formatInsertedTime(iso: string) {
+  const createdAt = new Date(iso);
+  if (Number.isNaN(createdAt.getTime())) return "unknown";
+  const diffMs = Date.now() - createdAt.getTime();
+  const diffMinutes = Math.max(1, Math.floor(diffMs / 60000));
+  if (diffMinutes < 60) return `${diffMinutes} min ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} hr ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day ago`;
+}
+
 export function JobsClient({
   initialItems = [],
   initialCursor = null,
@@ -598,11 +610,7 @@ export function JobsClient({
                   <div className="flex items-center justify-between gap-2">
                     <Badge className={statusClass[it.status]}>{it.status}</Badge>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(it.createdAt).toLocaleDateString("en-AU", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatInsertedTime(it.createdAt)}
                     </span>
                   </div>
                   <div className="mt-2 text-sm font-semibold">{it.title}</div>

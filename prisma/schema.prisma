@@ -43,6 +43,7 @@ model User {
   jobs          Job[]
   savedSearches SavedSearch[]
   fetchRuns     FetchRun[]
+  deletedJobUrls DeletedJobUrl[]
 }
 
 model Account {
@@ -103,6 +104,18 @@ model Job {
   @@index([userId, createdAt])
   @@index([userId, updatedAt])
   @@index([userId, status])
+}
+
+model DeletedJobUrl {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobUrl    String
+  deletedAt DateTime @default(now())
+
+  @@unique([userId, jobUrl])
+  @@index([userId, deletedAt])
 }
 
 model SavedSearch {

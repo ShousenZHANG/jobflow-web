@@ -34,6 +34,11 @@ export type Session = $Result.DefaultSelection<Prisma.$SessionPayload>
  */
 export type Job = $Result.DefaultSelection<Prisma.$JobPayload>
 /**
+ * Model DeletedJobUrl
+ * 
+ */
+export type DeletedJobUrl = $Result.DefaultSelection<Prisma.$DeletedJobUrlPayload>
+/**
  * Model SavedSearch
  * 
  */
@@ -232,6 +237,16 @@ export class PrismaClient<
     * ```
     */
   get job(): Prisma.JobDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.deletedJobUrl`: Exposes CRUD operations for the **DeletedJobUrl** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DeletedJobUrls
+    * const deletedJobUrls = await prisma.deletedJobUrl.findMany()
+    * ```
+    */
+  get deletedJobUrl(): Prisma.DeletedJobUrlDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.savedSearch`: Exposes CRUD operations for the **SavedSearch** model.
@@ -690,6 +705,7 @@ export namespace Prisma {
     Account: 'Account',
     Session: 'Session',
     Job: 'Job',
+    DeletedJobUrl: 'DeletedJobUrl',
     SavedSearch: 'SavedSearch',
     FetchRun: 'FetchRun'
   };
@@ -707,7 +723,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "savedSearch" | "fetchRun"
+      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "savedSearch" | "fetchRun"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1007,6 +1023,80 @@ export namespace Prisma {
           }
         }
       }
+      DeletedJobUrl: {
+        payload: Prisma.$DeletedJobUrlPayload<ExtArgs>
+        fields: Prisma.DeletedJobUrlFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DeletedJobUrlFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DeletedJobUrlFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>
+          }
+          findFirst: {
+            args: Prisma.DeletedJobUrlFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DeletedJobUrlFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>
+          }
+          findMany: {
+            args: Prisma.DeletedJobUrlFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>[]
+          }
+          create: {
+            args: Prisma.DeletedJobUrlCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>
+          }
+          createMany: {
+            args: Prisma.DeletedJobUrlCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DeletedJobUrlCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>[]
+          }
+          delete: {
+            args: Prisma.DeletedJobUrlDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>
+          }
+          update: {
+            args: Prisma.DeletedJobUrlUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>
+          }
+          deleteMany: {
+            args: Prisma.DeletedJobUrlDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DeletedJobUrlUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DeletedJobUrlUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>[]
+          }
+          upsert: {
+            args: Prisma.DeletedJobUrlUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DeletedJobUrlPayload>
+          }
+          aggregate: {
+            args: Prisma.DeletedJobUrlAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDeletedJobUrl>
+          }
+          groupBy: {
+            args: Prisma.DeletedJobUrlGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DeletedJobUrlGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DeletedJobUrlCountArgs<ExtArgs>
+            result: $Utils.Optional<DeletedJobUrlCountAggregateOutputType> | number
+          }
+        }
+      }
       SavedSearch: {
         payload: Prisma.$SavedSearchPayload<ExtArgs>
         fields: Prisma.SavedSearchFieldRefs
@@ -1267,6 +1357,7 @@ export namespace Prisma {
     account?: AccountOmit
     session?: SessionOmit
     job?: JobOmit
+    deletedJobUrl?: DeletedJobUrlOmit
     savedSearch?: SavedSearchOmit
     fetchRun?: FetchRunOmit
   }
@@ -1354,6 +1445,7 @@ export namespace Prisma {
     jobs: number
     savedSearches: number
     fetchRuns: number
+    deletedJobUrls: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1362,6 +1454,7 @@ export namespace Prisma {
     jobs?: boolean | UserCountOutputTypeCountJobsArgs
     savedSearches?: boolean | UserCountOutputTypeCountSavedSearchesArgs
     fetchRuns?: boolean | UserCountOutputTypeCountFetchRunsArgs
+    deletedJobUrls?: boolean | UserCountOutputTypeCountDeletedJobUrlsArgs
   }
 
   // Custom InputTypes
@@ -1408,6 +1501,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountFetchRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FetchRunWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountDeletedJobUrlsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DeletedJobUrlWhereInput
   }
 
 
@@ -1600,6 +1700,7 @@ export namespace Prisma {
     jobs?: boolean | User$jobsArgs<ExtArgs>
     savedSearches?: boolean | User$savedSearchesArgs<ExtArgs>
     fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
+    deletedJobUrls?: boolean | User$deletedJobUrlsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1640,6 +1741,7 @@ export namespace Prisma {
     jobs?: boolean | User$jobsArgs<ExtArgs>
     savedSearches?: boolean | User$savedSearchesArgs<ExtArgs>
     fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
+    deletedJobUrls?: boolean | User$deletedJobUrlsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1653,6 +1755,7 @@ export namespace Prisma {
       jobs: Prisma.$JobPayload<ExtArgs>[]
       savedSearches: Prisma.$SavedSearchPayload<ExtArgs>[]
       fetchRuns: Prisma.$FetchRunPayload<ExtArgs>[]
+      deletedJobUrls: Prisma.$DeletedJobUrlPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2061,6 +2164,7 @@ export namespace Prisma {
     jobs<T extends User$jobsArgs<ExtArgs> = {}>(args?: Subset<T, User$jobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     savedSearches<T extends User$savedSearchesArgs<ExtArgs> = {}>(args?: Subset<T, User$savedSearchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SavedSearchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     fetchRuns<T extends User$fetchRunsArgs<ExtArgs> = {}>(args?: Subset<T, User$fetchRunsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    deletedJobUrls<T extends User$deletedJobUrlsArgs<ExtArgs> = {}>(args?: Subset<T, User$deletedJobUrlsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2602,6 +2706,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FetchRunScalarFieldEnum | FetchRunScalarFieldEnum[]
+  }
+
+  /**
+   * User.deletedJobUrls
+   */
+  export type User$deletedJobUrlsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    where?: DeletedJobUrlWhereInput
+    orderBy?: DeletedJobUrlOrderByWithRelationInput | DeletedJobUrlOrderByWithRelationInput[]
+    cursor?: DeletedJobUrlWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DeletedJobUrlScalarFieldEnum | DeletedJobUrlScalarFieldEnum[]
   }
 
   /**
@@ -6053,6 +6181,1051 @@ export namespace Prisma {
 
 
   /**
+   * Model DeletedJobUrl
+   */
+
+  export type AggregateDeletedJobUrl = {
+    _count: DeletedJobUrlCountAggregateOutputType | null
+    _min: DeletedJobUrlMinAggregateOutputType | null
+    _max: DeletedJobUrlMaxAggregateOutputType | null
+  }
+
+  export type DeletedJobUrlMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    jobUrl: string | null
+    deletedAt: Date | null
+  }
+
+  export type DeletedJobUrlMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    jobUrl: string | null
+    deletedAt: Date | null
+  }
+
+  export type DeletedJobUrlCountAggregateOutputType = {
+    id: number
+    userId: number
+    jobUrl: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type DeletedJobUrlMinAggregateInputType = {
+    id?: true
+    userId?: true
+    jobUrl?: true
+    deletedAt?: true
+  }
+
+  export type DeletedJobUrlMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    jobUrl?: true
+    deletedAt?: true
+  }
+
+  export type DeletedJobUrlCountAggregateInputType = {
+    id?: true
+    userId?: true
+    jobUrl?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type DeletedJobUrlAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DeletedJobUrl to aggregate.
+     */
+    where?: DeletedJobUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeletedJobUrls to fetch.
+     */
+    orderBy?: DeletedJobUrlOrderByWithRelationInput | DeletedJobUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DeletedJobUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeletedJobUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeletedJobUrls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DeletedJobUrls
+    **/
+    _count?: true | DeletedJobUrlCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DeletedJobUrlMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DeletedJobUrlMaxAggregateInputType
+  }
+
+  export type GetDeletedJobUrlAggregateType<T extends DeletedJobUrlAggregateArgs> = {
+        [P in keyof T & keyof AggregateDeletedJobUrl]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDeletedJobUrl[P]>
+      : GetScalarType<T[P], AggregateDeletedJobUrl[P]>
+  }
+
+
+
+
+  export type DeletedJobUrlGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DeletedJobUrlWhereInput
+    orderBy?: DeletedJobUrlOrderByWithAggregationInput | DeletedJobUrlOrderByWithAggregationInput[]
+    by: DeletedJobUrlScalarFieldEnum[] | DeletedJobUrlScalarFieldEnum
+    having?: DeletedJobUrlScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DeletedJobUrlCountAggregateInputType | true
+    _min?: DeletedJobUrlMinAggregateInputType
+    _max?: DeletedJobUrlMaxAggregateInputType
+  }
+
+  export type DeletedJobUrlGroupByOutputType = {
+    id: string
+    userId: string
+    jobUrl: string
+    deletedAt: Date
+    _count: DeletedJobUrlCountAggregateOutputType | null
+    _min: DeletedJobUrlMinAggregateOutputType | null
+    _max: DeletedJobUrlMaxAggregateOutputType | null
+  }
+
+  type GetDeletedJobUrlGroupByPayload<T extends DeletedJobUrlGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DeletedJobUrlGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DeletedJobUrlGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DeletedJobUrlGroupByOutputType[P]>
+            : GetScalarType<T[P], DeletedJobUrlGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DeletedJobUrlSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    jobUrl?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["deletedJobUrl"]>
+
+  export type DeletedJobUrlSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    jobUrl?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["deletedJobUrl"]>
+
+  export type DeletedJobUrlSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    jobUrl?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["deletedJobUrl"]>
+
+  export type DeletedJobUrlSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    jobUrl?: boolean
+    deletedAt?: boolean
+  }
+
+  export type DeletedJobUrlOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobUrl" | "deletedAt", ExtArgs["result"]["deletedJobUrl"]>
+  export type DeletedJobUrlInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type DeletedJobUrlIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type DeletedJobUrlIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $DeletedJobUrlPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DeletedJobUrl"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      jobUrl: string
+      deletedAt: Date
+    }, ExtArgs["result"]["deletedJobUrl"]>
+    composites: {}
+  }
+
+  type DeletedJobUrlGetPayload<S extends boolean | null | undefined | DeletedJobUrlDefaultArgs> = $Result.GetResult<Prisma.$DeletedJobUrlPayload, S>
+
+  type DeletedJobUrlCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DeletedJobUrlFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DeletedJobUrlCountAggregateInputType | true
+    }
+
+  export interface DeletedJobUrlDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DeletedJobUrl'], meta: { name: 'DeletedJobUrl' } }
+    /**
+     * Find zero or one DeletedJobUrl that matches the filter.
+     * @param {DeletedJobUrlFindUniqueArgs} args - Arguments to find a DeletedJobUrl
+     * @example
+     * // Get one DeletedJobUrl
+     * const deletedJobUrl = await prisma.deletedJobUrl.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DeletedJobUrlFindUniqueArgs>(args: SelectSubset<T, DeletedJobUrlFindUniqueArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DeletedJobUrl that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DeletedJobUrlFindUniqueOrThrowArgs} args - Arguments to find a DeletedJobUrl
+     * @example
+     * // Get one DeletedJobUrl
+     * const deletedJobUrl = await prisma.deletedJobUrl.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DeletedJobUrlFindUniqueOrThrowArgs>(args: SelectSubset<T, DeletedJobUrlFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DeletedJobUrl that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeletedJobUrlFindFirstArgs} args - Arguments to find a DeletedJobUrl
+     * @example
+     * // Get one DeletedJobUrl
+     * const deletedJobUrl = await prisma.deletedJobUrl.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DeletedJobUrlFindFirstArgs>(args?: SelectSubset<T, DeletedJobUrlFindFirstArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DeletedJobUrl that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeletedJobUrlFindFirstOrThrowArgs} args - Arguments to find a DeletedJobUrl
+     * @example
+     * // Get one DeletedJobUrl
+     * const deletedJobUrl = await prisma.deletedJobUrl.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DeletedJobUrlFindFirstOrThrowArgs>(args?: SelectSubset<T, DeletedJobUrlFindFirstOrThrowArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DeletedJobUrls that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeletedJobUrlFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DeletedJobUrls
+     * const deletedJobUrls = await prisma.deletedJobUrl.findMany()
+     * 
+     * // Get first 10 DeletedJobUrls
+     * const deletedJobUrls = await prisma.deletedJobUrl.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const deletedJobUrlWithIdOnly = await prisma.deletedJobUrl.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DeletedJobUrlFindManyArgs>(args?: SelectSubset<T, DeletedJobUrlFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DeletedJobUrl.
+     * @param {DeletedJobUrlCreateArgs} args - Arguments to create a DeletedJobUrl.
+     * @example
+     * // Create one DeletedJobUrl
+     * const DeletedJobUrl = await prisma.deletedJobUrl.create({
+     *   data: {
+     *     // ... data to create a DeletedJobUrl
+     *   }
+     * })
+     * 
+     */
+    create<T extends DeletedJobUrlCreateArgs>(args: SelectSubset<T, DeletedJobUrlCreateArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DeletedJobUrls.
+     * @param {DeletedJobUrlCreateManyArgs} args - Arguments to create many DeletedJobUrls.
+     * @example
+     * // Create many DeletedJobUrls
+     * const deletedJobUrl = await prisma.deletedJobUrl.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DeletedJobUrlCreateManyArgs>(args?: SelectSubset<T, DeletedJobUrlCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DeletedJobUrls and returns the data saved in the database.
+     * @param {DeletedJobUrlCreateManyAndReturnArgs} args - Arguments to create many DeletedJobUrls.
+     * @example
+     * // Create many DeletedJobUrls
+     * const deletedJobUrl = await prisma.deletedJobUrl.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DeletedJobUrls and only return the `id`
+     * const deletedJobUrlWithIdOnly = await prisma.deletedJobUrl.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DeletedJobUrlCreateManyAndReturnArgs>(args?: SelectSubset<T, DeletedJobUrlCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DeletedJobUrl.
+     * @param {DeletedJobUrlDeleteArgs} args - Arguments to delete one DeletedJobUrl.
+     * @example
+     * // Delete one DeletedJobUrl
+     * const DeletedJobUrl = await prisma.deletedJobUrl.delete({
+     *   where: {
+     *     // ... filter to delete one DeletedJobUrl
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DeletedJobUrlDeleteArgs>(args: SelectSubset<T, DeletedJobUrlDeleteArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DeletedJobUrl.
+     * @param {DeletedJobUrlUpdateArgs} args - Arguments to update one DeletedJobUrl.
+     * @example
+     * // Update one DeletedJobUrl
+     * const deletedJobUrl = await prisma.deletedJobUrl.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DeletedJobUrlUpdateArgs>(args: SelectSubset<T, DeletedJobUrlUpdateArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DeletedJobUrls.
+     * @param {DeletedJobUrlDeleteManyArgs} args - Arguments to filter DeletedJobUrls to delete.
+     * @example
+     * // Delete a few DeletedJobUrls
+     * const { count } = await prisma.deletedJobUrl.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DeletedJobUrlDeleteManyArgs>(args?: SelectSubset<T, DeletedJobUrlDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DeletedJobUrls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeletedJobUrlUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DeletedJobUrls
+     * const deletedJobUrl = await prisma.deletedJobUrl.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DeletedJobUrlUpdateManyArgs>(args: SelectSubset<T, DeletedJobUrlUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DeletedJobUrls and returns the data updated in the database.
+     * @param {DeletedJobUrlUpdateManyAndReturnArgs} args - Arguments to update many DeletedJobUrls.
+     * @example
+     * // Update many DeletedJobUrls
+     * const deletedJobUrl = await prisma.deletedJobUrl.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DeletedJobUrls and only return the `id`
+     * const deletedJobUrlWithIdOnly = await prisma.deletedJobUrl.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DeletedJobUrlUpdateManyAndReturnArgs>(args: SelectSubset<T, DeletedJobUrlUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DeletedJobUrl.
+     * @param {DeletedJobUrlUpsertArgs} args - Arguments to update or create a DeletedJobUrl.
+     * @example
+     * // Update or create a DeletedJobUrl
+     * const deletedJobUrl = await prisma.deletedJobUrl.upsert({
+     *   create: {
+     *     // ... data to create a DeletedJobUrl
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DeletedJobUrl we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DeletedJobUrlUpsertArgs>(args: SelectSubset<T, DeletedJobUrlUpsertArgs<ExtArgs>>): Prisma__DeletedJobUrlClient<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DeletedJobUrls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeletedJobUrlCountArgs} args - Arguments to filter DeletedJobUrls to count.
+     * @example
+     * // Count the number of DeletedJobUrls
+     * const count = await prisma.deletedJobUrl.count({
+     *   where: {
+     *     // ... the filter for the DeletedJobUrls we want to count
+     *   }
+     * })
+    **/
+    count<T extends DeletedJobUrlCountArgs>(
+      args?: Subset<T, DeletedJobUrlCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DeletedJobUrlCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DeletedJobUrl.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeletedJobUrlAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DeletedJobUrlAggregateArgs>(args: Subset<T, DeletedJobUrlAggregateArgs>): Prisma.PrismaPromise<GetDeletedJobUrlAggregateType<T>>
+
+    /**
+     * Group by DeletedJobUrl.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DeletedJobUrlGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DeletedJobUrlGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DeletedJobUrlGroupByArgs['orderBy'] }
+        : { orderBy?: DeletedJobUrlGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DeletedJobUrlGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDeletedJobUrlGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DeletedJobUrl model
+   */
+  readonly fields: DeletedJobUrlFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DeletedJobUrl.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DeletedJobUrlClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DeletedJobUrl model
+   */
+  interface DeletedJobUrlFieldRefs {
+    readonly id: FieldRef<"DeletedJobUrl", 'String'>
+    readonly userId: FieldRef<"DeletedJobUrl", 'String'>
+    readonly jobUrl: FieldRef<"DeletedJobUrl", 'String'>
+    readonly deletedAt: FieldRef<"DeletedJobUrl", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DeletedJobUrl findUnique
+   */
+  export type DeletedJobUrlFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which DeletedJobUrl to fetch.
+     */
+    where: DeletedJobUrlWhereUniqueInput
+  }
+
+  /**
+   * DeletedJobUrl findUniqueOrThrow
+   */
+  export type DeletedJobUrlFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which DeletedJobUrl to fetch.
+     */
+    where: DeletedJobUrlWhereUniqueInput
+  }
+
+  /**
+   * DeletedJobUrl findFirst
+   */
+  export type DeletedJobUrlFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which DeletedJobUrl to fetch.
+     */
+    where?: DeletedJobUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeletedJobUrls to fetch.
+     */
+    orderBy?: DeletedJobUrlOrderByWithRelationInput | DeletedJobUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DeletedJobUrls.
+     */
+    cursor?: DeletedJobUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeletedJobUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeletedJobUrls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DeletedJobUrls.
+     */
+    distinct?: DeletedJobUrlScalarFieldEnum | DeletedJobUrlScalarFieldEnum[]
+  }
+
+  /**
+   * DeletedJobUrl findFirstOrThrow
+   */
+  export type DeletedJobUrlFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which DeletedJobUrl to fetch.
+     */
+    where?: DeletedJobUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeletedJobUrls to fetch.
+     */
+    orderBy?: DeletedJobUrlOrderByWithRelationInput | DeletedJobUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DeletedJobUrls.
+     */
+    cursor?: DeletedJobUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeletedJobUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeletedJobUrls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DeletedJobUrls.
+     */
+    distinct?: DeletedJobUrlScalarFieldEnum | DeletedJobUrlScalarFieldEnum[]
+  }
+
+  /**
+   * DeletedJobUrl findMany
+   */
+  export type DeletedJobUrlFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * Filter, which DeletedJobUrls to fetch.
+     */
+    where?: DeletedJobUrlWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DeletedJobUrls to fetch.
+     */
+    orderBy?: DeletedJobUrlOrderByWithRelationInput | DeletedJobUrlOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DeletedJobUrls.
+     */
+    cursor?: DeletedJobUrlWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DeletedJobUrls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DeletedJobUrls.
+     */
+    skip?: number
+    distinct?: DeletedJobUrlScalarFieldEnum | DeletedJobUrlScalarFieldEnum[]
+  }
+
+  /**
+   * DeletedJobUrl create
+   */
+  export type DeletedJobUrlCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DeletedJobUrl.
+     */
+    data: XOR<DeletedJobUrlCreateInput, DeletedJobUrlUncheckedCreateInput>
+  }
+
+  /**
+   * DeletedJobUrl createMany
+   */
+  export type DeletedJobUrlCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DeletedJobUrls.
+     */
+    data: DeletedJobUrlCreateManyInput | DeletedJobUrlCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DeletedJobUrl createManyAndReturn
+   */
+  export type DeletedJobUrlCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * The data used to create many DeletedJobUrls.
+     */
+    data: DeletedJobUrlCreateManyInput | DeletedJobUrlCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DeletedJobUrl update
+   */
+  export type DeletedJobUrlUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DeletedJobUrl.
+     */
+    data: XOR<DeletedJobUrlUpdateInput, DeletedJobUrlUncheckedUpdateInput>
+    /**
+     * Choose, which DeletedJobUrl to update.
+     */
+    where: DeletedJobUrlWhereUniqueInput
+  }
+
+  /**
+   * DeletedJobUrl updateMany
+   */
+  export type DeletedJobUrlUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DeletedJobUrls.
+     */
+    data: XOR<DeletedJobUrlUpdateManyMutationInput, DeletedJobUrlUncheckedUpdateManyInput>
+    /**
+     * Filter which DeletedJobUrls to update
+     */
+    where?: DeletedJobUrlWhereInput
+    /**
+     * Limit how many DeletedJobUrls to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DeletedJobUrl updateManyAndReturn
+   */
+  export type DeletedJobUrlUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * The data used to update DeletedJobUrls.
+     */
+    data: XOR<DeletedJobUrlUpdateManyMutationInput, DeletedJobUrlUncheckedUpdateManyInput>
+    /**
+     * Filter which DeletedJobUrls to update
+     */
+    where?: DeletedJobUrlWhereInput
+    /**
+     * Limit how many DeletedJobUrls to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DeletedJobUrl upsert
+   */
+  export type DeletedJobUrlUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DeletedJobUrl to update in case it exists.
+     */
+    where: DeletedJobUrlWhereUniqueInput
+    /**
+     * In case the DeletedJobUrl found by the `where` argument doesn't exist, create a new DeletedJobUrl with this data.
+     */
+    create: XOR<DeletedJobUrlCreateInput, DeletedJobUrlUncheckedCreateInput>
+    /**
+     * In case the DeletedJobUrl was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DeletedJobUrlUpdateInput, DeletedJobUrlUncheckedUpdateInput>
+  }
+
+  /**
+   * DeletedJobUrl delete
+   */
+  export type DeletedJobUrlDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+    /**
+     * Filter which DeletedJobUrl to delete.
+     */
+    where: DeletedJobUrlWhereUniqueInput
+  }
+
+  /**
+   * DeletedJobUrl deleteMany
+   */
+  export type DeletedJobUrlDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DeletedJobUrls to delete
+     */
+    where?: DeletedJobUrlWhereInput
+    /**
+     * Limit how many DeletedJobUrls to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DeletedJobUrl without action
+   */
+  export type DeletedJobUrlDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DeletedJobUrl
+     */
+    select?: DeletedJobUrlSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DeletedJobUrl
+     */
+    omit?: DeletedJobUrlOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DeletedJobUrlInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model SavedSearch
    */
 
@@ -8473,6 +9646,16 @@ export namespace Prisma {
   export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
 
 
+  export const DeletedJobUrlScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    jobUrl: 'jobUrl',
+    deletedAt: 'deletedAt'
+  };
+
+  export type DeletedJobUrlScalarFieldEnum = (typeof DeletedJobUrlScalarFieldEnum)[keyof typeof DeletedJobUrlScalarFieldEnum]
+
+
   export const SavedSearchScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -8676,6 +9859,7 @@ export namespace Prisma {
     jobs?: JobListRelationFilter
     savedSearches?: SavedSearchListRelationFilter
     fetchRuns?: FetchRunListRelationFilter
+    deletedJobUrls?: DeletedJobUrlListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -8691,6 +9875,7 @@ export namespace Prisma {
     jobs?: JobOrderByRelationAggregateInput
     savedSearches?: SavedSearchOrderByRelationAggregateInput
     fetchRuns?: FetchRunOrderByRelationAggregateInput
+    deletedJobUrls?: DeletedJobUrlOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -8709,6 +9894,7 @@ export namespace Prisma {
     jobs?: JobListRelationFilter
     savedSearches?: SavedSearchListRelationFilter
     fetchRuns?: FetchRunListRelationFilter
+    deletedJobUrls?: DeletedJobUrlListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -8991,6 +10177,57 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Job"> | Date | string
   }
 
+  export type DeletedJobUrlWhereInput = {
+    AND?: DeletedJobUrlWhereInput | DeletedJobUrlWhereInput[]
+    OR?: DeletedJobUrlWhereInput[]
+    NOT?: DeletedJobUrlWhereInput | DeletedJobUrlWhereInput[]
+    id?: UuidFilter<"DeletedJobUrl"> | string
+    userId?: UuidFilter<"DeletedJobUrl"> | string
+    jobUrl?: StringFilter<"DeletedJobUrl"> | string
+    deletedAt?: DateTimeFilter<"DeletedJobUrl"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type DeletedJobUrlOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    jobUrl?: SortOrder
+    deletedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type DeletedJobUrlWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_jobUrl?: DeletedJobUrlUserIdJobUrlCompoundUniqueInput
+    AND?: DeletedJobUrlWhereInput | DeletedJobUrlWhereInput[]
+    OR?: DeletedJobUrlWhereInput[]
+    NOT?: DeletedJobUrlWhereInput | DeletedJobUrlWhereInput[]
+    userId?: UuidFilter<"DeletedJobUrl"> | string
+    jobUrl?: StringFilter<"DeletedJobUrl"> | string
+    deletedAt?: DateTimeFilter<"DeletedJobUrl"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId_jobUrl">
+
+  export type DeletedJobUrlOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    jobUrl?: SortOrder
+    deletedAt?: SortOrder
+    _count?: DeletedJobUrlCountOrderByAggregateInput
+    _max?: DeletedJobUrlMaxOrderByAggregateInput
+    _min?: DeletedJobUrlMinOrderByAggregateInput
+  }
+
+  export type DeletedJobUrlScalarWhereWithAggregatesInput = {
+    AND?: DeletedJobUrlScalarWhereWithAggregatesInput | DeletedJobUrlScalarWhereWithAggregatesInput[]
+    OR?: DeletedJobUrlScalarWhereWithAggregatesInput[]
+    NOT?: DeletedJobUrlScalarWhereWithAggregatesInput | DeletedJobUrlScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"DeletedJobUrl"> | string
+    userId?: UuidWithAggregatesFilter<"DeletedJobUrl"> | string
+    jobUrl?: StringWithAggregatesFilter<"DeletedJobUrl"> | string
+    deletedAt?: DateTimeWithAggregatesFilter<"DeletedJobUrl"> | Date | string
+  }
+
   export type SavedSearchWhereInput = {
     AND?: SavedSearchWhereInput | SavedSearchWhereInput[]
     OR?: SavedSearchWhereInput[]
@@ -9178,6 +10415,7 @@ export namespace Prisma {
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -9193,6 +10431,7 @@ export namespace Prisma {
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -9208,6 +10447,7 @@ export namespace Prisma {
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -9223,6 +10463,7 @@ export namespace Prisma {
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -9539,6 +10780,54 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DeletedJobUrlCreateInput = {
+    id?: string
+    jobUrl: string
+    deletedAt?: Date | string
+    user: UserCreateNestedOneWithoutDeletedJobUrlsInput
+  }
+
+  export type DeletedJobUrlUncheckedCreateInput = {
+    id?: string
+    userId: string
+    jobUrl: string
+    deletedAt?: Date | string
+  }
+
+  export type DeletedJobUrlUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutDeletedJobUrlsNestedInput
+  }
+
+  export type DeletedJobUrlUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeletedJobUrlCreateManyInput = {
+    id?: string
+    userId: string
+    jobUrl: string
+    deletedAt?: Date | string
+  }
+
+  export type DeletedJobUrlUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeletedJobUrlUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type SavedSearchCreateInput = {
     id?: string
     name: string
@@ -9812,6 +11101,12 @@ export namespace Prisma {
     none?: FetchRunWhereInput
   }
 
+  export type DeletedJobUrlListRelationFilter = {
+    every?: DeletedJobUrlWhereInput
+    some?: DeletedJobUrlWhereInput
+    none?: DeletedJobUrlWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -9834,6 +11129,10 @@ export namespace Prisma {
   }
 
   export type FetchRunOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DeletedJobUrlOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -10151,6 +11450,32 @@ export namespace Prisma {
     _max?: NestedEnumJobStatusFilter<$PrismaModel>
   }
 
+  export type DeletedJobUrlUserIdJobUrlCompoundUniqueInput = {
+    userId: string
+    jobUrl: string
+  }
+
+  export type DeletedJobUrlCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    jobUrl?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type DeletedJobUrlMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    jobUrl?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type DeletedJobUrlMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    jobUrl?: SortOrder
+    deletedAt?: SortOrder
+  }
+
   export type SavedSearchCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -10394,6 +11719,13 @@ export namespace Prisma {
     connect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
   }
 
+  export type DeletedJobUrlCreateNestedManyWithoutUserInput = {
+    create?: XOR<DeletedJobUrlCreateWithoutUserInput, DeletedJobUrlUncheckedCreateWithoutUserInput> | DeletedJobUrlCreateWithoutUserInput[] | DeletedJobUrlUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DeletedJobUrlCreateOrConnectWithoutUserInput | DeletedJobUrlCreateOrConnectWithoutUserInput[]
+    createMany?: DeletedJobUrlCreateManyUserInputEnvelope
+    connect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -10427,6 +11759,13 @@ export namespace Prisma {
     connectOrCreate?: FetchRunCreateOrConnectWithoutUserInput | FetchRunCreateOrConnectWithoutUserInput[]
     createMany?: FetchRunCreateManyUserInputEnvelope
     connect?: FetchRunWhereUniqueInput | FetchRunWhereUniqueInput[]
+  }
+
+  export type DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<DeletedJobUrlCreateWithoutUserInput, DeletedJobUrlUncheckedCreateWithoutUserInput> | DeletedJobUrlCreateWithoutUserInput[] | DeletedJobUrlUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DeletedJobUrlCreateOrConnectWithoutUserInput | DeletedJobUrlCreateOrConnectWithoutUserInput[]
+    createMany?: DeletedJobUrlCreateManyUserInputEnvelope
+    connect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -10515,6 +11854,20 @@ export namespace Prisma {
     deleteMany?: FetchRunScalarWhereInput | FetchRunScalarWhereInput[]
   }
 
+  export type DeletedJobUrlUpdateManyWithoutUserNestedInput = {
+    create?: XOR<DeletedJobUrlCreateWithoutUserInput, DeletedJobUrlUncheckedCreateWithoutUserInput> | DeletedJobUrlCreateWithoutUserInput[] | DeletedJobUrlUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DeletedJobUrlCreateOrConnectWithoutUserInput | DeletedJobUrlCreateOrConnectWithoutUserInput[]
+    upsert?: DeletedJobUrlUpsertWithWhereUniqueWithoutUserInput | DeletedJobUrlUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: DeletedJobUrlCreateManyUserInputEnvelope
+    set?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    disconnect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    delete?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    connect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    update?: DeletedJobUrlUpdateWithWhereUniqueWithoutUserInput | DeletedJobUrlUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: DeletedJobUrlUpdateManyWithWhereWithoutUserInput | DeletedJobUrlUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: DeletedJobUrlScalarWhereInput | DeletedJobUrlScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -10585,6 +11938,20 @@ export namespace Prisma {
     deleteMany?: FetchRunScalarWhereInput | FetchRunScalarWhereInput[]
   }
 
+  export type DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<DeletedJobUrlCreateWithoutUserInput, DeletedJobUrlUncheckedCreateWithoutUserInput> | DeletedJobUrlCreateWithoutUserInput[] | DeletedJobUrlUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: DeletedJobUrlCreateOrConnectWithoutUserInput | DeletedJobUrlCreateOrConnectWithoutUserInput[]
+    upsert?: DeletedJobUrlUpsertWithWhereUniqueWithoutUserInput | DeletedJobUrlUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: DeletedJobUrlCreateManyUserInputEnvelope
+    set?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    disconnect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    delete?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    connect?: DeletedJobUrlWhereUniqueInput | DeletedJobUrlWhereUniqueInput[]
+    update?: DeletedJobUrlUpdateWithWhereUniqueWithoutUserInput | DeletedJobUrlUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: DeletedJobUrlUpdateManyWithWhereWithoutUserInput | DeletedJobUrlUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: DeletedJobUrlScalarWhereInput | DeletedJobUrlScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -10637,6 +12004,20 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutJobsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutJobsInput, UserUpdateWithoutJobsInput>, UserUncheckedUpdateWithoutJobsInput>
+  }
+
+  export type UserCreateNestedOneWithoutDeletedJobUrlsInput = {
+    create?: XOR<UserCreateWithoutDeletedJobUrlsInput, UserUncheckedCreateWithoutDeletedJobUrlsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDeletedJobUrlsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutDeletedJobUrlsNestedInput = {
+    create?: XOR<UserCreateWithoutDeletedJobUrlsInput, UserUncheckedCreateWithoutDeletedJobUrlsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDeletedJobUrlsInput
+    upsert?: UserUpsertWithoutDeletedJobUrlsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDeletedJobUrlsInput, UserUpdateWithoutDeletedJobUrlsInput>, UserUncheckedUpdateWithoutDeletedJobUrlsInput>
   }
 
   export type UserCreateNestedOneWithoutSavedSearchesInput = {
@@ -11144,6 +12525,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DeletedJobUrlCreateWithoutUserInput = {
+    id?: string
+    jobUrl: string
+    deletedAt?: Date | string
+  }
+
+  export type DeletedJobUrlUncheckedCreateWithoutUserInput = {
+    id?: string
+    jobUrl: string
+    deletedAt?: Date | string
+  }
+
+  export type DeletedJobUrlCreateOrConnectWithoutUserInput = {
+    where: DeletedJobUrlWhereUniqueInput
+    create: XOR<DeletedJobUrlCreateWithoutUserInput, DeletedJobUrlUncheckedCreateWithoutUserInput>
+  }
+
+  export type DeletedJobUrlCreateManyUserInputEnvelope = {
+    data: DeletedJobUrlCreateManyUserInput | DeletedJobUrlCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput
     update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
@@ -11308,6 +12711,32 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"FetchRun"> | Date | string
   }
 
+  export type DeletedJobUrlUpsertWithWhereUniqueWithoutUserInput = {
+    where: DeletedJobUrlWhereUniqueInput
+    update: XOR<DeletedJobUrlUpdateWithoutUserInput, DeletedJobUrlUncheckedUpdateWithoutUserInput>
+    create: XOR<DeletedJobUrlCreateWithoutUserInput, DeletedJobUrlUncheckedCreateWithoutUserInput>
+  }
+
+  export type DeletedJobUrlUpdateWithWhereUniqueWithoutUserInput = {
+    where: DeletedJobUrlWhereUniqueInput
+    data: XOR<DeletedJobUrlUpdateWithoutUserInput, DeletedJobUrlUncheckedUpdateWithoutUserInput>
+  }
+
+  export type DeletedJobUrlUpdateManyWithWhereWithoutUserInput = {
+    where: DeletedJobUrlScalarWhereInput
+    data: XOR<DeletedJobUrlUpdateManyMutationInput, DeletedJobUrlUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type DeletedJobUrlScalarWhereInput = {
+    AND?: DeletedJobUrlScalarWhereInput | DeletedJobUrlScalarWhereInput[]
+    OR?: DeletedJobUrlScalarWhereInput[]
+    NOT?: DeletedJobUrlScalarWhereInput | DeletedJobUrlScalarWhereInput[]
+    id?: UuidFilter<"DeletedJobUrl"> | string
+    userId?: UuidFilter<"DeletedJobUrl"> | string
+    jobUrl?: StringFilter<"DeletedJobUrl"> | string
+    deletedAt?: DateTimeFilter<"DeletedJobUrl"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email?: string | null
@@ -11320,6 +12749,7 @@ export namespace Prisma {
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -11334,6 +12764,7 @@ export namespace Prisma {
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -11364,6 +12795,7 @@ export namespace Prisma {
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -11378,6 +12810,7 @@ export namespace Prisma {
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -11392,6 +12825,7 @@ export namespace Prisma {
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -11406,6 +12840,7 @@ export namespace Prisma {
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -11436,6 +12871,7 @@ export namespace Prisma {
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -11450,6 +12886,7 @@ export namespace Prisma {
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutJobsInput = {
@@ -11464,6 +12901,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJobsInput = {
@@ -11478,6 +12916,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJobsInput = {
@@ -11508,6 +12947,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJobsInput = {
@@ -11520,6 +12960,83 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutDeletedJobUrlsInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    jobs?: JobCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutDeletedJobUrlsInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutDeletedJobUrlsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutDeletedJobUrlsInput, UserUncheckedCreateWithoutDeletedJobUrlsInput>
+  }
+
+  export type UserUpsertWithoutDeletedJobUrlsInput = {
+    update: XOR<UserUpdateWithoutDeletedJobUrlsInput, UserUncheckedUpdateWithoutDeletedJobUrlsInput>
+    create: XOR<UserCreateWithoutDeletedJobUrlsInput, UserUncheckedCreateWithoutDeletedJobUrlsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutDeletedJobUrlsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutDeletedJobUrlsInput, UserUncheckedUpdateWithoutDeletedJobUrlsInput>
+  }
+
+  export type UserUpdateWithoutDeletedJobUrlsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    jobs?: JobUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutDeletedJobUrlsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -11536,6 +13053,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSavedSearchesInput = {
@@ -11550,6 +13068,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSavedSearchesInput = {
@@ -11580,6 +13099,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedSearchesInput = {
@@ -11594,6 +13114,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFetchRunsInput = {
@@ -11608,6 +13129,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFetchRunsInput = {
@@ -11622,6 +13144,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
     savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFetchRunsInput = {
@@ -11652,6 +13175,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFetchRunsInput = {
@@ -11666,6 +13190,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
     savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -11730,6 +13255,12 @@ export namespace Prisma {
     filterDescription?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type DeletedJobUrlCreateManyUserInput = {
+    id?: string
+    jobUrl: string
+    deletedAt?: Date | string
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -11922,6 +13453,24 @@ export namespace Prisma {
     filterDescription?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeletedJobUrlUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeletedJobUrlUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeletedJobUrlUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    deletedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
