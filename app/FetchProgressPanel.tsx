@@ -1,131 +1,20 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-
-type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
-
-const RUN_ID_KEY = "jobflow_fetch_run_id";
-const STARTED_AT_KEY = "jobflow_fetch_started_at";
+import { useFetchStatus } from "./FetchStatusContext";
 
 export function FetchProgressPanel() {
-  const [runId, setRunId] = useState<string | null>(null);
-  const [status, setStatus] = useState<FetchRunStatus | null>(null);
-  const [importedCount, setImportedCount] = useState<number>(0);
-  const [error, setError] = useState<string | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const id = localStorage.getItem(RUN_ID_KEY);
-    const started = localStorage.getItem(STARTED_AT_KEY);
-    if (id) {
-      setRunId(id);
-      setOpen(true);
-    }
-    if (started) {
-      const ms = Number(started);
-      if (!Number.isNaN(ms)) {
-        const secs = Math.max(0, Math.floor((Date.now() - ms) / 1000));
-        setElapsedSeconds(secs);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    function handleStart() {
-      const id = localStorage.getItem(RUN_ID_KEY);
-      const started = localStorage.getItem(STARTED_AT_KEY);
-      if (id) {
-        setRunId(id);
-        setOpen(true);
-      }
-      if (started) {
-        const ms = Number(started);
-        if (!Number.isNaN(ms)) {
-          const secs = Math.max(0, Math.floor((Date.now() - ms) / 1000));
-          setElapsedSeconds(secs);
-        }
-      }
-    }
-
-    window.addEventListener("jobflow-fetch-started", handleStart);
-    window.addEventListener("storage", handleStart);
-    function handleVisibility() {
-      if (document.visibilityState === "visible") {
-        handleStart();
-      }
-    }
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      window.removeEventListener("jobflow-fetch-started", handleStart);
-      window.removeEventListener("storage", handleStart);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, []);
-
-  async function fetchRun(id: string) {
-    const res = await fetch(`/api/fetch-runs/${id}`, { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.error || "Failed to fetch run");
-    return json.run as { status: FetchRunStatus; importedCount: number; error: string | null };
-  }
-
-  async function cancelRun() {
-    if (!runId) return;
-    try {
-      const res = await fetch(`/api/fetch-runs/${runId}/cancel`, { method: "POST" });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to cancel run");
-      setStatus("FAILED");
-      setError("Cancelled by user");
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("Failed to cancel run");
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (!runId) return;
-    let alive = true;
-    const t = setInterval(async () => {
-      try {
-        const r = await fetchRun(runId);
-        if (!alive) return;
-        setStatus(r.status);
-        setImportedCount(r.importedCount ?? 0);
-        setError(r.error ?? null);
-        if (r.status === "SUCCEEDED" || r.status === "FAILED") {
-          clearInterval(t);
-          localStorage.removeItem(RUN_ID_KEY);
-          localStorage.removeItem(STARTED_AT_KEY);
-        }
-      } catch (e: unknown) {
-        if (!alive) return;
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("Polling failed");
-        }
-      }
-    }, 3000);
-    return () => {
-      alive = false;
-      clearInterval(t);
-    };
-  }, [runId]);
-
-  useEffect(() => {
-    if (!open) return;
-    if (status !== "RUNNING") return;
-    const t = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, [status, open]);
+  const {
+    runId,
+    status,
+    importedCount,
+    error,
+    elapsedSeconds,
+    open,
+    setOpen,
+    cancelRun,
+  } = useFetchStatus();
 
   const isRunning = status === "RUNNING" || status === "QUEUED";
   const progressValue =
@@ -136,13 +25,55 @@ export function FetchProgressPanel() {
         : status === "RUNNING"
           ? Math.min(92, 20 + Math.floor(elapsedSeconds * 2))
           : 10;
+  const statusLabel =
+    status === "RUNNING"
+      ? "Running"
+      : status === "QUEUED"
+        ? "Queued"
+        : status === "SUCCEEDED"
+          ? "Completed"
+          : status === "FAILED"
+            ? "Failed"
+            : "Starting";
+  const statusTone =
+    status === "FAILED"
+      ? "bg-destructive/10 text-destructive"
+      : status === "SUCCEEDED"
+        ? "bg-emerald-100 text-emerald-700"
+        : "bg-muted text-muted-foreground";
+
+  if (!open && runId) {
+    return (
+      <button
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border bg-background px-3 py-2 text-xs font-medium shadow-lg transition hover:bg-accent"
+        onClick={() => setOpen(true)}
+        aria-label="Open fetch progress"
+      >
+        <span
+          className={`h-2 w-2 rounded-full ${
+            status === "RUNNING" || status === "QUEUED"
+              ? "bg-emerald-500"
+              : status === "FAILED"
+                ? "bg-destructive"
+                : "bg-emerald-400"
+          }`}
+        />
+        Fetch progress
+      </button>
+    );
+  }
 
   if (!open || !runId) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[320px] rounded-xl border bg-background p-4 shadow-xl">
+    <div className="fixed bottom-6 right-6 z-50 w-[340px] rounded-2xl border bg-background p-4 shadow-2xl">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold">Fetch progress</div>
+        <div className="flex items-center gap-2">
+          <div className="text-sm font-semibold">Fetch progress</div>
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusTone}`}>
+            {statusLabel}
+          </span>
+        </div>
         {!isRunning ? (
           <button
             className="text-muted-foreground hover:text-foreground"

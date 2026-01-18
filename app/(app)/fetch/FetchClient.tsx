@@ -22,6 +22,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+import { useFetchStatus } from "@/app/FetchStatusContext";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -55,10 +56,9 @@ export function FetchClient() {
   ]);
 
   const [runId, setRunId] = useState<string | null>(null);
-  const [status, setStatus] = useState<FetchRunStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasActiveRun, setHasActiveRun] = useState(false);
+  const { startRun, status: globalStatus, runId: globalRunId } = useFetchStatus();
 
   const queries = useMemo(() => {
     return jobTitle.trim() ? [jobTitle.trim()] : [];
@@ -145,7 +145,6 @@ export function FetchClient() {
       try {
         const r = await fetchRun(runId);
         if (!alive) return;
-        setStatus(r.status);
         setError(r.error ?? null);
         if (r.status === "SUCCEEDED") {
           clearInterval(t);
@@ -164,18 +163,6 @@ export function FetchClient() {
     };
   }, [runId]);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("jobflow_fetch_run_id");
-    if (!stored) {
-      setHasActiveRun(false);
-      return;
-    }
-    setHasActiveRun(true);
-    if (!runId) {
-      setRunId(stored);
-    }
-  }, [runId]);
-
   async function onSubmit() {
     setIsSubmitting(true);
     setError(null);
@@ -185,13 +172,8 @@ export function FetchClient() {
       }
       const id = await createRun();
       setRunId(id);
-      setStatus("QUEUED");
-      localStorage.setItem("jobflow_fetch_run_id", id);
-      localStorage.setItem("jobflow_fetch_started_at", String(Date.now()));
-      setHasActiveRun(true);
-      window.dispatchEvent(new Event("jobflow-fetch-started"));
+      startRun(id);
       await triggerRun(id);
-      setStatus("RUNNING");
     } catch (e: unknown) {
       setError(getErrorMessage(e));
     } finally {
@@ -199,7 +181,10 @@ export function FetchClient() {
     }
   }
 
-  const isRunning = status === "RUNNING" || status === "QUEUED" || hasActiveRun;
+  const isRunning =
+    globalStatus === "RUNNING" ||
+    globalStatus === "QUEUED" ||
+    (globalRunId !== null && globalStatus === null);
 
   return (
     <div className="flex flex-col gap-6">
