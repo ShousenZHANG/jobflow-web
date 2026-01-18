@@ -295,6 +295,10 @@ export function JobsClient({
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
+      if (selectedId === id) {
+        setSelectedId(null);
+      }
+      void fetchPage(cursorStack[pageIndex] ?? null, pageIndex);
     } catch (e: unknown) {
       setItems(previousItems);
       setError(getErrorMessage(e, "Failed to delete job"));
