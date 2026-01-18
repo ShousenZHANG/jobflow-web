@@ -7,7 +7,7 @@ import { prisma } from "@/lib/server/prisma";
 export const runtime = "nodejs";
 
 const QuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
   cursor: z.string().uuid().optional(),
   status: z.enum(["NEW", "APPLIED", "REJECTED"]).optional(),
   q: z.string().trim().min(1).max(80).optional(),

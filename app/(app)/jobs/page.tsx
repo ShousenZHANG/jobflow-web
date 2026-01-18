@@ -12,7 +12,7 @@ export default async function JobsPage() {
   const itemsRaw = await prisma.job.findMany({
     where: { userId },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: 20,
+    take: 10,
     select: {
       id: true,
       jobUrl: true,

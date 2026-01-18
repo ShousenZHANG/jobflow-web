@@ -332,6 +332,15 @@ export function JobsClient({
     return new RegExp(`(${patterns.join("|")})`, "gi");
   }, []);
 
+  function scrollDetailsToTop() {
+    detailsScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  useEffect(() => {
+    if (!selectedId) return;
+    requestAnimationFrame(() => scrollDetailsToTop());
+  }, [selectedId]);
+
   function highlightText(text: string) {
     const parts = text.split(highlightRegex);
     return parts.map((part, index) => {
@@ -556,9 +565,7 @@ export function JobsClient({
                   type="button"
                   onClick={() => {
                     setSelectedId(it.id);
-                    requestAnimationFrame(() => {
-                      detailsScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-                    });
+                    requestAnimationFrame(() => scrollDetailsToTop());
                   }}
                   className={`w-full rounded-lg border-l-4 px-3 py-3 text-left transition ${
                     active
