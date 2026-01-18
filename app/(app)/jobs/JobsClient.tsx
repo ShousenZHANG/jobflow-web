@@ -319,6 +319,7 @@ export function JobsClient({
 
   const selectedJob = items.find((it) => it.id === selectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
+  const detailsTopRef = useRef<HTMLDivElement | null>(null);
   const selectedDescription = selectedJob ? detailsById[selectedJob.id]?.description ?? "" : "";
   const isLongDescription = selectedDescription.length > 600;
   const isExpanded =
@@ -333,13 +334,28 @@ export function JobsClient({
   }, []);
 
   function scrollDetailsToTop() {
-    detailsScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    const container = detailsScrollRef.current;
+    if (container) {
+      container.scrollTop = 0;
+      container.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    detailsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   useEffect(() => {
     if (!selectedId) return;
     requestAnimationFrame(() => scrollDetailsToTop());
+    const t = setTimeout(() => scrollDetailsToTop(), 80);
+    return () => clearTimeout(t);
   }, [selectedId]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (!detailsById[selectedId]) return;
+    requestAnimationFrame(() => scrollDetailsToTop());
+    const t = setTimeout(() => scrollDetailsToTop(), 80);
+    return () => clearTimeout(t);
+  }, [selectedId, detailsById]);
 
   function highlightText(text: string) {
     const parts = text.split(highlightRegex);
@@ -703,6 +719,7 @@ export function JobsClient({
             )}
           </div>
           <div ref={detailsScrollRef} className="flex-1 overflow-auto p-4">
+            <div ref={detailsTopRef} />
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
