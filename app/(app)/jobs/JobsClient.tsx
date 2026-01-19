@@ -490,10 +490,13 @@ export function JobsClient({
   const checkinCards = (
     <Card className="border bg-card">
       <CardHeader className="pb-1">
-        <CardTitle className="text-sm">Daily check-in</CardTitle>
+        <CardTitle className="text-[15px]">Daily check-in</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
-        <div className="text-[11px] text-muted-foreground">{checkinStatusText}</div>
+        <div className="text-[12px] text-muted-foreground">
+          Finish today’s NEW jobs, then punch in your win. Quick, legal, mildly satisfying.
+        </div>
+        <div className="text-[12px] text-muted-foreground">{checkinStatusText}</div>
         {checkinError ? (
           <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
             {checkinError}
@@ -502,7 +505,7 @@ export function JobsClient({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            className="h-7 px-3 text-xs"
+            className="h-8 px-3 text-[12px]"
             onClick={async () => {
               if (!canCheckIn) return;
               setCheckinLoading(true);
@@ -534,19 +537,19 @@ export function JobsClient({
           >
             {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
           </Button>
-          <div className="rounded-full border bg-muted/40 px-2 py-0.5 text-[10px] text-muted-foreground">
+          <div className="rounded-full border bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground">
             {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
           </div>
         </div>
         <div className="border-t pt-2">
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-medium text-muted-foreground">
+            <div className="text-[12px] font-medium text-muted-foreground">
               Check-in calendar
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-[10px]"
+              className="h-7 px-2 text-[11px]"
               onClick={() => setCalendarOpen((prev) => !prev)}
             >
               {calendarOpen ? "Hide" : "Show"}
