@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,8 @@ type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
 export function FetchClient() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const userId = session?.user?.id ?? null;
   const [jobTitle, setJobTitle] = useState("Software Engineer");
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -59,6 +62,7 @@ export function FetchClient() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { startRun, status: globalStatus, runId: globalRunId } = useFetchStatus();
+  const prevUserIdRef = useRef<string | null>(null);
 
   const queries = useMemo(() => {
     return jobTitle.trim() ? [jobTitle.trim()] : [];
@@ -98,6 +102,16 @@ export function FetchClient() {
       controller.abort();
     };
   }, [jobTitle]);
+
+  useEffect(() => {
+    const prev = prevUserIdRef.current;
+    if (prev && prev !== userId) {
+      setRunId(null);
+      setError(null);
+      setIsSubmitting(false);
+    }
+    prevUserIdRef.current = userId;
+  }, [userId]);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -182,9 +196,8 @@ export function FetchClient() {
   }
 
   const isRunning =
-    globalStatus === "RUNNING" ||
-    globalStatus === "QUEUED" ||
-    (globalRunId !== null && globalStatus === null);
+    globalRunId !== null &&
+    (globalStatus === "RUNNING" || globalStatus === "QUEUED" || globalStatus === null);
 
   return (
     <div className="flex flex-col gap-6">

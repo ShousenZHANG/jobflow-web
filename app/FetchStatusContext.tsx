@@ -6,8 +6,10 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { useSession } from "next-auth/react";
 
 export type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -36,6 +38,8 @@ const STARTED_AT_KEY = "jobflow_fetch_started_at";
 const PANEL_OPEN_KEY = "jobflow_fetch_panel_open";
 
 export function FetchStatusProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+  const userId = session?.user?.id ?? null;
   const [runId, setRunId] = useState<string | null>(null);
   const [status, setStatus] = useState<FetchRunStatus | null>(null);
   const [importedCount, setImportedCount] = useState<number>(0);
@@ -43,13 +47,35 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [open, setOpenState] = useState(false);
 
+  const storageKeys = useMemo(() => {
+    const suffix = userId ?? "anonymous";
+    return {
+      runId: `${RUN_ID_KEY}:${suffix}`,
+      startedAt: `${STARTED_AT_KEY}:${suffix}`,
+      panelOpen: `${PANEL_OPEN_KEY}:${suffix}`,
+    };
+  }, [userId]);
+
+  const prevKeysRef = useRef<typeof storageKeys | null>(null);
+
+  const resetState = useCallback(() => {
+    setRunId(null);
+    setStatus(null);
+    setImportedCount(0);
+    setError(null);
+    setElapsedSeconds(0);
+    setOpenState(false);
+  }, []);
+
   const refreshFromStorage = useCallback(() => {
-    const id = localStorage.getItem(RUN_ID_KEY);
-    const started = localStorage.getItem(STARTED_AT_KEY);
+    const id = localStorage.getItem(storageKeys.runId);
+    const started = localStorage.getItem(storageKeys.startedAt);
     if (id) {
       setRunId(id);
-      const storedOpen = localStorage.getItem(PANEL_OPEN_KEY);
+      const storedOpen = localStorage.getItem(storageKeys.panelOpen);
       setOpenState(storedOpen === "0" ? false : true);
+    } else {
+      setRunId(null);
     }
     if (started) {
       const ms = Number(started);
@@ -58,11 +84,23 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
         setElapsedSeconds(secs);
       }
     }
-  }, []);
+  }, [storageKeys]);
 
   useEffect(() => {
     refreshFromStorage();
   }, [refreshFromStorage]);
+
+  useEffect(() => {
+    const prev = prevKeysRef.current;
+    if (prev && prev.runId !== storageKeys.runId) {
+      localStorage.removeItem(prev.runId);
+      localStorage.removeItem(prev.startedAt);
+      localStorage.removeItem(prev.panelOpen);
+      resetState();
+    }
+    prevKeysRef.current = storageKeys;
+    refreshFromStorage();
+  }, [storageKeys, resetState, refreshFromStorage]);
 
   useEffect(() => {
     function handleStart() {
@@ -93,8 +131,8 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
 
   const setOpen = useCallback((next: boolean) => {
     setOpenState(next);
-    localStorage.setItem(PANEL_OPEN_KEY, next ? "1" : "0");
-  }, []);
+    localStorage.setItem(storageKeys.panelOpen, next ? "1" : "0");
+  }, [storageKeys.panelOpen]);
 
   const startRun = useCallback((id: string) => {
     setRunId(id);
@@ -103,11 +141,11 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     setError(null);
     setElapsedSeconds(0);
     setOpen(true);
-    localStorage.setItem(RUN_ID_KEY, id);
-    localStorage.setItem(STARTED_AT_KEY, String(Date.now()));
-    localStorage.setItem(PANEL_OPEN_KEY, "1");
+    localStorage.setItem(storageKeys.runId, id);
+    localStorage.setItem(storageKeys.startedAt, String(Date.now()));
+    localStorage.setItem(storageKeys.panelOpen, "1");
     window.dispatchEvent(new Event("jobflow-fetch-started"));
-  }, [setOpen]);
+  }, [setOpen, storageKeys]);
 
   const cancelRun = useCallback(async () => {
     if (!runId) return;
