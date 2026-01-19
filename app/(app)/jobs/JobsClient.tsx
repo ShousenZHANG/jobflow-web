@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -41,6 +42,11 @@ type JobItem = {
   status: JobStatus;
   createdAt: string;
   updatedAt: string;
+};
+
+type JobsResponse = {
+  items: JobItem[];
+  nextCursor: string | null;
 };
 
 const HIGHLIGHT_KEYWORDS = [
@@ -118,14 +124,13 @@ export function JobsClient({
   initialCursor?: string | null;
 }) {
   const { toast } = useToast();
-  const [items, setItems] = useState<JobItem[]>(initialItems);
-  const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
+  const [cursor, setCursor] = useState<string | null>(null);
 
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
@@ -135,18 +140,8 @@ export function JobsClient({
   const [locationFilter, setLocationFilter] = useState("ALL");
   const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
-  const [jobLevelOptions, setJobLevelOptions] = useState<string[]>([]);
-  const [detailsById, setDetailsById] = useState<Record<string, { description: string | null }>>(
-    {},
-  );
-  const [detailLoadingId, setDetailLoadingId] = useState<string | null>(null);
-  const [detailError, setDetailError] = useState<string | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [timeZone, setTimeZone] = useState<string | null>(null);
-  const [checkinDates, setCheckinDates] = useState<string[]>([]);
-  const [checkinLocalDate, setCheckinLocalDate] = useState<string | null>(null);
-  const [remainingNewToday, setRemainingNewToday] = useState<number | null>(null);
-  const [checkedInToday, setCheckedInToday] = useState(false);
   const [checkinLoading, setCheckinLoading] = useState(false);
   const [checkinError, setCheckinError] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -211,31 +206,9 @@ export function JobsClient({
     };
   }, []);
 
-  async function refreshCheckins() {
-    try {
-      setCheckinError(null);
-      const tz = timeZone ?? getUserTimeZone();
-      const res = await fetch("/api/checkins", {
-        headers: { "x-user-timezone": tz },
-        cache: "no-store",
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to load check-ins");
-      setCheckinDates(Array.isArray(json?.dates) ? json.dates : []);
-      setCheckinLocalDate(typeof json?.localDate === "string" ? json.localDate : null);
-      setRemainingNewToday(
-        typeof json?.remainingNew === "number" ? json.remainingNew : null,
-      );
-      setCheckedInToday(Boolean(json?.checkedInToday));
-    } catch (e: unknown) {
-      setCheckinError(getErrorMessage(e, "Failed to load check-ins"));
-    }
+  function refreshCheckins() {
+    queryClient.invalidateQueries({ queryKey: ["checkins", resolvedTimeZone] });
   }
-
-  useEffect(() => {
-    void refreshCheckins();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeZone]);
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
@@ -253,35 +226,106 @@ export function JobsClient({
     initialQueryRef.current = queryString;
   }
   const skipInitialFetchRef = useRef<boolean>(initialItems.length > 0);
-
-  async function fetchPage(cursor: string | null, nextIndex: number) {
-    setLoading(true);
-    setError(null);
-    try {
+  const jobsQuery = useQuery({
+    queryKey: ["jobs", queryString, cursor],
+    queryFn: async (): Promise<JobsResponse> => {
       const sp = new URLSearchParams(queryString);
       if (cursor) sp.set("cursor", cursor);
       const res = await fetch(`/api/jobs?${sp.toString()}`, { cache: "no-store" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to load jobs");
+      return { items: json.items ?? [], nextCursor: json.nextCursor ?? null };
+    },
+    enabled: Boolean(queryString),
+    placeholderData: (prev) => prev,
+    refetchOnWindowFocus: false,
+    staleTime: 15_000,
+    initialData: () => {
+      const shouldUseInitial =
+        initialItems.length > 0 &&
+        cursor === null &&
+        pageIndex === 0 &&
+        initialQueryRef.current === queryString;
+      if (!shouldUseInitial) return undefined;
+      return { items: initialItems, nextCursor: initialCursor ?? null };
+    },
+  });
 
-      const newItems = (json.items ?? []) as JobItem[];
-      const newCursor = (json.nextCursor ?? null) as string | null;
+  const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
+  const nextCursor = jobsQuery.data?.nextCursor ?? null;
+  const loading = jobsQuery.isFetching;
+  const queryError = jobsQuery.error
+    ? getErrorMessage(jobsQuery.error, "Failed to load jobs")
+    : null;
 
-      setItems(newItems);
-      setNextCursor(newCursor);
-      setPageIndex(nextIndex);
-      initialQueryRef.current = queryString;
-      setCursorStack((prev) => {
-        const copy = [...prev];
-        copy[nextIndex] = cursor;
-        return copy;
+  const activeError = error ?? queryError;
+  const resolvedTimeZone = timeZone ?? getUserTimeZone();
+
+  const checkinsQuery = useQuery({
+    queryKey: ["checkins", resolvedTimeZone],
+    queryFn: async () => {
+      const res = await fetch("/api/checkins", {
+        headers: { "x-user-timezone": resolvedTimeZone },
+        cache: "no-store",
       });
-    } catch (e: unknown) {
-      setError(getErrorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  }
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to load check-ins");
+      return json as {
+        dates: string[];
+        localDate: string | null;
+        remainingNew: number | null;
+        checkedInToday: boolean;
+      };
+    },
+    enabled: Boolean(resolvedTimeZone),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const checkinDates = useMemo(
+    () =>
+      Array.isArray(checkinsQuery.data?.dates)
+        ? checkinsQuery.data?.dates
+        : [],
+    [checkinsQuery.data?.dates],
+  );
+  const checkinLocalDate =
+    typeof checkinsQuery.data?.localDate === "string"
+      ? checkinsQuery.data?.localDate
+      : null;
+  const remainingNewToday =
+    typeof checkinsQuery.data?.remainingNew === "number"
+      ? checkinsQuery.data?.remainingNew
+      : null;
+  const checkedInToday = Boolean(checkinsQuery.data?.checkedInToday);
+  const checkinFetchError = checkinsQuery.error
+    ? getErrorMessage(checkinsQuery.error, "Failed to load check-ins")
+    : null;
+  const checkinErrorMessage = checkinError ?? checkinFetchError;
+
+  const jobLevelsQuery = useQuery<string[]>({
+    queryKey: ["job-levels"],
+    queryFn: async () => {
+      const res = await fetch("/api/jobs?limit=50", { cache: "no-store" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to load job levels");
+      const levels = (json.items ?? [])
+        .map((item: JobItem) => item.jobLevel)
+        .filter((level: string | null): level is string => Boolean(level));
+      return Array.from(new Set(levels));
+    },
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const jobLevelOptions = useMemo(() => {
+    const fromItems = items
+      .map((item) => item.jobLevel)
+      .filter((level): level is string => Boolean(level));
+    const fromQuery = jobLevelsQuery.data ?? [];
+    return Array.from(new Set([...fromQuery, ...fromItems]));
+  }, [items, jobLevelsQuery.data]);
+
 
   function scrollToTop() {
     if (typeof window === "undefined") return;
@@ -294,11 +338,9 @@ export function JobsClient({
       setDebouncedQ(trimmed);
       return;
     }
-    setItems([]);
-    setNextCursor(null);
     setCursorStack([null]);
     setPageIndex(0);
-    void fetchPage(null, 0);
+    setCursor(null);
   }
 
   useEffect(() => {
@@ -309,21 +351,13 @@ export function JobsClient({
       skipInitialFetchRef.current = false;
       return;
     }
-    setItems([]);
-    setNextCursor(null);
     setCursorStack([null]);
     setPageIndex(0);
-    void fetchPage(null, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setCursor(null);
   }, [queryString]);
 
-  function sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  async function updateStatusRemote(id: string, status: JobStatus) {
-    setError(null);
-    try {
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: JobStatus }) => {
       const res = await fetch(`/api/jobs/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -331,44 +365,25 @@ export function JobsClient({
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to update status");
-    } catch (e: unknown) {
-      throw new Error(getErrorMessage(e, "Failed to update status"));
-    }
-  }
-
-  async function updateStatusWithRetry(id: string, status: JobStatus) {
-    const attempts = 3;
-    for (let i = 0; i < attempts; i += 1) {
-      try {
-        await updateStatusRemote(id, status);
-        return;
-      } catch (e) {
-        if (i === attempts - 1) throw e;
-        await sleep(400 * Math.pow(2, i));
-      }
-    }
-  }
-
-  async function updateStatus(id: string, status: JobStatus) {
-    const previous = items.find((it) => it.id === id)?.status;
-    if (!previous || previous === status) return;
-
-    setError(null);
-    setUpdatingIds((prev) => new Set(prev).add(id));
-    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
-
-    try {
-      await updateStatusWithRetry(id, status);
-      void refreshCheckins();
-      toast({
-        title: "Status updated",
-        description: `${previous} → ${status}`,
-        duration: 1800,
-        className:
-          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+    },
+    onMutate: async ({ id, status }) => {
+      setError(null);
+      setUpdatingIds((prev) => new Set(prev).add(id));
+      await queryClient.cancelQueries({ queryKey: ["jobs", queryString, cursor] });
+      const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
+      queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items.map((it) => (it.id === id ? { ...it, status } : it)),
+        };
       });
-    } catch (e: unknown) {
-      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: previous } : it)));
+      return { previous };
+    },
+    onError: (e, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["jobs", queryString, cursor], context.previous);
+      }
       setError(getErrorMessage(e, "Failed to update status"));
       toast({
         title: "Update failed",
@@ -376,24 +391,60 @@ export function JobsClient({
         variant: "destructive",
         duration: 2200,
       });
-    } finally {
+    },
+    onSuccess: (_data, variables) => {
+      void refreshCheckins();
+      toast({
+        title: "Status updated",
+        description: `${variables.status}`,
+        duration: 1800,
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
+    },
+    onSettled: (_data, _error, variables) => {
+      if (!variables) return;
       setUpdatingIds((prev) => {
         const next = new Set(prev);
-        next.delete(id);
+        next.delete(variables.id);
         return next;
       });
-    }
-  }
+    },
+  });
 
-  async function deleteJob(id: string) {
-    setError(null);
-    setDeletingIds((prev) => new Set(prev).add(id));
-    const previousItems = items;
-    setItems((prev) => prev.filter((it) => it.id !== id));
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
       const res = await fetch(`/api/jobs/${id}`, { method: "DELETE" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to delete job");
+    },
+    onMutate: async (id: string) => {
+      setError(null);
+      setDeletingIds((prev) => new Set(prev).add(id));
+      await queryClient.cancelQueries({ queryKey: ["jobs", queryString, cursor] });
+      const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
+      queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
+        if (!old) return old;
+        return { ...old, items: old.items.filter((it) => it.id !== id) };
+      });
+      if (selectedId === id) {
+        setSelectedId(null);
+      }
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["jobs", queryString, cursor], context.previous);
+      }
+      setError(getErrorMessage(e, "Failed to delete job"));
+      toast({
+        title: "Delete failed",
+        description: getErrorMessage(e, "The job could not be removed."),
+        variant: "destructive",
+        duration: 2200,
+      });
+    },
+    onSuccess: () => {
       void refreshCheckins();
       toast({
         title: "Job removed",
@@ -402,26 +453,25 @@ export function JobsClient({
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
-      if (selectedId === id) {
-        setSelectedId(null);
-      }
-      void fetchPage(cursorStack[pageIndex] ?? null, pageIndex);
-    } catch (e: unknown) {
-      setItems(previousItems);
-      setError(getErrorMessage(e, "Failed to delete job"));
-      toast({
-        title: "Delete failed",
-        description: getErrorMessage(e, "The job could not be removed."),
-        variant: "destructive",
-        duration: 2200,
-      });
-    } finally {
+    },
+    onSettled: (_data, _error, id) => {
+      if (!id) return;
       setDeletingIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
-    }
+    },
+  });
+
+  async function updateStatus(id: string, status: JobStatus) {
+    const previous = items.find((it) => it.id === id)?.status;
+    if (!previous || previous === status) return;
+    updateStatusMutation.mutate({ id, status });
+  }
+
+  async function deleteJob(id: string) {
+    deleteMutation.mutate(id);
   }
 
   const statusClass: Record<JobStatus, string> = {
@@ -440,28 +490,26 @@ export function JobsClient({
     }
   }, [items, selectedId]);
 
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/jobs?limit=50", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((json) => {
-        if (!alive) return;
-        const levels = (json.items ?? [])
-          .map((item: JobItem) => item.jobLevel)
-          .filter((level: string | null): level is string => Boolean(level));
-        setJobLevelOptions(Array.from(new Set(levels)));
-      })
-      .catch(() => {
-        if (!alive) return;
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   const selectedJob = items.find((it) => it.id === selectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
-  const selectedDescription = selectedJob ? detailsById[selectedJob.id]?.description ?? "" : "";
+  const detailQuery = useQuery({
+    queryKey: ["job-details", selectedId],
+    queryFn: async () => {
+      const res = await fetch(`/api/jobs/${selectedId}`, { cache: "no-store" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to load details");
+      return json as { id: string; description: string | null };
+    },
+    enabled: Boolean(selectedId),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  const selectedDescription = selectedJob ? detailQuery.data?.description ?? "" : "";
+  const detailError = detailQuery.error
+    ? getErrorMessage(detailQuery.error, "Failed to load details")
+    : null;
+  const detailLoading = detailQuery.isFetching && !detailQuery.data;
   const isLongDescription = selectedDescription.length > 600;
   const isExpanded =
     selectedJob && expandedDescriptions[selectedJob.id] ? true : false;
@@ -471,7 +519,7 @@ export function JobsClient({
       const isPlainWord = /^[a-z0-9.+#-]+$/i.test(keyword);
       return isPlainWord ? `\\b${escaped}\\b` : escaped;
     });
-    return new RegExp(`(${patterns.join("|")})`, "gi");
+    return new RegExp(`(${patterns.join("|")})`, "i");
   }, []);
 
   const checkinDateObjects = useMemo(
@@ -497,9 +545,9 @@ export function JobsClient({
           Finish today’s NEW jobs, then punch in your win. Quick, legal, mildly satisfying.
         </div>
         <div className="text-[12px] text-muted-foreground">{checkinStatusText}</div>
-        {checkinError ? (
+        {checkinErrorMessage ? (
           <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
-            {checkinError}
+            {checkinErrorMessage}
           </div>
         ) : null}
         <div className="flex flex-wrap items-center gap-2">
@@ -519,7 +567,7 @@ export function JobsClient({
                 if (!res.ok) {
                   throw new Error(json?.error || "Check-in failed");
                 }
-                await refreshCheckins();
+                refreshCheckins();
                 toast({
                   title: "Checked in",
                   description: "Today's check-in is saved.",
@@ -601,7 +649,7 @@ export function JobsClient({
 
   useLayoutEffect(() => {
     scrollDetailsToTop();
-  }, [selectedId, detailLoadingId]);
+  }, [selectedId, detailLoading]);
 
   function highlightText(text: string) {
     const parts = text.split(highlightRegex);
@@ -630,40 +678,7 @@ export function JobsClient({
     return children;
   }
 
-  useEffect(() => {
-    if (!items.length) return;
-    const levels = items
-      .map((item) => item.jobLevel)
-      .filter((level): level is string => Boolean(level));
-    if (!levels.length) return;
-    setJobLevelOptions((prev) => Array.from(new Set([...prev, ...levels])));
-  }, [items]);
 
-
-  useEffect(() => {
-    if (!selectedId) return;
-    if (detailsById[selectedId]) return;
-    const controller = new AbortController();
-    setDetailLoadingId(selectedId);
-    setDetailError(null);
-    fetch(`/api/jobs/${selectedId}`, { signal: controller.signal })
-      .then(async (res) => {
-        const json = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(json?.error || "Failed to load details");
-        setDetailsById((prev) => ({
-          ...prev,
-          [selectedId]: { description: json.description ?? null },
-        }));
-      })
-      .catch((e: unknown) => {
-        if (e instanceof DOMException && e.name === "AbortError") return;
-        setDetailError(getErrorMessage(e, "Failed to load details"));
-      })
-      .finally(() => {
-        setDetailLoadingId((prev) => (prev === selectedId ? null : prev));
-      });
-    return () => controller.abort();
-  }, [selectedId, detailsById]);
 
   return (
     <div className="relative flex flex-col gap-6">
@@ -799,9 +814,9 @@ export function JobsClient({
         </div>
       </div>
 
-      {error ? (
+      {activeError ? (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
+          {activeError}
         </div>
       ) : null}
 
@@ -871,8 +886,9 @@ export function JobsClient({
                     onClick={() => {
                       if (pageIndex > 0) {
                         scrollToTop();
-                        setItems([]);
-                        void fetchPage(cursorStack[pageIndex - 1] ?? null, pageIndex - 1);
+                        const prevCursor = cursorStack[pageIndex - 1] ?? null;
+                        setPageIndex(pageIndex - 1);
+                        setCursor(prevCursor);
                       }
                     }}
                     aria-disabled={loading || pageIndex === 0}
@@ -884,8 +900,13 @@ export function JobsClient({
                     onClick={() => {
                       if (loading || !nextCursor) return;
                       scrollToTop();
-                      setItems([]);
-                      void fetchPage(nextCursor, pageIndex + 1);
+                      setCursorStack((prev) => {
+                        const copy = [...prev];
+                        copy[pageIndex + 1] = nextCursor;
+                        return copy;
+                      });
+                      setPageIndex(pageIndex + 1);
+                      setCursor(nextCursor);
                     }}
                     aria-disabled={loading || !nextCursor}
                     className={loading || !nextCursor ? "pointer-events-none opacity-50" : ""}
@@ -977,7 +998,7 @@ export function JobsClient({
                     {detailError}
                   </div>
                 ) : null}
-                {detailLoadingId === selectedJob.id && !detailsById[selectedJob.id] ? (
+                {detailLoading ? (
                   <div className="space-y-3 rounded-lg border border-dashed bg-muted/30 p-4">
                     <Skeleton className="h-4 w-2/3" />
                     <Skeleton className="h-4 w-5/6" />
@@ -1070,4 +1091,3 @@ export function JobsClient({
     </div>
   );
 }
-
