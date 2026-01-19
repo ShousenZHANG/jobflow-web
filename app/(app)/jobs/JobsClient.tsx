@@ -487,62 +487,59 @@ export function JobsClient({
           ? "Checked in for today. Great work!"
           : "All NEW jobs from today are done. You can check in.";
   const checkinCards = (
-    <>
-      <Card className="border bg-card">
-        <CardHeader>
-          <CardTitle className="text-base">Daily check-in</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-sm text-muted-foreground">{checkinStatusText}</div>
-          {checkinError ? (
-            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-              {checkinError}
-            </div>
-          ) : null}
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              onClick={async () => {
-                if (!canCheckIn) return;
-                setCheckinLoading(true);
-                try {
-                  const tz = timeZone ?? getUserTimeZone();
-                  const res = await fetch("/api/checkins", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "x-user-timezone": tz },
-                  });
-                  const json = await res.json().catch(() => ({}));
-                  if (!res.ok) {
-                    throw new Error(json?.error || "Check-in failed");
-                  }
-                  await refreshCheckins();
-                  toast({
-                    title: "Checked in",
-                    description: "Today's check-in is saved.",
-                    duration: 1800,
-                    className:
-                      "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
-                  });
-                } catch (e: unknown) {
-                  setCheckinError(getErrorMessage(e, "Check-in failed"));
-                } finally {
-                  setCheckinLoading(false);
-                }
-              }}
-              disabled={!canCheckIn || checkinLoading}
-            >
-              {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
-            </Button>
-            <div className="text-xs text-muted-foreground">
-              {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
-            </div>
+    <Card className="border bg-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">Daily check-in</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="text-xs text-muted-foreground">{checkinStatusText}</div>
+        {checkinError ? (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+            {checkinError}
           </div>
-        </CardContent>
-      </Card>
-      <Card className="border bg-card">
-        <CardHeader>
-          <CardTitle className="text-base">Check-in calendar</CardTitle>
-        </CardHeader>
-        <CardContent>
+        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            onClick={async () => {
+              if (!canCheckIn) return;
+              setCheckinLoading(true);
+              try {
+                const tz = timeZone ?? getUserTimeZone();
+                const res = await fetch("/api/checkins", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", "x-user-timezone": tz },
+                });
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                  throw new Error(json?.error || "Check-in failed");
+                }
+                await refreshCheckins();
+                toast({
+                  title: "Checked in",
+                  description: "Today's check-in is saved.",
+                  duration: 1800,
+                  className:
+                    "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+                });
+              } catch (e: unknown) {
+                setCheckinError(getErrorMessage(e, "Check-in failed"));
+              } finally {
+                setCheckinLoading(false);
+              }
+            }}
+            disabled={!canCheckIn || checkinLoading}
+          >
+            {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
+          </Button>
+          <div className="rounded-full border bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground">
+            {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
+          </div>
+        </div>
+        <div className="border-t pt-3">
+          <div className="mb-2 text-[11px] font-medium text-muted-foreground">
+            Check-in calendar
+          </div>
           <DayPicker
             mode="multiple"
             selected={checkinDateObjects}
@@ -552,11 +549,25 @@ export function JobsClient({
               checked:
                 "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
             }}
-            className="rounded-lg border bg-muted/20 p-3"
+            className="rounded-lg border bg-muted/20 p-2"
+            classNames={{
+              months: "flex w-full flex-col",
+              month: "w-full",
+              caption: "flex items-center justify-between px-1 py-1",
+              caption_label: "text-xs font-semibold",
+              nav: "flex items-center gap-1",
+              nav_button: "h-7 w-7 rounded-md border bg-background",
+              table: "w-full border-collapse",
+              head_cell: "py-1 text-[10px] text-muted-foreground",
+              cell: "h-8 w-8 text-center text-xs",
+              day: "h-8 w-8 rounded-md hover:bg-muted",
+              day_selected: "bg-emerald-500 text-white hover:bg-emerald-500",
+              day_outside: "text-muted-foreground/60",
+            }}
           />
-        </CardContent>
-      </Card>
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 
   function scrollDetailsToTop() {
