@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import { ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -149,6 +149,7 @@ export function JobsClient({
   const [checkedInToday, setCheckedInToday] = useState(false);
   const [checkinLoading, setCheckinLoading] = useState(false);
   const [checkinError, setCheckinError] = useState<string | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [floatingSidebar, setFloatingSidebar] = useState<{
     enabled: boolean;
@@ -488,11 +489,11 @@ export function JobsClient({
           : "All NEW jobs from today are done. You can check in.";
   const checkinCards = (
     <Card className="border bg-card">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">Daily check-in</CardTitle>
+      <CardHeader className="pb-1">
+        <CardTitle className="text-sm">Daily check-in</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="text-xs text-muted-foreground">{checkinStatusText}</div>
+      <CardContent className="space-y-2 pt-0">
+        <div className="text-[11px] text-muted-foreground">{checkinStatusText}</div>
         {checkinError ? (
           <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
             {checkinError}
@@ -501,6 +502,7 @@ export function JobsClient({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
+            className="h-7 px-3 text-xs"
             onClick={async () => {
               if (!canCheckIn) return;
               setCheckinLoading(true);
@@ -532,39 +534,56 @@ export function JobsClient({
           >
             {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
           </Button>
-          <div className="rounded-full border bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground">
+          <div className="rounded-full border bg-muted/40 px-2 py-0.5 text-[10px] text-muted-foreground">
             {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
           </div>
         </div>
-        <div className="border-t pt-3">
-          <div className="mb-2 text-[11px] font-medium text-muted-foreground">
-            Check-in calendar
+        <div className="border-t pt-2">
+          <div className="flex items-center justify-between">
+            <div className="text-[11px] font-medium text-muted-foreground">
+              Check-in calendar
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px]"
+              onClick={() => setCalendarOpen((prev) => !prev)}
+            >
+              {calendarOpen ? "Hide" : "Show"}
+              {calendarOpen ? (
+                <ChevronUp className="ml-1 h-3 w-3" />
+              ) : (
+                <ChevronDown className="ml-1 h-3 w-3" />
+              )}
+            </Button>
           </div>
-          <DayPicker
-            mode="multiple"
-            selected={checkinDateObjects}
-            showOutsideDays
-            modifiers={{ checked: checkinDateObjects }}
-            modifiersClassNames={{
-              checked:
-                "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
-            }}
-            className="rounded-lg border bg-muted/20 p-2"
-            classNames={{
-              months: "flex w-full flex-col",
-              month: "w-full",
-              caption: "flex items-center justify-between px-1 py-1",
-              caption_label: "text-xs font-semibold",
-              nav: "flex items-center gap-1",
-              nav_button: "h-7 w-7 rounded-md border bg-background",
-              table: "w-full border-collapse",
-              head_cell: "py-1 text-[10px] text-muted-foreground",
-              cell: "h-8 w-8 text-center text-xs",
-              day: "h-8 w-8 rounded-md hover:bg-muted",
-              day_selected: "bg-emerald-500 text-white hover:bg-emerald-500",
-              day_outside: "text-muted-foreground/60",
-            }}
-          />
+          {calendarOpen ? (
+            <DayPicker
+              mode="multiple"
+              selected={checkinDateObjects}
+              showOutsideDays
+              modifiers={{ checked: checkinDateObjects }}
+              modifiersClassNames={{
+                checked:
+                  "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
+              }}
+              className="mt-2 rounded-lg border bg-muted/20 p-1.5"
+              classNames={{
+                months: "flex w-full flex-col",
+                month: "w-full",
+                caption: "flex items-center justify-between px-1 py-1",
+                caption_label: "text-[11px] font-semibold",
+                nav: "flex items-center gap-1",
+                nav_button: "h-6 w-6 rounded-md border bg-background",
+                table: "w-full border-collapse",
+                head_cell: "py-1 text-[9px] text-muted-foreground",
+                cell: "h-7 w-7 text-center text-[10px]",
+                day: "h-7 w-7 rounded-md hover:bg-muted",
+                day_selected: "bg-emerald-500 text-white hover:bg-emerald-500",
+                day_outside: "text-muted-foreground/60",
+              }}
+            />
+          ) : null}
         </div>
       </CardContent>
     </Card>
@@ -647,10 +666,7 @@ export function JobsClient({
     <div className="relative flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">Curated Jobs</h1>
-        </div>
-        <div className="rounded-full border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground">
-          Search
+          <h1 className="text-xl font-semibold text-foreground/80">Jobs</h1>
         </div>
       </div>
 
