@@ -149,6 +149,12 @@ export function JobsClient({
   const [checkedInToday, setCheckedInToday] = useState(false);
   const [checkinLoading, setCheckinLoading] = useState(false);
   const [checkinError, setCheckinError] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [floatingSidebar, setFloatingSidebar] = useState<{
+    enabled: boolean;
+    left: number;
+    width: number;
+  }>({ enabled: false, left: 0, width: 0 });
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -164,6 +170,44 @@ export function JobsClient({
   useEffect(() => {
     const tz = getUserTimeZone();
     setTimeZone(tz || null);
+  }, []);
+
+  useEffect(() => {
+    function updateFloatingSidebar() {
+      if (!contentRef.current) return;
+      if (window.innerWidth < 1280) {
+        setFloatingSidebar((prev) =>
+          prev.enabled ? { ...prev, enabled: false } : prev,
+        );
+        return;
+      }
+      const rect = contentRef.current.getBoundingClientRect();
+      const available = window.innerWidth - rect.right;
+      const minWidth = 280;
+      const maxWidth = 360;
+      const gap = 16;
+      if (available >= minWidth + gap) {
+        const width = Math.min(maxWidth, Math.max(minWidth, available - gap));
+        setFloatingSidebar({
+          enabled: true,
+          left: Math.max(0, rect.right + gap),
+          width,
+        });
+      } else {
+        setFloatingSidebar((prev) =>
+          prev.enabled ? { ...prev, enabled: false } : prev,
+        );
+      }
+    }
+
+    const observer = new ResizeObserver(() => updateFloatingSidebar());
+    if (contentRef.current) observer.observe(contentRef.current);
+    window.addEventListener("resize", updateFloatingSidebar);
+    updateFloatingSidebar();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateFloatingSidebar);
+    };
   }, []);
 
   async function refreshCheckins() {
@@ -442,6 +486,78 @@ export function JobsClient({
         : checkedInToday
           ? "Checked in for today. Great work!"
           : "All NEW jobs from today are done. You can check in.";
+  const checkinCards = (
+    <>
+      <Card className="border bg-card">
+        <CardHeader>
+          <CardTitle className="text-base">Daily check-in</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-muted-foreground">{checkinStatusText}</div>
+          {checkinError ? (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              {checkinError}
+            </div>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={async () => {
+                if (!canCheckIn) return;
+                setCheckinLoading(true);
+                try {
+                  const tz = timeZone ?? getUserTimeZone();
+                  const res = await fetch("/api/checkins", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "x-user-timezone": tz },
+                  });
+                  const json = await res.json().catch(() => ({}));
+                  if (!res.ok) {
+                    throw new Error(json?.error || "Check-in failed");
+                  }
+                  await refreshCheckins();
+                  toast({
+                    title: "Checked in",
+                    description: "Today's check-in is saved.",
+                    duration: 1800,
+                    className:
+                      "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+                  });
+                } catch (e: unknown) {
+                  setCheckinError(getErrorMessage(e, "Check-in failed"));
+                } finally {
+                  setCheckinLoading(false);
+                }
+              }}
+              disabled={!canCheckIn || checkinLoading}
+            >
+              {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
+            </Button>
+            <div className="text-xs text-muted-foreground">
+              {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="border bg-card">
+        <CardHeader>
+          <CardTitle className="text-base">Check-in calendar</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DayPicker
+            mode="multiple"
+            selected={checkinDateObjects}
+            showOutsideDays
+            modifiers={{ checked: checkinDateObjects }}
+            modifiersClassNames={{
+              checked:
+                "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
+            }}
+            className="rounded-lg border bg-muted/20 p-3"
+          />
+        </CardContent>
+      </Card>
+    </>
+  );
 
   function scrollDetailsToTop() {
     const container = detailsScrollRef.current;
@@ -517,7 +633,7 @@ export function JobsClient({
   }, [selectedId, detailsById]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="relative flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-semibold tracking-tight">Curated Jobs</h1>
@@ -527,77 +643,10 @@ export function JobsClient({
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-        <Card className="border bg-card">
-          <CardHeader>
-            <CardTitle className="text-base">Daily check-in</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-sm text-muted-foreground">{checkinStatusText}</div>
-            {checkinError ? (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-                {checkinError}
-              </div>
-            ) : null}
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                onClick={async () => {
-                  if (!canCheckIn) return;
-                  setCheckinLoading(true);
-                  try {
-                    const tz = timeZone ?? getUserTimeZone();
-                    const res = await fetch("/api/checkins", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json", "x-user-timezone": tz },
-                    });
-                    const json = await res.json().catch(() => ({}));
-                    if (!res.ok) {
-                      throw new Error(json?.error || "Check-in failed");
-                    }
-                    await refreshCheckins();
-                    toast({
-                      title: "Checked in",
-                      description: "Today's check-in is saved.",
-                      duration: 1800,
-                      className:
-                        "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
-                    });
-                  } catch (e: unknown) {
-                    setCheckinError(getErrorMessage(e, "Check-in failed"));
-                  } finally {
-                    setCheckinLoading(false);
-                  }
-                }}
-                disabled={!canCheckIn || checkinLoading}
-              >
-                {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
-              </Button>
-              <div className="text-xs text-muted-foreground">
-                {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border bg-card">
-          <CardHeader>
-            <CardTitle className="text-base">Check-in calendar</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DayPicker
-              mode="multiple"
-              selected={checkinDateObjects}
-              showOutsideDays
-              modifiers={{ checked: checkinDateObjects }}
-              modifiersClassNames={{
-                checked:
-                  "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
-              }}
-              className="rounded-lg border bg-muted/20 p-3"
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <div ref={contentRef} className="flex flex-col gap-6">
+        {!floatingSidebar.enabled ? (
+          <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
+        ) : null}
 
       <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto]">
@@ -726,7 +775,7 @@ export function JobsClient({
         </div>
       ) : null}
 
-      <section className="grid gap-4 lg:grid-cols-[380px_1fr]">
+        <section className="grid gap-4 lg:grid-cols-[380px_1fr]">
         <div className="flex h-full min-h-[520px] flex-col rounded-xl border bg-card">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
@@ -975,7 +1024,19 @@ export function JobsClient({
             )}
           </div>
         </div>
-      </section>
+        </section>
+      </div>
+
+      {floatingSidebar.enabled ? (
+        <aside
+          className="fixed z-30 hidden xl:flex"
+          style={{ top: 96, left: floatingSidebar.left, width: floatingSidebar.width }}
+        >
+          <div className="flex max-h-[calc(100vh-120px)] flex-col gap-4 overflow-auto pr-1">
+            {checkinCards}
+          </div>
+        </aside>
+      ) : null}
     </div>
   );
 }
