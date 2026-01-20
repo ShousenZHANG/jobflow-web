@@ -341,6 +341,7 @@ export function JobsClient({
     setCursorStack([null]);
     setPageIndex(0);
     setCursor(null);
+    queryClient.invalidateQueries({ queryKey: ["jobs", queryString, null] });
   }
 
   useEffect(() => {
