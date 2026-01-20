@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -641,16 +641,7 @@ export function JobsClient({
     </Card>
   );
 
-  function scrollDetailsToTop() {
-    const container = detailsScrollRef.current;
-    if (!container) return;
-    container.scrollTop = 0;
-    container.scrollTo({ top: 0, behavior: "smooth" });
-  }
 
-  useLayoutEffect(() => {
-    scrollDetailsToTop();
-  }, [selectedId, detailLoading]);
 
   function highlightText(text: string) {
     const parts = text.split(highlightRegex);
@@ -845,8 +836,6 @@ export function JobsClient({
                   type="button"
                   onClick={() => {
                     setSelectedId(it.id);
-                    requestAnimationFrame(() => scrollDetailsToTop());
-                    setTimeout(() => scrollDetailsToTop(), 60);
                   }}
                   className={`w-full rounded-lg border-l-4 px-3 py-3 text-left transition ${
                     active
@@ -988,7 +977,7 @@ export function JobsClient({
               <div className="text-sm text-muted-foreground">Select a job to preview details.</div>
             )}
           </div>
-          <div ref={detailsScrollRef} className="flex-1 overflow-auto p-4">
+          <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="flex-1 overflow-auto p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
