@@ -674,18 +674,12 @@ export function JobsClient({
 
   return (
     <div className="relative flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold text-foreground/80">Jobs</h1>
-        </div>
-      </div>
-
       <div ref={contentRef} className="flex flex-col gap-6">
         {!floatingSidebar.enabled ? (
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
         ) : null}
 
-      <div className="sticky top-20 z-20 rounded-xl border bg-card/95 p-3 shadow-sm backdrop-blur">
+      <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
