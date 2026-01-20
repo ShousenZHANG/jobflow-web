@@ -133,6 +133,7 @@ export function JobsClient({
   const [cursor, setCursor] = useState<string | null>(null);
 
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
+  const statusFilterRef = useRef<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const pageSize = 10;
@@ -167,6 +168,10 @@ export function JobsClient({
     const tz = getUserTimeZone();
     setTimeZone(tz || null);
   }, []);
+
+  useEffect(() => {
+    statusFilterRef.current = statusFilter;
+  }, [statusFilter]);
 
   useEffect(() => {
     function updateFloatingSidebar() {
@@ -374,9 +379,13 @@ export function JobsClient({
       const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
       queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
         if (!old) return old;
+        const currentFilter = statusFilterRef.current;
+        const shouldKeep = currentFilter === "ALL" || currentFilter === status;
         return {
           ...old,
-          items: old.items.map((it) => (it.id === id ? { ...it, status } : it)),
+          items: shouldKeep
+            ? old.items.map((it) => (it.id === id ? { ...it, status } : it))
+            : old.items.filter((it) => it.id !== id),
         };
       });
       return { previous };
@@ -395,6 +404,7 @@ export function JobsClient({
     },
     onSuccess: (_data, variables) => {
       void refreshCheckins();
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
       toast({
         title: "Status updated",
         description: `${variables.status}`,
