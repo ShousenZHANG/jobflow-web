@@ -812,8 +812,8 @@ export function JobsClient({
         </div>
       ) : null}
 
-        <section className="grid gap-4 lg:grid-cols-[380px_1fr]">
-        <div className="flex h-full min-h-[520px] flex-col rounded-xl border bg-card">
+        <section className="grid gap-4 lg:grid-cols-[380px_1fr] lg:items-start">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
@@ -907,7 +907,7 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="flex h-full min-h-[520px] flex-col rounded-xl border bg-card">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
