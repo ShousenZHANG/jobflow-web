@@ -27,16 +27,44 @@ import { useFetchStatus } from "@/app/FetchStatusContext";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
+const COMMON_TITLES = [
+  "Software Engineer",
+  "Software Developer",
+  "Frontend Engineer",
+  "Frontend Developer",
+  "Backend Engineer",
+  "Backend Developer",
+  "Full Stack Engineer",
+  "Full Stack Developer",
+  "React Developer",
+  "Node.js Developer",
+  "TypeScript Developer",
+  "Python Developer",
+  "Java Developer",
+  "Go Developer",
+  "Mobile Developer",
+  "iOS Developer",
+  "Android Developer",
+  "QA Engineer",
+  "Automation Engineer",
+  "DevOps Engineer",
+  "Site Reliability Engineer",
+  "Cloud Engineer",
+  "Data Engineer",
+  "Machine Learning Engineer",
+  "AI Engineer",
+  "Product Engineer",
+  "Security Engineer",
+  "Platform Engineer",
+];
+
 export function FetchClient() {
   const router = useRouter();
   const { data: session } = useSession();
   const userId = session?.user?.id ?? null;
   const [jobTitle, setJobTitle] = useState("Software Engineer");
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
-  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
   const [hoursOld, setHoursOld] = useState(48);
   const [resultsWanted, setResultsWanted] = useState(100);
   const [applyExcludes, setApplyExcludes] = useState(true);
@@ -68,40 +96,16 @@ export function FetchClient() {
     return jobTitle.trim() ? [jobTitle.trim()] : [];
   }, [jobTitle]);
 
-  useEffect(() => {
-    const q = jobTitle.trim();
-    if (q.length < 2) {
-      setSuggestions([]);
-      setSuggestionsOpen(false);
-      setSuggestionsLoading(false);
-      setSuggestionsError(null);
-      return;
+  const suggestionQuery = jobTitle.trim().toLowerCase();
+  const suggestionMode = suggestionQuery.length < 2 ? "Popular" : "Suggestions";
+  const suggestions = useMemo(() => {
+    if (suggestionQuery.length < 2) {
+      return COMMON_TITLES.slice(0, 12);
     }
-    const controller = new AbortController();
-    setSuggestionsLoading(true);
-    setSuggestionsError(null);
-    const t = setTimeout(() => {
-      fetch(`/api/jobs/suggestions?q=${encodeURIComponent(q)}`, {
-        signal: controller.signal,
-        cache: "no-store",
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          setSuggestions(Array.isArray(json?.suggestions) ? json.suggestions : []);
-          setSuggestionsOpen(true);
-        })
-        .catch((err: unknown) => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          setSuggestionsError(getErrorMessage(err, "Failed to load suggestions"));
-          setSuggestionsOpen(true);
-        })
-        .finally(() => setSuggestionsLoading(false));
-    }, 200);
-    return () => {
-      clearTimeout(t);
-      controller.abort();
-    };
-  }, [jobTitle]);
+    return COMMON_TITLES.filter((title) =>
+      title.toLowerCase().includes(suggestionQuery),
+    ).slice(0, 12);
+  }, [suggestionQuery]);
 
   useEffect(() => {
     const prev = prevUserIdRef.current;
@@ -217,29 +221,25 @@ export function FetchClient() {
             <Label>Job title</Label>
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
               <PopoverAnchor asChild>
-                <Input
-                  placeholder="e.g. Software Engineer"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  onFocus={() => {
-                    if (jobTitle.trim().length >= 2) setSuggestionsOpen(true);
-                  }}
-                  onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
-                />
-              </PopoverAnchor>
-              <PopoverContent
+              <Input
+                placeholder="e.g. Software Engineer"
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                onFocus={() => {
+                    setSuggestionsOpen(true);
+                }}
+                onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
+              />
+            </PopoverAnchor>
+            <PopoverContent
                 align="start"
                 className="w-[var(--radix-popover-trigger-width)] p-0"
                 onOpenAutoFocus={(e) => e.preventDefault()}
               >
                 <Command shouldFilter={false}>
                   <CommandList className="max-h-64 p-1">
-                    {suggestionsLoading ? (
-                      <CommandEmpty>Loading suggestions...</CommandEmpty>
-                    ) : suggestionsError ? (
-                      <CommandEmpty>{suggestionsError}</CommandEmpty>
-                    ) : suggestions.length ? (
-                      <CommandGroup heading="Suggestions">
+                    {suggestions.length ? (
+                      <CommandGroup heading={suggestionMode}>
                         {suggestions.map((item) => (
                           <CommandItem
                             key={item}
