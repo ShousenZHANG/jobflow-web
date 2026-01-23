@@ -486,9 +486,9 @@ export function JobsClient({
   }
 
   const statusClass: Record<JobStatus, string> = {
-    NEW: "bg-emerald-100 text-emerald-700",
-    APPLIED: "bg-blue-100 text-blue-700",
-    REJECTED: "bg-rose-100 text-rose-700",
+    NEW: "bg-emerald-50 text-emerald-700",
+    APPLIED: "bg-blue-50 text-blue-700",
+    REJECTED: "bg-slate-100 text-slate-600",
   };
 
   useEffect(() => {
@@ -841,10 +841,10 @@ export function JobsClient({
                   onClick={() => {
                     setSelectedId(it.id);
                   }}
-                  className={`w-full rounded-lg border-l-4 px-3 py-3 text-left transition ${
+                  className={`w-full rounded-lg border border-l-4 bg-white px-3 py-3 text-left transition ${
                     active
-                      ? "border-l-primary border-primary/50 bg-primary/5 shadow-sm"
-                      : "border-l-transparent hover:border-muted-foreground/30 hover:bg-muted/40"
+                      ? "border-l-primary border-primary/60 bg-primary/5 shadow-sm"
+                      : "border-l-transparent hover:border-muted-foreground/30 hover:bg-muted/30"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">

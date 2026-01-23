@@ -15,10 +15,10 @@ export function TopNav() {
   ];
 
   return (
-    <div className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
+    <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3">
         <div className="flex items-center gap-6">
-          <Link className="text-lg font-semibold tracking-tight" href="/">
+          <Link className="text-lg font-semibold tracking-tight text-foreground" href="/">
             Jobflow
           </Link>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -29,7 +29,9 @@ export function TopNav() {
                   key={link.href}
                   href={link.href}
                   className={`rounded-full px-3 py-1.5 transition ${
-                    active ? "bg-secondary text-foreground" : "hover:bg-secondary/60"
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-secondary/60 hover:text-foreground"
                   }`}
                 >
                   {link.label}
