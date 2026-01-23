@@ -207,9 +207,6 @@ export function FetchClient() {
     <div className="flex flex-col gap-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold text-foreground">Search roles</h1>
-        <p className="text-sm text-muted-foreground">
-          Build a shortlist with focused, repeatable searches.
-        </p>
       </div>
 
       {error ? (
@@ -222,9 +219,6 @@ export function FetchClient() {
         <CardContent className="grid gap-4 p-4 md:grid-cols-4">
           <div className="space-y-2">
             <Label>Job title</Label>
-            <p className="text-xs text-muted-foreground">
-              Use a role title like “Frontend Engineer” or “Data Engineer”.
-            </p>
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
               <PopoverAnchor asChild>
                 <Input

@@ -12,14 +12,13 @@ export default function HomePage() {
         <header className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="flex flex-col gap-6">
             <Badge className="w-fit" variant="outline">
-              Recruitment workspace
+              Hiring workspace
             </Badge>
             <h1 className="text-4xl font-semibold leading-tight text-foreground md:text-6xl">
-              Build a hiring shortlist with clarity and speed.
+              Shortlist faster. Decide with confidence.
             </h1>
             <p className="max-w-2xl text-lg text-muted-foreground">
-              Collect, review, and move candidates forward from one focused workspace built for
-              recruiters.
+              A clean recruiting workspace to search, review, and move quickly.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild className="gap-2">
