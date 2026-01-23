@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,23 +7,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-background">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-gradient-to-br from-primary/20 via-violet-300/20 to-transparent blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-gradient-to-tr from-emerald-200/30 via-sky-200/20 to-transparent blur-3xl" />
-      </div>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 py-16">
-        <header className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(29,78,216,0.08),_transparent_55%)]" />
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-16">
+        <header className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="flex flex-col gap-6">
-            <Badge className="w-fit gap-2" variant="secondary">
-              <Sparkles className="h-3.5 w-3.5" />
-              Jobflow Dashboard
+            <Badge className="w-fit" variant="outline">
+              Recruitment workspace
             </Badge>
-            <h1 className="text-4xl font-semibold leading-tight md:text-6xl">
-              Track, filter, and act on the right roles faster.
+            <h1 className="text-4xl font-semibold leading-tight text-foreground md:text-6xl">
+              Build a hiring shortlist with clarity and speed.
             </h1>
             <p className="max-w-2xl text-lg text-muted-foreground">
-              One clean dashboard for fetch, review, and decision-making. Minimal noise. Maximum
-              clarity.
+              Collect, review, and move candidates forward from one focused workspace built for
+              recruiters.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild className="gap-2">
@@ -36,18 +32,18 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
-          <Card className="border-muted/70 bg-background/80 shadow-lg backdrop-blur">
+          <Card className="border-muted/60 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle>What to do first</CardTitle>
-              <CardDescription>3 steps to get value immediately.</CardDescription>
+              <CardTitle>Start in minutes</CardTitle>
+              <CardDescription>Three fast steps to your first shortlist.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               {[
-                { title: "Start a fetch", copy: "Run a curated search in seconds." },
-                { title: "Review results", copy: "Scan and update status fast." },
-                { title: "Focus your pipeline", copy: "Prioritize what matters next." },
+                { title: "Launch a search", copy: "Run curated queries for new roles." },
+                { title: "Review candidates", copy: "Scan details and update status quickly." },
+                { title: "Prioritize next steps", copy: "Keep your pipeline focused." },
               ].map((item) => (
-                <div key={item.title} className="rounded-lg border bg-muted/40 p-3">
+                <div key={item.title} className="rounded-lg border bg-muted/30 p-3">
                   <div className="text-sm font-medium">{item.title}</div>
                   <div className="text-xs text-muted-foreground">{item.copy}</div>
                 </div>
@@ -59,25 +55,25 @@ export default function HomePage() {
         <section className="grid gap-6 md:grid-cols-3">
           {[
             {
-              title: "Jobs board",
-              copy: "All roles in one place with fast status controls.",
+              title: "Roles board",
+              copy: "All roles in one place with clear status controls.",
               href: "/jobs",
-              cta: "Go to Jobs",
+              cta: "Open roles",
             },
             {
-              title: "Fetch engine",
-              copy: "Launch new searches with targeted filters.",
+              title: "Search engine",
+              copy: "Launch targeted sourcing in seconds.",
               href: "/fetch",
-              cta: "Start Fetch",
+              cta: "Start search",
             },
             {
-              title: "Smart focus",
-              copy: "Stay on top of what to apply for next.",
+              title: "Pipeline focus",
+              copy: "Track what’s ready to move next.",
               href: "/jobs",
-              cta: "Review Pipeline",
+              cta: "Review pipeline",
             },
           ].map((card) => (
-            <Card key={card.title} className="transition hover:-translate-y-1 hover:shadow-lg">
+            <Card key={card.title} className="transition hover:-translate-y-1 hover:shadow-md">
               <CardHeader>
                 <CardTitle className="text-base">{card.title}</CardTitle>
                 <CardDescription>{card.copy}</CardDescription>

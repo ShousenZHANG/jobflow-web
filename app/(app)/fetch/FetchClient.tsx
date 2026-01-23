@@ -206,7 +206,10 @@ export function FetchClient() {
   return (
     <div className="flex flex-col gap-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Fetch jobs</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Search roles</h1>
+        <p className="text-sm text-muted-foreground">
+          Build a shortlist with focused, repeatable searches.
+        </p>
       </div>
 
       {error ? (
@@ -215,14 +218,17 @@ export function FetchClient() {
         </div>
       ) : null}
 
-      <Card>
+      <Card className="border-muted/60 bg-card shadow-sm">
         <CardContent className="grid gap-4 p-4 md:grid-cols-4">
           <div className="space-y-2">
             <Label>Job title</Label>
+            <p className="text-xs text-muted-foreground">
+              Use a role title like “Frontend Engineer” or “Data Engineer”.
+            </p>
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
               <PopoverAnchor asChild>
-              <Input
-                placeholder="e.g. Software Engineer"
+                <Input
+                  placeholder="e.g. Software Engineer"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 onFocus={() => {
@@ -298,16 +304,16 @@ export function FetchClient() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-muted/60 bg-card shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Exclusions</CardTitle>
+          <CardTitle className="text-base">Filters</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="text-sm font-medium">Apply exclusions</div>
               <div className="text-xs text-muted-foreground">
-                Toggle title and description filters.
+                Remove seniority and experience-heavy roles.
               </div>
             </div>
             <Switch checked={applyExcludes} onCheckedChange={setApplyExcludes} />
@@ -315,7 +321,7 @@ export function FetchClient() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Exclude title terms (dropdown)</div>
+              <div className="text-xs text-muted-foreground">Title exclusions</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
@@ -356,7 +362,7 @@ export function FetchClient() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Exclude description rules (dropdown)</div>
+              <div className="text-xs text-muted-foreground">Description exclusions</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
