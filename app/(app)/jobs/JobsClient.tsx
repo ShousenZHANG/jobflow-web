@@ -7,17 +7,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import {
-  BarChart3,
-  Briefcase,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  MapPin,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -543,17 +533,6 @@ export function JobsClient({
     return new RegExp(`(${patterns.join("|")})`, "i");
   }, []);
 
-  const statusCounts = useMemo(() => {
-    return items.reduce(
-      (acc, item) => {
-        acc.total += 1;
-        acc[item.status] += 1;
-        return acc;
-      },
-      { total: 0, NEW: 0, APPLIED: 0, REJECTED: 0 },
-    );
-  }, [items]);
-
   const checkinDateObjects = useMemo(
     () => checkinDates.map(localDateToDate),
     [checkinDates],
@@ -641,31 +620,33 @@ export function JobsClient({
             </Button>
           </div>
           {calendarOpen ? (
-            <DayPicker
-              mode="multiple"
-              selected={checkinDateObjects}
-              showOutsideDays
-              modifiers={{ checked: checkinDateObjects }}
-              modifiersClassNames={{
-                checked:
-                  "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
-              }}
-              className="mt-2 w-full max-w-[260px] rounded-lg border bg-muted/20 p-1"
-              classNames={{
-                months: "flex w-full flex-col",
-                month: "w-full",
-                caption: "flex items-center justify-between px-1 py-1",
-                caption_label: "text-[10px] font-semibold",
-                nav: "flex items-center gap-1",
-                nav_button: "h-5 w-5 rounded-md border bg-background",
-                table: "w-full border-collapse",
-                head_cell: "py-0.5 text-[8px] text-muted-foreground",
-                cell: "h-6 w-6 text-center text-[9px]",
-                day: "h-6 w-6 rounded-md hover:bg-muted",
-                day_selected: "bg-emerald-500 text-white hover:bg-emerald-500",
-                day_outside: "text-muted-foreground/60",
-              }}
-            />
+            <div className="mt-2 w-full max-w-[260px] overflow-hidden rounded-lg border bg-muted/10 p-1">
+              <DayPicker
+                mode="multiple"
+                selected={checkinDateObjects}
+                showOutsideDays
+                modifiers={{ checked: checkinDateObjects }}
+                modifiersClassNames={{
+                  checked:
+                    "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
+                }}
+                className="w-full"
+                classNames={{
+                  months: "flex w-full flex-col",
+                  month: "w-full",
+                  caption: "flex items-center justify-between px-1 py-1",
+                  caption_label: "text-[10px] font-semibold",
+                  nav: "flex items-center gap-1",
+                  nav_button: "h-5 w-5 rounded-md border bg-background",
+                  table: "w-full border-collapse",
+                  head_cell: "py-0.5 text-[8px] text-muted-foreground",
+                  cell: "h-6 w-6 text-center text-[9px]",
+                  day: "h-6 w-6 rounded-md hover:bg-muted",
+                  day_selected: "bg-emerald-500 text-white hover:bg-emerald-500",
+                  day_outside: "text-muted-foreground/60",
+                }}
+              />
+            </div>
           ) : null}
         </div>
       </CardContent>
@@ -709,41 +690,6 @@ export function JobsClient({
         {!floatingSidebar.enabled ? (
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
         ) : null}
-
-      <div className="grid gap-3 md:grid-cols-3">
-        {[
-          {
-            label: "Total",
-            value: statusCounts.total,
-            icon: <Briefcase className="h-4 w-4 text-primary" />,
-          },
-          {
-            label: "New",
-            value: statusCounts.NEW,
-            icon: <BarChart3 className="h-4 w-4 text-emerald-600" />,
-          },
-          {
-            label: "Applied",
-            value: statusCounts.APPLIED,
-            icon: <CheckCircle2 className="h-4 w-4 text-blue-600" />,
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="relative overflow-hidden rounded-xl border bg-white/80 p-3 shadow-sm backdrop-blur"
-          >
-            <div className="flex items-center justify-between">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                {stat.label}
-              </div>
-              <div className="rounded-full bg-primary/10 p-1">{stat.icon}</div>
-            </div>
-            <div className="mt-2 text-2xl font-semibold text-foreground">
-              {stat.value}
-            </div>
-          </div>
-        ))}
-      </div>
 
       <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto]">
