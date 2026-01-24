@@ -82,13 +82,14 @@ const HIGHLIGHT_KEYWORDS = [
 ];
 
 const LOCATION_OPTIONS = [
-  { value: "Sydney, NSW", label: "Sydney" },
-  { value: "Melbourne, VIC", label: "Melbourne" },
-  { value: "Brisbane, QLD", label: "Brisbane" },
-  { value: "Perth, WA", label: "Perth" },
-  { value: "Adelaide, SA", label: "Adelaide" },
-  { value: "Canberra, ACT", label: "Canberra" },
-  { value: "Remote", label: "Remote" },
+  { value: "New South Wales, Australia", label: "New South Wales" },
+  { value: "Victoria, Australia", label: "Victoria" },
+  { value: "Queensland, Australia", label: "Queensland" },
+  { value: "Western Australia, Australia", label: "Western Australia" },
+  { value: "South Australia, Australia", label: "South Australia" },
+  { value: "Australian Capital Territory, Australia", label: "ACT" },
+  { value: "Tasmania, Australia", label: "Tasmania" },
+  { value: "Northern Territory, Australia", label: "Northern Territory" },
 ];
 
 function escapeRegExp(value: string) {
