@@ -17,6 +17,7 @@ type FetchRunSnapshot = {
   status: FetchRunStatus;
   importedCount: number;
   error: string | null;
+  updatedAt?: string | null;
 };
 
 type FetchStatusContextValue = {
@@ -36,6 +37,7 @@ const FetchStatusContext = createContext<FetchStatusContextValue | null>(null);
 const RUN_ID_KEY = "jobflow_fetch_run_id";
 const STARTED_AT_KEY = "jobflow_fetch_started_at";
 const PANEL_OPEN_KEY = "jobflow_fetch_panel_open";
+const ENDED_AT_KEY = "jobflow_fetch_ended_at";
 
 export function FetchStatusProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -53,6 +55,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       runId: `${RUN_ID_KEY}:${suffix}`,
       startedAt: `${STARTED_AT_KEY}:${suffix}`,
       panelOpen: `${PANEL_OPEN_KEY}:${suffix}`,
+      endedAt: `${ENDED_AT_KEY}:${suffix}`,
     };
   }, [userId]);
 
@@ -70,6 +73,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
   const refreshFromStorage = useCallback(() => {
     const id = localStorage.getItem(storageKeys.runId);
     const started = localStorage.getItem(storageKeys.startedAt);
+    const ended = localStorage.getItem(storageKeys.endedAt);
     if (id) {
       setRunId(id);
       const storedOpen = localStorage.getItem(storageKeys.panelOpen);
@@ -80,11 +84,13 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     if (started) {
       const ms = Number(started);
       if (!Number.isNaN(ms)) {
-        const secs = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+        const endMs = ended ? Number(ended) : null;
+        const effectiveEnd = endMs && !Number.isNaN(endMs) ? endMs : Date.now();
+        const secs = Math.max(0, Math.floor((effectiveEnd - ms) / 1000));
         setElapsedSeconds(secs);
       }
     }
-  }, [storageKeys]);
+  }, [storageKeys.runId, storageKeys.startedAt, storageKeys.panelOpen, storageKeys.endedAt]);
 
   useEffect(() => {
     refreshFromStorage();
@@ -96,6 +102,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       localStorage.removeItem(prev.runId);
       localStorage.removeItem(prev.startedAt);
       localStorage.removeItem(prev.panelOpen);
+      localStorage.removeItem(prev.endedAt);
       resetState();
     }
     prevKeysRef.current = storageKeys;
@@ -144,6 +151,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     localStorage.setItem(storageKeys.runId, id);
     localStorage.setItem(storageKeys.startedAt, String(Date.now()));
     localStorage.setItem(storageKeys.panelOpen, "1");
+    localStorage.removeItem(storageKeys.endedAt);
     window.dispatchEvent(new Event("jobflow-fetch-started"));
   }, [setOpen, storageKeys]);
 
@@ -175,6 +183,13 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
         setImportedCount(r.importedCount ?? 0);
         setError(r.error ?? null);
         if (r.status === "SUCCEEDED" || r.status === "FAILED") {
+          const endMs = r.updatedAt ? Date.parse(r.updatedAt) : Date.now();
+          localStorage.setItem(storageKeys.endedAt, String(endMs));
+          const startedRaw = localStorage.getItem(storageKeys.startedAt);
+          const startedMs = startedRaw ? Number(startedRaw) : null;
+          if (startedMs && !Number.isNaN(startedMs)) {
+            setElapsedSeconds(Math.max(0, Math.floor((endMs - startedMs) / 1000)));
+          }
           clearInterval(t);
         }
       } catch (e: unknown) {
@@ -190,7 +205,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       alive = false;
       clearInterval(t);
     };
-  }, [fetchRun, runId]);
+  }, [fetchRun, runId, storageKeys.endedAt, storageKeys.startedAt]);
 
   useEffect(() => {
     if (!open) return;
