@@ -89,7 +89,7 @@ export function FetchClient() {
   const [runId, setRunId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { startRun, status: globalStatus, runId: globalRunId } = useFetchStatus();
+  const { startRun, markRunning, status: globalStatus, runId: globalRunId } = useFetchStatus();
   const prevUserIdRef = useRef<string | null>(null);
 
   const queries = useMemo(() => {
@@ -192,6 +192,7 @@ export function FetchClient() {
       setRunId(id);
       startRun(id);
       await triggerRun(id);
+      markRunning();
     } catch (e: unknown) {
       setError(getErrorMessage(e));
     } finally {
