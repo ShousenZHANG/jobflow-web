@@ -81,6 +81,16 @@ const HIGHLIGHT_KEYWORDS = [
   "Tailwind",
 ];
 
+const LOCATION_OPTIONS = [
+  { value: "Sydney, NSW", label: "Sydney" },
+  { value: "Melbourne, VIC", label: "Melbourne" },
+  { value: "Brisbane, QLD", label: "Brisbane" },
+  { value: "Perth, WA", label: "Perth" },
+  { value: "Adelaide, SA", label: "Adelaide" },
+  { value: "Canberra, ACT", label: "Canberra" },
+  { value: "Remote", label: "Remote" },
+];
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -715,36 +725,9 @@ export function JobsClient({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">All locations</SelectItem>
-                  <SelectItem value="state:NSW">NSW</SelectItem>
-                  <SelectItem value="state:VIC">VIC</SelectItem>
-                  <SelectItem value="state:QLD">QLD</SelectItem>
-                  <SelectItem value="state:WA">WA</SelectItem>
-                  <SelectItem value="state:SA">SA</SelectItem>
-                  <SelectItem value="state:ACT">ACT</SelectItem>
-                  <SelectItem value="state:TAS">TAS</SelectItem>
-                  <SelectItem value="state:NT">NT</SelectItem>
-                  {[
-                    "Sydney, New South Wales, Australia",
-                    "Melbourne, Victoria, Australia",
-                    "Brisbane, Queensland, Australia",
-                    "Perth, Western Australia, Australia",
-                    "Adelaide, South Australia, Australia",
-                    "Canberra, Australian Capital Territory, Australia",
-                    "Hobart, Tasmania, Australia",
-                    "Darwin, Northern Territory, Australia",
-                    "Sydney, NSW",
-                    "Melbourne, VIC",
-                    "Brisbane, QLD",
-                    "Perth, WA",
-                    "Adelaide, SA",
-                    "Canberra, ACT",
-                    "Hobart, TAS",
-                    "Darwin, NT",
-                    "Gold Coast, QLD",
-                    "Newcastle, NSW",
-                  ].map((loc) => (
-                    <SelectItem key={loc} value={loc}>
-                      {loc}
+                  {LOCATION_OPTIONS.map((loc) => (
+                    <SelectItem key={loc.value} value={loc.value}>
+                      {loc.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
