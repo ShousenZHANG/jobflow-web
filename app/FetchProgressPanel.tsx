@@ -40,7 +40,9 @@ export function FetchProgressPanel() {
       ? "bg-destructive/10 text-destructive"
       : status === "SUCCEEDED"
         ? "bg-emerald-100 text-emerald-700"
-        : "bg-muted text-muted-foreground";
+        : status === "RUNNING"
+          ? "bg-blue-100 text-blue-700"
+          : "bg-muted text-muted-foreground";
 
   if (!open && runId) {
     return (
@@ -52,7 +54,7 @@ export function FetchProgressPanel() {
         <span
           className={`h-2 w-2 rounded-full ${
             status === "RUNNING" || status === "QUEUED"
-              ? "bg-emerald-500"
+              ? "bg-blue-500"
               : status === "FAILED"
                 ? "bg-destructive"
                 : "bg-emerald-400"
@@ -66,7 +68,7 @@ export function FetchProgressPanel() {
   if (!open || !runId) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[340px] rounded-2xl border bg-background p-4 shadow-2xl">
+    <div className="fixed bottom-6 right-6 z-50 w-[340px] rounded-2xl border bg-background p-4 shadow-2xl transition-all">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="text-sm font-semibold">Fetch progress</div>
@@ -96,8 +98,8 @@ export function FetchProgressPanel() {
         </div>
         <Progress
           value={progressValue}
-          className="h-2 bg-emerald-100"
-          indicatorClassName="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.45)]"
+          className="h-2 bg-blue-100"
+          indicatorClassName="bg-gradient-to-r from-blue-400 via-blue-500 to-emerald-500 shadow-[0_0_12px_rgba(59,130,246,0.35)] transition-all duration-500 ease-out"
         />
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{progressValue}%</span>

@@ -48,6 +48,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
   const [error, setError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [open, setOpenState] = useState(false);
+  const autoCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const storageKeys = useMemo(() => {
     const suffix = userId ?? "anonymous";
@@ -190,6 +191,12 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
           if (startedMs && !Number.isNaN(startedMs)) {
             setElapsedSeconds(Math.max(0, Math.floor((endMs - startedMs) / 1000)));
           }
+          if (autoCloseTimer.current) {
+            clearTimeout(autoCloseTimer.current);
+          }
+          autoCloseTimer.current = setTimeout(() => {
+            setOpen(false);
+          }, 3000);
           clearInterval(t);
         }
       } catch (e: unknown) {
@@ -204,8 +211,11 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     return () => {
       alive = false;
       clearInterval(t);
+      if (autoCloseTimer.current) {
+        clearTimeout(autoCloseTimer.current);
+      }
     };
-  }, [fetchRun, runId, storageKeys.endedAt, storageKeys.startedAt]);
+  }, [fetchRun, runId, setOpen, storageKeys.endedAt, storageKeys.startedAt]);
 
   useEffect(() => {
     if (!open) return;
