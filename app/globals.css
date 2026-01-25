@@ -133,3 +133,62 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.jobflow-calendar {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+}
+
+.jobflow-calendar .react-calendar__navigation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.jobflow-calendar .react-calendar__navigation button {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted-foreground);
+}
+
+.jobflow-calendar .react-calendar__navigation button:disabled {
+  opacity: 0.5;
+}
+
+.jobflow-calendar .react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+
+.jobflow-calendar .react-calendar__month-view__weekdays__weekday {
+  padding: 4px 0;
+}
+
+.jobflow-calendar .react-calendar__tile {
+  height: 34px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.jobflow-calendar .react-calendar__tile--now {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+
+.jobflow-calendar .react-calendar__tile--active,
+.jobflow-calendar .react-calendar__tile:focus {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--foreground);
+}
+
+.jobflow-calendar__checked {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}

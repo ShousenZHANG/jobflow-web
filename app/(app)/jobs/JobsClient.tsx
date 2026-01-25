@@ -16,7 +16,8 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { DayPicker } from "react-day-picker";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -123,8 +124,11 @@ function getUserTimeZone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
 
-function localDateToDate(localDate: string) {
-  return new Date(`${localDate}T00:00:00`);
+function formatLocalDateKey(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export function JobsClient({
@@ -544,8 +548,8 @@ export function JobsClient({
     return new RegExp(`(${patterns.join("|")})`, "i");
   }, []);
 
-  const checkinDateObjects = useMemo(
-    () => checkinDates.map(localDateToDate),
+  const checkinDateSet = useMemo(
+    () => new Set(checkinDates),
     [checkinDates],
   );
   const canCheckIn = remainingNewToday === 0 && !checkedInToday;
@@ -563,9 +567,6 @@ export function JobsClient({
         <CardTitle className="text-[15px]">Daily check-in</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
-        <div className="text-[12px] text-muted-foreground">
-          Finish today’s NEW jobs, then punch in your win. Quick, legal, mildly satisfying.
-        </div>
         <div className="text-[12px] text-muted-foreground">{checkinStatusText}</div>
         {checkinErrorMessage ? (
           <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
@@ -608,14 +609,12 @@ export function JobsClient({
             {checkedInToday ? "Checked in" : checkinLoading ? "Checking in..." : "Check in"}
           </Button>
           <div className="rounded-full border bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground">
-            {checkinLocalDate ? `Local date: ${checkinLocalDate}` : "Local date unavailable"}
+            {checkinLocalDate ?? "Local date unavailable"}
           </div>
         </div>
         <div className="border-t pt-2">
           <div className="flex items-center justify-between">
-            <div className="text-[12px] font-medium text-muted-foreground">
-              Check-in calendar
-            </div>
+            <div className="text-[12px] font-medium text-muted-foreground">Calendar</div>
             <Button
               variant="ghost"
               size="sm"
@@ -631,37 +630,18 @@ export function JobsClient({
             </Button>
           </div>
           {calendarOpen ? (
-            <div className="mt-2 w-full max-w-[320px] rounded-xl border bg-white/70 p-2 shadow-sm">
-              <DayPicker
-                mode="multiple"
-                selected={checkinDateObjects}
-                showOutsideDays
-                modifiers={{ checked: checkinDateObjects }}
-                modifiersClassNames={{
-                  checked:
-                    "bg-emerald-500 text-white hover:bg-emerald-500 hover:text-white",
-                }}
-                className="w-full"
-                classNames={{
-                  months: "flex w-full flex-col",
-                  month: "w-full space-y-2",
-                  caption: "flex items-center justify-between px-2",
-                  caption_label: "text-sm font-semibold text-foreground",
-                  nav: "flex items-center gap-1",
-                  nav_button:
-                    "h-7 w-7 rounded-md border bg-background text-muted-foreground hover:text-foreground",
-                  table: "w-full border-collapse",
-                  head_row: "flex",
-                  head_cell:
-                    "w-9 text-center text-[11px] font-medium text-muted-foreground",
-                  row: "mt-2 flex w-full",
-                  cell:
-                    "relative h-9 w-9 p-0 text-center text-sm focus-within:relative focus-within:z-20",
-                  day: "h-9 w-9 rounded-md p-0 font-normal hover:bg-muted/60",
-                  day_selected: "bg-emerald-500 text-white hover:bg-emerald-500",
-                  day_today: "border border-emerald-500/40 text-emerald-700",
-                  day_outside: "text-muted-foreground/50",
-                }}
+            <div className="mt-2 w-full max-w-[280px] rounded-xl border bg-white/70 p-2 shadow-sm">
+              <Calendar
+                className="jobflow-calendar"
+                view="month"
+                showNeighboringMonth
+                locale="en-AU"
+                value={null}
+                tileClassName={({ date, view }) =>
+                  view === "month" && checkinDateSet.has(formatLocalDateKey(date))
+                    ? "jobflow-calendar__checked"
+                    : undefined
+                }
               />
             </div>
           ) : null}
