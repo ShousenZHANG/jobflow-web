@@ -157,8 +157,8 @@ body {
   min-width: 28px;
   height: 28px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
+  border: 0;
+  background: color-mix(in srgb, var(--muted) 55%, transparent);
   color: var(--muted-foreground);
   font-size: 12px;
   font-weight: 600;
@@ -209,7 +209,15 @@ body {
   color: var(--foreground);
 }
 
+.jobflow-calendar .react-calendar__tile:enabled:hover {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
 .jobflow-calendar__checked {
   background: #10b981 !important;
   color: #ffffff !important;
+}
+
+.jobflow-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  color: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
 }

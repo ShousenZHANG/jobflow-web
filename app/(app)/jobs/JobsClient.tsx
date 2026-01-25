@@ -630,7 +630,7 @@ export function JobsClient({
             </Button>
           </div>
           {calendarOpen ? (
-            <div className="mt-2 w-full max-w-[280px] rounded-xl border bg-white/70 p-2 shadow-sm">
+            <div className="mt-2 w-full max-w-[280px] rounded-2xl bg-white/80 p-2 shadow-[0_12px_30px_-20px_rgba(15,23,42,0.45)]">
               <Calendar
                 className="jobflow-calendar"
                 view="month"
