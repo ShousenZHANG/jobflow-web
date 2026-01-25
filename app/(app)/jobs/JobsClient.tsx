@@ -631,7 +631,7 @@ export function JobsClient({
             </Button>
           </div>
           {calendarOpen ? (
-            <div className="mt-2 w-full max-w-[260px] overflow-hidden rounded-lg border bg-muted/10 p-1">
+            <div className="mt-2 w-full max-w-[320px] rounded-xl border bg-white/70 p-2 shadow-sm">
               <DayPicker
                 mode="multiple"
                 selected={checkinDateObjects}
@@ -644,17 +644,23 @@ export function JobsClient({
                 className="w-full"
                 classNames={{
                   months: "flex w-full flex-col",
-                  month: "w-full",
-                  caption: "flex items-center justify-between px-1 py-1",
-                  caption_label: "text-[10px] font-semibold",
+                  month: "w-full space-y-2",
+                  caption: "flex items-center justify-between px-2",
+                  caption_label: "text-sm font-semibold text-foreground",
                   nav: "flex items-center gap-1",
-                  nav_button: "h-5 w-5 rounded-md border bg-background",
+                  nav_button:
+                    "h-7 w-7 rounded-md border bg-background text-muted-foreground hover:text-foreground",
                   table: "w-full border-collapse",
-                  head_cell: "py-0.5 text-[8px] text-muted-foreground",
-                  cell: "h-6 w-6 text-center text-[9px]",
-                  day: "h-6 w-6 rounded-md hover:bg-muted",
+                  head_row: "flex",
+                  head_cell:
+                    "w-9 text-center text-[11px] font-medium text-muted-foreground",
+                  row: "mt-2 flex w-full",
+                  cell:
+                    "relative h-9 w-9 p-0 text-center text-sm focus-within:relative focus-within:z-20",
+                  day: "h-9 w-9 rounded-md p-0 font-normal hover:bg-muted/60",
                   day_selected: "bg-emerald-500 text-white hover:bg-emerald-500",
-                  day_outside: "text-muted-foreground/60",
+                  day_today: "border border-emerald-500/40 text-emerald-700",
+                  day_outside: "text-muted-foreground/50",
                 }}
               />
             </div>
