@@ -682,3 +682,13 @@ body.jobs-no-scroll {
   font-family: var(--font-edu-display), var(--font-edu-body), "Fredoka", ui-rounded, system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
+
+.app-shell {
+  height: calc(100vh - 104px);
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    height: calc(100vh - 112px);
+  }
+}

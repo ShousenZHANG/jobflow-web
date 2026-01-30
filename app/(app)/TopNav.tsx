@@ -17,7 +17,7 @@ export function TopNav() {
 
   return (
     <div className="sticky top-0 z-40">
-      <div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6" style={{ height: 88 }}>
         <div className="edu-nav edu-nav--press">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
