@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -224,6 +224,7 @@ export function JobsClient({
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [timeZone] = useState<string | null>(() => getUserTimeZone() || null);
+  const [isPending, startTransition] = useTransition();
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -231,16 +232,22 @@ export function JobsClient({
     return fallback;
   }
 
+  const deferredQ = useDeferredValue(q);
+  const deferredStatus = useDeferredValue(statusFilter);
+  const deferredLocation = useDeferredValue(locationFilter);
+  const deferredJobLevel = useDeferredValue(jobLevelFilter);
+  const deferredSortOrder = useDeferredValue(sortOrder);
+
   const filters = useMemo(
     () => ({
-      q,
-      statusFilter,
-      locationFilter,
-      jobLevelFilter,
-      sortOrder,
+      q: deferredQ,
+      statusFilter: deferredStatus,
+      locationFilter: deferredLocation,
+      jobLevelFilter: deferredJobLevel,
+      sortOrder: deferredSortOrder,
       pageSize,
     }),
-    [q, statusFilter, locationFilter, jobLevelFilter, sortOrder, pageSize],
+    [deferredQ, deferredStatus, deferredLocation, deferredJobLevel, deferredSortOrder, pageSize],
   );
 
   const debouncedFilters = useDebouncedValue(filters, 200);
@@ -293,7 +300,7 @@ export function JobsClient({
   const nextCursor = jobsQuery.data?.nextCursor ?? null;
   const loading = jobsQuery.isFetching;
   const delayedLoading = useDebouncedValue(loading, 160);
-  const showLoadingOverlay = loading ? delayedLoading : false;
+  const showLoadingOverlay = (loading ? delayedLoading : false) || isPending;
   const listOpacityClass = showLoadingOverlay ? "opacity-70" : "opacity-100";
   const queryError = jobsQuery.error
     ? getErrorMessage(jobsQuery.error, "Failed to load jobs")
@@ -567,8 +574,10 @@ export function JobsClient({
               <Select
                 value={locationFilter}
                 onValueChange={(v) => {
-                  resetPagination();
-                  setLocationFilter(v);
+                  startTransition(() => {
+                    resetPagination();
+                    setLocationFilter(v);
+                  });
                 }}
               >
                 <SelectTrigger className="pl-9">
@@ -590,8 +599,10 @@ export function JobsClient({
             <Select
               value={jobLevelFilter}
               onValueChange={(v) => {
-                resetPagination();
-                setJobLevelFilter(v);
+                startTransition(() => {
+                  resetPagination();
+                  setJobLevelFilter(v);
+                });
               }}
             >
               <SelectTrigger>
@@ -612,8 +623,10 @@ export function JobsClient({
             <Select
               value={statusFilter}
               onValueChange={(v) => {
-                resetPagination();
-                setStatusFilter(v as JobStatus | "ALL");
+                startTransition(() => {
+                  resetPagination();
+                  setStatusFilter(v as JobStatus | "ALL");
+                });
               }}
             >
               <SelectTrigger>
@@ -632,8 +645,10 @@ export function JobsClient({
             <Select
               value={sortOrder}
               onValueChange={(v) => {
-                resetPagination();
-                setSortOrder(v as "newest" | "oldest");
+                startTransition(() => {
+                  resetPagination();
+                  setSortOrder(v as "newest" | "oldest");
+                });
               }}
             >
               <SelectTrigger className="h-9 bg-muted/40">
