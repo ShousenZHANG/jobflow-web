@@ -1,29 +1,30 @@
 ﻿import Link from "next/link";
-import { Baloo_2, Comic_Neue } from "next/font/google";
+import { Fredoka, Nunito } from "next/font/google";
 import { ArrowRight, ClipboardList, Radar, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-const baloo = Baloo_2({
+const fredoka = Fredoka({
   subsets: ["latin"],
   variable: "--font-edu-display",
+  weight: ["400", "500", "600", "700"],
 });
 
-const comic = Comic_Neue({
+const nunito = Nunito({
   subsets: ["latin"],
   variable: "--font-edu-body",
-  weight: ["300", "400", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export default function HomePage() {
   return (
-    <main className={`marketing-edu ${baloo.variable} ${comic.variable} relative min-h-screen overflow-hidden`}>
+    <main className={`marketing-edu ${fredoka.variable} ${nunito.variable} relative min-h-screen overflow-hidden`}>
       <div className="edu-bg" />
       <div className="edu-blob edu-blob--mint" />
       <div className="edu-blob edu-blob--peach" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-12">
-        <header className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-14 px-6 py-12 text-center">
+        <header className="grid w-full max-w-5xl gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:justify-items-center">
           <div className="edu-enter">
             <Badge className="edu-pill">
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-500" />
@@ -34,10 +35,10 @@ export default function HomePage() {
               <span className="text-emerald-500"> faster</span>,
               every day.
             </h1>
-            <p className="mt-5 max-w-xl text-base text-slate-600 md:text-lg">
-              Search, review, and move candidates forward with clarity and calm.
+            <p className="mx-auto mt-5 max-w-xl text-base text-slate-600 md:text-lg">
+              Find roles, review candidates, move forward — all in one calm flow.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild className="edu-cta edu-cta--press">
                 <Link href="/login">
                   Start hiring <ArrowRight className="h-4 w-4" />
@@ -47,18 +48,18 @@ export default function HomePage() {
                 <Link href="/jobs">Open dashboard</Link>
               </Button>
             </div>
-            <div className="mt-8 flex flex-wrap gap-8 text-sm text-slate-600">
+            <div className="mt-8 flex flex-wrap justify-center gap-8 text-sm text-slate-600">
               <div>
-                <div className="text-2xl font-semibold text-slate-900">10K+</div>
+                <div className="text-2xl font-semibold text-slate-900">8.4k</div>
                 Roles tracked
               </div>
               <div>
-                <div className="text-2xl font-semibold text-slate-900">2M+</div>
-                Updates synced
+                <div className="text-2xl font-semibold text-slate-900">2.1k</div>
+                Reviews this week
               </div>
               <div>
-                <div className="text-2xl font-semibold text-slate-900">500+</div>
-                Teams onboarded
+                <div className="text-2xl font-semibold text-slate-900">3.2x</div>
+                Faster decisions
               </div>
             </div>
           </div>
@@ -70,7 +71,7 @@ export default function HomePage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100">
                     <ClipboardList className="h-5 w-5 text-emerald-600" />
                   </div>
-                  <div>
+                  <div className="text-left">
                     <div className="font-semibold text-slate-900">Shortlist queue</div>
                     <div className="text-xs text-slate-500">12 new roles · 4h</div>
                   </div>
