@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { getCursorPage } from "@/lib/server/pagination";
 
 export const runtime = "nodejs";
 
@@ -91,10 +92,10 @@ export async function GET(req: Request) {
     ...(andClauses.length ? { AND: andClauses } : {}),
   };
 
-  const jobs = await prisma.job.findMany({
+  const jobsWithExtra = await prisma.job.findMany({
     where,
     orderBy,
-    take: limit,
+    take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     select: {
       id: true,
@@ -110,6 +111,7 @@ export async function GET(req: Request) {
     },
   });
 
+  const { items: jobs, nextCursor } = getCursorPage(jobsWithExtra, limit);
   const lastUpdated = jobs.length ? jobs[0].updatedAt?.toISOString?.() : "empty";
   const etag = `W/"jobs:${userId}:${cursor ?? "start"}:${jobs.length}:${lastUpdated}"`;
   if (ifNoneMatch && ifNoneMatch === etag) {
@@ -119,7 +121,7 @@ export async function GET(req: Request) {
   return new NextResponse(
     JSON.stringify({
       items: jobs,
-      nextCursor: jobs.length ? jobs[jobs.length - 1].id : null,
+      nextCursor,
     }),
     {
       status: 200,

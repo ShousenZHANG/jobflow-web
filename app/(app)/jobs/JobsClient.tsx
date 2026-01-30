@@ -320,6 +320,8 @@ export function JobsClient({
     : null;
 
   const activeError = error ?? queryError;
+  const prevDisabled = loading || pageIndex === 0;
+  const nextDisabled = loading || !nextCursor;
 
   const jobLevelsQuery = useQuery<string[]>({
     queryKey: ["job-levels"],
@@ -836,8 +838,12 @@ export function JobsClient({
                         setCursor(prevCursor);
                       }
                     }}
-                    aria-disabled={loading || pageIndex === 0}
-                    className={loading || pageIndex === 0 ? "pointer-events-none opacity-50" : ""}
+                    aria-disabled={prevDisabled}
+                    className={
+                      prevDisabled
+                        ? "pointer-events-none cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    }
                   />
                 </PaginationItem>
                 <PaginationItem>
@@ -853,8 +859,12 @@ export function JobsClient({
                       setPageIndex(pageIndex + 1);
                       setCursor(nextCursor);
                     }}
-                    aria-disabled={loading || !nextCursor}
-                    className={loading || !nextCursor ? "pointer-events-none opacity-50" : ""}
+                    aria-disabled={nextDisabled}
+                    className={
+                      nextDisabled
+                        ? "pointer-events-none cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
