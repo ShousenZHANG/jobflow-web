@@ -423,13 +423,56 @@ body {
 }
 
 .edu-cta--press:hover {
-  transform: translate3d(0, 3px, 0) scale(0.98);
+  transform: translate3d(0, 3px, 0);
   box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 0 #1f2937;
 }
 
 .edu-cta--press:active {
-  transform: translate3d(0, 4px, 0) scale(0.97);
+  transform: translate3d(0, 4px, 0);
   box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.18), 0 1px 0 #1f2937;
+}
+
+.edu-fav {
+  position: relative;
+}
+
+.edu-fav summary {
+  list-style: none;
+}
+
+.edu-fav summary::-webkit-details-marker {
+  display: none;
+}
+
+.edu-fav-panel {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  min-width: 140px;
+  border-radius: 16px;
+  border: 2px solid #1f2937;
+  background: #ffffff;
+  box-shadow: 0 10px 0 #1f2937;
+  padding: 10px;
+  z-index: 10;
+}
+
+.edu-fav-link {
+  display: block;
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: background-color 150ms ease;
+}
+
+.edu-fav-link:hover {
+  background: #e0f2fe;
+}
+
+.edu-footer {
+  border-top: 2px dashed rgba(15, 23, 42, 0.15);
+  padding-top: 32px;
 }
 
 .edu-card {

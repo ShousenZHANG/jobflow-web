@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { Fredoka, Nunito } from "next/font/google";
-import { ArrowRight, MapPin, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Heart, MapPin, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -31,20 +31,19 @@ export default function HomePage() {
             </div>
             <span className="text-lg font-semibold text-slate-900">Jobflow</span>
           </div>
-          <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
-            <Link href="/jobs" className="cursor-pointer transition hover:text-slate-900">
-              Jobs
-            </Link>
-            <Link href="/fetch" className="cursor-pointer transition hover:text-slate-900">
-              Fetch
-            </Link>
-          </div>
           <div className="flex items-center gap-3">
+            <details className="edu-fav md:hidden">
+              <summary className="edu-outline edu-cta--press flex h-10 w-10 items-center justify-center">
+                <Heart className="h-4 w-4" />
+              </summary>
+              <div className="edu-fav-panel">
+                <Link href="/login" className="edu-fav-link">
+                  Log in
+                </Link>
+              </div>
+            </details>
             <Button asChild variant="outline" className="edu-outline edu-cta--press">
               <Link href="/login">Log in</Link>
-            </Button>
-            <Button asChild className="edu-cta edu-cta--press">
-              <Link href="/login">Start free</Link>
             </Button>
           </div>
         </nav>
@@ -78,7 +77,7 @@ export default function HomePage() {
                 Roles indexed
               </div>
               <div>
-                <div className="text-2xl font-semibold text-slate-900">5 min</div>
+                <div className="text-2xl font-semibold text-slate-900">1 min</div>
                 Avg. shortlist
               </div>
               <div>
@@ -119,17 +118,51 @@ export default function HomePage() {
                   <div className="h-3 w-3/4 rounded-full bg-emerald-400" />
                 </div>
               </div>
-              <Button className="mt-5 w-full edu-cta edu-cta--press">View matches</Button>
+              <Button asChild className="mt-5 w-full edu-cta edu-cta--press">
+                <Link href="/jobs">View matches</Link>
+              </Button>
             </div>
 
             <div className="edu-float edu-float--target">
               <MapPin className="h-5 w-5 text-sky-600" />
             </div>
-            <div className="edu-float edu-float--spark">
-              <Sparkles className="h-5 w-5 text-emerald-600" />
-            </div>
           </div>
         </header>
+
+        <section className="edu-footer w-full max-w-5xl text-left">
+          <div className="grid gap-8 md:grid-cols-[1.2fr_1fr_1fr]">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                <div className="edu-logo h-10 w-10">
+                  <Search className="h-4 w-4 text-emerald-700" />
+                </div>
+                Jobflow
+              </div>
+              <p className="text-sm text-slate-600">
+                A calm space to search faster and keep your job hunt on track.
+              </p>
+            </div>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div className="text-sm font-semibold text-slate-900">Explore</div>
+              <div>Saved roles</div>
+              <div>Recent searches</div>
+              <div>Career tips</div>
+            </div>
+            <div className="space-y-2 text-sm text-slate-600">
+              <div className="text-sm font-semibold text-slate-900">Support</div>
+              <div>Help center</div>
+              <div>Contact</div>
+              <div>Privacy</div>
+            </div>
+          </div>
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
+            <span>© 2026 Jobflow. All rights reserved.</span>
+            <div className="flex items-center gap-4">
+              <span>Terms</span>
+              <span>Cookies</span>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
