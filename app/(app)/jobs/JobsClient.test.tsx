@@ -31,17 +31,6 @@ beforeEach(() => {
   vi.restoreAllMocks();
   const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.url;
-    if (url.startsWith("/api/checkins")) {
-      return new Response(
-        JSON.stringify({
-          dates: ["2026-01-19"],
-          localDate: "2026-01-19",
-          remainingNew: 0,
-          checkedInToday: false,
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
-    }
     if (url.startsWith("/api/jobs?limit=50")) {
       return new Response(
         JSON.stringify({ items: [baseJob], nextCursor: null }),
@@ -71,14 +60,10 @@ describe("JobsClient", () => {
     expect(ScrollArea).toBeDefined();
   });
 
-  it("renders initial jobs and check-in status", async () => {
+  it("renders initial jobs", async () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     expect((await screen.findAllByText("Frontend Engineer")).length).toBeGreaterThan(0);
-    expect(await screen.findByText("Daily check-in")).toBeInTheDocument();
-    expect(
-      await screen.findByText("All NEW jobs from today are done. You can check in."),
-    ).toBeInTheDocument();
   });
 
   it("shows sort and results in the top toolbar", () => {
