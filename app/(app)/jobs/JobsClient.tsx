@@ -198,13 +198,6 @@ function getUserTimeZone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
 
-function formatLocalDateKey(date: Date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
 export function JobsClient({
   initialItems = [],
   initialCursor = null,
@@ -230,7 +223,7 @@ export function JobsClient({
   const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
-  const [timeZone, setTimeZone] = useState<string | null>(null);
+  const [timeZone] = useState<string | null>(() => getUserTimeZone() || null);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -253,11 +246,6 @@ export function JobsClient({
   const debouncedFilters = useDebouncedValue(filters, 200);
 
   useEffect(() => {
-    const tz = getUserTimeZone();
-    setTimeZone(tz || null);
-  }, []);
-
-  useEffect(() => {
     statusFilterRef.current = statusFilter;
   }, [statusFilter]);
 
@@ -276,7 +264,6 @@ export function JobsClient({
   if (initialQueryRef.current === null) {
     initialQueryRef.current = queryString;
   }
-  const skipInitialFetchRef = useRef<boolean>(initialItems.length > 0);
   const jobsQuery = useQuery({
     queryKey: ["jobs", queryString, cursor],
     queryFn: async ({ signal }): Promise<JobsResponse> => {
@@ -305,43 +292,14 @@ export function JobsClient({
   const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
   const nextCursor = jobsQuery.data?.nextCursor ?? null;
   const loading = jobsQuery.isFetching;
-  const [loadingBarVisible, setLoadingBarVisible] = useState(false);
-  const loadingBarTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (loading) {
-      if (loadingBarTimerRef.current === null) {
-        loadingBarTimerRef.current = window.setTimeout(() => {
-          setLoadingBarVisible(true);
-        }, 160);
-      }
-      return;
-    }
-
-    if (loadingBarTimerRef.current !== null) {
-      clearTimeout(loadingBarTimerRef.current);
-      loadingBarTimerRef.current = null;
-    }
-    setLoadingBarVisible(false);
-  }, [loading]);
-
-  useEffect(
-    () => () => {
-      if (loadingBarTimerRef.current !== null) {
-        clearTimeout(loadingBarTimerRef.current);
-      }
-    },
-    [],
-  );
-
-  const showLoadingOverlay = loadingBarVisible;
+  const delayedLoading = useDebouncedValue(loading, 160);
+  const showLoadingOverlay = loading ? delayedLoading : false;
   const listOpacityClass = showLoadingOverlay ? "opacity-70" : "opacity-100";
   const queryError = jobsQuery.error
     ? getErrorMessage(jobsQuery.error, "Failed to load jobs")
     : null;
 
   const activeError = error ?? queryError;
-  const resolvedTimeZone = timeZone ?? getUserTimeZone();
 
   const jobLevelsQuery = useQuery<string[]>({
     queryKey: ["job-levels"],
@@ -373,24 +331,18 @@ export function JobsClient({
   }
 
   function triggerSearch() {
-    setCursorStack([null]);
-    setPageIndex(0);
-    setCursor(null);
+    resetPagination();
     queryClient.invalidateQueries({ queryKey: ["jobs"] });
   }
 
-  useEffect(() => {
-    if (
-      skipInitialFetchRef.current &&
-      initialQueryRef.current === queryString
-    ) {
-      skipInitialFetchRef.current = false;
-      return;
-    }
-    setCursorStack([null]);
-    setPageIndex(0);
-    setCursor(null);
-  }, [queryString]);
+  const resetPagination = useMemo(
+    () => () => {
+      setCursorStack([null]);
+      setPageIndex(0);
+      setCursor(null);
+    },
+    [],
+  );
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: JobStatus }) => {
@@ -433,7 +385,6 @@ export function JobsClient({
       });
     },
     onSuccess: (_data, variables) => {
-      void refreshCheckins();
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       toast({
         title: "Status updated",
@@ -486,7 +437,6 @@ export function JobsClient({
       });
     },
     onSuccess: () => {
-      void refreshCheckins();
       toast({
         title: "Job removed",
         description: "The job was deleted successfully.",
@@ -521,28 +471,23 @@ export function JobsClient({
     REJECTED: "bg-slate-200 text-slate-600",
   };
 
-  useEffect(() => {
-    if (items.length === 0) {
-      setSelectedId(null);
-      return;
-    }
-    if (!selectedId || !items.some((it) => it.id === selectedId)) {
-      setSelectedId(items[0]?.id ?? null);
-    }
+  const effectiveSelectedId = useMemo(() => {
+    if (!items.length) return null;
+    if (selectedId && items.some((it) => it.id === selectedId)) return selectedId;
+    return items[0]?.id ?? null;
   }, [items, selectedId]);
 
-
-  const selectedJob = items.find((it) => it.id === selectedId) ?? null;
+  const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const detailQuery = useQuery({
-    queryKey: ["job-details", selectedId],
+    queryKey: ["job-details", effectiveSelectedId],
     queryFn: async () => {
-      const res = await fetch(`/api/jobs/${selectedId}`, { cache: "no-store" });
+      const res = await fetch(`/api/jobs/${effectiveSelectedId}`, { cache: "no-store" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to load details");
       return json as { id: string; description: string | null };
     },
-    enabled: Boolean(selectedId),
+    enabled: Boolean(effectiveSelectedId),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
@@ -608,7 +553,10 @@ export function JobsClient({
                 className="pl-9"
                 placeholder="e.g. software engineer"
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={(e) => {
+                  resetPagination();
+                  setQ(e.target.value);
+                }}
               />
             </div>
           </div>
@@ -616,7 +564,13 @@ export function JobsClient({
             <div className="text-xs text-muted-foreground">Location</div>
             <div className="relative">
               <MapPin className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Select value={locationFilter} onValueChange={(v) => setLocationFilter(v)}>
+              <Select
+                value={locationFilter}
+                onValueChange={(v) => {
+                  resetPagination();
+                  setLocationFilter(v);
+                }}
+              >
                 <SelectTrigger className="pl-9">
                   <SelectValue placeholder="All locations" />
                 </SelectTrigger>
@@ -633,7 +587,13 @@ export function JobsClient({
           </div>
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Job level</div>
-            <Select value={jobLevelFilter} onValueChange={setJobLevelFilter}>
+            <Select
+              value={jobLevelFilter}
+              onValueChange={(v) => {
+                resetPagination();
+                setJobLevelFilter(v);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All levels" />
               </SelectTrigger>
@@ -651,7 +611,10 @@ export function JobsClient({
             <div className="text-xs text-muted-foreground">Status</div>
             <Select
               value={statusFilter}
-              onValueChange={(v) => setStatusFilter(v as JobStatus | "ALL")}
+              onValueChange={(v) => {
+                resetPagination();
+                setStatusFilter(v as JobStatus | "ALL");
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All" />
@@ -666,7 +629,13 @@ export function JobsClient({
           </div>
           <div className="space-y-2" data-testid="jobs-sort">
             <div className="text-xs text-muted-foreground">Posted</div>
-            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "newest" | "oldest")}>
+            <Select
+              value={sortOrder}
+              onValueChange={(v) => {
+                resetPagination();
+                setSortOrder(v as "newest" | "oldest");
+              }}
+            >
               <SelectTrigger className="h-9 bg-muted/40">
                 <SelectValue placeholder="Posted" />
               </SelectTrigger>
@@ -717,7 +686,7 @@ export function JobsClient({
               ))
             ) : null}
             {items.map((it) => {
-              const active = it.id === selectedId;
+              const active = it.id === effectiveSelectedId;
               return (
                 <button
                   key={it.id}
@@ -872,7 +841,7 @@ export function JobsClient({
             data-loading={showLoadingOverlay ? "true" : "false"}
             className={`max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
           >
-            <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
+            <div key={effectiveSelectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
