@@ -35,8 +35,8 @@ export function TopNav() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`edu-nav-link rounded-full px-3 py-1.5 ${
-                      active ? "bg-emerald-100 text-emerald-800" : ""
+                    className={`edu-nav-link edu-nav-pill ${
+                      active ? "edu-nav-pill--active" : ""
                     }`}
                   >
                     {link.label}
