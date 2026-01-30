@@ -107,17 +107,17 @@ export default function HomePage() {
             </div>
             <span className="text-lg font-semibold text-slate-900">Jobflow</span>
           </div>
-          <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
-            <Link href="/jobs" className="cursor-pointer transition hover:text-slate-900">
+          <div className="hidden items-center gap-8 md:flex">
+            <Link href="/jobs" className="edu-nav-link">
               Jobs
             </Link>
-            <Link href="/fetch" className="cursor-pointer transition hover:text-slate-900">
+            <Link href="/fetch" className="edu-nav-link">
               Fetch
             </Link>
           </div>
           <div className="flex items-center gap-3">
             <details className="edu-menu md:hidden">
-              <summary className="edu-outline edu-cta--press flex h-12 w-12 items-center justify-center">
+              <summary className="edu-outline edu-cta--press edu-menu-button flex h-12 w-12 items-center justify-center">
                 <Menu className="h-4 w-4" />
               </summary>
               <div className="edu-menu-panel">
