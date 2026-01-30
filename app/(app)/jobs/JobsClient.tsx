@@ -8,7 +8,6 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
 import { ChevronDown, ChevronUp, ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -163,7 +162,6 @@ export function JobsClient({
   const [checkinError, setCheckinError] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const reduceMotion = useReducedMotion();
   const [floatingSidebar, setFloatingSidebar] = useState<{
     enabled: boolean;
     left: number;
@@ -282,15 +280,6 @@ export function JobsClient({
 
   const activeError = error ?? queryError;
   const resolvedTimeZone = timeZone ?? getUserTimeZone();
-  const statusCounts = useMemo(() => {
-    return items.reduce(
-      (acc, item) => {
-        acc[item.status] += 1;
-        return acc;
-      },
-      { NEW: 0, APPLIED: 0, REJECTED: 0 } as Record<JobStatus, number>,
-    );
-  }, [items]);
 
   const checkinsQuery = useQuery({
     queryKey: ["checkins", resolvedTimeZone],
@@ -694,59 +683,12 @@ export function JobsClient({
 
   return (
     <div className="relative flex flex-col gap-6">
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="dashboard-orb dashboard-orb--gold" />
-        <div className="dashboard-orb dashboard-orb--ink" />
-      </div>
       <div ref={contentRef} className="flex flex-col gap-6">
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col gap-3"
-        >
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                Recruiting Dashboard
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold text-foreground">
-                Talent pipeline, distilled.
-              </h1>
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
-              <span className="font-medium text-foreground">{items.length}</span>
-              roles visible
-            </div>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            {(["NEW", "APPLIED", "REJECTED"] as JobStatus[]).map((status) => (
-              <div
-                key={status}
-                className="rounded-2xl border border-white/60 bg-white/70 p-4 text-sm shadow-[0_18px_40px_-30px_rgba(15,23,42,0.35)] backdrop-blur"
-              >
-                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  {status.toLowerCase()}
-                </div>
-                <div className="mt-2 text-2xl font-semibold text-foreground">
-                  {statusCounts[status]}
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {status === "NEW"
-                    ? "Awaiting review"
-                    : status === "APPLIED"
-                      ? "In motion"
-                      : "Closed loop"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
         {!floatingSidebar.enabled ? (
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
         ) : null}
 
-      <div className="rounded-2xl border border-white/60 bg-white/70 p-4 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.35)] backdrop-blur">
+      <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
@@ -847,8 +789,8 @@ export function JobsClient({
       ) : null}
 
         <section className="grid gap-4 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="flex h-[calc(100vh-220px)] min-h-[520px] flex-col overflow-hidden rounded-2xl border border-white/60 bg-white/75 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.35)] backdrop-blur">
-          <div className="flex items-center justify-between border-b border-white/50 px-4 py-3 text-sm font-semibold">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card">
+          <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
           </div>
@@ -871,10 +813,10 @@ export function JobsClient({
                   onClick={() => {
                     setSelectedId(it.id);
                   }}
-                  className={`w-full rounded-xl border border-l-4 bg-white/80 px-3 py-3 text-left transition duration-200 ${
+                  className={`w-full rounded-lg border border-l-4 bg-white px-3 py-3 text-left transition ${
                     active
-                      ? "border-l-primary border-primary/60 bg-primary/10 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.35)]"
-                      : "border-l-transparent hover:border-secondary/30 hover:bg-white"
+                      ? "border-l-primary border-primary/60 bg-primary/5 shadow-sm"
+                      : "border-l-transparent hover:border-muted-foreground/30 hover:bg-muted/30"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -941,8 +883,8 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="flex h-[calc(100vh-220px)] min-h-[520px] flex-col overflow-hidden rounded-2xl border border-white/60 bg-white/75 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.35)] backdrop-blur lg:sticky lg:top-24">
-          <div className="border-b border-white/50 px-4 py-3">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card lg:sticky lg:top-24">
+          <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">

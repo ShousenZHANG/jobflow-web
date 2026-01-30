@@ -1,20 +1,15 @@
 import type { Metadata } from "next";
-import { DM_Sans, JetBrains_Mono, Sora } from "next/font/google";
+import { JetBrains_Mono, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const bodyFont = DM_Sans({
-  variable: "--font-body",
+const geistSans = Source_Sans_3({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const displayFont = Sora({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
-
-const monoFont = JetBrains_Mono({
-  variable: "--font-mono",
+const geistMono = JetBrains_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -34,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
       </body>
