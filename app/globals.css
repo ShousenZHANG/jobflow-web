@@ -378,7 +378,7 @@ body {
   background: #ffffff;
   padding: 14px 20px;
   box-shadow: 0 12px 0 #1f2937;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .edu-nav--press:hover {
@@ -408,8 +408,16 @@ body {
   border: 2px solid #1f2937;
   background: #22c55e;
   color: #0f172a;
+  min-height: 48px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
   box-shadow: 0 6px 0 #1f2937;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 220ms ease,
+    color 220ms ease;
   will-change: transform;
 }
 
@@ -417,19 +425,27 @@ body {
   border: 2px solid #1f2937;
   background: #e0f2fe;
   color: #1e293b;
+  min-height: 48px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
   box-shadow: 0 6px 0 #1f2937;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 220ms ease,
+    color 220ms ease;
   will-change: transform;
 }
 
 .edu-cta--press:hover {
-  transform: translate3d(0, 3px, 0);
-  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 0 #1f2937;
+  transform: translate3d(0, 2px, 0);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12), 0 4px 0 #1f2937;
 }
 
 .edu-cta--press:active {
-  transform: translate3d(0, 4px, 0);
-  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.18), 0 1px 0 #1f2937;
+  transform: translate3d(0, 3px, 0);
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.18), 0 3px 0 #1f2937;
 }
 
 .edu-menu {
