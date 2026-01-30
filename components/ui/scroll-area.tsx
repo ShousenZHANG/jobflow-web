@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
->(({ className, children, type = "auto", ...props }, ref) => (
+>(({ className, children, type = "hover", ...props }, ref) => (
   <ScrollAreaPrimitive.Root
     ref={ref}
     type={type}
