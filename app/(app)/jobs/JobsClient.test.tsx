@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { JobsClient } from "./JobsClient";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const baseJob = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -65,6 +66,10 @@ beforeEach(() => {
 });
 
 describe("JobsClient", () => {
+  it("exposes ScrollArea component", () => {
+    expect(ScrollArea).toBeDefined();
+  });
+
   it("renders initial jobs and check-in status", async () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
@@ -73,5 +78,28 @@ describe("JobsClient", () => {
     expect(
       await screen.findByText("All NEW jobs from today are done. You can check in."),
     ).toBeInTheDocument();
+  });
+
+  it("shows sort and results in the top toolbar", () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const toolbar = screen.getAllByTestId("jobs-toolbar")[0];
+    expect(within(toolbar).getByTestId("jobs-sort")).toBeInTheDocument();
+    expect(within(toolbar).getByTestId("jobs-results-count")).toBeInTheDocument();
+  });
+
+  it("renders scroll areas for results and details", () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    expect(screen.getAllByTestId("jobs-results-scroll")[0]).toBeInTheDocument();
+    expect(screen.getAllByTestId("jobs-details-scroll")[0]).toBeInTheDocument();
+  });
+
+  it("locks body scroll while jobs view is active", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    await waitFor(() => {
+      expect(document.body.classList.contains("jobs-no-scroll")).toBe(true);
+    });
   });
 });

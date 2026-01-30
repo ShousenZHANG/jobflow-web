@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -695,8 +696,11 @@ export function JobsClient({
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
         ) : null}
 
-      <div className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
-        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto_auto] lg:items-end">
+      <div
+        data-testid="jobs-toolbar"
+        className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]"
+      >
+        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_0.9fr_auto_auto] lg:items-end">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
             <div className="relative">
@@ -761,6 +765,23 @@ export function JobsClient({
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2" data-testid="jobs-sort">
+            <div className="text-xs text-muted-foreground">Posted</div>
+            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "newest" | "oldest")}>
+              <SelectTrigger className="h-9 bg-muted/40">
+                <SelectValue placeholder="Posted" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Posted: newest</SelectItem>
+                <SelectItem value="oldest">Posted: oldest</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end" data-testid="jobs-results-count">
+            <div className="rounded-full border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+              {items.length} results
+            </div>
+          </div>
           <div className="flex items-end">
             <Button
               onClick={triggerSearch}
@@ -774,23 +795,6 @@ export function JobsClient({
             <Button asChild variant="outline" className="edu-outline edu-cta--press edu-outline--compact w-full lg:w-auto">
               <a href="/fetch">Fetch jobs</a>
             </Button>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "newest" | "oldest")}>
-              <SelectTrigger className="h-9 w-[170px] bg-muted/40">
-                <SelectValue placeholder="Posted" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Posted: newest</SelectItem>
-                <SelectItem value="oldest">Posted: oldest</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="rounded-full border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
-              {items.length} results
-            </div>
           </div>
         </div>
       </div>
@@ -807,7 +811,8 @@ export function JobsClient({
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
           </div>
-          <div className="flex-1 space-y-3 overflow-auto p-3">
+          <ScrollArea data-testid="jobs-results-scroll" className="flex-1">
+            <div className="space-y-3 p-3">
             {loading && items.length === 0 ? (
               Array.from({ length: 6 }).map((_, idx) => (
                 <div key={`s-${idx}`} className="rounded-lg border p-3">
@@ -856,7 +861,8 @@ export function JobsClient({
                 No jobs yet.
               </div>
             ) : null}
-          </div>
+            </div>
+          </ScrollArea>
           <div className="border-t px-4 py-3">
             <Pagination>
               <PaginationContent>
@@ -966,7 +972,8 @@ export function JobsClient({
               <div className="text-sm text-muted-foreground">Select a job to preview details.</div>
             )}
           </div>
-          <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="flex-1 overflow-auto p-4">
+          <ScrollArea data-testid="jobs-details-scroll" className="flex-1">
+            <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -1052,7 +1059,8 @@ export function JobsClient({
                 Use the list on the left to choose a job.
               </div>
             )}
-          </div>
+            </div>
+          </ScrollArea>
         </div>
         </section>
       </div>
