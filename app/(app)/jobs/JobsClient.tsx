@@ -52,35 +52,110 @@ type JobsResponse = {
 };
 
 const HIGHLIGHT_KEYWORDS = [
+  "HTML",
+  "CSS",
+  "Sass",
+  "SCSS",
+  "Less",
   "JavaScript",
   "TypeScript",
   "React",
   "Next.js",
+  "Vue",
+  "Nuxt",
+  "Angular",
+  "Svelte",
+  "SvelteKit",
+  "SolidJS",
+  "Remix",
   "Node",
   "Node.js",
+  "Express",
+  "NestJS",
+  "Fastify",
+  "Deno",
+  "Bun",
   "Python",
+  "Django",
+  "Flask",
+  "FastAPI",
   "Java",
+  "Spring",
+  "Spring Boot",
+  "Kotlin",
+  "Scala",
   "C#",
+  ".NET",
+  "ASP.NET",
   "C++",
   "Go",
-  "AWS",
-  "Azure",
-  "GCP",
-  "Docker",
-  "Kubernetes",
+  "Golang",
+  "Rust",
+  "Ruby",
+  "Rails",
+  "PHP",
+  "Laravel",
+  "GraphQL",
+  "REST",
+  "gRPC",
+  "tRPC",
   "SQL",
   "PostgreSQL",
   "MySQL",
+  "SQLite",
   "MongoDB",
   "Redis",
-  "GraphQL",
-  "REST",
-  "CI/CD",
-  "Git",
-  "Linux",
+  "Elasticsearch",
+  "OpenSearch",
+  "Kafka",
+  "RabbitMQ",
+  "SQS",
+  "SNS",
+  "AWS",
+  "Azure",
+  "GCP",
+  "Firebase",
+  "Cloudflare",
+  "Docker",
+  "Kubernetes",
   "Terraform",
-  "React Native",
+  "Ansible",
+  "Git",
+  "GitHub Actions",
+  "GitLab CI",
+  "CI/CD",
+  "Linux",
+  "Nginx",
+  "Vercel",
+  "Netlify",
+  "Jest",
+  "Vitest",
+  "Cypress",
+  "Playwright",
+  "Storybook",
   "Tailwind",
+  "shadcn/ui",
+  "Material UI",
+  "Chakra UI",
+  "Figma",
+  "React Native",
+  "Flutter",
+  "Swift",
+  "SwiftUI",
+  "Android",
+  "iOS",
+  "ML",
+  "AI",
+  "LLM",
+  "OpenAI",
+  "LangChain",
+  "Vector",
+  "Pinecone",
+  "Weaviate",
+  "Snowflake",
+  "Databricks",
+  "Airflow",
+  "dbt",
 ];
 
 const LOCATION_OPTIONS = [
@@ -968,13 +1043,13 @@ export function JobsClient({
                   </div>
                 ) : null}
                 {detailLoading ? (
-                  <div className="space-y-3 rounded-lg border border-dashed bg-muted/30 p-4">
+                  <div className="space-y-3 rounded-lg border border-dashed border-slate-900/10 bg-transparent p-4">
                     <Skeleton className="h-4 w-2/3" />
                     <Skeleton className="h-4 w-5/6" />
                     <Skeleton className="h-4 w-3/4" />
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed bg-muted/30 p-5">
+                  <div className="rounded-lg border border-dashed border-slate-900/10 bg-transparent p-5">
                     {selectedDescription ? (
                       <div className="space-y-3">
                         <div
@@ -987,22 +1062,22 @@ export function JobsClient({
                             rehypePlugins={[rehypeHighlight]}
                             components={{
                               p: ({ children }) => (
-                                <p className="text-sm leading-7 text-foreground/80">
+                                <p className="text-sm leading-7 text-slate-800">
                                   {renderHighlighted(children)}
                                 </p>
                               ),
                               li: ({ children }) => (
-                                <li className="text-sm leading-7 text-foreground/80">
+                                <li className="text-sm leading-7 text-slate-800">
                                   {renderHighlighted(children)}
                                 </li>
                               ),
                               strong: ({ children }) => (
-                                <strong className="font-semibold text-foreground">
+                                <strong className="font-semibold text-slate-900">
                                   {renderHighlighted(children)}
                                 </strong>
                               ),
                               code: ({ children }) => (
-                                <code className="rounded bg-muted/70 px-1.5 py-0.5 text-xs text-foreground/80">
+                                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">
                                   {children}
                                 </code>
                               ),
