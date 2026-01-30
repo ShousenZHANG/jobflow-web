@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { JobsClient } from "./JobsClient";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Toaster } from "@/components/ui/toaster";
 
 const baseJob = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -24,7 +25,12 @@ function renderWithClient(ui: React.ReactElement) {
       queries: { retry: false },
     },
   });
-  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={client}>
+      {ui}
+      <Toaster />
+    </QueryClientProvider>,
+  );
 }
 
 beforeEach(() => {
@@ -121,6 +127,23 @@ describe("JobsClient", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 160));
     expect(hasDesignerQuery()).toBe(true);
+  });
+
+  it("removes a job immediately and offers undo", async () => {
+    const user = userEvent.setup();
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const removeButton = (await screen.findAllByRole("button", { name: /remove/i }))[0];
+    await user.click(removeButton);
+
+    const resultsPane = screen.getAllByTestId("jobs-results-scroll")[0];
+    await waitFor(() => {
+      expect(
+        within(resultsPane).queryByRole("button", { name: /Frontend Engineer/i }),
+      ).not.toBeInTheDocument();
+    });
+    const undoButtons = screen.getAllByRole("button", { name: /undo/i });
+    expect(undoButtons.length).toBeGreaterThan(0);
   });
 
   

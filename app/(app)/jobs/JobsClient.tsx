@@ -18,17 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ToastAction } from "@/components/ui/toast";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -229,6 +219,17 @@ export function JobsClient({
   const resultsScrollRef = useRef<HTMLDivElement | null>(null);
   const resultsViewportRef = useRef<HTMLDivElement | null>(null);
   const [resultsViewportReady, setResultsViewportReady] = useState(false);
+  const pendingDeleteRef = useRef<
+    Map<
+      string,
+      {
+        timeoutId: ReturnType<typeof setTimeout>;
+        previous: JobsResponse | undefined;
+        previousSelectedId: string | null;
+      }
+    >
+  >(new Map());
+  const deleteUndoMs = 2400;
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -263,6 +264,13 @@ export function JobsClient({
     ) as HTMLDivElement | null;
     resultsViewportRef.current = viewport;
     setResultsViewportReady(Boolean(viewport));
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      pendingDeleteRef.current.forEach((pending) => clearTimeout(pending.timeoutId));
+      pendingDeleteRef.current.clear();
+    };
   }, []);
 
   useEffect(() => {
@@ -404,6 +412,8 @@ export function JobsClient({
         description: getErrorMessage(e, "The change could not be saved."),
         variant: "destructive",
         duration: 2200,
+        className:
+          "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
       });
     },
     onSuccess: (_data, variables) => {
@@ -432,40 +442,20 @@ export function JobsClient({
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to delete job");
     },
-    onMutate: async (id: string) => {
-      setError(null);
-      setDeletingIds((prev) => new Set(prev).add(id));
-      await queryClient.cancelQueries({ queryKey: ["jobs", queryString, cursor] });
-      const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
-      queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
-        if (!old) return old;
-        return { ...old, items: old.items.filter((it) => it.id !== id) };
-      });
-      if (selectedId === id) {
-        setSelectedId(null);
-      }
-      return { previous };
-    },
-    onError: (e, _id, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["jobs", queryString, cursor], context.previous);
-      }
+    onError: (e, _id) => {
       setError(getErrorMessage(e, "Failed to delete job"));
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
       toast({
         title: "Delete failed",
         description: getErrorMessage(e, "The job could not be removed."),
         variant: "destructive",
-        duration: 2200,
+        duration: 2400,
+        className:
+          "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
       });
     },
     onSuccess: () => {
-      toast({
-        title: "Job removed",
-        description: "The job was deleted successfully.",
-        duration: 1800,
-        className:
-          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
-      });
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
     },
     onSettled: (_data, _error, id) => {
       if (!id) return;
@@ -483,8 +473,63 @@ export function JobsClient({
     updateStatusMutation.mutate({ id, status });
   }
 
-  async function deleteJob(id: string) {
-    deleteMutation.mutate(id);
+  function scheduleDelete(job: JobItem) {
+    const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
+    const previousSelectedId = selectedId;
+    setError(null);
+    setDeletingIds((prev) => new Set(prev).add(job.id));
+    queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
+      if (!old) return old;
+      return { ...old, items: old.items.filter((it) => it.id !== job.id) };
+    });
+    if (selectedId === job.id) {
+      setSelectedId(null);
+    }
+
+    const commitDelete = () => {
+      pendingDeleteRef.current.delete(job.id);
+      deleteMutation.mutate(job.id);
+    };
+    const timeoutId = setTimeout(commitDelete, deleteUndoMs);
+
+    pendingDeleteRef.current.set(job.id, { timeoutId, previous, previousSelectedId });
+
+    const undo = () => {
+      const pending = pendingDeleteRef.current.get(job.id);
+      if (!pending) return;
+      clearTimeout(pending.timeoutId);
+      pendingDeleteRef.current.delete(job.id);
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(job.id);
+        return next;
+      });
+      if (pending.previous) {
+        queryClient.setQueryData(["jobs", queryString, cursor], pending.previous);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      }
+      if (pending.previousSelectedId) {
+        setSelectedId(pending.previousSelectedId);
+      }
+    };
+
+    toast({
+      title: "Job removed",
+      description: "Undo to restore this role.",
+      duration: deleteUndoMs,
+      className:
+        "border-slate-900/10 bg-white/95 text-slate-900 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.25)] backdrop-blur animate-in fade-in zoom-in-95",
+      action: (
+        <ToastAction
+          altText="Undo"
+          onClick={undo}
+          className="border-slate-900/15 bg-slate-900/5 text-slate-900 hover:bg-slate-900/10"
+        >
+          Undo
+        </ToastAction>
+      ),
+    });
   }
 
   const statusClass: Record<JobStatus, string> = {
@@ -911,33 +956,16 @@ export function JobsClient({
                       Open job
                     </a>
                   </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={deletingIds.has(selectedJob.id)}
-                        className="edu-cta--press edu-outline--compact gap-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Remove
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Remove this job?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete the job from your list.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteJob(selectedJob.id)}>
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={deletingIds.has(selectedJob.id)}
+                    onClick={() => scheduleDelete(selectedJob)}
+                    className="edu-cta--press edu-outline--compact gap-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remove
+                  </Button>
                 </div>
               </div>
             ) : (
