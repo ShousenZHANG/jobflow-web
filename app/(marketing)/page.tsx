@@ -23,8 +23,8 @@ export default function HomePage() {
       <div className="edu-blob edu-blob--mint" />
       <div className="edu-blob edu-blob--peach" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-14 px-6 py-12 text-center">
-        <nav className="edu-nav w-full max-w-5xl">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-6 py-10 text-center md:gap-14">
+        <nav className="edu-nav edu-nav--press w-full max-w-5xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div className="edu-logo">
               <Briefcase className="h-5 w-5 text-emerald-700" />
@@ -49,8 +49,8 @@ export default function HomePage() {
           </div>
         </nav>
 
-        <header className="grid w-full max-w-5xl gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:justify-items-center">
-          <div className="edu-enter">
+        <header className="grid w-full max-w-5xl gap-10 text-center lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:text-left">
+          <div className="edu-enter flex flex-col items-center lg:items-start">
             <Badge className="edu-pill">
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-500" />
               New: AI-powered hiring
@@ -60,10 +60,10 @@ export default function HomePage() {
               <span className="text-emerald-500"> faster</span>,
               every day.
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-base text-slate-600 md:text-lg">
+            <p className="mt-5 max-w-xl text-base text-slate-600 md:text-lg">
               Find roles, review candidates, move forward — all in one calm flow.
             </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
               <Button asChild className="edu-cta edu-cta--press">
                 <Link href="/login">
                   Start hiring <ArrowRight className="h-4 w-4" />
@@ -73,7 +73,7 @@ export default function HomePage() {
                 <Link href="/jobs">Open dashboard</Link>
               </Button>
             </div>
-            <div className="mt-8 flex flex-wrap justify-center gap-8 text-sm text-slate-600">
+            <div className="mt-8 grid w-full max-w-md grid-cols-3 gap-6 text-sm text-slate-600 lg:max-w-none">
               <div>
                 <div className="text-2xl font-semibold text-slate-900">8.4k</div>
                 Roles tracked
@@ -89,8 +89,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="edu-enter delay-1">
-            <div className="edu-card">
+          <div className="edu-enter delay-1 flex w-full items-center justify-center lg:justify-end">
+            <div className="edu-card w-full max-w-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-slate-700">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100">

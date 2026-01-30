@@ -378,6 +378,12 @@ body {
   background: #ffffff;
   padding: 14px 20px;
   box-shadow: 0 12px 0 #1f2937;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.edu-nav--press:hover {
+  transform: translate3d(0, 2px, 0);
+  box-shadow: 0 10px 0 #1f2937;
 }
 
 .edu-logo {
@@ -403,7 +409,8 @@ body {
   background: #22c55e;
   color: #0f172a;
   box-shadow: 0 6px 0 #1f2937;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  will-change: transform;
 }
 
 .edu-outline {
@@ -411,16 +418,17 @@ body {
   background: #e0f2fe;
   color: #1e293b;
   box-shadow: 0 6px 0 #1f2937;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  will-change: transform;
 }
 
 .edu-cta--press:hover {
-  transform: translateY(3px) scale(0.98);
+  transform: translate3d(0, 3px, 0) scale(0.98);
   box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 0 #1f2937;
 }
 
 .edu-cta--press:active {
-  transform: translateY(4px) scale(0.97);
+  transform: translate3d(0, 4px, 0) scale(0.97);
   box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.18), 0 1px 0 #1f2937;
 }
 
