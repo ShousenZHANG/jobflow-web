@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { JobsClient } from "./JobsClient";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -92,6 +93,28 @@ describe("JobsClient", () => {
 
     expect(screen.getAllByTestId("jobs-results-scroll")[0]).toBeInTheDocument();
     expect(screen.getAllByTestId("jobs-details-scroll")[0]).toBeInTheDocument();
+  });
+
+  it("debounces keyword changes before fetching", async () => {
+    const user = userEvent.setup();
+
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const toolbar = screen.getAllByTestId("jobs-toolbar")[0];
+    const input = within(toolbar).getByPlaceholderText("e.g. software engineer");
+    await user.clear(input);
+    await user.type(input, "designer");
+
+    const hasDesignerQuery = () =>
+      (global.fetch as unknown as { mock: { calls: Array<[RequestInfo]> } }).mock.calls.some(
+        ([input]) => typeof input === "string" && input.includes("q=designer"),
+      );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(hasDesignerQuery()).toBe(false);
+
+    await new Promise((resolve) => setTimeout(resolve, 160));
+    expect(hasDesignerQuery()).toBe(true);
   });
 
   

@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import {
@@ -226,7 +227,6 @@ export function JobsClient({
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const statusFilterRef = useRef<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
-  const [debouncedQ, setDebouncedQ] = useState("");
   const pageSize = 10;
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [locationFilter, setLocationFilter] = useState("ALL");
@@ -250,10 +250,19 @@ export function JobsClient({
     return fallback;
   }
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 300);
-    return () => clearTimeout(t);
-  }, [q]);
+  const filters = useMemo(
+    () => ({
+      q,
+      statusFilter,
+      locationFilter,
+      jobLevelFilter,
+      sortOrder,
+      pageSize,
+    }),
+    [q, statusFilter, locationFilter, jobLevelFilter, sortOrder, pageSize],
+  );
+
+  const debouncedFilters = useDebouncedValue(filters, 200);
 
   useEffect(() => {
     const tz = getUserTimeZone();
@@ -308,14 +317,14 @@ export function JobsClient({
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
-    sp.set("limit", String(pageSize));
-    if (statusFilter !== "ALL") sp.set("status", statusFilter);
-    if (debouncedQ.trim()) sp.set("q", debouncedQ.trim());
-    if (locationFilter !== "ALL") sp.set("location", locationFilter);
-    if (jobLevelFilter !== "ALL") sp.set("jobLevel", jobLevelFilter);
-    sp.set("sort", sortOrder);
+    sp.set("limit", String(debouncedFilters.pageSize));
+    if (debouncedFilters.statusFilter !== "ALL") sp.set("status", debouncedFilters.statusFilter);
+    if (debouncedFilters.q.trim()) sp.set("q", debouncedFilters.q.trim());
+    if (debouncedFilters.locationFilter !== "ALL") sp.set("location", debouncedFilters.locationFilter);
+    if (debouncedFilters.jobLevelFilter !== "ALL") sp.set("jobLevel", debouncedFilters.jobLevelFilter);
+    sp.set("sort", debouncedFilters.sortOrder);
     return sp.toString();
-  }, [statusFilter, debouncedQ, pageSize, sortOrder, locationFilter, jobLevelFilter]);
+  }, [debouncedFilters]);
 
   const initialQueryRef = useRef<string | null>(null);
   if (initialQueryRef.current === null) {
@@ -324,10 +333,10 @@ export function JobsClient({
   const skipInitialFetchRef = useRef<boolean>(initialItems.length > 0);
   const jobsQuery = useQuery({
     queryKey: ["jobs", queryString, cursor],
-    queryFn: async (): Promise<JobsResponse> => {
+    queryFn: async ({ signal }): Promise<JobsResponse> => {
       const sp = new URLSearchParams(queryString);
       if (cursor) sp.set("cursor", cursor);
-      const res = await fetch(`/api/jobs?${sp.toString()}`, { cache: "no-store" });
+      const res = await fetch(`/api/jobs?${sp.toString()}`, { cache: "no-store", signal });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to load jobs");
       return { items: json.items ?? [], nextCursor: json.nextCursor ?? null };
@@ -335,7 +344,7 @@ export function JobsClient({
     enabled: Boolean(queryString),
     placeholderData: (prev) => prev,
     refetchOnWindowFocus: false,
-    staleTime: 15_000,
+    staleTime: 30_000,
     initialData: () => {
       const shouldUseInitial =
         initialItems.length > 0 &&
@@ -429,15 +438,10 @@ export function JobsClient({
   }
 
   function triggerSearch() {
-    const trimmed = q.trim();
-    if (trimmed !== debouncedQ) {
-      setDebouncedQ(trimmed);
-      return;
-    }
     setCursorStack([null]);
     setPageIndex(0);
     setCursor(null);
-    queryClient.invalidateQueries({ queryKey: ["jobs", queryString, null] });
+    queryClient.invalidateQueries({ queryKey: ["jobs"] });
   }
 
   useEffect(() => {
