@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { Fredoka, Nunito } from "next/font/google";
-import { ArrowRight, ClipboardList, Radar, Sparkles } from "lucide-react";
+import { ArrowRight, Briefcase, ClipboardList, Radar, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +24,31 @@ export default function HomePage() {
       <div className="edu-blob edu-blob--peach" />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-14 px-6 py-12 text-center">
+        <nav className="edu-nav w-full max-w-5xl">
+          <div className="flex items-center gap-3">
+            <div className="edu-logo">
+              <Briefcase className="h-5 w-5 text-emerald-700" />
+            </div>
+            <span className="text-lg font-semibold text-slate-900">Jobflow</span>
+          </div>
+          <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
+            <Link href="/jobs" className="cursor-pointer transition hover:text-slate-900">
+              Jobs
+            </Link>
+            <Link href="/fetch" className="cursor-pointer transition hover:text-slate-900">
+              Fetch
+            </Link>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button asChild variant="outline" className="edu-outline edu-cta--press">
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button asChild className="edu-cta edu-cta--press">
+              <Link href="/login">Start free</Link>
+            </Button>
+          </div>
+        </nav>
+
         <header className="grid w-full max-w-5xl gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:justify-items-center">
           <div className="edu-enter">
             <Badge className="edu-pill">
