@@ -474,6 +474,11 @@ body {
   }
 }
 
+.jobflow-list-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 120px 160px;
+}
+
 .edu-cta {
   border: 2px solid #1f2937;
   background: #22c55e;

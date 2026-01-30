@@ -709,7 +709,8 @@ export function JobsClient({
                   onClick={() => {
                     setSelectedId(it.id);
                   }}
-                  className={`w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
+                  data-perf="cv-auto"
+                  className={`jobflow-list-item w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
                     active
                       ? "border-l-emerald-500 bg-emerald-50/60 shadow-sm"
                       : "border-l-transparent hover:border-slate-900/20 hover:bg-white"

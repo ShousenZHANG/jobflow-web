@@ -80,6 +80,13 @@ describe("JobsClient", () => {
     expect(screen.getAllByTestId("jobs-details-scroll")[0]).toBeInTheDocument();
   });
 
+  it("marks job items with performance-friendly list rendering", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const jobButton = (await screen.findAllByRole("button", { name: /Frontend Engineer/i }))[0];
+    expect(jobButton).toHaveAttribute("data-perf", "cv-auto");
+  });
+
   it("shows a light loading overlay while keeping previous results", async () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
