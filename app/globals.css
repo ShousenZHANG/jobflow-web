@@ -465,6 +465,22 @@ body {
   box-shadow: 0 6px 0 #1f2937;
 }
 
+.edu-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  background: #1f2937;
+  animation: caret-blink 1s steps(2, start) infinite;
+  vertical-align: -2px;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .edu-title {
   font-weight: 700;
 }

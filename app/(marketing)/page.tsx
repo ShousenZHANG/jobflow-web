@@ -1,4 +1,7 @@
-﻿import Link from "next/link";
+﻿"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Fredoka, Nunito } from "next/font/google";
 import { ArrowRight, Menu, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +19,80 @@ const nunito = Nunito({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+type ActiveField = "title" | "location" | "level" | "results" | null;
+
+type DemoSequence = {
+  title: string;
+  location: string;
+  level: string;
+  results: string;
+};
+
+const sequences: DemoSequence[] = [
+  {
+    title: "Frontend Engineer",
+    location: "Remote",
+    level: "Mid-level",
+    results: "128 roles available",
+  },
+  {
+    title: "Product Designer",
+    location: "Sydney",
+    level: "Junior",
+    results: "64 roles available",
+  },
+  {
+    title: "Data Analyst",
+    location: "Hybrid",
+    level: "Entry-level",
+    results: "92 roles available",
+  },
+];
+
 export default function HomePage() {
+  const [title, setTitle] = useState("");
+  const [location, setLocation] = useState("");
+  const [level, setLevel] = useState("");
+  const [results, setResults] = useState("");
+  const [activeField, setActiveField] = useState<ActiveField>("title");
+
+  useEffect(() => {
+    let cancelled = false;
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    async function typeField(field: ActiveField, setter: (value: string) => void, value: string) {
+      setActiveField(field);
+      setter("");
+      for (let i = 1; i <= value.length; i += 1) {
+        if (cancelled) return;
+        setter(value.slice(0, i));
+        await sleep(40);
+      }
+    }
+
+    async function run() {
+      let index = 0;
+      while (!cancelled) {
+        const current = sequences[index];
+        await typeField("title", setTitle, current.title);
+        await sleep(200);
+        await typeField("location", setLocation, current.location);
+        await sleep(200);
+        await typeField("level", setLevel, current.level);
+        await sleep(200);
+        await typeField("results", setResults, current.results);
+        setActiveField(null);
+        await sleep(1400);
+        index = (index + 1) % sequences.length;
+      }
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <main className={`marketing-edu edu-page-enter ${fredoka.variable} ${nunito.variable} relative min-h-screen overflow-hidden`}>
       <div className="edu-bg" />
@@ -108,21 +184,33 @@ export default function HomePage() {
               <div className="mt-4 grid gap-3">
                 <div className="edu-input">
                   <span className="text-xs text-slate-500">Title</span>
-                  <div className="text-sm text-slate-900">Frontend Engineer</div>
+                  <div className="text-sm text-slate-900">
+                    {title}
+                    {activeField === "title" ? <span className="edu-caret" /> : null}
+                  </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="edu-input">
                     <span className="text-xs text-slate-500">Location</span>
-                    <div className="text-sm text-slate-900">Remote</div>
+                    <div className="text-sm text-slate-900">
+                      {location}
+                      {activeField === "location" ? <span className="edu-caret" /> : null}
+                    </div>
                   </div>
                   <div className="edu-input">
                     <span className="text-xs text-slate-500">Level</span>
-                    <div className="text-sm text-slate-900">Mid-level</div>
+                    <div className="text-sm text-slate-900">
+                      {level}
+                      {activeField === "level" ? <span className="edu-caret" /> : null}
+                    </div>
                   </div>
                 </div>
                 <div className="edu-input">
                   <span className="text-xs text-slate-500">Results</span>
-                  <div className="text-sm text-slate-900">128 roles available</div>
+                  <div className="text-sm text-slate-900">
+                    {results}
+                    {activeField === "results" ? <span className="edu-caret" /> : null}
+                  </div>
                 </div>
               </div>
               <Button asChild className="mt-5 w-full edu-cta edu-cta--press">
