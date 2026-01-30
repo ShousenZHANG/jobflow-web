@@ -359,6 +359,7 @@ export function JobsClient({
   const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
   const nextCursor = jobsQuery.data?.nextCursor ?? null;
   const loading = jobsQuery.isFetching;
+  const showLoadingOverlay = loading && items.length > 0;
   const queryError = jobsQuery.error
     ? getErrorMessage(jobsQuery.error, "Failed to load jobs")
     : null;
@@ -868,12 +869,16 @@ export function JobsClient({
       ) : null}
 
         <section className="grid flex-1 min-h-0 gap-4 overflow-hidden lg:max-h-[calc(100vh-260px)] lg:grid-cols-[380px_1fr] lg:items-stretch">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)]">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)]">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
           </div>
-          <ScrollArea data-testid="jobs-results-scroll" className="max-h-full flex-1 min-h-0">
+          <ScrollArea
+            data-testid="jobs-results-scroll"
+            data-loading={showLoadingOverlay ? "true" : "false"}
+            className={`max-h-full flex-1 min-h-0 ${showLoadingOverlay ? "opacity-70" : ""}`}
+          >
             <div className="space-y-3 p-3">
             {loading && items.length === 0 ? (
               Array.from({ length: 6 }).map((_, idx) => (
@@ -925,6 +930,15 @@ export function JobsClient({
             ) : null}
             </div>
           </ScrollArea>
+          {showLoadingOverlay ? (
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center p-4">
+              <div className="w-full space-y-2 rounded-2xl border border-dashed border-emerald-200/60 bg-white/70 p-3 shadow-sm backdrop-blur-sm">
+                <Skeleton className="h-3 w-2/3" />
+                <Skeleton className="h-3 w-4/5" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          ) : null}
           <div className="border-t px-4 py-3">
             <Pagination>
               <PaginationContent>
@@ -964,7 +978,7 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1034,7 +1048,11 @@ export function JobsClient({
               <div className="text-sm text-muted-foreground">Select a job to preview details.</div>
             )}
           </div>
-          <ScrollArea data-testid="jobs-details-scroll" className="max-h-full flex-1 min-h-0">
+          <ScrollArea
+            data-testid="jobs-details-scroll"
+            data-loading={showLoadingOverlay ? "true" : "false"}
+            className={`max-h-full flex-1 min-h-0 ${showLoadingOverlay ? "opacity-70" : ""}`}
+          >
             <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
@@ -1123,6 +1141,15 @@ export function JobsClient({
             )}
             </div>
           </ScrollArea>
+          {showLoadingOverlay ? (
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center p-4">
+              <div className="w-full space-y-2 rounded-2xl border border-dashed border-emerald-200/60 bg-white/70 p-3 shadow-sm backdrop-blur-sm">
+                <Skeleton className="h-3 w-2/3" />
+                <Skeleton className="h-3 w-4/5" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          ) : null}
         </div>
         </section>
       </div>

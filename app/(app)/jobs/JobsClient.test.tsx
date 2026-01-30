@@ -95,6 +95,13 @@ describe("JobsClient", () => {
     expect(screen.getAllByTestId("jobs-details-scroll")[0]).toBeInTheDocument();
   });
 
+  it("shows a light loading overlay while keeping previous results", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const resultsPane = screen.getAllByTestId("jobs-results-scroll")[0];
+    expect(resultsPane).toHaveAttribute("data-loading", "false");
+  });
+
   it("debounces keyword changes before fetching", async () => {
     const user = userEvent.setup();
 
