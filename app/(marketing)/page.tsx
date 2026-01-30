@@ -1,120 +1,122 @@
 ﻿import Link from "next/link";
-import { ArrowRight, BookOpen, Compass, Sparkles } from "lucide-react";
+import { Baloo_2, Comic_Neue } from "next/font/google";
+import { ArrowRight, BookOpen, GraduationCap, Sparkles, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+const baloo = Baloo_2({
+  subsets: ["latin"],
+  variable: "--font-edu-display",
+});
+
+const comic = Comic_Neue({
+  subsets: ["latin"],
+  variable: "--font-edu-body",
+  weight: ["300", "400", "700"],
+});
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#EEF2FF]">
-      <div className="marketing-grid marketing-grid--indigo" />
-      <div className="marketing-blob marketing-blob--indigo" />
-      <div className="marketing-blob marketing-blob--orange" />
+    <main className={`marketing-edu ${baloo.variable} ${comic.variable} relative min-h-screen overflow-hidden`}>
+      <div className="edu-bg" />
+      <div className="edu-blob edu-blob--mint" />
+      <div className="edu-blob edu-blob--peach" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 py-16">
-        <header className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="enter-fade">
-            <Badge className="w-fit border-white/70 bg-white/80 text-xs uppercase tracking-[0.2em] text-indigo-900 shadow-sm backdrop-blur">
-              Jobflow workspace
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-10">
+        <nav className="edu-nav">
+          <div className="flex items-center gap-3">
+            <div className="edu-logo">
+              <GraduationCap className="h-5 w-5 text-emerald-700" />
+            </div>
+            <span className="text-lg font-semibold text-slate-900">Jobflow</span>
+          </div>
+          <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
+            <span className="cursor-pointer transition hover:text-slate-900">Jobs</span>
+            <span className="cursor-pointer transition hover:text-slate-900">Fetch</span>
+            <span className="cursor-pointer transition hover:text-slate-900">Insights</span>
+            <span className="cursor-pointer transition hover:text-slate-900">About</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button asChild variant="outline" className="edu-outline">
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button asChild className="edu-cta">
+              <Link href="/login">Start free</Link>
+            </Button>
+          </div>
+        </nav>
+
+        <header className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div className="edu-enter">
+            <Badge className="edu-pill">
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-500" />
+              New: AI-powered hiring
             </Badge>
-            <h1 className="mt-6 text-4xl font-semibold leading-tight text-indigo-950 md:text-6xl">
-              Learn, hire, move faster.
+            <h1 className="mt-6 text-4xl leading-tight text-slate-900 md:text-6xl">
+              Hire smarter,
+              <span className="text-emerald-500"> faster</span>,
+              every day.
             </h1>
-            <p className="mt-5 max-w-xl text-base text-indigo-900/70 md:text-lg">
-              A modern hiring hub that keeps teams aligned and momentum steady.
+            <p className="mt-5 max-w-xl text-base text-slate-600 md:text-lg">
+              Shortlist, review, and move candidates forward with clarity and calm.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild className="gap-2 bg-[#F97316] text-white hover:bg-[#EA580C]">
+              <Button asChild className="edu-cta">
                 <Link href="/login">
-                  Get started <ArrowRight className="h-4 w-4" />
+                  Start hiring <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="border-indigo-200 bg-white/70 text-indigo-900">
+              <Button asChild variant="outline" className="edu-outline">
                 <Link href="/jobs">Open dashboard</Link>
               </Button>
             </div>
-            <div className="mt-6 flex flex-wrap gap-3 text-xs text-indigo-900/70">
-              <div className="rounded-full border border-white/70 bg-white/80 px-3 py-1 backdrop-blur">
-                Clear pipeline signals
+            <div className="mt-8 flex flex-wrap gap-8 text-sm text-slate-600">
+              <div>
+                <div className="text-2xl font-semibold text-slate-900">10K+</div>
+                Roles tracked
               </div>
-              <div className="rounded-full border border-white/70 bg-white/80 px-3 py-1 backdrop-blur">
-                Fast role discovery
+              <div>
+                <div className="text-2xl font-semibold text-slate-900">2M+</div>
+                Updates synced
               </div>
-              <div className="rounded-full border border-white/70 bg-white/80 px-3 py-1 backdrop-blur">
-                Simple, focused UI
+              <div>
+                <div className="text-2xl font-semibold text-slate-900">500+</div>
+                Teams onboarded
               </div>
             </div>
           </div>
 
-          <Card className="enter-fade delay-1 rounded-3xl border-white/70 bg-white/80 shadow-[0_24px_60px_-40px_rgba(30,27,75,0.55)] backdrop-blur">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg text-indigo-950">Today’s focus</CardTitle>
-              <CardDescription className="text-indigo-900/70">Keep the next step obvious.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {[
-                  { label: "New roles", value: "12", icon: BookOpen },
-                  { label: "Ready to review", value: "5", icon: Sparkles },
-                  { label: "In flight", value: "3", icon: Compass },
-                  { label: "Avg. time", value: "4m", icon: ArrowRight },
-                ].map(({ label, value, icon: Icon }) => (
-                  <div
-                    key={label}
-                    className="group rounded-2xl border border-white/70 bg-white/85 p-3 text-left transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-                  >
-                    <div className="flex items-center gap-2 text-xs text-indigo-900/60">
-                      <Icon className="h-4 w-4 text-indigo-900/70" />
-                      {label}
-                    </div>
-                    <div className="mt-2 text-2xl font-semibold text-indigo-950">{value}</div>
+          <div className="edu-enter delay-1">
+            <div className="edu-card">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-slate-700">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100">
+                    <BookOpen className="h-5 w-5 text-sky-600" />
                   </div>
-                ))}
+                  <div>
+                    <div className="font-semibold text-slate-900">Senior Frontend</div>
+                    <div className="text-xs text-slate-500">12 applicants · 4h</div>
+                  </div>
+                </div>
+                <span className="text-emerald-600 text-sm font-semibold">68%</span>
               </div>
-              <div className="rounded-2xl border border-white/70 bg-white/80 p-3 text-sm text-indigo-900/70">
-                Next action: review Sydney ML Engineer shortlist.
+              <div className="mt-4">
+                <div className="text-xs text-slate-500">Pipeline</div>
+                <div className="mt-2 h-3 rounded-full bg-slate-100">
+                  <div className="h-3 w-2/3 rounded-full bg-emerald-400" />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </header>
+              <Button className="mt-5 w-full edu-cta">Continue review</Button>
+            </div>
 
-        <section className="grid gap-5 md:grid-cols-3">
-          {[
-            {
-              title: "Roles board",
-              copy: "Review faster with clear states.",
-              href: "/jobs",
-              cta: "Open roles",
-            },
-            {
-              title: "Search engine",
-              copy: "Launch targeted sourcing in seconds.",
-              href: "/fetch",
-              cta: "Start search",
-            },
-            {
-              title: "Pipeline focus",
-              copy: "Keep the next move visible.",
-              href: "/jobs",
-              cta: "Review pipeline",
-            },
-          ].map((card, index) => (
-            <Card
-              key={card.title}
-              className={`enter-fade delay-${index + 2} group rounded-3xl border-white/70 bg-white/85 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_-35px_rgba(30,27,75,0.45)]`}
-            >
-              <CardHeader>
-                <CardTitle className="text-base text-indigo-950">{card.title}</CardTitle>
-                <CardDescription className="text-indigo-900/70">{card.copy}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full border-indigo-200 bg-white/70 text-indigo-900 group-hover:border-indigo-300">
-                  <Link href={card.href}>{card.cta}</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
+            <div className="edu-float edu-float--target">
+              <Target className="h-5 w-5 text-pink-600" />
+            </div>
+            <div className="edu-float edu-float--spark">
+              <Sparkles className="h-5 w-5 text-emerald-600" />
+            </div>
+          </div>
+        </header>
       </div>
     </main>
   );
