@@ -359,7 +359,70 @@ export function JobsClient({
   const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
   const nextCursor = jobsQuery.data?.nextCursor ?? null;
   const loading = jobsQuery.isFetching;
-  const showLoadingOverlay = loading && items.length > 0;
+  const [transitionPhase, setTransitionPhase] = useState<
+    "idle" | "exiting" | "loading" | "entering"
+  >("idle");
+  const [enterVisible, setEnterVisible] = useState(false);
+  const transitionTimersRef = useRef<{ exit?: number; enter?: number }>({});
+  const transitionRafRef = useRef<number | null>(null);
+  const exitDuration = 200;
+  const enterDuration = 240;
+
+  function clearTransitionTimers() {
+    if (transitionTimersRef.current.exit) {
+      clearTimeout(transitionTimersRef.current.exit);
+    }
+    if (transitionTimersRef.current.enter) {
+      clearTimeout(transitionTimersRef.current.enter);
+    }
+    if (transitionRafRef.current !== null) {
+      cancelAnimationFrame(transitionRafRef.current);
+    }
+    transitionTimersRef.current = {};
+    transitionRafRef.current = null;
+  }
+
+  useEffect(() => {
+    if (loading) {
+      if (transitionPhase === "idle" || transitionPhase === "entering") {
+        clearTransitionTimers();
+        setTransitionPhase("exiting");
+        transitionTimersRef.current.exit = window.setTimeout(() => {
+          if (jobsQuery.isFetching) {
+            setTransitionPhase("loading");
+          }
+        }, exitDuration);
+      }
+      return;
+    }
+
+    if (transitionPhase === "exiting" || transitionPhase === "loading") {
+      clearTransitionTimers();
+      setTransitionPhase("entering");
+    }
+  }, [loading, transitionPhase, jobsQuery.isFetching]);
+
+  useEffect(() => {
+    if (transitionPhase !== "entering") return;
+    clearTransitionTimers();
+    setEnterVisible(false);
+    transitionRafRef.current = requestAnimationFrame(() => {
+      setEnterVisible(true);
+    });
+    transitionTimersRef.current.enter = window.setTimeout(() => {
+      setTransitionPhase("idle");
+    }, enterDuration);
+  }, [transitionPhase]);
+
+  const showLoadingOverlay = transitionPhase === "loading";
+  const listOpacityClass =
+    transitionPhase === "exiting" || transitionPhase === "loading"
+      ? "opacity-0"
+      : transitionPhase === "entering"
+        ? enterVisible
+          ? "opacity-100"
+          : "opacity-0"
+        : "opacity-100";
   const queryError = jobsQuery.error
     ? getErrorMessage(jobsQuery.error, "Failed to load jobs")
     : null;
@@ -877,7 +940,7 @@ export function JobsClient({
           <ScrollArea
             data-testid="jobs-results-scroll"
             data-loading={showLoadingOverlay ? "true" : "false"}
-            className={`max-h-full flex-1 min-h-0 ${showLoadingOverlay ? "opacity-70" : ""}`}
+            className={`max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
           >
             <div className="space-y-3 p-3">
             {loading && items.length === 0 ? (
@@ -1051,7 +1114,7 @@ export function JobsClient({
           <ScrollArea
             data-testid="jobs-details-scroll"
             data-loading={showLoadingOverlay ? "true" : "false"}
-            className={`max-h-full flex-1 min-h-0 ${showLoadingOverlay ? "opacity-70" : ""}`}
+            className={`max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
           >
             <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
