@@ -502,6 +502,7 @@ export function JobsClient({
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const listPadding = 12;
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => resultsViewportRef.current,
