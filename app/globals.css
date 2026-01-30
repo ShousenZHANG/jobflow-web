@@ -221,3 +221,56 @@ body {
 .jobflow-calendar .react-calendar__month-view__days__day--neighboringMonth {
   color: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
 }
+
+.marketing-grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(90deg, rgba(28, 25, 23, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(28, 25, 23, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at top, rgba(0, 0, 0, 0.9), transparent 60%);
+  opacity: 0.35;
+}
+
+.marketing-orb {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  filter: blur(30px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.marketing-orb--gold {
+  top: -140px;
+  left: -140px;
+  background: radial-gradient(circle, rgba(202, 138, 4, 0.45), rgba(202, 138, 4, 0));
+  animation: float-slow 16s ease-in-out infinite;
+}
+
+.marketing-orb--ink {
+  bottom: -180px;
+  right: -160px;
+  background: radial-gradient(circle, rgba(28, 25, 23, 0.35), rgba(28, 25, 23, 0));
+  animation: float-slow 18s ease-in-out infinite reverse;
+}
+
+@keyframes float-slow {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(10px, -16px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-orb--gold,
+  .marketing-orb--ink {
+    animation: none;
+  }
+}
