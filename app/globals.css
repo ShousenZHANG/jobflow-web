@@ -406,11 +406,6 @@ body {
   transition: transform 150ms ease, box-shadow 150ms ease;
 }
 
-.edu-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 0 #1f2937;
-}
-
 .edu-outline {
   border: 2px solid #1f2937;
   background: #e0f2fe;
@@ -419,9 +414,9 @@ body {
   transition: transform 150ms ease, box-shadow 150ms ease;
 }
 
-.edu-outline:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 0 #1f2937;
+.edu-cta--press:hover {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #1f2937;
 }
 
 .edu-card {

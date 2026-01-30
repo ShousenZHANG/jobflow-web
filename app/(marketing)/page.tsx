@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { Baloo_2, Comic_Neue } from "next/font/google";
-import { ArrowRight, BookOpen, GraduationCap, Sparkles, Target } from "lucide-react";
+import { ArrowRight, ClipboardList, Radar, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -22,31 +22,8 @@ export default function HomePage() {
       <div className="edu-blob edu-blob--mint" />
       <div className="edu-blob edu-blob--peach" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-10">
-        <nav className="edu-nav">
-          <div className="flex items-center gap-3">
-            <div className="edu-logo">
-              <GraduationCap className="h-5 w-5 text-emerald-700" />
-            </div>
-            <span className="text-lg font-semibold text-slate-900">Jobflow</span>
-          </div>
-          <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
-            <span className="cursor-pointer transition hover:text-slate-900">Jobs</span>
-            <span className="cursor-pointer transition hover:text-slate-900">Fetch</span>
-            <span className="cursor-pointer transition hover:text-slate-900">Insights</span>
-            <span className="cursor-pointer transition hover:text-slate-900">About</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button asChild variant="outline" className="edu-outline">
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button asChild className="edu-cta">
-              <Link href="/login">Start free</Link>
-            </Button>
-          </div>
-        </nav>
-
-        <header className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-12">
+        <header className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="edu-enter">
             <Badge className="edu-pill">
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-500" />
@@ -58,15 +35,15 @@ export default function HomePage() {
               every day.
             </h1>
             <p className="mt-5 max-w-xl text-base text-slate-600 md:text-lg">
-              Shortlist, review, and move candidates forward with clarity and calm.
+              Search, review, and move candidates forward with clarity and calm.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild className="edu-cta">
+              <Button asChild className="edu-cta edu-cta--press">
                 <Link href="/login">
                   Start hiring <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="edu-outline">
+              <Button asChild variant="outline" className="edu-outline edu-cta--press">
                 <Link href="/jobs">Open dashboard</Link>
               </Button>
             </div>
@@ -90,12 +67,12 @@ export default function HomePage() {
             <div className="edu-card">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100">
-                    <BookOpen className="h-5 w-5 text-sky-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100">
+                    <ClipboardList className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
-                    <div className="font-semibold text-slate-900">Senior Frontend</div>
-                    <div className="text-xs text-slate-500">12 applicants · 4h</div>
+                    <div className="font-semibold text-slate-900">Shortlist queue</div>
+                    <div className="text-xs text-slate-500">12 new roles · 4h</div>
                   </div>
                 </div>
                 <span className="text-emerald-600 text-sm font-semibold">68%</span>
@@ -106,11 +83,11 @@ export default function HomePage() {
                   <div className="h-3 w-2/3 rounded-full bg-emerald-400" />
                 </div>
               </div>
-              <Button className="mt-5 w-full edu-cta">Continue review</Button>
+              <Button className="mt-5 w-full edu-cta edu-cta--press">Continue review</Button>
             </div>
 
             <div className="edu-float edu-float--target">
-              <Target className="h-5 w-5 text-pink-600" />
+              <Radar className="h-5 w-5 text-sky-600" />
             </div>
             <div className="edu-float edu-float--spark">
               <Sparkles className="h-5 w-5 text-emerald-600" />
