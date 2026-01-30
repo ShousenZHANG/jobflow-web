@@ -96,9 +96,6 @@ html {
   }
 }
 
-body.jobs-no-scroll {
-  overflow: hidden;
-}
 
 * {
   box-sizing: border-box;

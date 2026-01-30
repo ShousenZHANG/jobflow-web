@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { JobsClient } from "./JobsClient";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -94,11 +94,5 @@ describe("JobsClient", () => {
     expect(screen.getAllByTestId("jobs-details-scroll")[0]).toBeInTheDocument();
   });
 
-  it("locks body scroll while jobs view is active", async () => {
-    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
-
-    await waitFor(() => {
-      expect(document.body.classList.contains("jobs-no-scroll")).toBe(true);
-    });
-  });
+  
 });

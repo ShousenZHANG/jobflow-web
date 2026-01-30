@@ -169,13 +169,6 @@ export function JobsClient({
     width: number;
   }>({ enabled: false, left: 0, width: 0 });
 
-  useEffect(() => {
-    document.body.classList.add("jobs-no-scroll");
-    return () => {
-      document.body.classList.remove("jobs-no-scroll");
-    };
-  }, []);
-
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
     if (typeof err === "string") return err;
@@ -795,13 +788,13 @@ export function JobsClient({
         </div>
       ) : null}
 
-        <section className="grid h-full flex-1 min-h-0 gap-4 overflow-hidden lg:grid-cols-[380px_1fr] lg:items-stretch">
-        <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)]">
+        <section className="grid flex-1 min-h-0 gap-4 overflow-hidden lg:max-h-[calc(100vh-260px)] lg:grid-cols-[380px_1fr] lg:items-stretch">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)]">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
           </div>
-          <ScrollArea data-testid="jobs-results-scroll" className="h-full flex-1 min-h-0">
+          <ScrollArea data-testid="jobs-results-scroll" className="max-h-full flex-1 min-h-0">
             <div className="space-y-3 p-3">
             {loading && items.length === 0 ? (
               Array.from({ length: 6 }).map((_, idx) => (
@@ -892,7 +885,7 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:sticky lg:top-24">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -962,7 +955,7 @@ export function JobsClient({
               <div className="text-sm text-muted-foreground">Select a job to preview details.</div>
             )}
           </div>
-          <ScrollArea data-testid="jobs-details-scroll" className="h-full flex-1 min-h-0">
+          <ScrollArea data-testid="jobs-details-scroll" className="max-h-full flex-1 min-h-0">
             <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
