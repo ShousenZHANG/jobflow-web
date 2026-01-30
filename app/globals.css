@@ -231,3 +231,45 @@ h6 {
 .jobflow-calendar .react-calendar__month-view__days__day--neighboringMonth {
   color: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
 }
+
+.dashboard-orb {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  filter: blur(30px);
+  opacity: 0.55;
+}
+
+.dashboard-orb--gold {
+  top: -120px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(202, 138, 4, 0.45), rgba(202, 138, 4, 0));
+  animation: float-slow 16s ease-in-out infinite;
+}
+
+.dashboard-orb--ink {
+  bottom: -160px;
+  right: -140px;
+  background: radial-gradient(circle, rgba(28, 25, 23, 0.35), rgba(28, 25, 23, 0));
+  animation: float-slow 18s ease-in-out infinite reverse;
+}
+
+@keyframes float-slow {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(10px, -16px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-orb--gold,
+  .dashboard-orb--ink {
+    animation: none;
+  }
+}
