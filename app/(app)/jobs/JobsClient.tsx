@@ -425,7 +425,7 @@ export function JobsClient({
         description: `${variables.status}`,
         duration: 1800,
         className:
-          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+          "border-sky-200 bg-sky-50 text-sky-900 animate-in fade-in zoom-in-95",
       });
     },
     onSettled: (_data, _error, variables) => {
@@ -477,7 +477,7 @@ export function JobsClient({
         description: "The job was deleted successfully.",
         duration: 1800,
         className:
-          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+          "border-sky-200 bg-sky-50 text-sky-900 animate-in fade-in zoom-in-95",
       });
     },
     onSettled: (_data, _error, id) => {
@@ -501,9 +501,9 @@ export function JobsClient({
   }
 
   const statusClass: Record<JobStatus, string> = {
-    NEW: "bg-emerald-50 text-emerald-700",
-    APPLIED: "bg-blue-50 text-blue-700",
-    REJECTED: "bg-slate-100 text-slate-600",
+    NEW: "bg-sky-100 text-sky-700",
+    APPLIED: "bg-emerald-100 text-emerald-700",
+    REJECTED: "bg-slate-200 text-slate-600",
   };
 
   useEffect(() => {
@@ -562,7 +562,7 @@ export function JobsClient({
           ? "Checked in for today. Great work!"
           : "All NEW jobs from today are done. You can check in.";
   const checkinCards = (
-    <Card className="border bg-card">
+    <Card className="border bg-card/90 shadow-[0_18px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur">
       <CardHeader className="pb-1">
         <CardTitle className="text-[15px]">Daily check-in</CardTitle>
       </CardHeader>
@@ -596,7 +596,7 @@ export function JobsClient({
                   description: "Today's check-in is saved.",
                   duration: 1800,
                   className:
-                    "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+                    "border-sky-200 bg-sky-50 text-sky-900 animate-in fade-in zoom-in-95",
                 });
               } catch (e: unknown) {
                 setCheckinError(getErrorMessage(e, "Check-in failed"));
@@ -630,7 +630,7 @@ export function JobsClient({
             </Button>
           </div>
           {calendarOpen ? (
-            <div className="mt-2 w-full max-w-[280px] rounded-2xl bg-white/80 p-2 shadow-[0_12px_30px_-20px_rgba(15,23,42,0.45)]">
+            <div className="mt-2 w-full max-w-[280px] rounded-2xl bg-card/90 p-2 shadow-[0_12px_30px_-20px_rgba(15,23,42,0.35)]">
               <Calendar
                 className="jobflow-calendar"
                 view="month"
@@ -659,7 +659,7 @@ export function JobsClient({
         return (
           <mark
             key={`${part}-${index}`}
-            className="rounded-sm bg-amber-200/70 px-1 py-0.5 font-medium text-amber-900"
+            className="rounded-sm bg-amber-100/90 px-1 py-0.5 font-medium text-amber-900"
           >
             {part}
           </mark>
@@ -682,13 +682,13 @@ export function JobsClient({
 
 
   return (
-    <div className="relative flex flex-col gap-6">
+    <div className="relative flex flex-col gap-6 text-foreground">
       <div ref={contentRef} className="flex flex-col gap-6">
         {!floatingSidebar.enabled ? (
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
         ) : null}
 
-      <div className="rounded-xl border bg-card p-4 shadow-sm backdrop-blur">
+      <div className="rounded-2xl border bg-card/90 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur">
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
@@ -789,7 +789,7 @@ export function JobsClient({
       ) : null}
 
         <section className="grid gap-4 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-2xl border bg-card/90 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)]">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
@@ -813,10 +813,10 @@ export function JobsClient({
                   onClick={() => {
                     setSelectedId(it.id);
                   }}
-                  className={`w-full rounded-lg border border-l-4 bg-white px-3 py-3 text-left transition ${
+                  className={`w-full rounded-xl border border-l-4 bg-card/90 px-3 py-3 text-left transition ${
                     active
-                      ? "border-l-primary border-primary/60 bg-primary/5 shadow-sm"
-                      : "border-l-transparent hover:border-muted-foreground/30 hover:bg-muted/30"
+                      ? "border-l-primary border-primary/60 bg-primary/10 shadow-sm"
+                      : "border-l-transparent hover:border-muted-foreground/30 hover:bg-muted/40"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -883,7 +883,7 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card lg:sticky lg:top-24">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-2xl border bg-card/90 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -914,7 +914,7 @@ export function JobsClient({
                       <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button asChild size="sm" className="gap-1 bg-blue-600 text-white hover:bg-blue-700">
+                  <Button asChild size="sm" className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90">
                     <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="h-4 w-4" />
                       Open job
@@ -999,7 +999,7 @@ export function JobsClient({
                                 </strong>
                               ),
                               code: ({ children }) => (
-                                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">
+                                <code className="rounded bg-muted/70 px-1.5 py-0.5 text-xs text-foreground/80">
                                   {children}
                                 </code>
                               ),
