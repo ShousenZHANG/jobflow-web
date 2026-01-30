@@ -168,6 +168,13 @@ export function JobsClient({
     width: number;
   }>({ enabled: false, left: 0, width: 0 });
 
+  useEffect(() => {
+    document.body.classList.add("jobs-no-scroll");
+    return () => {
+      document.body.classList.remove("jobs-no-scroll");
+    };
+  }, []);
+
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
     if (typeof err === "string") return err;
@@ -683,7 +690,7 @@ export function JobsClient({
 
   return (
     <div className="relative flex flex-1 min-h-0 flex-col gap-6 text-foreground">
-      <div ref={contentRef} className="flex flex-col gap-6">
+      <div ref={contentRef} className="flex min-h-0 flex-1 flex-col gap-6">
         {!floatingSidebar.enabled ? (
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
         ) : null}
