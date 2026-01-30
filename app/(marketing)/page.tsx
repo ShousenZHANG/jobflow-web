@@ -108,10 +108,10 @@ export default function HomePage() {
             <span className="text-lg font-semibold text-slate-900">Jobflow</span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
-            <Link href="/jobs" className="edu-nav-link">
+            <Link href="/jobs" className="edu-nav-link rounded-full px-3 py-1.5">
               Jobs
             </Link>
-            <Link href="/fetch" className="edu-nav-link">
+            <Link href="/fetch" className="edu-nav-link rounded-full px-3 py-1.5">
               Fetch
             </Link>
           </div>
