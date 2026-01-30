@@ -359,70 +359,37 @@ export function JobsClient({
   const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
   const nextCursor = jobsQuery.data?.nextCursor ?? null;
   const loading = jobsQuery.isFetching;
-  const [transitionPhase, setTransitionPhase] = useState<
-    "idle" | "exiting" | "loading" | "entering"
-  >("idle");
-  const [enterVisible, setEnterVisible] = useState(false);
-  const transitionTimersRef = useRef<{ exit?: number; enter?: number }>({});
-  const transitionRafRef = useRef<number | null>(null);
-  const exitDuration = 200;
-  const enterDuration = 240;
-
-  function clearTransitionTimers() {
-    if (transitionTimersRef.current.exit) {
-      clearTimeout(transitionTimersRef.current.exit);
-    }
-    if (transitionTimersRef.current.enter) {
-      clearTimeout(transitionTimersRef.current.enter);
-    }
-    if (transitionRafRef.current !== null) {
-      cancelAnimationFrame(transitionRafRef.current);
-    }
-    transitionTimersRef.current = {};
-    transitionRafRef.current = null;
-  }
+  const [loadingBarVisible, setLoadingBarVisible] = useState(false);
+  const loadingBarTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (loading) {
-      if (transitionPhase === "idle" || transitionPhase === "entering") {
-        clearTransitionTimers();
-        setTransitionPhase("exiting");
-        transitionTimersRef.current.exit = window.setTimeout(() => {
-          if (jobsQuery.isFetching) {
-            setTransitionPhase("loading");
-          }
-        }, exitDuration);
+      if (loadingBarTimerRef.current === null) {
+        loadingBarTimerRef.current = window.setTimeout(() => {
+          setLoadingBarVisible(true);
+        }, 160);
       }
       return;
     }
 
-    if (transitionPhase === "exiting" || transitionPhase === "loading") {
-      clearTransitionTimers();
-      setTransitionPhase("entering");
+    if (loadingBarTimerRef.current !== null) {
+      clearTimeout(loadingBarTimerRef.current);
+      loadingBarTimerRef.current = null;
     }
-  }, [loading, transitionPhase, jobsQuery.isFetching]);
+    setLoadingBarVisible(false);
+  }, [loading]);
 
-  useEffect(() => {
-    if (transitionPhase !== "entering") return;
-    clearTransitionTimers();
-    setEnterVisible(false);
-    transitionRafRef.current = requestAnimationFrame(() => {
-      setEnterVisible(true);
-    });
-    transitionTimersRef.current.enter = window.setTimeout(() => {
-      setTransitionPhase("idle");
-    }, enterDuration);
-  }, [transitionPhase]);
+  useEffect(
+    () => () => {
+      if (loadingBarTimerRef.current !== null) {
+        clearTimeout(loadingBarTimerRef.current);
+      }
+    },
+    [],
+  );
 
-  const showLoadingOverlay = transitionPhase === "loading";
-  const listOpacityClass =
-    transitionPhase === "exiting" || transitionPhase === "loading"
-      ? "opacity-0"
-      : transitionPhase === "entering"
-        ? enterVisible
-          ? "opacity-100"
-          : "opacity-0"
-        : "opacity-100";
+  const showLoadingOverlay = loadingBarVisible;
+  const listOpacityClass = showLoadingOverlay ? "opacity-70" : "opacity-100";
   const queryError = jobsQuery.error
     ? getErrorMessage(jobsQuery.error, "Failed to load jobs")
     : null;
@@ -933,6 +900,7 @@ export function JobsClient({
 
         <section className="grid flex-1 min-h-0 gap-4 overflow-hidden lg:max-h-[calc(100vh-260px)] lg:grid-cols-[380px_1fr] lg:items-stretch">
         <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)]">
+          {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
@@ -993,15 +961,6 @@ export function JobsClient({
             ) : null}
             </div>
           </ScrollArea>
-          {showLoadingOverlay ? (
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center p-4">
-              <div className="w-full space-y-2 rounded-2xl border border-dashed border-emerald-200/60 bg-white/70 p-3 shadow-sm backdrop-blur-sm">
-                <Skeleton className="h-3 w-2/3" />
-                <Skeleton className="h-3 w-4/5" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-            </div>
-          ) : null}
           <div className="border-t px-4 py-3">
             <Pagination>
               <PaginationContent>
@@ -1042,6 +1001,7 @@ export function JobsClient({
         </div>
 
         <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
+          {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1204,15 +1164,6 @@ export function JobsClient({
             )}
             </div>
           </ScrollArea>
-          {showLoadingOverlay ? (
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center p-4">
-              <div className="w-full space-y-2 rounded-2xl border border-dashed border-emerald-200/60 bg-white/70 p-3 shadow-sm backdrop-blur-sm">
-                <Skeleton className="h-3 w-2/3" />
-                <Skeleton className="h-3 w-4/5" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-            </div>
-          ) : null}
         </div>
         </section>
       </div>
