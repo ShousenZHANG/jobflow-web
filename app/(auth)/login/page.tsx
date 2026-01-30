@@ -3,9 +3,21 @@
 import { signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Github } from "lucide-react";
+import { Github, Search } from "lucide-react";
+import { Fredoka, Nunito } from "next/font/google";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  variable: "--font-edu-display",
+  weight: ["400", "500", "600", "700"],
+});
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  variable: "--font-edu-body",
+  weight: ["300", "400", "500", "600", "700"],
+});
 
 export default function LoginPage() {
   const { status } = useSession();
@@ -26,30 +38,47 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-6">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(29,78,216,0.08),_transparent_55%)]" />
+    <main
+      className={`marketing-edu edu-page-enter ${fredoka.variable} ${nunito.variable} relative min-h-screen overflow-hidden px-6`}
+    >
+      <div className="edu-bg" />
+      <div className="edu-blob edu-blob--mint" />
+      <div className="edu-blob edu-blob--peach" />
+
       <div className="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center py-16">
-        <Card className="w-full max-w-lg border-muted/60 bg-card shadow-md">
-          <CardHeader className="space-y-2">
-            <div className="text-sm text-muted-foreground">Sign in to Jobflow</div>
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Access your hiring workspace to review and launch searches.
-            </p>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <Button onClick={() => handleSignIn("google")} className="w-full">
+        <div className="edu-card w-full max-w-lg text-left">
+          <div className="flex items-center gap-3">
+            <div className="edu-logo">
+              <Search className="h-4 w-4 text-emerald-700" />
+            </div>
+            <span className="text-sm font-semibold text-slate-900">Jobflow</span>
+          </div>
+          <div className="mt-5">
+            <span className="edu-pill inline-flex items-center gap-2 text-xs font-semibold">
+              Secure sign in
+            </span>
+          </div>
+          <h1 className="edu-title mt-4 text-3xl text-slate-900">Welcome back</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Jump back into your job search and keep your shortlist moving.
+          </p>
+          <div className="mt-6 flex flex-col gap-3">
+            <Button onClick={() => handleSignIn("google")} className="edu-cta edu-cta--press w-full">
               Continue with Google
             </Button>
-            <Button onClick={() => handleSignIn("github")} variant="outline" className="w-full gap-2">
+            <Button
+              onClick={() => handleSignIn("github")}
+              variant="outline"
+              className="edu-outline edu-cta--press w-full gap-2"
+            >
               <Github className="h-4 w-4" />
               Continue with GitHub
             </Button>
-            <p className="text-xs text-muted-foreground">
-              By signing in, you agree to the platform terms and privacy policy.
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="mt-4 text-xs text-slate-500">
+            By signing in, you agree to the platform terms and privacy policy.
+          </p>
+        </div>
       </div>
     </main>
   );
