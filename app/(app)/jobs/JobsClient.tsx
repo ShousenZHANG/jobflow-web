@@ -425,7 +425,7 @@ export function JobsClient({
         description: `${variables.status}`,
         duration: 1800,
         className:
-          "border-sky-200 bg-sky-50 text-sky-900 animate-in fade-in zoom-in-95",
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
     },
     onSettled: (_data, _error, variables) => {
@@ -477,7 +477,7 @@ export function JobsClient({
         description: "The job was deleted successfully.",
         duration: 1800,
         className:
-          "border-sky-200 bg-sky-50 text-sky-900 animate-in fade-in zoom-in-95",
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
     },
     onSettled: (_data, _error, id) => {
@@ -501,8 +501,8 @@ export function JobsClient({
   }
 
   const statusClass: Record<JobStatus, string> = {
-    NEW: "bg-sky-100 text-sky-700",
-    APPLIED: "bg-emerald-100 text-emerald-700",
+    NEW: "bg-emerald-100 text-emerald-700",
+    APPLIED: "bg-sky-100 text-sky-700",
     REJECTED: "bg-slate-200 text-slate-600",
   };
 
@@ -562,7 +562,7 @@ export function JobsClient({
           ? "Checked in for today. Great work!"
           : "All NEW jobs from today are done. You can check in.";
   const checkinCards = (
-    <Card className="border bg-card/90 shadow-[0_18px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur">
+    <Card className="border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-38px_rgba(15,23,42,0.4)]">
       <CardHeader className="pb-1">
         <CardTitle className="text-[15px]">Daily check-in</CardTitle>
       </CardHeader>
@@ -576,7 +576,7 @@ export function JobsClient({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            className="h-8 px-3 text-[12px]"
+            className="edu-cta edu-cta--press h-8 px-3 text-[12px]"
             onClick={async () => {
               if (!canCheckIn) return;
               setCheckinLoading(true);
@@ -596,7 +596,7 @@ export function JobsClient({
                   description: "Today's check-in is saved.",
                   duration: 1800,
                   className:
-                    "border-sky-200 bg-sky-50 text-sky-900 animate-in fade-in zoom-in-95",
+                    "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
                 });
               } catch (e: unknown) {
                 setCheckinError(getErrorMessage(e, "Check-in failed"));
@@ -630,7 +630,7 @@ export function JobsClient({
             </Button>
           </div>
           {calendarOpen ? (
-            <div className="mt-2 w-full max-w-[280px] rounded-2xl bg-card/90 p-2 shadow-[0_12px_30px_-20px_rgba(15,23,42,0.35)]">
+            <div className="mt-2 w-full max-w-[280px] rounded-2xl bg-white/80 p-2 shadow-[0_12px_30px_-20px_rgba(15,23,42,0.35)]">
               <Calendar
                 className="jobflow-calendar"
                 view="month"
@@ -688,7 +688,7 @@ export function JobsClient({
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">{checkinCards}</div>
         ) : null}
 
-      <div className="rounded-2xl border bg-card/90 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur">
+      <div className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto]">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
@@ -755,7 +755,7 @@ export function JobsClient({
             </Select>
           </div>
           <div className="flex items-end">
-            <Button onClick={triggerSearch} disabled={loading} className="w-full lg:w-auto">
+            <Button onClick={triggerSearch} disabled={loading} className="edu-cta edu-cta--press w-full lg:w-auto">
               Search
             </Button>
           </div>
@@ -776,7 +776,7 @@ export function JobsClient({
               {items.length} results
             </div>
           </div>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="edu-outline edu-cta--press">
             <a href="/fetch">Fetch jobs</a>
           </Button>
         </div>
@@ -789,7 +789,7 @@ export function JobsClient({
       ) : null}
 
         <section className="grid gap-4 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-2xl border bg-card/90 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)]">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)]">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
@@ -813,10 +813,10 @@ export function JobsClient({
                   onClick={() => {
                     setSelectedId(it.id);
                   }}
-                  className={`w-full rounded-xl border border-l-4 bg-card/90 px-3 py-3 text-left transition ${
+                  className={`w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
                     active
-                      ? "border-l-primary border-primary/60 bg-primary/10 shadow-sm"
-                      : "border-l-transparent hover:border-muted-foreground/30 hover:bg-muted/40"
+                      ? "border-l-emerald-500 bg-emerald-50/60 shadow-sm"
+                      : "border-l-transparent hover:border-slate-900/20 hover:bg-white"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -883,7 +883,7 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-2xl border bg-card/90 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] lg:sticky lg:top-24">
+        <div className="flex h-[calc(100vh-200px)] min-h-[520px] flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -914,7 +914,7 @@ export function JobsClient({
                       <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button asChild size="sm" className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button asChild size="sm" className="edu-cta edu-cta--press h-9 gap-1 px-3">
                     <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="h-4 w-4" />
                       Open job
@@ -926,7 +926,7 @@ export function JobsClient({
                         variant="outline"
                         size="sm"
                         disabled={deletingIds.has(selectedJob.id)}
-                        className="gap-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                        className="edu-cta--press gap-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                       >
                         <Trash2 className="h-4 w-4" />
                         Remove

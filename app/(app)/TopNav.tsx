@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function TopNav() {
@@ -15,23 +16,26 @@ export function TopNav() {
   ];
 
   return (
-    <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-6">
-          <Link className="text-lg font-semibold tracking-tight text-foreground" href="/">
-            Jobflow
-          </Link>
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="sticky top-0 z-40">
+      <div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6">
+        <div className="edu-nav edu-nav--press">
+          <div className="flex items-center gap-3">
+            <div className="edu-logo">
+              <Search className="h-4 w-4 text-emerald-700" />
+            </div>
+            <Link className="text-lg font-semibold text-slate-900" href="/">
+              Jobflow
+            </Link>
+          </div>
+          <nav className="hidden items-center gap-2 md:flex">
             {links.map((link) => {
               const active = pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-full px-3 py-1.5 transition ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-secondary/60 hover:text-foreground"
+                  className={`edu-nav-link rounded-full px-3 py-1.5 ${
+                    active ? "bg-emerald-100 text-emerald-800" : ""
                   }`}
                 >
                   {link.label}
@@ -39,12 +43,17 @@ export function TopNav() {
               );
             })}
           </nav>
-        </div>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-muted-foreground">{data?.user?.email ?? ""}</span>
-          <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: "/login" })}>
-            Sign out
-          </Button>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="hidden text-slate-500 sm:inline">{data?.user?.email ?? ""}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="edu-outline edu-cta--press h-10"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              Sign out
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -649,33 +649,18 @@ html {
   }
 }
 
-.jobs-theme {
-  --background: oklch(0.985 0.01 240);
-  --foreground: oklch(0.2 0.02 250);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 250);
-  --muted: oklch(0.96 0.01 240);
-  --muted-foreground: oklch(0.45 0.03 250);
-  --border: oklch(0.9 0.02 240);
-  --input: oklch(0.9 0.02 240);
-  --primary: oklch(0.62 0.16 240);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.94 0.02 240);
-  --secondary-foreground: oklch(0.2 0.02 250);
-  --accent: oklch(0.95 0.02 240);
-  --accent-foreground: oklch(0.2 0.02 250);
-  --ring: oklch(0.7 0.1 240);
-  background: linear-gradient(180deg, #f3f7ff 0%, #eef3ff 48%, #f8fafc 100%);
-  color: var(--foreground);
+.app-edu {
+  background: #fff8f1;
+  font-family: var(--font-edu-body), "Nunito", ui-rounded, system-ui, sans-serif;
+  color: #1f2937;
 }
 
-.jobs-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(125, 211, 252, 0.35), transparent 45%),
-    radial-gradient(circle at 85% 15%, rgba(167, 139, 250, 0.22), transparent 42%),
-    radial-gradient(circle at 70% 85%, rgba(74, 222, 128, 0.18), transparent 45%);
-  pointer-events: none;
-  z-index: 0;
+.app-edu h1,
+.app-edu h2,
+.app-edu h3,
+.app-edu h4,
+.app-edu h5,
+.app-edu h6 {
+  font-family: var(--font-edu-display), var(--font-edu-body), "Fredoka", ui-rounded, system-ui, sans-serif;
+  letter-spacing: -0.01em;
 }
