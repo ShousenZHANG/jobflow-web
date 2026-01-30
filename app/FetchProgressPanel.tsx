@@ -47,7 +47,7 @@ export function FetchProgressPanel() {
   if (!open && runId) {
     return (
       <button
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border bg-background px-3 py-2 text-xs font-medium shadow-lg transition hover:bg-accent"
+        className="edu-outline edu-cta--press edu-outline--compact fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3 py-2 text-xs font-medium"
         onClick={() => setOpen(true)}
         aria-label="Open fetch progress"
       >
@@ -68,7 +68,7 @@ export function FetchProgressPanel() {
   if (!open || !runId) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[340px] rounded-2xl border bg-background p-4 shadow-2xl transition-all">
+    <div className="fixed bottom-6 right-6 z-50 w-[340px] rounded-3xl border-2 border-slate-900/10 bg-white/90 p-4 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-all">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="text-sm font-semibold">Fetch progress</div>
@@ -98,8 +98,8 @@ export function FetchProgressPanel() {
         </div>
         <Progress
           value={progressValue}
-          className="h-2 bg-blue-100"
-          indicatorClassName="bg-gradient-to-r from-blue-400 via-blue-500 to-emerald-500 shadow-[0_0_12px_rgba(59,130,246,0.35)] transition-all duration-500 ease-out"
+          className="h-2 bg-emerald-100/70"
+          indicatorClassName="bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.35)] transition-all duration-500 ease-out"
         />
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{progressValue}%</span>
@@ -110,7 +110,11 @@ export function FetchProgressPanel() {
         ) : null}
         {error ? <div className="text-sm text-destructive">{error}</div> : null}
         {isRunning ? (
-          <Button variant="destructive" className="w-full" onClick={cancelRun}>
+          <Button
+            variant="outline"
+            className="edu-outline edu-cta--press edu-outline--compact w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-700"
+            onClick={cancelRun}
+          >
             Cancel fetch
           </Button>
         ) : null}

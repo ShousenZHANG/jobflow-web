@@ -216,8 +216,8 @@ export function FetchClient() {
         </div>
       ) : null}
 
-      <Card className="border-muted/60 bg-card shadow-sm">
-        <CardContent className="grid gap-4 p-4 md:grid-cols-4">
+      <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
+        <CardContent className="grid gap-4 p-5 md:grid-cols-4">
           <div className="space-y-2">
             <Label>Job title</Label>
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
@@ -299,11 +299,11 @@ export function FetchClient() {
         </CardContent>
       </Card>
 
-      <Card className="border-muted/60 bg-card shadow-sm">
-        <CardHeader>
+      <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
+        <CardHeader className="pb-2">
           <CardTitle className="text-base">Filters</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pb-5">
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="text-sm font-medium">Apply exclusions</div>
@@ -319,7 +319,11 @@ export function FetchClient() {
               <div className="text-xs text-muted-foreground">Title exclusions</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
+                  <Button
+                    variant="outline"
+                    className="edu-outline edu-cta--press edu-outline--compact h-9 w-full justify-between"
+                    disabled={!applyExcludes}
+                  >
                     {excludeTitleTerms.length ? `Selected (${excludeTitleTerms.length})` : "Select terms"}
                   </Button>
                 </DropdownMenuTrigger>
@@ -360,7 +364,11 @@ export function FetchClient() {
               <div className="text-xs text-muted-foreground">Description exclusions</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between" disabled={!applyExcludes}>
+                  <Button
+                    variant="outline"
+                    className="edu-outline edu-cta--press edu-outline--compact h-9 w-full justify-between"
+                    disabled={!applyExcludes}
+                  >
                     {excludeDescriptionRules.length
                       ? `Selected (${excludeDescriptionRules.length})`
                       : "Select rules"}
@@ -400,10 +408,18 @@ export function FetchClient() {
       </Card>
 
       <div className="flex items-center gap-3">
-        <Button onClick={onSubmit} disabled={isSubmitting || isRunning}>
+        <Button
+          onClick={onSubmit}
+          disabled={isSubmitting || isRunning}
+          className="edu-cta edu-cta--press edu-cta--compact h-9 px-4"
+        >
           {isSubmitting ? "Starting..." : "Start fetch"}
         </Button>
-        <Button variant="outline" onClick={() => router.push("/jobs")}>
+        <Button
+          variant="outline"
+          className="edu-outline edu-cta--press edu-outline--compact h-9 px-4"
+          onClick={() => router.push("/jobs")}
+        >
           View jobs
         </Button>
       </div>
