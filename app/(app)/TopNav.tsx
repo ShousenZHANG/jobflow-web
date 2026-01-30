@@ -19,36 +19,38 @@ export function TopNav() {
     <div className="sticky top-0 z-40">
       <div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6">
         <div className="edu-nav edu-nav--press">
-          <div className="flex items-center gap-3">
-            <div className="edu-logo">
-              <Search className="h-4 w-4 text-emerald-700" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="edu-logo">
+                <Search className="h-4 w-4 text-emerald-700" />
+              </div>
+              <Link className="text-lg font-semibold text-slate-900" href="/">
+                Jobflow
+              </Link>
             </div>
-            <Link className="text-lg font-semibold text-slate-900" href="/">
-              Jobflow
-            </Link>
+            <nav className="hidden items-center gap-2 md:flex">
+              {links.map((link) => {
+                const active = pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`edu-nav-link rounded-full px-3 py-1.5 ${
+                      active ? "bg-emerald-100 text-emerald-800" : ""
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-          <nav className="hidden items-center gap-2 md:flex">
-            {links.map((link) => {
-              const active = pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`edu-nav-link rounded-full px-3 py-1.5 ${
-                    active ? "bg-emerald-100 text-emerald-800" : ""
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
           <div className="flex items-center gap-3 text-sm">
             <span className="hidden text-slate-500 sm:inline">{data?.user?.email ?? ""}</span>
             <Button
               variant="outline"
               size="sm"
-              className="edu-outline edu-cta--press h-10"
+              className="edu-outline edu-cta--press edu-outline--compact h-9 px-3 text-xs"
               onClick={() => signOut({ callbackUrl: "/login" })}
             >
               Sign out

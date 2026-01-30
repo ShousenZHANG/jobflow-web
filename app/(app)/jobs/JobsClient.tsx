@@ -700,7 +700,7 @@ export function JobsClient({
         data-testid="jobs-toolbar"
         className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]"
       >
-        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_0.9fr_auto_auto] lg:items-end">
+        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_0.9fr_auto] lg:items-end">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
             <div className="relative">
@@ -777,11 +777,6 @@ export function JobsClient({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-end" data-testid="jobs-results-count">
-            <div className="rounded-full border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
-              {items.length} results
-            </div>
-          </div>
           <div className="flex items-end">
             <Button
               onClick={triggerSearch}
@@ -789,11 +784,6 @@ export function JobsClient({
               className="edu-cta edu-cta--press edu-cta--compact w-full lg:w-auto"
             >
               Search
-            </Button>
-          </div>
-          <div className="flex items-end">
-            <Button asChild variant="outline" className="edu-outline edu-cta--press edu-outline--compact w-full lg:w-auto">
-              <a href="/fetch">Fetch jobs</a>
             </Button>
           </div>
         </div>
@@ -805,13 +795,13 @@ export function JobsClient({
         </div>
       ) : null}
 
-        <section className="grid flex-1 min-h-0 gap-4 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)]">
+        <section className="grid flex-1 min-h-0 gap-4 overflow-hidden lg:grid-cols-[380px_1fr] lg:items-stretch">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)]">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>Results</span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
           </div>
-          <ScrollArea data-testid="jobs-results-scroll" className="flex-1">
+          <ScrollArea data-testid="jobs-results-scroll" className="flex-1 min-h-0">
             <div className="space-y-3 p-3">
             {loading && items.length === 0 ? (
               Array.from({ length: 6 }).map((_, idx) => (
@@ -902,7 +892,7 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:sticky lg:top-24">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -972,7 +962,7 @@ export function JobsClient({
               <div className="text-sm text-muted-foreground">Select a job to preview details.</div>
             )}
           </div>
-          <ScrollArea data-testid="jobs-details-scroll" className="flex-1">
+          <ScrollArea data-testid="jobs-details-scroll" className="flex-1 min-h-0">
             <div key={selectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">

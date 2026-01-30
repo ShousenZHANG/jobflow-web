@@ -85,7 +85,6 @@ describe("JobsClient", () => {
 
     const toolbar = screen.getAllByTestId("jobs-toolbar")[0];
     expect(within(toolbar).getByTestId("jobs-sort")).toBeInTheDocument();
-    expect(within(toolbar).getByTestId("jobs-results-count")).toBeInTheDocument();
   });
 
   it("renders scroll areas for results and details", () => {
