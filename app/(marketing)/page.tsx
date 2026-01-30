@@ -101,19 +101,21 @@ export default function HomePage() {
 
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-6 py-10 text-center md:gap-14">
         <nav className="edu-nav edu-nav--press w-full max-w-5xl">
-          <div className="flex items-center gap-3">
-            <div className="edu-logo">
-              <Search className="h-5 w-5 text-emerald-700" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="edu-logo">
+                <Search className="h-5 w-5 text-emerald-700" />
+              </div>
+              <span className="text-lg font-semibold text-slate-900">Jobflow</span>
             </div>
-            <span className="text-lg font-semibold text-slate-900">Jobflow</span>
-          </div>
-          <div className="hidden items-center gap-2 md:flex">
-            <Link href="/jobs" className="edu-nav-link edu-nav-pill">
-              Jobs
-            </Link>
-            <Link href="/fetch" className="edu-nav-link edu-nav-pill">
-              Fetch
-            </Link>
+            <div className="hidden items-center gap-2 md:flex">
+              <Link href="/jobs" className="edu-nav-link edu-nav-pill">
+                Jobs
+              </Link>
+              <Link href="/fetch" className="edu-nav-link edu-nav-pill">
+                Fetch
+              </Link>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <details className="edu-menu md:hidden">
