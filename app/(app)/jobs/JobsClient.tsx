@@ -1,6 +1,7 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -225,6 +226,9 @@ export function JobsClient({
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [timeZone] = useState<string | null>(() => getUserTimeZone() || null);
   const [isPending, startTransition] = useTransition();
+  const resultsScrollRef = useRef<HTMLDivElement | null>(null);
+  const resultsViewportRef = useRef<HTMLDivElement | null>(null);
+  const [resultsViewportReady, setResultsViewportReady] = useState(false);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -251,6 +255,15 @@ export function JobsClient({
   );
 
   const debouncedFilters = useDebouncedValue(filters, 200);
+
+  useEffect(() => {
+    if (!resultsScrollRef.current) return;
+    const viewport = resultsScrollRef.current.querySelector(
+      "[data-radix-scroll-area-viewport]",
+    ) as HTMLDivElement | null;
+    resultsViewportRef.current = viewport;
+    setResultsViewportReady(Boolean(viewport));
+  }, []);
 
   useEffect(() => {
     statusFilterRef.current = statusFilter;
@@ -486,6 +499,16 @@ export function JobsClient({
 
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
+  const listPadding = 12;
+  const rowVirtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => resultsViewportRef.current,
+    estimateSize: () => 120,
+    overscan: 6,
+    measureElement: (el) => el.getBoundingClientRect().height,
+  });
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const canVirtualize = resultsViewportReady && virtualItems.length > 0;
   const detailQuery = useQuery({
     queryKey: ["job-details", effectiveSelectedId],
     queryFn: async () => {
@@ -686,61 +709,119 @@ export function JobsClient({
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
           </div>
           <ScrollArea
+            ref={resultsScrollRef}
             data-testid="jobs-results-scroll"
             data-loading={showLoadingOverlay ? "true" : "false"}
+            data-virtual="true"
             className={`max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
           >
-            <div className="space-y-3 p-3">
             {loading && items.length === 0 ? (
-              Array.from({ length: 6 }).map((_, idx) => (
-                <div key={`s-${idx}`} className="rounded-lg border p-3">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="mt-2 h-3 w-1/2" />
-                  <Skeleton className="mt-2 h-3 w-1/3" />
-                </div>
-              ))
+              <div className="space-y-3 p-3">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={`s-${idx}`} className="rounded-lg border p-3">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="mt-2 h-3 w-1/2" />
+                    <Skeleton className="mt-2 h-3 w-1/3" />
+                  </div>
+                ))}
+              </div>
             ) : null}
-            {items.map((it) => {
-              const active = it.id === effectiveSelectedId;
-              return (
-                <button
-                  key={it.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedId(it.id);
-                  }}
-                  data-perf="cv-auto"
-                  className={`jobflow-list-item w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
-                    active
-                      ? "border-l-emerald-500 bg-emerald-50/60 shadow-sm"
-                      : "border-l-transparent hover:border-slate-900/20 hover:bg-white"
-                  }`}
+            {items.length > 0 ? (
+              canVirtualize ? (
+                <div
+                  className="relative w-full"
+                  style={{ height: rowVirtualizer.getTotalSize() + listPadding * 2 }}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge className={statusClass[it.status]}>{it.status}</Badge>
-                    <span
-                      className="text-xs text-muted-foreground"
-                      title={formatLocalDateTime(it.createdAt, timeZone)}
-                    >
-                      {formatInsertedTime(it.createdAt)}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-sm font-semibold">{it.title}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {it.company ?? "-"} · {it.location ?? "-"}
-                  </div>
-                  <div className="mt-2 text-[11px] text-muted-foreground">
-                    {it.jobType ?? "Unknown"} · {it.jobLevel ?? "Unknown"}
-                  </div>
-                </button>
-              );
-            })}
-            {!items.length && !loading ? (
+                  {virtualItems.map((virtualRow) => {
+                    const it = items[virtualRow.index];
+                    const active = it.id === effectiveSelectedId;
+                    return (
+                      <div
+                        key={it.id}
+                        ref={rowVirtualizer.measureElement}
+                        data-index={virtualRow.index}
+                        className="absolute left-0 right-0 px-3 pb-3"
+                        style={{
+                          transform: `translateY(${virtualRow.start + listPadding}px)`,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedId(it.id);
+                          }}
+                          data-perf="cv-auto"
+                          className={`jobflow-list-item w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
+                            active
+                              ? "border-l-emerald-500 bg-emerald-50/60 shadow-sm"
+                              : "border-l-transparent hover:border-slate-900/20 hover:bg-white"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge className={statusClass[it.status]}>{it.status}</Badge>
+                            <span
+                              className="text-xs text-muted-foreground"
+                              title={formatLocalDateTime(it.createdAt, timeZone)}
+                            >
+                              {formatInsertedTime(it.createdAt)}
+                            </span>
+                          </div>
+                          <div className="mt-2 text-sm font-semibold">{it.title}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {it.company ?? "-"} - {it.location ?? "-"}
+                          </div>
+                          <div className="mt-2 text-[11px] text-muted-foreground">
+                            {it.jobType ?? "Unknown"} - {it.jobLevel ?? "Unknown"}
+                          </div>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="space-y-3 p-3">
+                  {items.map((it) => {
+                    const active = it.id === effectiveSelectedId;
+                    return (
+                      <button
+                        key={it.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedId(it.id);
+                        }}
+                        data-perf="cv-auto"
+                        className={`jobflow-list-item w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
+                          active
+                            ? "border-l-emerald-500 bg-emerald-50/60 shadow-sm"
+                            : "border-l-transparent hover:border-slate-900/20 hover:bg-white"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge className={statusClass[it.status]}>{it.status}</Badge>
+                          <span
+                            className="text-xs text-muted-foreground"
+                            title={formatLocalDateTime(it.createdAt, timeZone)}
+                          >
+                            {formatInsertedTime(it.createdAt)}
+                          </span>
+                        </div>
+                        <div className="mt-2 text-sm font-semibold">{it.title}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {it.company ?? "-"} - {it.location ?? "-"}
+                        </div>
+                        <div className="mt-2 text-[11px] text-muted-foreground">
+                          {it.jobType ?? "Unknown"} - {it.jobLevel ?? "Unknown"}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )
+            ) : !loading ? (
               <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                 No jobs yet.
               </div>
             ) : null}
-            </div>
           </ScrollArea>
           <div className="border-t px-4 py-3">
             <Pagination>

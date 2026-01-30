@@ -80,6 +80,13 @@ describe("JobsClient", () => {
     expect(screen.getAllByTestId("jobs-details-scroll")[0]).toBeInTheDocument();
   });
 
+  it("marks the results list as virtualized", () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const resultsPane = screen.getAllByTestId("jobs-results-scroll")[0];
+    expect(resultsPane).toHaveAttribute("data-virtual", "true");
+  });
+
   it("marks job items with performance-friendly list rendering", async () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
