@@ -50,11 +50,12 @@ const sequences: DemoSequence[] = [
 ];
 
 export default function HomePage() {
-  const [title, setTitle] = useState("");
-  const [location, setLocation] = useState("");
-  const [level, setLevel] = useState("");
-  const [results, setResults] = useState("");
-  const [activeField, setActiveField] = useState<ActiveField>("title");
+  const initialSequence = sequences[0];
+  const [title, setTitle] = useState(initialSequence.title);
+  const [location, setLocation] = useState(initialSequence.location);
+  const [level, setLevel] = useState(initialSequence.level);
+  const [results, setResults] = useState(initialSequence.results);
+  const [activeField, setActiveField] = useState<ActiveField>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +72,8 @@ export default function HomePage() {
     }
 
     async function run() {
-      let index = 0;
+      let index = 1;
+      await sleep(600);
       while (!cancelled) {
         const current = sequences[index];
         await typeField("title", setTitle, current.title);
@@ -94,12 +96,12 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className={`marketing-edu edu-page-enter ${fredoka.variable} ${nunito.variable} relative min-h-screen overflow-hidden`}>
+    <main className={`marketing-edu edu-page-enter ${fredoka.variable} ${nunito.variable} relative min-h-[100dvh] overflow-hidden`}>
       <div className="edu-bg" />
       <div className="edu-blob edu-blob--mint" />
       <div className="edu-blob edu-blob--peach" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-6 py-10 text-center md:gap-14">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-6 py-8 text-center md:gap-14">
         <nav className="edu-nav edu-nav--press w-full max-w-5xl">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
@@ -186,7 +188,7 @@ export default function HomePage() {
               <div className="mt-4 grid gap-3">
                 <div className="edu-input">
                   <span className="text-xs text-slate-500">Title</span>
-                  <div className="text-sm text-slate-900">
+                  <div className="text-sm text-slate-900 min-h-[1.25rem] truncate">
                     {title}
                     {activeField === "title" ? <span className="edu-caret" /> : null}
                   </div>
@@ -194,14 +196,14 @@ export default function HomePage() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="edu-input">
                     <span className="text-xs text-slate-500">Location</span>
-                    <div className="text-sm text-slate-900">
+                    <div className="text-sm text-slate-900 min-h-[1.25rem] truncate">
                       {location}
                       {activeField === "location" ? <span className="edu-caret" /> : null}
                     </div>
                   </div>
                   <div className="edu-input">
                     <span className="text-xs text-slate-500">Level</span>
-                    <div className="text-sm text-slate-900">
+                    <div className="text-sm text-slate-900 min-h-[1.25rem] truncate">
                       {level}
                       {activeField === "level" ? <span className="edu-caret" /> : null}
                     </div>
@@ -209,7 +211,7 @@ export default function HomePage() {
                 </div>
                 <div className="edu-input">
                   <span className="text-xs text-slate-500">Results</span>
-                  <div className="text-sm text-slate-900">
+                  <div className="text-sm text-slate-900 min-h-[1.25rem] truncate">
                     {results}
                     {activeField === "results" ? <span className="edu-caret" /> : null}
                   </div>
