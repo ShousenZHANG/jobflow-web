@@ -86,6 +86,13 @@ describe("JobsClient", () => {
     expect(screen.getAllByTestId("jobs-details-scroll")[0]).toBeInTheDocument();
   });
 
+  it("applies the page-enter animation on the jobs shell", () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const shell = screen.getAllByTestId("jobs-shell")[0];
+    expect(shell).toHaveClass("edu-page-enter");
+  });
+
   it("marks the results list as virtualized", () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
