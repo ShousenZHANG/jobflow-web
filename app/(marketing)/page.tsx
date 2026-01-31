@@ -96,12 +96,15 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className={`marketing-edu edu-page-enter ${fredoka.variable} ${nunito.variable} relative min-h-[100dvh] overflow-hidden`}>
+    <main className={`marketing-edu ${fredoka.variable} ${nunito.variable} relative min-h-[100dvh] overflow-hidden`}>
       <div className="edu-bg" />
       <div className="edu-blob edu-blob--mint" />
       <div className="edu-blob edu-blob--peach" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-6 py-8 text-center md:gap-14">
+      <div
+        className="edu-page-enter mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-6 py-8 text-center md:gap-14"
+        data-testid="marketing-shell"
+      >
         <nav className="edu-nav edu-nav--press w-full max-w-5xl">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">

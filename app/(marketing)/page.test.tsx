@@ -15,4 +15,13 @@ describe("HomePage", () => {
     expect(screen.getByText("Remote")).toBeInTheDocument();
     expect(screen.getByText("Mid-level")).toBeInTheDocument();
   });
+
+  it("keeps the page animation off the main element to avoid scroll flash", () => {
+    render(<HomePage />);
+
+    const main = screen.getAllByRole("main")[0];
+    expect(main).not.toHaveClass("edu-page-enter");
+    const shell = screen.getAllByTestId("marketing-shell")[0];
+    expect(shell).toHaveClass("edu-page-enter");
+  });
 });
