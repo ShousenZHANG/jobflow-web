@@ -8,7 +8,8 @@ export function RouteTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const reduce = useReducedMotion();
 
-  const transition = reduce ? { duration: 0 } : { duration: 0.24, ease: [0.22, 1, 0.36, 1] };
+  const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
+  const transition = reduce ? { duration: 0 } : { duration: 0.24, ease };
 
   return (
     <AnimatePresence mode="wait" initial={false}>
