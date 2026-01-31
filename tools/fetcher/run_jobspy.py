@@ -70,6 +70,25 @@ def _normalize_text(text: str) -> str:
     return s
 
 
+def _fingerprint_value(value: Any) -> str:
+    return _normalize_text(value or "")
+
+
+def dedupe_jobs(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df
+    out = df.copy()
+    out["fingerprint"] = (
+        out.get("title", "").apply(_fingerprint_value)
+        + "|"
+        + out.get("company", "").apply(_fingerprint_value)
+        + "|"
+        + out.get("location", "").apply(_fingerprint_value)
+    )
+    out = out.drop_duplicates(subset=["fingerprint"], keep="first")
+    return out.drop(columns=["fingerprint"], errors="ignore")
+
+
 def _build_exclude_title_re(terms: List[str]) -> Optional[re.Pattern]:
     cleaned = [re.escape(t.strip().lower()) for t in terms if t and t.strip()]
     if not cleaned:
@@ -92,12 +111,8 @@ def filter_title(
     else:
         exc = t.apply(lambda s: False)
     out = df[~exc].copy()
-    if enforce_include:
-        phrases = _build_query_phrases(queries)
-        if phrases:
-            norm = out["title"].fillna("").apply(_normalize_text)
-            mask = norm.apply(lambda s: any(p in s for p in phrases))
-            out = out[mask].copy()
+    # Mainline behavior: do not enforce query inclusion here. Filters should be explicit,
+    # e.g., exclude_terms (like "senior") selected by the user.
     return out
 
 
@@ -404,6 +419,7 @@ def main():
             )
             logger.info("Rows after description filter: %s", len(df))
         df = keep_columns(df)
+        df = dedupe_jobs(df)
         items = df.to_dict(orient="records")
 
     # Import into DB via Vercel API (chunked to avoid payload/time limits)
@@ -457,4 +473,3 @@ if __name__ == "__main__":
         except Exception:
             pass
         raise
-
