@@ -86,6 +86,37 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
 
+    def test_filter_description_drops_years_under_requirements_section(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "title": "Web Developer",
+                    "description": (
+                        "What we're looking for\n\n"
+                        "5-10 years experience as a Web Developer working on customer-facing websites."
+                    ),
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Frontend Engineer",
+                    "description": "Nice to have: 5+ years experience.",
+                    "company": "Beta",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        out = rj.filter_description(
+            df,
+            exclude_rights=False,
+            exclude_clearance=False,
+            exclude_sponsorship=False,
+            exclude_years=[5],
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
+
     def test_filter_description_only_drops_hard_rights_requirement(self):
         df = pd.DataFrame(
             [
@@ -93,6 +124,15 @@ class RunJobspyDedupeTests(unittest.TestCase):
                     "title": "Software Engineer",
                     "description": "Australian citizen required for this role.",
                     "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Data Engineer",
+                    "description": (
+                        "Applicant must be an Australian Citizen or Australian Permanent Resident "
+                        "to be considered."
+                    ),
+                    "company": "Gamma",
                     "location": "Sydney",
                 },
                 {

@@ -70,12 +70,19 @@ SOFT_CLEARANCE_RE = re.compile(
 )
 
 HARD_RIGHTS_RE = re.compile(
-    r'(?i)\b(?:'
+    r'(?i)\b(?:required|must\s+have|must\s+be|mandatory|only)\b'
+    r'(?:(?:[^.]{0,40})\b(?:'
+    r'(?:australian\s+)?citizen(?:ship)?|'
+    r'(?:permanent\s+resident|permanent\s+residency|PR)|'
+    r'(?:nz\s+citizen|new\s+zealand\s+citizen)'
+    r')\b)'
+    r'|'
+    r'\b(?:'
     r'(?:australian\s+)?citizen(?:ship)?|'
     r'(?:permanent\s+resident|permanent\s+residency|PR)|'
     r'(?:nz\s+citizen|new\s+zealand\s+citizen)'
     r')\b'
-    r'(?:(?:[^.]{0,40})\b(?:required|must\s+have|mandatory|only)\b)'
+    r'(?:(?:[^.]{0,40})\b(?:required|must\s+have|must\s+be|mandatory|only)\b)'
 )
 
 SOFT_RIGHTS_RE = re.compile(
@@ -234,6 +241,7 @@ def _extract_required_min_years_from_text(text: str) -> Optional[int]:
         return None
 
     hard_markers = r"(required|must have|must-have|mandatory|minimum of|at least)"
+    section_markers = r"(what we'?re looking for|requirements|qualifications|must haves|must-haves)"
 
     candidates: List[int] = []
     for m in re.finditer(rf"\b{hard_markers}\s+(\d{{1,2}})\s*(?:years?|yrs?)\b", s):
@@ -244,6 +252,11 @@ def _extract_required_min_years_from_text(text: str) -> Optional[int]:
 
     for m in re.finditer(rf"\b{hard_markers}\b.*\b(\d{{1,2}})\s*(?:years?|yrs?)\b", s):
         candidates.append(int(m.group(2)))
+
+    if not candidates and re.search(rf"\b{section_markers}\b", s):
+        fallback = _extract_min_years_from_text(s)
+        if fallback is not None:
+            candidates.append(fallback)
 
     if not candidates:
         return None
