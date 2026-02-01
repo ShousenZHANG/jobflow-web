@@ -47,7 +47,42 @@ EXCLUDE_CLEARANCE_RE = re.compile(
 )
 
 EXCLUDE_SPONSORSHIP_RE = re.compile(
-    r'(?i)\b(?:sponsorship\s+not\s+available|no\s+sponsorship)\b'
+    r'(?i)\b(?:'
+    r'sponsorship\s+not\s+available|'
+    r'sponsorship\s+unavailable|'
+    r'no\s+sponsorship|'
+    r'no\s+visa\s+sponsorship|'
+    r'will\s+not\s+sponsor|'
+    r'cannot\s+sponsor|'
+    r'unable\s+to\s+sponsor|'
+    r'not\s+able\s+to\s+sponsor'
+    r')\b'
+)
+
+HARD_CLEARANCE_RE = re.compile(
+    r'(?i)\b(?:baseline\s+clearance|NV1|NV2|security\s+clearance)\b'
+    r'(?:(?:[^.]{0,40})\b(?:required|must\s+have|mandatory|only)\b)'
+)
+
+SOFT_CLEARANCE_RE = re.compile(
+    r'(?i)\b(?:baseline\s+clearance|NV1|NV2|security\s+clearance)\b'
+    r'(?:(?:[^.]{0,40})\b(?:preferred|nice\s+to\s+have|bonus|a\s+plus)\b)'
+)
+
+HARD_RIGHTS_RE = re.compile(
+    r'(?i)\b(?:'
+    r'(?:australian\s+)?citizen(?:ship)?|'
+    r'(?:permanent\s+resident|permanent\s+residency|PR)|'
+    r'(?:nz\s+citizen|new\s+zealand\s+citizen)'
+    r')\b'
+    r'(?:(?:[^.]{0,40})\b(?:required|must\s+have|mandatory|only)\b)'
+)
+
+SOFT_RIGHTS_RE = re.compile(
+    r'(?i)\b(?:'
+    r'(?:citizen|citizenship|permanent\s+resident|permanent\s+residency|PR|nz\s+citizen|new\s+zealand\s+citizen)'
+    r')\b'
+    r'(?:(?:[^.]{0,40})\b(?:welcome|eligible|encouraged)\b)'
 )
 
 
@@ -186,6 +221,35 @@ def _extract_min_years_from_text(text: str) -> Optional[int]:
     return min(candidates)
 
 
+def _extract_required_min_years_from_text(text: str) -> Optional[int]:
+    if not text:
+        return None
+    s = str(text).lower()
+    s = s.replace("\u2013", "-").replace("\u2014", "-")
+    s = s.replace("\uff0b", "+")
+    s = re.sub(r"\s+", " ", s)
+
+    # Skip soft qualifiers
+    if re.search(r"\b(preferred|nice to have|nice-to-have|bonus|plus|desired|a plus)\b", s):
+        return None
+
+    hard_markers = r"(required|must have|must-have|mandatory|minimum of|at least)"
+
+    candidates: List[int] = []
+    for m in re.finditer(rf"\b{hard_markers}\s+(\d{{1,2}})\s*(?:years?|yrs?)\b", s):
+        candidates.append(int(m.group(2)))
+
+    for m in re.finditer(rf"\b(\d{{1,2}})\s*\+\s*(?:years?|yrs?)\b.*\b{hard_markers}\b", s):
+        candidates.append(int(m.group(1)))
+
+    for m in re.finditer(rf"\b{hard_markers}\b.*\b(\d{{1,2}})\s*(?:years?|yrs?)\b", s):
+        candidates.append(int(m.group(2)))
+
+    if not candidates:
+        return None
+    return min(candidates)
+
+
 def filter_description(
     df: pd.DataFrame,
     exclude_rights: bool,
@@ -198,18 +262,24 @@ def filter_description(
     desc = df["description"].fillna("")
     if exclude_years:
         thresholds = sorted(set(int(y) for y in exclude_years))
-        min_years = desc.apply(_extract_min_years_from_text)
+        min_years = desc.apply(_extract_required_min_years_from_text)
         years = min_years.apply(lambda v: v is not None and any(v >= y for y in thresholds))
         matched_years_count = int(years.sum())
     else:
         years = pd.Series(False, index=desc.index)
         matched_years_count = 0
-    rights = desc.str.contains(EXCLUDE_RIGHTS_RE, na=False) if exclude_rights else pd.Series(False, index=desc.index)
-    clearance = (
-        desc.str.contains(EXCLUDE_CLEARANCE_RE, na=False)
-        if exclude_clearance
-        else pd.Series(False, index=desc.index)
-    )
+    if exclude_rights:
+        hard_rights = desc.str.contains(HARD_RIGHTS_RE, na=False)
+        soft_rights = desc.str.contains(SOFT_RIGHTS_RE, na=False)
+        rights = hard_rights & ~soft_rights
+    else:
+        rights = pd.Series(False, index=desc.index)
+    if exclude_clearance:
+        hard_clearance = desc.str.contains(HARD_CLEARANCE_RE, na=False)
+        soft_clearance = desc.str.contains(SOFT_CLEARANCE_RE, na=False)
+        clearance = hard_clearance & ~soft_clearance
+    else:
+        clearance = pd.Series(False, index=desc.index)
     sponsorship = (
         desc.str.contains(EXCLUDE_SPONSORSHIP_RE, na=False)
         if exclude_sponsorship
@@ -243,29 +313,18 @@ def _clean_description_text(text: str) -> str:
     if not text:
         return ""
     s = str(text)
-    # Normalize punctuation and separators for consistent matching
-    s = s.replace("–", "-").replace("—", "-")
-    s = s.replace("＋", "+").replace("﹢", "+")
-    s = s.replace("：", ":")
-    # Remove common escape backslashes (e.g., "2\+")
+    # Lightweight cleanup: remove HTML and normalize common escape artifacts
+    s = s.replace("\u2013", "-").replace("\u2014", "-")
+    s = s.replace("\uff0b", "+").replace("\uff1a", ":")
     s = s.replace("\\+", "+").replace("\\-", "-").replace("\\&", "&")
     s = s.replace("\\/", "/").replace("\\(", "(").replace("\\)", ")")
     s = s.replace("\\_", "_").replace("\\*", "*").replace("\\#", "#")
     s = s.replace("\\'", "'").replace('\\"', '"')
-    # Drop stray backslashes that remain
     s = s.replace("\\", "")
-    # Remove HTML tags
     s = re.sub(r"<[^>]+>", " ", s)
-    # Remove markdown emphasis and headers
-    s = re.sub(r"[*_`#]{1,}", "", s)
-    # Normalize bullets and separators
-    s = re.sub(r"\s*[•·]\s*", "\n- ", s)
-    s = re.sub(r"\s*-\s*", "\n- ", s)
-    # Collapse whitespace and blank lines
     s = re.sub(r"[ \t\r\f\v]+", " ", s)
     s = re.sub(r"\n\s*\n+", "\n\n", s)
-    s = s.strip()
-    return s
+    return s.strip()
 
 
 def clean_description(df: pd.DataFrame) -> pd.DataFrame:

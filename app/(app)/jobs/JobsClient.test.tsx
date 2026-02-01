@@ -153,5 +153,53 @@ describe("JobsClient", () => {
     expect(undoButtons.length).toBeGreaterThan(0);
   });
 
+  it("renders markdown with SaaS-style headings and lists", async () => {
+    const markdown = "## Requirements\n\n- Ownership\n\n> Note";
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?limit=50")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs?")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (
+        url.startsWith("/api/jobs/") &&
+        (!init || !init.method || init.method === "GET")
+      ) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: markdown }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+
+    vi.stubGlobal("fetch", mockFetch);
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Job Description").length).toBeGreaterThan(0);
+    });
+    const heading = await screen.findByRole(
+      "heading",
+      { name: "Requirements" },
+      { timeout: 3000 },
+    );
+    expect(heading).toHaveClass("text-base", "font-semibold", "text-slate-900");
+
+    const listItem = await screen.findByText("Ownership");
+    expect(listItem.closest("li")).toHaveClass("text-sm", "text-slate-700");
+
+    const quote = await screen.findByText("Note");
+    expect(quote.closest("blockquote")).toHaveClass("border-l-2");
+  });
+
   
 });

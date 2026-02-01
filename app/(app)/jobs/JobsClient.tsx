@@ -586,6 +586,25 @@ export function JobsClient({
     return new RegExp(`(${patterns.join("|")})`, "i");
   }, []);
 
+  const markdownStyles = useMemo(
+    () => ({
+      heading: "text-base font-semibold text-slate-900",
+      subheading: "text-sm font-semibold text-slate-900",
+      paragraph: "text-sm leading-7 text-slate-700",
+      list: "list-disc space-y-1 pl-5 text-sm text-slate-700",
+      listOrdered: "list-decimal space-y-1 pl-5 text-sm text-slate-700",
+      listItem: "text-sm leading-7 text-slate-700",
+      blockquote: "border-l-2 border-slate-200 bg-slate-50/60 px-4 py-2 text-sm text-slate-700",
+      codeInline: "rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800",
+      pre: "rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 overflow-auto",
+      link: "text-emerald-700 underline-offset-4 hover:underline",
+      table: "w-full border-collapse text-sm",
+      th: "border border-slate-200 bg-slate-50 px-3 py-2 text-left font-semibold text-slate-900",
+      td: "border border-slate-200 px-3 py-2 text-slate-700",
+    }),
+    [],
+  );
+
   function highlightText(text: string) {
     const parts = text.split(highlightRegex);
     return parts.map((part, index) => {
@@ -1010,26 +1029,53 @@ export function JobsClient({
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeHighlight]}
                             components={{
+                              h2: ({ children }) => (
+                                <h2 className={markdownStyles.heading}>{renderHighlighted(children)}</h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className={markdownStyles.subheading}>{renderHighlighted(children)}</h3>
+                              ),
                               p: ({ children }) => (
-                                <p className="text-sm leading-7 text-slate-800">
+                                <p className={markdownStyles.paragraph}>
                                   {renderHighlighted(children)}
                                 </p>
                               ),
+                              ul: ({ children }) => (
+                                <ul className={markdownStyles.list}>{children}</ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className={markdownStyles.listOrdered}>{children}</ol>
+                              ),
                               li: ({ children }) => (
-                                <li className="text-sm leading-7 text-slate-800">
+                                <li className={markdownStyles.listItem}>
                                   {renderHighlighted(children)}
                                 </li>
+                              ),
+                              blockquote: ({ children }) => (
+                                <blockquote className={markdownStyles.blockquote}>{children}</blockquote>
                               ),
                               strong: ({ children }) => (
                                 <strong className="font-semibold text-slate-900">
                                   {renderHighlighted(children)}
                                 </strong>
                               ),
-                              code: ({ children }) => (
-                                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">
+                              a: ({ href, children }) => (
+                                <a href={href} className={markdownStyles.link} target="_blank" rel="noreferrer">
                                   {children}
-                                </code>
+                                </a>
                               ),
+                              pre: ({ children }) => <pre className={markdownStyles.pre}>{children}</pre>,
+                              code: ({ inline, className, children }) =>
+                                inline ? (
+                                  <code className={markdownStyles.codeInline}>{children}</code>
+                                ) : (
+                                  <code className={className}>{children}</code>
+                                ),
+                              table: ({ children }) => (
+                                <table className={markdownStyles.table}>{children}</table>
+                              ),
+                              th: ({ children }) => <th className={markdownStyles.th}>{children}</th>,
+                              td: ({ children }) => <td className={markdownStyles.td}>{children}</td>,
                             }}
                           >
                             {selectedDescription}

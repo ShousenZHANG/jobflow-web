@@ -58,6 +58,125 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Software Engineer")
 
+    def test_filter_description_only_drops_hard_required_years(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "title": "Software Engineer",
+                    "description": "Minimum of 5 years of experience is required.",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Frontend Engineer",
+                    "description": "5+ years experience preferred.",
+                    "company": "Beta",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        out = rj.filter_description(
+            df,
+            exclude_rights=False,
+            exclude_clearance=False,
+            exclude_sponsorship=False,
+            exclude_years=[5],
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
+
+    def test_filter_description_only_drops_hard_rights_requirement(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "title": "Software Engineer",
+                    "description": "Australian citizen required for this role.",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Frontend Engineer",
+                    "description": "Australian citizens and PR welcome to apply.",
+                    "company": "Beta",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        out = rj.filter_description(
+            df,
+            exclude_rights=True,
+            exclude_clearance=False,
+            exclude_sponsorship=False,
+            exclude_years=None,
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
+
+    def test_filter_description_only_drops_hard_clearance_requirement(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "title": "Software Engineer",
+                    "description": "Baseline clearance required.",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Frontend Engineer",
+                    "description": "Security clearance preferred.",
+                    "company": "Beta",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        out = rj.filter_description(
+            df,
+            exclude_rights=False,
+            exclude_clearance=True,
+            exclude_sponsorship=False,
+            exclude_years=None,
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
+
+    def test_filter_description_only_drops_hard_sponsorship_requirement(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "title": "Software Engineer",
+                    "description": "Sponsorship not available for this role.",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Frontend Engineer",
+                    "description": "Sponsorship may be available for the right candidate.",
+                    "company": "Beta",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        out = rj.filter_description(
+            df,
+            exclude_rights=False,
+            exclude_clearance=False,
+            exclude_sponsorship=True,
+            exclude_years=None,
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
+
+    def test_clean_description_lightweight_preserves_structure(self):
+        raw = "<p>Minimum of 5 years required.</p> Must-have: Python."
+        cleaned = rj._clean_description_text(raw)
+        self.assertIn("Minimum of 5 years required.", cleaned)
+        self.assertIn("Must-have: Python.", cleaned)
+        self.assertNotIn("<p>", cleaned)
+
 
 if __name__ == "__main__":
     unittest.main()
