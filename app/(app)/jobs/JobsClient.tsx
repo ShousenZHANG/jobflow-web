@@ -1065,12 +1065,14 @@ export function JobsClient({
                                 </a>
                               ),
                               pre: ({ children }) => <pre className={markdownStyles.pre}>{children}</pre>,
-                              code: ({ inline, className, children }) =>
-                                inline ? (
+                              code: ({ className, children }) => {
+                                const isInline = !className;
+                                return isInline ? (
                                   <code className={markdownStyles.codeInline}>{children}</code>
                                 ) : (
                                   <code className={className}>{children}</code>
-                                ),
+                                );
+                              },
                               table: ({ children }) => (
                                 <table className={markdownStyles.table}>{children}</table>
                               ),
