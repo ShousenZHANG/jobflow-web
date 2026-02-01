@@ -551,6 +551,7 @@ export function JobsClient({
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => resultsViewportRef.current,
+    getItemKey: (index) => items[index]?.id ?? index,
     estimateSize: () => 120,
     overscan: 6,
     measureElement: (el) => el.getBoundingClientRect().height,
