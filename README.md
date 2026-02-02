@@ -120,4 +120,4 @@ If you deploy from a subdirectory, set Vercel’s root to `jobflow`.
 
 ## License
 
-Private/internal use unless stated otherwise.
+Licensed under the Apache License, Version 2.0. See `LICENSE` and `NOTICE`.

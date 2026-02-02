@@ -45,6 +45,8 @@ model User {
   fetchRuns     FetchRun[]
   deletedJobUrls DeletedJobUrl[]
   dailyCheckins DailyCheckin[]
+  resumeProfiles ResumeProfile[]
+  applications  Application[]
 }
 
 model Account {
@@ -171,4 +173,53 @@ model FetchRun {
 
   @@index([userId, createdAt])
   @@index([userId, status])
+}
+
+model ResumeProfile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  summary   String?
+  skills    Json?
+
+  latestRoleTitle    String?
+  latestCompany      String?
+  latestLocation     String?
+  latestStart        String?
+  latestEnd          String?
+  latestBullets      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications Application[]
+
+  @@index([userId, updatedAt])
+}
+
+model Application {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId     String?  @db.Uuid
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  resumeProfileId String? @db.Uuid
+  resumeProfile   ResumeProfile? @relation(fields: [resumeProfileId], references: [id], onDelete: SetNull)
+
+  company   String?
+  role      String?
+
+  resumeTexUrl String?
+  resumePdfUrl String?
+  coverTexUrl  String?
+  coverPdfUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, jobId])
+  @@index([userId, createdAt])
 }
