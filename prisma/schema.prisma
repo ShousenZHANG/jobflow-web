@@ -184,13 +184,7 @@ model ResumeProfile {
 
   summary   String?
   skills    Json?
-
-  latestRoleTitle    String?
-  latestCompany      String?
-  latestLocation     String?
-  latestStart        String?
-  latestEnd          String?
-  latestBullets      Json?
+  experiences Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

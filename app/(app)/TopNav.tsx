@@ -13,6 +13,7 @@ export function TopNav() {
   const links = [
     { href: "/jobs", label: "Jobs" },
     { href: "/fetch", label: "Fetch" },
+    { href: "/resume", label: "Resume" },
   ];
 
   return (

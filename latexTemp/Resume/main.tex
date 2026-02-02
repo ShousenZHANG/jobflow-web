@@ -1,0 +1,245 @@
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot, 
+    top=1.5 cm, 
+    bottom=1.5 cm, 
+    left=1.5 cm, 
+    right=1.5 cm, 
+    footskip=1.0 cm, 
+]{geometry}
+\usepackage{titlesec} 
+\usepackage{tabularx} 
+\usepackage{array} 
+\usepackage[dvipsnames]{xcolor} 
+\usepackage{enumitem} 
+\usepackage{fontawesome5} 
+\usepackage{amsmath} 
+\usepackage{changepage} 
+\usepackage{paracol} 
+\usepackage{needspace} 
+\usepackage{iftex}
+
+
+% template note
+% template note
+\definecolor{primaryColor}{RGB}{0, 79, 144}
+
+% template note
+\usepackage[
+    pdftitle={{CANDIDATE_NAME}} Resume,
+    pdfauthor={{CANDIDATE_NAME}},
+    colorlinks=true,
+    urlcolor=primaryColor,
+    linkcolor=primaryColor,
+    citecolor=primaryColor,
+    pdfborder={0 0 0}
+]{hyperref}
+
+
+\usepackage[pscoord]{eso-pic} % for floating text on the page
+\usepackage{calc} % for calculating lengths
+\usepackage{bookmark} % for bookmarks
+\usepackage{lastpage} % for getting the total number of pages
+\usepackage{ifthen} % for conditional statements
+
+% template note
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    \usepackage[T1]{fontenc}
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+\usepackage{charter} % template note
+
+% template note
+\raggedright
+\AtBeginEnvironment{adjustwidth}{\partopsep0pt} 
+\pagestyle{empty} 
+\setcounter{secnumdepth}{0} 
+\setlength{\parindent}{0pt} 
+\setlength{\topskip}{0pt} 
+\setlength{\columnsep}{0.10cm} 
+\pagenumbering{gobble}
+
+% template note
+\titleformat{\section}{\needspace{2\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{0.2pt}\titlerule]
+\titlespacing{\section}{-1pt}{0.2cm}{0.1cm}
+
+% template note
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$} 
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=2pt,
+        parsep=0pt,
+        partopsep=0pt,
+        itemsep=2pt, 
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+}
+
+
+\newenvironment{highlightsforbulletentries}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights for bullet entries
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{
+        0 cm + 0.00001 cm
+    }{
+        0 cm + 0.00001 cm
+    }
+}{
+    \end{adjustwidth}
+} % new environment for one column entries
+
+\newenvironment{twocolentry}[2][]{
+    \onecolentry
+    \def\secondColumn{#2}
+    \setcolumnwidth{\fill, 4.5 cm}
+    \begin{paracol}{2}
+}{
+    \switchcolumn \raggedleft \secondColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for two column entries
+
+\newenvironment{threecolentry}[3][]{
+    \onecolentry
+    \def\thirdColumn{#3}
+    \setcolumnwidth{, \fill, 4.5 cm}
+    \begin{paracol}{3}
+    {\raggedright #2} \switchcolumn
+}{
+    \switchcolumn \raggedleft \thirdColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for three column entries
+
+\newenvironment{header}{
+    \setlength{\topsep}{0pt}\par\kern\topsep\centering\linespread{1.08}
+}{
+    \par\kern\topsep
+} % new environment for the header
+
+\newcommand{\placelastupdatedtext}{% \placetextbox{<horizontal pos>}{<vertical pos>}{<stuff>}
+  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
+    \put(
+        \LenToUnit{\paperwidth-2 cm-0 cm+0.05cm},
+        \LenToUnit{\paperheight-1.0 cm}
+    ){\vtop{{\null}\makebox[0pt][c]{
+        \small\color{gray}\textit{{LAST_UPDATED}}\hspace{\widthof{{LAST_UPDATED}}}
+    }}%
+  }%
+}%
+
+% save the original href command in a new command:
+\let\hrefWithoutArrow\href
+
+% new command for external links:
+% template note
+\usepackage[stretch=10,shrink=10]{microtype} % template note
+\setlength{\parskip}{0pt}                    % template note
+\setlength{\columnsep}{0.08cm}               % template note
+% template note
+\usepackage{enumitem}
+\setlist{nosep, leftmargin=10pt, itemsep=0pt, topsep=2pt, parsep=0pt, partopsep=0pt}
+
+% template note
+\titleformat{\section}{\needspace{2\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{0.2pt}\titlerule]
+\titlespacing{\section}{-1pt}{0.18cm}{0.08cm} % template note
+
+% template note
+% template note
+\makeatletter
+\def\setRightColWidth{4.1 cm}
+\makeatother
+
+
+\begin{document}
+    \newcommand{\AND}{\unskip
+        \cleaders\copy\ANDbox\hskip\wd\ANDbox
+        \ignorespaces
+    }
+    \newsavebox\ANDbox
+    \sbox\ANDbox{$|$}
+
+
+
+% template note
+\begin{header}
+    \fontsize{22 pt}{22 pt}\selectfont {{CANDIDATE_NAME}}
+
+    \vspace{5 pt}
+
+    \normalsize
+    \mbox{\textbf{ {{CANDIDATE_TITLE}} }}%
+    \kern 5.0 pt%
+    \AND%
+    \kern 5.0 pt%
+    \mbox{\href{mailto:{{CANDIDATE_EMAIL}}}{{CANDIDATE_EMAIL}}}%
+    \kern 5.0 pt%
+    \AND%
+    \kern 5.0 pt%
+    \mbox{ {{CANDIDATE_PHONE}} }%
+    \\[3pt]
+    \mbox{\href{ {{CANDIDATE_LINKEDIN_URL}} }{ {{CANDIDATE_LINKEDIN_TEXT}} }}%
+    \kern 5.0 pt%
+    \AND%
+    \kern 5.0 pt%
+    \mbox{\href{ {{CANDIDATE_GITHUB_URL}} }{ {{CANDIDATE_GITHUB_TEXT}} }}%
+    \kern 5.0 pt%
+    \AND%
+    \kern 5.0 pt%
+    \mbox{\href{ {{CANDIDATE_WEBSITE_URL}} }{ {{CANDIDATE_WEBSITE_TEXT}} }}%
+\end{header}
+
+    \vspace{5 pt - 0.3 cm}
+
+
+\input{sections/summary.tex}
+
+\section{Professional Experience}
+\vspace{0.1cm}
+
+\input{sections/experience.tex}
+
+
+\section{Open Source Projects}
+\vspace{0.1cm}
+
+{{OPEN_SOURCE_PROJECTS}}
+
+\section{Education}
+\vspace{0.1cm}
+
+\begin{twocolentry}{
+    {{EDU1_LOCATION}} \\ {{EDU1_DATES}}
+}
+  \textbf{{EDU1_SCHOOL_DEGREE}} \\
+  \textit{{EDU1_DETAIL}}
+\end{twocolentry}
+\vspace{0.1cm}
+\begin{twocolentry}{
+    {{EDU2_LOCATION}} \\ {{EDU2_DATES}}
+}
+  \textbf{{EDU2_SCHOOL_DEGREE}}
+\end{twocolentry}
+
+\input{sections/skills.tex}
+
+\end{document}
+
+

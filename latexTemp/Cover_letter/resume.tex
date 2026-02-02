@@ -1,0 +1,98 @@
+\documentclass[11pt,a4paper]{article}
+
+% ===================== Layout =====================
+\usepackage[margin=1.6cm]{geometry}
+\usepackage{setspace}
+\usepackage{ragged2e}
+
+\setstretch{1.08}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+% ===================== Prevent bad hyphenation =====================
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\emergencystretch=2em
+
+% ===================== Links & Icons =====================
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+
+% ===================== Footer =====================
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\rfoot{\color{gray}\small Page \thepage\ of 1}
+
+% ===================== Fonts =====================
+\usepackage{fontspec}
+\definecolor{PrimaryBlue}{RGB}{0,79,144}
+
+\IfFontExistsTF{Source Sans Pro}{
+  \setmainfont{Source Sans Pro}[
+    UprightFont = * Regular,
+    BoldFont    = * Semibold,
+    ItalicFont  = * Italic
+  ]
+}{
+  \setmainfont{TeX Gyre Heros}
+}
+
+% ===================== AU-style date (e.g., 12 January 2026) =====================
+\makeatletter
+\renewcommand{\today}{%
+  \number\day\space
+  \ifcase\month\or
+  January\or February\or March\or April\or May\or June\or
+  July\or August\or September\or October\or November\or December\fi
+  \space \number\year}
+\makeatother
+
+
+% ===================== Load replaceable content =====================
+\input{content}
+
+\begin{document}
+\RaggedRight
+
+% ===================== Header =====================
+\begin{center}
+  {\Huge \textbf{\CandidateName}}\\[-2pt]
+  {\Large \textcolor{PrimaryBlue}{\CandidateTitle}}\\[8pt]
+  \small
+  \faPhone\ \CandidatePhone \quad
+  \faEnvelope\ \href{mailto:\CandidateEmail}{\CandidateEmail} \quad
+  \faLinkedin\ \href{\CandidateLinkedInUrl}{\CandidateLinkedInText}
+\end{center}
+
+\vspace{6pt}
+{\color{PrimaryBlue}\hrule}
+\vspace{14pt}
+
+% ===================== Meta =====================
+\textbf{Date:} \LetterDate
+
+\vspace{4pt}
+\textbf{Subject: Application for \RoleTitle}
+
+\vspace{12pt}
+Dear \HiringSalutation,
+
+% ===================== Cover Letter =====================
+
+\ParagraphOne
+
+\ParagraphTwo
+
+\ParagraphThree
+
+Thank you for your time and consideration. I would welcome the opportunity to discuss how my experience and approach can support \CompanyName's product and engineering goals.
+
+\vspace{10pt}
+Yours sincerely,\\
+\textbf{\CandidateName}
+
+\end{document}
