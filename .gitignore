@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ensure server code is tracked even with global ignores
+!lib/
+!lib/server/
+!lib/server/**/*.ts
