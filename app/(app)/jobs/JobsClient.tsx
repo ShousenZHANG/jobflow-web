@@ -267,9 +267,10 @@ export function JobsClient({
   }, []);
 
   useEffect(() => {
+    const pendingDeletes = pendingDeleteRef.current;
     return () => {
-      pendingDeleteRef.current.forEach((pending) => clearTimeout(pending.timeoutId));
-      pendingDeleteRef.current.clear();
+      pendingDeletes.forEach((pending) => clearTimeout(pending.timeoutId));
+      pendingDeletes.clear();
     };
   }, []);
 
@@ -442,7 +443,7 @@ export function JobsClient({
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to delete job");
     },
-    onError: (e, _id) => {
+    onError: (e) => {
       setError(getErrorMessage(e, "Failed to delete job"));
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       toast({

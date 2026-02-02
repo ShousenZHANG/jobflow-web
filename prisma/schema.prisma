@@ -103,6 +103,8 @@ model Job {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  applications Application[]
+
   @@unique([userId, jobUrl])
   @@index([userId, createdAt])
   @@index([userId, updatedAt])
