@@ -94,6 +94,13 @@ function renderExperiences(entries: ExperienceEntry[]) {
     .join("\n");
 }
 
+function sanitizeRendered(tex: string) {
+  return tex
+    .replace(/[\uD800-\uDFFF]/g, "")
+    .replace(/\uFFFD/g, "")
+    .replace(/[\u{1F000}-\u{10FFFF}]/gu, "");
+}
+
 export function renderResumeTex(input: RenderResumeInput) {
   const main = readTemplate("main.tex");
   const summary = readTemplate(path.join("sections", "summary.tex"));
@@ -137,5 +144,5 @@ export function renderResumeTex(input: RenderResumeInput) {
     .replace("\\input{sections/skills.tex}", skillsRendered)
     .replace("\\input{sections/experience.tex}", experienceRendered);
 
-  return rendered;
+  return sanitizeRendered(rendered);
 }
