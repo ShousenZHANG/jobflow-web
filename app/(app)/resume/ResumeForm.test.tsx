@@ -93,4 +93,16 @@ describe("ResumeForm", () => {
     const bulletInputs = screen.getAllByLabelText("Experience bullet");
     expect(bulletInputs.length).toBe(2);
   });
+
+  it("disables generate pdf when no saved profile", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
+    );
+
+    render(<ResumeForm />);
+
+    const buttons = await screen.findAllByRole("button", { name: "Generate PDF" });
+    buttons.forEach((button) => expect(button).toBeDisabled());
+  });
 });

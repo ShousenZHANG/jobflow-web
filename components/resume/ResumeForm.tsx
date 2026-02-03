@@ -119,6 +119,8 @@ export function ResumeForm() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [hasSavedProfile, setHasSavedProfile] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
   const [links, setLinks] = useState<ResumeLink[]>(defaultLinks);
@@ -137,6 +139,7 @@ export function ResumeForm() {
       if (!active) return;
       const profile = json.profile as ResumeProfilePayload | null;
       if (!profile) return;
+      setHasSavedProfile(true);
 
       setBasics(profile.basics ?? emptyBasics);
 
@@ -500,10 +503,40 @@ export function ResumeForm() {
       return;
     }
 
+    setHasSavedProfile(true);
     toast({
       title: "Saved",
       description: "Your master resume has been updated.",
     });
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/resume-pdf", { method: "POST" });
+      if (!res.ok) throw new Error("PDF_FAILED");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      const dateStamp = new Date().toISOString().slice(0, 10);
+      const safeName = basics.fullName.trim() || "resume";
+      anchor.download = `resume-${safeName}-${dateStamp}.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      toast({
+        title: "Resume ready",
+        description: "Your PDF has been downloaded.",
+      });
+    } catch {
+      toast({
+        title: "Download failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const renderStep = () => {
@@ -1145,6 +1178,14 @@ export function ResumeForm() {
             </div>
           ) : null}
         </div>
+        <Button
+          type="button"
+          onClick={handleDownload}
+          disabled={!hasSavedProfile || downloading}
+          className="edu-cta edu-cta--press w-full"
+        >
+          {downloading ? "Generating..." : "Generate PDF"}
+        </Button>
       </aside>
     </div>
   );
