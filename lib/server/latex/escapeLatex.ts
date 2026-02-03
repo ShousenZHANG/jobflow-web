@@ -8,7 +8,16 @@ export function escapeLatex(value: string) {
     .replace(/\uFFFD/g, "")
     .replace(/[\u{1F000}-\u{10FFFF}]/gu, "");
 
-  return normalized
+  const asciiSafe = normalized
+    .replace(/\u00A0/g, " ")
+    .replace(/\u2014/g, "--")
+    .replace(/\u2013/g, "-")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, "\"")
+    .replace(/\u2026/g, "...")
+    .replace(/\u2022/g, "-");
+
+  return asciiSafe
     .replace(/\\/g, "\\\\")
     .replace(/&/g, "\\&")
     .replace(/%/g, "\\%")
