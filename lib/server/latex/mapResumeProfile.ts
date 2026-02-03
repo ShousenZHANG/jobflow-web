@@ -1,4 +1,4 @@
-import type { ResumeProfile } from "@/lib/generated/prisma";
+ï»¿import type { ResumeProfile } from "@/lib/generated/prisma";
 import { escapeLatex } from "./escapeLatex";
 
 type NullableRecord = Record<string, unknown> | null | undefined;
@@ -74,15 +74,16 @@ export function mapResumeProfile(profile: ResumeProfile) {
       edu1Location: escapeLatex(toStringValue((edu1 as Record<string, unknown>).location)),
       edu1Dates: escapeLatex(toStringValue((edu1 as Record<string, unknown>).dates)),
       edu1SchoolDegree:
-        `${escapeLatex(toStringValue((edu1 as Record<string, unknown>).school))} ¡ª ` +
+        `${escapeLatex(toStringValue((edu1 as Record<string, unknown>).school))} â€” ` +
         escapeLatex(toStringValue((edu1 as Record<string, unknown>).degree)),
       edu1Detail: escapeLatex(toStringValue((edu1 as Record<string, unknown>).details)),
       edu2Location: escapeLatex(toStringValue((edu2 as Record<string, unknown>).location)),
       edu2Dates: escapeLatex(toStringValue((edu2 as Record<string, unknown>).dates)),
       edu2SchoolDegree:
-        `${escapeLatex(toStringValue((edu2 as Record<string, unknown>).school))} ¡ª ` +
+        `${escapeLatex(toStringValue((edu2 as Record<string, unknown>).school))} â€” ` +
         escapeLatex(toStringValue((edu2 as Record<string, unknown>).degree)),
     },
     openSourceProjects: projectBlocks || "",
   };
 }
+

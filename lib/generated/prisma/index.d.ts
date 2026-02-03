@@ -11120,8 +11120,12 @@ export namespace Prisma {
     id: number
     userId: number
     summary: number
+    basics: number
+    links: number
     skills: number
     experiences: number
+    projects: number
+    education: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -11148,8 +11152,12 @@ export namespace Prisma {
     id?: true
     userId?: true
     summary?: true
+    basics?: true
+    links?: true
     skills?: true
     experiences?: true
+    projects?: true
+    education?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -11231,8 +11239,12 @@ export namespace Prisma {
     id: string
     userId: string
     summary: string | null
+    basics: JsonValue | null
+    links: JsonValue | null
     skills: JsonValue | null
     experiences: JsonValue | null
+    projects: JsonValue | null
+    education: JsonValue | null
     createdAt: Date
     updatedAt: Date
     _count: ResumeProfileCountAggregateOutputType | null
@@ -11258,8 +11270,12 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     summary?: boolean
+    basics?: boolean
+    links?: boolean
     skills?: boolean
     experiences?: boolean
+    projects?: boolean
+    education?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11271,8 +11287,12 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     summary?: boolean
+    basics?: boolean
+    links?: boolean
     skills?: boolean
     experiences?: boolean
+    projects?: boolean
+    education?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11282,8 +11302,12 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     summary?: boolean
+    basics?: boolean
+    links?: boolean
     skills?: boolean
     experiences?: boolean
+    projects?: boolean
+    education?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11293,13 +11317,17 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     summary?: boolean
+    basics?: boolean
+    links?: boolean
     skills?: boolean
     experiences?: boolean
+    projects?: boolean
+    education?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ResumeProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "summary" | "skills" | "experiences" | "createdAt" | "updatedAt", ExtArgs["result"]["resumeProfile"]>
+  export type ResumeProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "summary" | "basics" | "links" | "skills" | "experiences" | "projects" | "education" | "createdAt" | "updatedAt", ExtArgs["result"]["resumeProfile"]>
   export type ResumeProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     applications?: boolean | ResumeProfile$applicationsArgs<ExtArgs>
@@ -11322,8 +11350,12 @@ export namespace Prisma {
       id: string
       userId: string
       summary: string | null
+      basics: Prisma.JsonValue | null
+      links: Prisma.JsonValue | null
       skills: Prisma.JsonValue | null
       experiences: Prisma.JsonValue | null
+      projects: Prisma.JsonValue | null
+      education: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["resumeProfile"]>
@@ -11754,8 +11786,12 @@ export namespace Prisma {
     readonly id: FieldRef<"ResumeProfile", 'String'>
     readonly userId: FieldRef<"ResumeProfile", 'String'>
     readonly summary: FieldRef<"ResumeProfile", 'String'>
+    readonly basics: FieldRef<"ResumeProfile", 'Json'>
+    readonly links: FieldRef<"ResumeProfile", 'Json'>
     readonly skills: FieldRef<"ResumeProfile", 'Json'>
     readonly experiences: FieldRef<"ResumeProfile", 'Json'>
+    readonly projects: FieldRef<"ResumeProfile", 'Json'>
+    readonly education: FieldRef<"ResumeProfile", 'Json'>
     readonly createdAt: FieldRef<"ResumeProfile", 'DateTime'>
     readonly updatedAt: FieldRef<"ResumeProfile", 'DateTime'>
   }
@@ -13534,8 +13570,12 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     summary: 'summary',
+    basics: 'basics',
+    links: 'links',
     skills: 'skills',
     experiences: 'experiences',
+    projects: 'projects',
+    education: 'education',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -14351,8 +14391,12 @@ export namespace Prisma {
     id?: UuidFilter<"ResumeProfile"> | string
     userId?: UuidFilter<"ResumeProfile"> | string
     summary?: StringNullableFilter<"ResumeProfile"> | string | null
+    basics?: JsonNullableFilter<"ResumeProfile">
+    links?: JsonNullableFilter<"ResumeProfile">
     skills?: JsonNullableFilter<"ResumeProfile">
     experiences?: JsonNullableFilter<"ResumeProfile">
+    projects?: JsonNullableFilter<"ResumeProfile">
+    education?: JsonNullableFilter<"ResumeProfile">
     createdAt?: DateTimeFilter<"ResumeProfile"> | Date | string
     updatedAt?: DateTimeFilter<"ResumeProfile"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -14363,8 +14407,12 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     summary?: SortOrderInput | SortOrder
+    basics?: SortOrderInput | SortOrder
+    links?: SortOrderInput | SortOrder
     skills?: SortOrderInput | SortOrder
     experiences?: SortOrderInput | SortOrder
+    projects?: SortOrderInput | SortOrder
+    education?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -14378,8 +14426,12 @@ export namespace Prisma {
     NOT?: ResumeProfileWhereInput | ResumeProfileWhereInput[]
     userId?: UuidFilter<"ResumeProfile"> | string
     summary?: StringNullableFilter<"ResumeProfile"> | string | null
+    basics?: JsonNullableFilter<"ResumeProfile">
+    links?: JsonNullableFilter<"ResumeProfile">
     skills?: JsonNullableFilter<"ResumeProfile">
     experiences?: JsonNullableFilter<"ResumeProfile">
+    projects?: JsonNullableFilter<"ResumeProfile">
+    education?: JsonNullableFilter<"ResumeProfile">
     createdAt?: DateTimeFilter<"ResumeProfile"> | Date | string
     updatedAt?: DateTimeFilter<"ResumeProfile"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -14390,8 +14442,12 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     summary?: SortOrderInput | SortOrder
+    basics?: SortOrderInput | SortOrder
+    links?: SortOrderInput | SortOrder
     skills?: SortOrderInput | SortOrder
     experiences?: SortOrderInput | SortOrder
+    projects?: SortOrderInput | SortOrder
+    education?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ResumeProfileCountOrderByAggregateInput
@@ -14406,8 +14462,12 @@ export namespace Prisma {
     id?: UuidWithAggregatesFilter<"ResumeProfile"> | string
     userId?: UuidWithAggregatesFilter<"ResumeProfile"> | string
     summary?: StringNullableWithAggregatesFilter<"ResumeProfile"> | string | null
+    basics?: JsonNullableWithAggregatesFilter<"ResumeProfile">
+    links?: JsonNullableWithAggregatesFilter<"ResumeProfile">
     skills?: JsonNullableWithAggregatesFilter<"ResumeProfile">
     experiences?: JsonNullableWithAggregatesFilter<"ResumeProfile">
+    projects?: JsonNullableWithAggregatesFilter<"ResumeProfile">
+    education?: JsonNullableWithAggregatesFilter<"ResumeProfile">
     createdAt?: DateTimeWithAggregatesFilter<"ResumeProfile"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ResumeProfile"> | Date | string
   }
@@ -15196,8 +15256,12 @@ export namespace Prisma {
   export type ResumeProfileCreateInput = {
     id?: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutResumeProfilesInput
@@ -15208,8 +15272,12 @@ export namespace Prisma {
     id?: string
     userId: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutResumeProfileInput
@@ -15218,8 +15286,12 @@ export namespace Prisma {
   export type ResumeProfileUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutResumeProfilesNestedInput
@@ -15230,8 +15302,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutResumeProfileNestedInput
@@ -15241,8 +15317,12 @@ export namespace Prisma {
     id?: string
     userId: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -15250,8 +15330,12 @@ export namespace Prisma {
   export type ResumeProfileUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15260,8 +15344,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -16113,8 +16201,12 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     summary?: SortOrder
+    basics?: SortOrder
+    links?: SortOrder
     skills?: SortOrder
     experiences?: SortOrder
+    projects?: SortOrder
+    education?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -17470,8 +17562,12 @@ export namespace Prisma {
   export type ResumeProfileCreateWithoutUserInput = {
     id?: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationCreateNestedManyWithoutResumeProfileInput
@@ -17480,8 +17576,12 @@ export namespace Prisma {
   export type ResumeProfileUncheckedCreateWithoutUserInput = {
     id?: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutResumeProfileInput
@@ -17774,8 +17874,12 @@ export namespace Prisma {
     id?: UuidFilter<"ResumeProfile"> | string
     userId?: UuidFilter<"ResumeProfile"> | string
     summary?: StringNullableFilter<"ResumeProfile"> | string | null
+    basics?: JsonNullableFilter<"ResumeProfile">
+    links?: JsonNullableFilter<"ResumeProfile">
     skills?: JsonNullableFilter<"ResumeProfile">
     experiences?: JsonNullableFilter<"ResumeProfile">
+    projects?: JsonNullableFilter<"ResumeProfile">
+    education?: JsonNullableFilter<"ResumeProfile">
     createdAt?: DateTimeFilter<"ResumeProfile"> | Date | string
     updatedAt?: DateTimeFilter<"ResumeProfile"> | Date | string
   }
@@ -18705,8 +18809,12 @@ export namespace Prisma {
   export type ResumeProfileCreateWithoutApplicationsInput = {
     id?: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutResumeProfilesInput
@@ -18716,8 +18824,12 @@ export namespace Prisma {
     id?: string
     userId: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -18829,8 +18941,12 @@ export namespace Prisma {
   export type ResumeProfileUpdateWithoutApplicationsInput = {
     id?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutResumeProfilesNestedInput
@@ -18840,8 +18956,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -18925,8 +19045,12 @@ export namespace Prisma {
   export type ResumeProfileCreateManyUserInput = {
     id?: string
     summary?: string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19178,8 +19302,12 @@ export namespace Prisma {
   export type ResumeProfileUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUpdateManyWithoutResumeProfileNestedInput
@@ -19188,8 +19316,12 @@ export namespace Prisma {
   export type ResumeProfileUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutResumeProfileNestedInput
@@ -19198,8 +19330,12 @@ export namespace Prisma {
   export type ResumeProfileUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
+    basics?: NullableJsonNullValueInput | InputJsonValue
+    links?: NullableJsonNullValueInput | InputJsonValue
     skills?: NullableJsonNullValueInput | InputJsonValue
     experiences?: NullableJsonNullValueInput | InputJsonValue
+    projects?: NullableJsonNullValueInput | InputJsonValue
+    education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

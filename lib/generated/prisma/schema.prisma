@@ -183,8 +183,12 @@ model ResumeProfile {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   summary     String?
+  basics      Json?
+  links       Json?
   skills      Json?
   experiences Json?
+  projects    Json?
+  education   Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
