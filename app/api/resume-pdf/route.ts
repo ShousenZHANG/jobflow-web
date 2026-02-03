@@ -1,10 +1,11 @@
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
-import { compileLatexToPdf } from "@/lib/server/latex/compilePdf";
+import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 
 export const runtime = "nodejs";
@@ -62,10 +63,14 @@ const ResumeProfileSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const requestId = randomUUID();
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+    return NextResponse.json(
+      { error: { code: "UNAUTHORIZED", message: "Unauthorized" }, requestId },
+      { status: 401 },
+    );
   }
 
   const json = await req.json().catch(() => null);
@@ -74,7 +79,14 @@ export async function POST(req: Request) {
     const parsed = ResumeProfileSchema.safeParse(json);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "INVALID_BODY", details: parsed.error.flatten() },
+        {
+          error: {
+            code: "INVALID_BODY",
+            message: "Invalid request body",
+            details: parsed.error.flatten(),
+          },
+          requestId,
+        },
         { status: 400 },
       );
     }
@@ -86,12 +98,36 @@ export async function POST(req: Request) {
   }
 
   if (!sourceProfile) {
-    return NextResponse.json({ error: "NO_PROFILE" }, { status: 404 });
+    return NextResponse.json(
+      { error: { code: "NO_PROFILE", message: "Resume profile not found" }, requestId },
+      { status: 404 },
+    );
   }
 
   const input = mapResumeProfile(sourceProfile);
   const tex = renderResumeTex(input);
-  const pdf = await compileLatexToPdf(tex);
+  let pdf: Buffer;
+  try {
+    pdf = await compileLatexToPdf(tex);
+  } catch (err) {
+    if (err instanceof LatexRenderError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: err.code,
+            message: err.message,
+            details: err.details,
+          },
+          requestId,
+        },
+        { status: err.status },
+      );
+    }
+    return NextResponse.json(
+      { error: { code: "UNKNOWN_ERROR", message: "Unknown render error" }, requestId },
+      { status: 500 },
+    );
+  }
 
   const today = new Date().toISOString().slice(0, 10);
   const safeName = input.candidate.name.replace(/\s+/g, "-").toLowerCase() || "resume";
@@ -102,6 +138,7 @@ export async function POST(req: Request) {
     headers: {
       "content-type": "application/pdf",
       "content-disposition": `attachment; filename=\"${filename}\"`,
+      "x-request-id": requestId,
     },
   });
 }

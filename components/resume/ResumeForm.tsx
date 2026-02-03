@@ -125,6 +125,7 @@ export function ResumeForm() {
   const [previewStatus, setPreviewStatus] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
   );
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewAbortRef = useRef<AbortController | null>(null);
 
@@ -547,8 +548,9 @@ export function ResumeForm() {
 
       const payload = buildPayload("preview");
       setPreviewStatus("loading");
+      setPreviewError(null);
 
-      previewTimerRef.current = setTimeout(async () => {
+      const runPreview = async (attempt: number) => {
         const controller = new AbortController();
         previewAbortRef.current = controller;
         try {
@@ -558,7 +560,36 @@ export function ResumeForm() {
             body: JSON.stringify(payload),
             signal: controller.signal,
           });
-          if (!res.ok) throw new Error("PDF_FAILED");
+
+          if (!res.ok) {
+            let message = "Preview failed. Try again.";
+            let code: string | undefined;
+            if (res.headers.get("content-type")?.includes("application/json")) {
+              const json = await res.json().catch(() => null);
+              code = json?.error?.code;
+              if (code === "LATEX_RENDER_CONFIG_MISSING") {
+                message = "Preview service is not configured.";
+              } else if (code === "LATEX_RENDER_TIMEOUT") {
+                message = "Preview timed out. Retrying...";
+              } else if (code === "LATEX_RENDER_UNREACHABLE") {
+                message = "Preview service is unavailable.";
+              } else if (code === "LATEX_RENDER_FAILED") {
+                message = "Preview failed to compile.";
+              } else if (code === "NO_PROFILE") {
+                message = "Save your resume first to generate a preview.";
+              }
+            }
+
+            if (attempt === 0 && [502, 503, 504].includes(res.status)) {
+              await new Promise((resolve) => setTimeout(resolve, 1200));
+              return runPreview(1);
+            }
+
+            setPreviewError(message);
+            setPreviewStatus("error");
+            return;
+          }
+
           const blob = await res.blob();
           const url = URL.createObjectURL(blob);
           setPdfUrl((prev) => {
@@ -568,10 +599,15 @@ export function ResumeForm() {
           setPreviewStatus("ready");
         } catch (err) {
           if ((err as Error).name === "AbortError") return;
+          setPreviewError("Preview failed. Try again.");
           setPreviewStatus("error");
         } finally {
           previewAbortRef.current = null;
         }
+      };
+
+      previewTimerRef.current = setTimeout(() => {
+        runPreview(0);
       }, delayMs);
     },
     [buildPayload],
@@ -1240,8 +1276,11 @@ export function ResumeForm() {
             </div>
           ) : null}
           {previewStatus === "error" ? (
-            <div className="absolute bottom-2 right-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs text-rose-700">
-              Preview failed. Try again.
+            <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+              <span>{previewError ?? "Preview failed. Try again."}</span>
+              <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0)}>
+                Retry
+              </Button>
             </div>
           ) : null}
         </div>
