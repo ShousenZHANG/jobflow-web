@@ -1,7 +1,16 @@
-﻿import type { ResumeProfile } from "@/lib/generated/prisma";
-import { escapeLatex } from "./escapeLatex";
+﻿import { escapeLatex } from "./escapeLatex";
 
 type NullableRecord = Record<string, unknown> | null | undefined;
+
+type ResumeProfileLike = {
+  summary?: string | null;
+  basics?: NullableRecord;
+  links?: unknown;
+  skills?: unknown;
+  experiences?: unknown;
+  projects?: unknown;
+  education?: unknown;
+};
 
 function asRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object") return {};
@@ -16,7 +25,7 @@ function toStringValue(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
-export function mapResumeProfile(profile: ResumeProfile) {
+export function mapResumeProfile(profile: ResumeProfileLike) {
   const basics = asRecord(profile.basics as NullableRecord);
   const links = asArray(profile.links) as Record<string, unknown>[];
   const skills = asArray(profile.skills) as Record<string, unknown>[];
@@ -60,7 +69,7 @@ export function mapResumeProfile(profile: ResumeProfile) {
     },
     summary: escapeLatex(toStringValue(profile.summary)),
     skills: skills.map((group) => ({
-      label: escapeLatex(toStringValue(group.category)),
+      label: escapeLatex(toStringValue((group as Record<string, unknown>).category) || toStringValue((group as Record<string, unknown>).label)),
       items: asArray(group.items).map((item) => escapeLatex(toStringValue(item))),
     })),
     experiences: experiences.map((entry) => ({
@@ -86,4 +95,6 @@ export function mapResumeProfile(profile: ResumeProfile) {
     openSourceProjects: projectBlocks || "",
   };
 }
+
+
 

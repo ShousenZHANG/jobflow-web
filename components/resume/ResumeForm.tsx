@@ -1,7 +1,7 @@
 ﻿
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,7 @@ type ResumeEducation = {
 };
 
 type ResumeSkillGroup = {
-  label: string;
+  category: string;
   items: string[];
 };
 
@@ -93,7 +93,7 @@ const emptyEducation = (): ResumeEducation => ({
 });
 
 const emptySkillGroup = (): ResumeSkillGroup => ({
-  label: "",
+  category: "",
   items: [""],
 });
 
@@ -119,8 +119,13 @@ export function ResumeForm() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [hasSavedProfile, setHasSavedProfile] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [previewStatus, setPreviewStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    "idle",
+  );
+  const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewAbortRef = useRef<AbortController | null>(null);
 
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
   const [links, setLinks] = useState<ResumeLink[]>(defaultLinks);
@@ -139,7 +144,6 @@ export function ResumeForm() {
       if (!active) return;
       const profile = json.profile as ResumeProfilePayload | null;
       if (!profile) return;
-      setHasSavedProfile(true);
 
       setBasics(profile.basics ?? emptyBasics);
 
@@ -195,7 +199,7 @@ export function ResumeForm() {
 
       if (Array.isArray(profile.skills) && profile.skills.length > 0) {
         const skillGroups = profile.skills.map((group) => ({
-          label: group.label ?? "",
+          category: group.category ?? group.label ?? "",
           items:
             Array.isArray(group.items) && group.items.length > 0 ? group.items : [""],
         }));
@@ -207,6 +211,23 @@ export function ResumeForm() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (previewTimerRef.current) {
+        clearTimeout(previewTimerRef.current);
+      }
+      previewAbortRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   const isStepValid = useCallback(
     (stepIndex: number) => {
@@ -260,7 +281,7 @@ export function ResumeForm() {
       if (stepIndex === 5) {
         return (
           skills.length > 0 &&
-          skills.every((group) => hasContent(group.label) && hasBullets(group.items))
+          skills.every((group) => hasContent(group.category) && hasBullets(group.items))
         );
       }
       return false;
@@ -438,9 +459,127 @@ export function ResumeForm() {
     );
   };
 
+  const buildPayload = useCallback(
+    (mode: "preview" | "save"): ResumeProfilePayload => {
+      const cleanedLinks = links
+        .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+        .filter((link) => link.label || link.url);
+
+      const cleanedExperiences = experiences.map((entry) => ({
+        ...entry,
+        bullets: normalizeBullets(entry.bullets),
+      }));
+
+      const cleanedProjects = projects.map((entry) => ({
+        ...entry,
+        link: entry.link?.trim() ?? "",
+        bullets: normalizeBullets(entry.bullets),
+      }));
+
+      const cleanedEducation = education.map((entry) => ({
+        ...entry,
+        details: entry.details?.trim() ?? "",
+      }));
+
+      const cleanedSkills = skills.map((group) => ({
+        category: group.category.trim(),
+        items: normalizeBullets(group.items),
+      }));
+
+      const previewExperiences =
+        mode === "preview"
+          ? cleanedExperiences.filter(
+              (entry) =>
+                hasContent(entry.company) &&
+                hasContent(entry.title) &&
+                hasContent(entry.location) &&
+                hasContent(entry.dates),
+            )
+          : cleanedExperiences;
+
+      const previewProjects =
+        mode === "preview"
+          ? cleanedProjects.filter(
+              (entry) =>
+                hasContent(entry.name) &&
+                hasContent(entry.role) &&
+                hasContent(entry.dates),
+            )
+          : cleanedProjects;
+
+      const previewEducation =
+        mode === "preview"
+          ? cleanedEducation.filter(
+              (entry) =>
+                hasContent(entry.school) &&
+                hasContent(entry.degree) &&
+                hasContent(entry.dates),
+            )
+          : cleanedEducation;
+
+      const previewSkills =
+        mode === "preview"
+          ? cleanedSkills.filter(
+              (group) => hasContent(group.category) && hasBullets(group.items),
+            )
+          : cleanedSkills;
+
+      return {
+        basics,
+        links: cleanedLinks.length > 0 ? cleanedLinks : null,
+        summary: summary.trim() || null,
+        experiences: previewExperiences,
+        projects: previewProjects,
+        education: previewEducation,
+        skills: previewSkills,
+      };
+    },
+    [basics, links, summary, experiences, projects, education, skills],
+  );
+
+  const schedulePreview = useCallback(
+    (delayMs = 800) => {
+      if (previewTimerRef.current) {
+        clearTimeout(previewTimerRef.current);
+      }
+      previewAbortRef.current?.abort();
+
+      const payload = buildPayload("preview");
+      setPreviewStatus("loading");
+
+      previewTimerRef.current = setTimeout(async () => {
+        const controller = new AbortController();
+        previewAbortRef.current = controller;
+        try {
+          const res = await fetch("/api/resume-pdf", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error("PDF_FAILED");
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          setPdfUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return url;
+          });
+          setPreviewStatus("ready");
+        } catch (err) {
+          if ((err as Error).name === "AbortError") return;
+          setPreviewStatus("error");
+        } finally {
+          previewAbortRef.current = null;
+        }
+      }, delayMs);
+    },
+    [buildPayload],
+  );
+
   const handleNext = () => {
     if (!canContinue) return;
     setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    schedulePreview(0);
   };
 
   const handleBack = () => {
@@ -451,40 +590,7 @@ export function ResumeForm() {
     if (!canContinue) return;
     setSaving(true);
 
-    const cleanedLinks = links
-      .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
-      .filter((link) => link.label || link.url);
-
-    const cleanedExperiences = experiences.map((entry) => ({
-      ...entry,
-      bullets: normalizeBullets(entry.bullets),
-    }));
-
-    const cleanedProjects = projects.map((entry) => ({
-      ...entry,
-      link: entry.link?.trim() ?? "",
-      bullets: normalizeBullets(entry.bullets),
-    }));
-
-    const cleanedEducation = education.map((entry) => ({
-      ...entry,
-      details: entry.details?.trim() ?? "",
-    }));
-
-    const cleanedSkills = skills.map((group) => ({
-      label: group.label.trim(),
-      items: normalizeBullets(group.items),
-    }));
-
-    const payload: ResumeProfilePayload = {
-      basics: basics,
-      links: cleanedLinks.length > 0 ? cleanedLinks : null,
-      summary: summary.trim() || null,
-      experiences: cleanedExperiences,
-      projects: cleanedProjects,
-      education: cleanedEducation,
-      skills: cleanedSkills,
-    };
+    const payload = buildPayload("save");
 
     const res = await fetch("/api/resume-profile", {
       method: "POST",
@@ -503,27 +609,30 @@ export function ResumeForm() {
       return;
     }
 
-    setHasSavedProfile(true);
     toast({
       title: "Saved",
       description: "Your master resume has been updated.",
     });
+    schedulePreview(0);
   };
 
   const handleDownload = async () => {
+    if (!pdfUrl) {
+      toast({
+        title: "Preview not ready",
+        description: "Generate a preview before downloading.",
+        variant: "destructive",
+      });
+      return;
+    }
     setDownloading(true);
     try {
-      const res = await fetch("/api/resume-pdf", { method: "POST" });
-      if (!res.ok) throw new Error("PDF_FAILED");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
-      anchor.href = url;
+      anchor.href = pdfUrl;
       const dateStamp = new Date().toISOString().slice(0, 10);
       const safeName = basics.fullName.trim() || "resume";
       anchor.download = `resume-${safeName}-${dateStamp}.pdf`;
       anchor.click();
-      URL.revokeObjectURL(url);
       toast({
         title: "Resume ready",
         description: "Your PDF has been downloaded.",
@@ -1004,8 +1113,8 @@ export function ResumeForm() {
                 <Label htmlFor={`skill-label-${index}`}>Category</Label>
                 <Input
                   id={`skill-label-${index}`}
-                  value={group.label}
-                  onChange={(event) => updateSkillGroup(index, "label", event.target.value)}
+                    value={group.category}
+                      onChange={(event) => updateSkillGroup(index, "category", event.target.value)}
                   placeholder="Frontend"
                 />
               </div>
@@ -1048,10 +1157,6 @@ export function ResumeForm() {
       </div>
     );
   };
-
-  const previewLinks = links
-    .filter((link) => link.url.trim())
-    .map((link) => `${link.label || "Link"}: ${link.url}`);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -1099,93 +1204,46 @@ export function ResumeForm() {
       </div>
 
       <aside className="space-y-4 rounded-2xl border border-slate-900/10 bg-white/70 p-6">
-        <div>
-          <h3 className="text-sm font-semibold text-slate-900">Preview</h3>
-          <p className="text-xs text-muted-foreground">Live snapshot of your resume.</p>
-        </div>
-        <div className="space-y-4 text-sm text-slate-700">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-base font-semibold text-slate-900">{basics.fullName || "Your name"}</p>
-            <p className="text-xs text-muted-foreground">{basics.title || "Role title"}</p>
-            <div className="mt-2 space-y-1 text-xs">
-              {basics.email ? <p>{basics.email}</p> : null}
-              {basics.phone ? <p>{basics.phone}</p> : null}
-              {previewLinks.map((link) => (
-                <p key={link}>{link}</p>
-              ))}
-            </div>
+            <h3 className="text-sm font-semibold text-slate-900">PDF preview</h3>
+            <p className="text-xs text-muted-foreground">
+              Refreshes after Next or Save.
+            </p>
           </div>
-          {summary.trim() ? (
-            <div>
-              <p className="text-xs font-semibold text-slate-900">Summary</p>
-              <p className="text-xs text-slate-600">{summary.trim().slice(0, 140)}</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDownload}
+            disabled={!pdfUrl || downloading}
+          >
+            {downloading ? "Downloading..." : "Download PDF"}
+          </Button>
+        </div>
+        <div className="relative rounded-lg border border-slate-900/10 bg-white/60 p-2">
+          {pdfUrl ? (
+            <iframe
+              title="Resume preview"
+              src={pdfUrl}
+              className="h-[520px] w-full rounded-md border border-slate-900/10 bg-white"
+            />
+          ) : (
+            <div className="flex h-[520px] items-center justify-center text-xs text-muted-foreground">
+              Click Next or Save to generate a preview.
+            </div>
+          )}
+          {previewStatus === "loading" ? (
+            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/70 text-xs text-slate-500">
+              Generating preview…
             </div>
           ) : null}
-          {experiences.some((entry) => hasContent(entry.title)) ? (
-            <div>
-              <p className="text-xs font-semibold text-slate-900">Experience</p>
-              <ul className="space-y-1 text-xs text-slate-600">
-                {experiences
-                  .filter((entry) => hasContent(entry.title))
-                  .map((entry, idx) => (
-                    <li key={`preview-exp-${idx}`}>
-                      {entry.title} · {entry.company}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ) : null}
-          {projects.some((entry) => hasContent(entry.name)) ? (
-            <div>
-              <p className="text-xs font-semibold text-slate-900">Projects</p>
-              <ul className="space-y-1 text-xs text-slate-600">
-                {projects
-                  .filter((entry) => hasContent(entry.name))
-                  .map((entry, idx) => (
-                    <li key={`preview-proj-${idx}`}>
-                      {entry.name} · {entry.role}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ) : null}
-          {education.some((entry) => hasContent(entry.school)) ? (
-            <div>
-              <p className="text-xs font-semibold text-slate-900">Education</p>
-              <ul className="space-y-1 text-xs text-slate-600">
-                {education
-                  .filter((entry) => hasContent(entry.school))
-                  .map((entry, idx) => (
-                    <li key={`preview-edu-${idx}`}>
-                      {entry.school} · {entry.degree}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ) : null}
-          {skills.some((group) => hasContent(group.label)) ? (
-            <div>
-              <p className="text-xs font-semibold text-slate-900">Skills</p>
-              <ul className="space-y-1 text-xs text-slate-600">
-                {skills
-                  .filter((group) => hasContent(group.label))
-                  .map((group, idx) => (
-                    <li key={`preview-skill-${idx}`}>
-                      {group.label}: {group.items.filter(hasContent).join(", ")}
-                    </li>
-                  ))}
-              </ul>
+          {previewStatus === "error" ? (
+            <div className="absolute bottom-2 right-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs text-rose-700">
+              Preview failed. Try again.
             </div>
           ) : null}
         </div>
-        <Button
-          type="button"
-          onClick={handleDownload}
-          disabled={!hasSavedProfile || downloading}
-          className="edu-cta edu-cta--press w-full"
-        >
-          {downloading ? "Generating..." : "Generate PDF"}
-        </Button>
       </aside>
     </div>
   );

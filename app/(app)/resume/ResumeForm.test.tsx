@@ -1,6 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ResumeForm } from "@/components/resume/ResumeForm";
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("ResumeForm", () => {
   it("renders personal info step with required fields", async () => {
@@ -102,7 +107,7 @@ describe("ResumeForm", () => {
 
     render(<ResumeForm />);
 
-    const buttons = await screen.findAllByRole("button", { name: "Generate PDF" });
+    const buttons = await screen.findAllByRole("button", { name: "Download PDF" });
     buttons.forEach((button) => expect(button).toBeDisabled());
   });
 });
