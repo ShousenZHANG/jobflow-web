@@ -1,7 +1,7 @@
-
+ï»¿
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -205,58 +205,65 @@ export function ResumeForm() {
     };
   }, []);
 
-  const isStepValid = (stepIndex: number) => {
-    if (stepIndex === 0) {
-      return (
-        hasContent(basics.fullName) &&
-        hasContent(basics.title) &&
-        hasContent(basics.email) &&
-        hasContent(basics.phone)
-      );
-    }
-    if (stepIndex === 1) {
-      return hasContent(summary);
-    }
-    if (stepIndex === 2) {
-      return (
-        experiences.length > 0 &&
-        experiences.every(
-          (entry) =>
-            hasContent(entry.title) &&
-            hasContent(entry.company) &&
-            hasContent(entry.dates) &&
-            hasBullets(entry.bullets),
-        )
-      );
-    }
-    if (stepIndex === 3) {
-      return (
-        projects.length > 0 &&
-        projects.every(
-          (entry) =>
-            hasContent(entry.name) &&
-            hasContent(entry.role) &&
-            hasContent(entry.dates) &&
-            hasBullets(entry.bullets),
-        )
-      );
-    }
-    if (stepIndex === 4) {
-      return (
-        education.length > 0 &&
-        education.every(
-          (entry) => hasContent(entry.school) && hasContent(entry.degree) && hasContent(entry.dates),
-        )
-      );
-    }
-    if (stepIndex === 5) {
-      return (
-        skills.length > 0 &&
-        skills.every((group) => hasContent(group.label) && hasBullets(group.items))
-      );
-    }
-    return false;
-  };
+  const isStepValid = useCallback(
+    (stepIndex: number) => {
+      if (stepIndex === 0) {
+        return (
+          hasContent(basics.fullName) &&
+          hasContent(basics.title) &&
+          hasContent(basics.email) &&
+          hasContent(basics.phone)
+        );
+      }
+      if (stepIndex === 1) {
+        return hasContent(summary);
+      }
+      if (stepIndex === 2) {
+        return (
+          experiences.length > 0 &&
+          experiences.every(
+            (entry) =>
+              hasContent(entry.company) &&
+              hasContent(entry.title) &&
+              hasContent(entry.location) &&
+              hasContent(entry.dates) &&
+              hasBullets(entry.bullets),
+          )
+        );
+      }
+      if (stepIndex === 3) {
+        return (
+          projects.length > 0 &&
+          projects.every(
+            (entry) =>
+              hasContent(entry.name) &&
+              hasContent(entry.role) &&
+              hasContent(entry.dates) &&
+              hasBullets(entry.bullets),
+          )
+        );
+      }
+      if (stepIndex === 4) {
+        return (
+          education.length > 0 &&
+          education.every(
+            (entry) =>
+              hasContent(entry.school) &&
+              hasContent(entry.degree) &&
+              hasContent(entry.dates),
+          )
+        );
+      }
+      if (stepIndex === 5) {
+        return (
+          skills.length > 0 &&
+          skills.every((group) => hasContent(group.label) && hasBullets(group.items))
+        );
+      }
+      return false;
+    },
+    [basics, summary, experiences, projects, education, skills],
+  );
 
   const maxStep = useMemo(() => {
     let allowed = 0;
@@ -264,7 +271,7 @@ export function ResumeForm() {
       allowed += 1;
     }
     return allowed;
-  }, [basics, summary, experiences, projects, education, skills]);
+  }, [isStepValid]);
 
   const canContinue = isStepValid(currentStep);
 
@@ -1089,7 +1096,7 @@ export function ResumeForm() {
                   .filter((entry) => hasContent(entry.title))
                   .map((entry, idx) => (
                     <li key={`preview-exp-${idx}`}>
-                      {entry.title} ¡¤ {entry.company}
+                      {entry.title} Â· {entry.company}
                     </li>
                   ))}
               </ul>
@@ -1103,7 +1110,7 @@ export function ResumeForm() {
                   .filter((entry) => hasContent(entry.name))
                   .map((entry, idx) => (
                     <li key={`preview-proj-${idx}`}>
-                      {entry.name} ¡¤ {entry.role}
+                      {entry.name} Â· {entry.role}
                     </li>
                   ))}
               </ul>
@@ -1117,7 +1124,7 @@ export function ResumeForm() {
                   .filter((entry) => hasContent(entry.school))
                   .map((entry, idx) => (
                     <li key={`preview-edu-${idx}`}>
-                      {entry.school} ¡¤ {entry.degree}
+                      {entry.school} Â· {entry.degree}
                     </li>
                   ))}
               </ul>
@@ -1142,3 +1149,7 @@ export function ResumeForm() {
     </div>
   );
 }
+
+
+
+
