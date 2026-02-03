@@ -32,6 +32,8 @@ describe("resume pdf api", () => {
     resumeProfileStore.findFirst.mockReset();
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockReset();
     vi.stubGlobal("fetch", vi.fn());
+    process.env.LATEX_RENDER_URL = "https://latex.example.com/compile";
+    process.env.LATEX_RENDER_TOKEN = "test-token";
   });
 
   it("returns 404 when profile is missing", async () => {
