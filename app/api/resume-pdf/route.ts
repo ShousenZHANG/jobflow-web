@@ -133,7 +133,8 @@ export async function POST(req: Request) {
   const safeName = input.candidate.name.replace(/\s+/g, "-").toLowerCase() || "resume";
   const filename = `resume-${safeName}-${today}.pdf`;
 
-  return new NextResponse(pdf, {
+  const body = new Uint8Array(pdf);
+  return new NextResponse(body, {
     status: 200,
     headers: {
       "content-type": "application/pdf",

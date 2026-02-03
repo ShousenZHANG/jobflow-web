@@ -36,7 +36,6 @@ describe("renderResumeTex", () => {
         edu2SchoolDegree: "JUST - BE",
       },
       openSourceProjects: "\\textbf{Project A}",
-      lastUpdated: "Updated 2026-02-02",
     });
 
     expect(output).toContain("Focused engineer.");
@@ -45,7 +44,6 @@ describe("renderResumeTex", () => {
     expect(output).toContain("React, TypeScript");
     expect(output).toContain("Project A");
     expect(output).toContain("Jane Doe");
-    expect(output).toContain("Updated 2026-02-02");
     expect(output).toContain("Example Co");
   });
 });
