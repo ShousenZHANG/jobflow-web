@@ -46,6 +46,7 @@ type ResumeEducation = {
 
 type ResumeSkillGroup = {
   category: string;
+  label?: string;
   items: string[];
 };
 
