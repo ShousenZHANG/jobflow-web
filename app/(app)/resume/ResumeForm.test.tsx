@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { ResumeForm } from "@/components/resume/ResumeForm";
 
 describe("ResumeForm", () => {
-  it("renders summary, skills, and experience inputs", async () => {
+  it("renders personal info step with required fields", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
@@ -11,16 +11,17 @@ describe("ResumeForm", () => {
 
     render(<ResumeForm />);
 
-    expect(await screen.findByLabelText("Summary")).toBeInTheDocument();
-    expect(screen.getByLabelText("Skills")).toBeInTheDocument();
-    expect(screen.getByLabelText("Experience title")).toBeInTheDocument();
-    expect(screen.getByLabelText("Experience company")).toBeInTheDocument();
-    expect(screen.getByLabelText("Experience location")).toBeInTheDocument();
-    expect(screen.getByLabelText("Experience dates")).toBeInTheDocument();
-    expect(screen.getByLabelText("Experience bullets")).toBeInTheDocument();
+    expect(await screen.findByText("Personal info")).toBeInTheDocument();
+    expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Title")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    expect(screen.getByLabelText("Phone")).toBeInTheDocument();
+
+    const nextButton = screen.getByRole("button", { name: "Next" });
+    expect(nextButton).toBeDisabled();
   });
 
-  it("adds a new experience block", async () => {
+  it("advances to summary after basics are filled", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
@@ -28,10 +29,41 @@ describe("ResumeForm", () => {
 
     render(<ResumeForm />);
 
-    const addButtons = await screen.findAllByRole("button", { name: "Add experience" });
-    fireEvent.click(addButtons[0]);
+    fireEvent.change(await screen.findByLabelText("Full name"), {
+      target: { value: "Jane Doe" },
+    });
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Software Engineer" },
+    });
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "jane@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Phone"), {
+      target: { value: "+1 555 0100" },
+    });
 
-    const titles = screen.getAllByLabelText("Experience title");
-    expect(titles.length).toBe(2);
+    const nextButton = screen.getByRole("button", { name: "Next" });
+    expect(nextButton).not.toBeDisabled();
+    fireEvent.click(nextButton);
+
+    expect(await screen.findByText("Summary")).toBeInTheDocument();
+    expect(screen.getByLabelText("Summary")).toBeInTheDocument();
+  });
+
+  it("adds experience bullets", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
+    );
+
+    render(<ResumeForm />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Experience" }));
+
+    const addBulletButtons = screen.getAllByRole("button", { name: "Add bullet" });
+    fireEvent.click(addBulletButtons[0]);
+
+    const bulletInputs = screen.getAllByLabelText("Experience bullet");
+    expect(bulletInputs.length).toBe(2);
   });
 });
