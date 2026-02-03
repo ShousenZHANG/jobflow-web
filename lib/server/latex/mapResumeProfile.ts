@@ -32,6 +32,15 @@ function formatSchoolDegree(schoolRaw: unknown, degreeRaw: unknown) {
   return school || degree || "";
 }
 
+function formatEduLocationDates(locationRaw: unknown, datesRaw: unknown) {
+  const location = escapeLatex(toStringValue(locationRaw)).trim();
+  const dates = escapeLatex(toStringValue(datesRaw)).trim();
+  return {
+    location: location || "~",
+    dates,
+  };
+}
+
 export function mapResumeProfile(profile: ResumeProfileLike) {
   const basics = asRecord(profile.basics as NullableRecord);
   const links = asArray(profile.links) as Record<string, unknown>[];
@@ -51,6 +60,14 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
 
   const edu1 = education[0] ?? {};
   const edu2 = education[1] ?? {};
+  const edu1LocationDates = formatEduLocationDates(
+    (edu1 as Record<string, unknown>).location,
+    (edu1 as Record<string, unknown>).dates,
+  );
+  const edu2LocationDates = formatEduLocationDates(
+    (edu2 as Record<string, unknown>).location,
+    (edu2 as Record<string, unknown>).dates,
+  );
 
   const projectBlocks = projects
     .map((proj) => {
@@ -87,15 +104,15 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
       bullets: asArray(entry.bullets).map((item) => escapeLatex(toStringValue(item))),
     })),
     education: {
-      edu1Location: escapeLatex(toStringValue((edu1 as Record<string, unknown>).location)),
-      edu1Dates: escapeLatex(toStringValue((edu1 as Record<string, unknown>).dates)),
+      edu1Location: edu1LocationDates.location,
+      edu1Dates: edu1LocationDates.dates,
       edu1SchoolDegree: formatSchoolDegree(
         (edu1 as Record<string, unknown>).school,
         (edu1 as Record<string, unknown>).degree,
       ),
       edu1Detail: escapeLatex(toStringValue((edu1 as Record<string, unknown>).details)),
-      edu2Location: escapeLatex(toStringValue((edu2 as Record<string, unknown>).location)),
-      edu2Dates: escapeLatex(toStringValue((edu2 as Record<string, unknown>).dates)),
+      edu2Location: edu2LocationDates.location,
+      edu2Dates: edu2LocationDates.dates,
       edu2SchoolDegree: formatSchoolDegree(
         (edu2 as Record<string, unknown>).school,
         (edu2 as Record<string, unknown>).degree,
