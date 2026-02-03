@@ -25,6 +25,13 @@ function toStringValue(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
+function formatSchoolDegree(schoolRaw: unknown, degreeRaw: unknown) {
+  const school = escapeLatex(toStringValue(schoolRaw)).trim();
+  const degree = escapeLatex(toStringValue(degreeRaw)).trim();
+  if (school && degree) return `${school} -- ${degree}`;
+  return school || degree || "";
+}
+
 export function mapResumeProfile(profile: ResumeProfileLike) {
   const basics = asRecord(profile.basics as NullableRecord);
   const links = asArray(profile.links) as Record<string, unknown>[];
@@ -82,15 +89,17 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
     education: {
       edu1Location: escapeLatex(toStringValue((edu1 as Record<string, unknown>).location)),
       edu1Dates: escapeLatex(toStringValue((edu1 as Record<string, unknown>).dates)),
-      edu1SchoolDegree:
-        `${escapeLatex(toStringValue((edu1 as Record<string, unknown>).school))} — ` +
-        escapeLatex(toStringValue((edu1 as Record<string, unknown>).degree)),
+      edu1SchoolDegree: formatSchoolDegree(
+        (edu1 as Record<string, unknown>).school,
+        (edu1 as Record<string, unknown>).degree,
+      ),
       edu1Detail: escapeLatex(toStringValue((edu1 as Record<string, unknown>).details)),
       edu2Location: escapeLatex(toStringValue((edu2 as Record<string, unknown>).location)),
       edu2Dates: escapeLatex(toStringValue((edu2 as Record<string, unknown>).dates)),
-      edu2SchoolDegree:
-        `${escapeLatex(toStringValue((edu2 as Record<string, unknown>).school))} — ` +
-        escapeLatex(toStringValue((edu2 as Record<string, unknown>).degree)),
+      edu2SchoolDegree: formatSchoolDegree(
+        (edu2 as Record<string, unknown>).school,
+        (edu2 as Record<string, unknown>).degree,
+      ),
     },
     openSourceProjects: projectBlocks || "",
   };
