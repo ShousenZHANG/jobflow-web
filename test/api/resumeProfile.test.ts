@@ -53,6 +53,18 @@ describe("resume profile api", () => {
       id: "rp-1",
       userId: "user-1",
       summary: "Hello",
+    });
+
+    const payload = {
+      summary: "Hello",
+      basics: {
+        fullName: "Jane Doe",
+        title: "Software Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+        location: "Sydney",
+      },
+      links: [{ label: "LinkedIn", url: "https://linkedin.com/in/jane" }],
       experiences: [
         {
           location: "Sydney, Australia",
@@ -62,22 +74,31 @@ describe("resume profile api", () => {
           bullets: ["Built features"],
         },
       ],
-    });
-
-    const experiences = [
-      {
-        location: "Sydney, Australia",
-        dates: "2023-2025",
-        title: "Software Engineer",
-        company: "Example Co",
-        bullets: ["Built features"],
-      },
-    ];
+      projects: [
+        {
+          name: "Jobflow",
+          dates: "2024",
+          link: "https://example.com",
+          summary: "",
+          bullets: ["Shipped"],
+        },
+      ],
+      education: [
+        {
+          school: "UNSW",
+          degree: "MIT",
+          location: "Sydney",
+          dates: "2020-2022",
+          details: "WAM 80",
+        },
+      ],
+      skills: [{ category: "Languages", items: ["TypeScript", "Python"] }],
+    };
 
     const res = await POST(
       new Request("http://localhost/api/resume-profile", {
         method: "POST",
-        body: JSON.stringify({ summary: "Hello", experiences }),
+        body: JSON.stringify(payload),
       }),
     );
 
@@ -87,8 +108,7 @@ describe("resume profile api", () => {
     expect(resumeProfileStore.create).toHaveBeenCalledWith({
       data: {
         userId: "user-1",
-        summary: "Hello",
-        experiences,
+        ...payload,
       },
     });
   });

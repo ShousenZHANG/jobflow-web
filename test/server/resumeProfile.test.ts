@@ -27,7 +27,15 @@ describe("resumeProfile data access", () => {
       id: "rp-1",
       userId: "user-1",
       summary: "A",
-      skills: ["React"],
+      basics: {
+        fullName: "Jane Doe",
+        title: "Software Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+        location: "Sydney",
+      },
+      links: [{ label: "LinkedIn", url: "https://linkedin.com/in/jane" }],
+      skills: [{ category: "Languages", items: ["TypeScript", "Python"] }],
       experiences: [
         {
           location: "Sydney",
@@ -37,8 +45,34 @@ describe("resumeProfile data access", () => {
           bullets: ["Built features"],
         },
       ],
+      projects: [
+        {
+          name: "Jobflow",
+          dates: "2024",
+          link: "https://example.com",
+          summary: "",
+          bullets: ["Shipped"],
+        },
+      ],
+      education: [
+        {
+          school: "UNSW",
+          degree: "MIT",
+          location: "Sydney",
+          dates: "2020-2022",
+          details: "WAM 80",
+        },
+      ],
     });
 
+    const basics = {
+      fullName: "Jane Doe",
+      title: "Software Engineer",
+      email: "jane@example.com",
+      phone: "+1 555 0100",
+      location: "Sydney",
+    };
+    const links = [{ label: "LinkedIn", url: "https://linkedin.com/in/jane" }];
     const experiences = [
       {
         location: "Sydney",
@@ -48,15 +82,47 @@ describe("resumeProfile data access", () => {
         bullets: ["Built features"],
       },
     ];
+    const projects = [
+      {
+        name: "Jobflow",
+        dates: "2024",
+        link: "https://example.com",
+        summary: "",
+        bullets: ["Shipped"],
+      },
+    ];
+    const education = [
+      {
+        school: "UNSW",
+        degree: "MIT",
+        location: "Sydney",
+        dates: "2020-2022",
+        details: "WAM 80",
+      },
+    ];
+    const skills = [{ category: "Languages", items: ["TypeScript", "Python"] }];
 
     const created = await upsertResumeProfile("user-1", {
       summary: "A",
-      skills: ["React"],
+      basics,
+      links,
+      skills,
       experiences,
+      projects,
+      education,
     });
 
     expect(resumeProfileStore.create).toHaveBeenCalledWith({
-      data: { userId: "user-1", summary: "A", skills: ["React"], experiences },
+      data: {
+        userId: "user-1",
+        summary: "A",
+        basics,
+        links,
+        skills,
+        experiences,
+        projects,
+        education,
+      },
     });
     expect(created.summary).toBe("A");
 
@@ -64,8 +130,12 @@ describe("resumeProfile data access", () => {
       id: "rp-1",
       userId: "user-1",
       summary: "A",
-      skills: ["React"],
+      basics,
+      links,
+      skills,
       experiences,
+      projects,
+      education,
     });
 
     const fetched = await getResumeProfile("user-1");
