@@ -197,7 +197,8 @@ describe("JobsClient", () => {
     const listItem = await screen.findByText("Ownership");
     expect(listItem.closest("li")).toHaveClass("text-sm", "text-slate-700");
 
-    const quote = await screen.findByText("Note");
+    const quotes = await screen.findAllByText("Note");
+    const quote = quotes.find((node) => node.closest("blockquote")) ?? quotes[0];
     expect(quote.closest("blockquote")).toHaveClass("border-l-2");
   });
 

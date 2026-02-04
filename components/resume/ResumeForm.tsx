@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -732,7 +733,7 @@ export function ResumeForm() {
       className={
         framed
           ? "relative rounded-lg border border-slate-900/10 bg-white/60 p-2"
-          : "relative h-full w-full overflow-hidden rounded-lg bg-white"
+          : "relative h-full w-full overflow-hidden rounded-none bg-white"
       }
     >
       {previewUrl ? (
@@ -1291,12 +1292,26 @@ export function ResumeForm() {
   return (
     <div className="space-y-6">
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-[min(96vw,1100px)] p-0">
+        <DialogContent
+          className="h-[92vh] w-[98vw] max-w-[min(98vw,1280px)] overflow-hidden p-0"
+          showCloseButton={false}
+        >
           <DialogHeader className="sr-only">
             <DialogTitle>PDF preview</DialogTitle>
             <DialogDescription>Refreshes after Next or Save.</DialogDescription>
           </DialogHeader>
-          {renderPreviewFrame("h-[80vh]", false)}
+          <div className="flex h-full flex-col">
+            <div className="flex h-11 items-center justify-end border-b border-slate-900/10 bg-white/90 px-3">
+              <DialogClose asChild>
+                <Button type="button" variant="ghost" size="sm">
+                  Close
+                </Button>
+              </DialogClose>
+            </div>
+            <div className="flex-1 bg-white">
+              {renderPreviewFrame("h-full", false)}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
