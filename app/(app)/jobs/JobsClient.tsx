@@ -8,7 +8,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import { ExternalLink, MapPin, Search, Trash2 } from "lucide-react";
+import { ExternalLink, FileText, MapPin, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -201,6 +201,7 @@ export function JobsClient({
   const [error, setError] = useState<string | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -474,6 +475,65 @@ export function JobsClient({
     updateStatusMutation.mutate({ id, status });
   }
 
+  function filenameFromDisposition(disposition: string | null) {
+    if (!disposition) return null;
+    const match = disposition.match(/filename="?([^"]+)"?/i);
+    return match?.[1] ?? null;
+  }
+
+  async function generateResume(job: JobItem) {
+    setGeneratingIds((prev) => new Set(prev).add(job.id));
+    setError(null);
+    try {
+      const res = await fetch("/api/applications/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId: job.id }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json?.error?.message || json?.error || "Failed to generate resume");
+      }
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download =
+        filenameFromDisposition(res.headers.get("content-disposition")) || "resume.pdf";
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(objectUrl);
+
+      toast({
+        title: "Resume generated",
+        description: "PDF downloaded and application record updated.",
+        duration: 2000,
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
+    } catch (e) {
+      const message = getErrorMessage(e, "Failed to generate resume");
+      setError(message);
+      toast({
+        title: "Generate failed",
+        description: message,
+        variant: "destructive",
+        duration: 2600,
+        className:
+          "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
+      });
+    } finally {
+      setGeneratingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(job.id);
+        return next;
+      });
+    }
+  }
+
   function scheduleDelete(job: JobItem) {
     const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
     const previousSelectedId = selectedId;
@@ -548,7 +608,6 @@ export function JobsClient({
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const listPadding = 12;
-  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => resultsViewportRef.current,
@@ -979,6 +1038,16 @@ export function JobsClient({
                       <ExternalLink className="h-4 w-4" />
                       Open job
                     </a>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={generatingIds.has(selectedJob.id)}
+                    onClick={() => generateResume(selectedJob)}
+                    className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {generatingIds.has(selectedJob.id) ? "Generating..." : "Generate PDF"}
                   </Button>
                   <Button
                     variant="outline"

@@ -48,6 +48,7 @@ export type ResumeProfileInput = {
 export async function getResumeProfile(userId: string) {
   return prisma.resumeProfile.findFirst({
     where: { userId },
+    orderBy: { updatedAt: "desc" },
   });
 }
 
@@ -73,6 +74,7 @@ export async function upsertResumeProfile(
 
   const existing = await prisma.resumeProfile.findFirst({
     where: { userId },
+    orderBy: { updatedAt: "desc" },
   });
 
   if (existing) {

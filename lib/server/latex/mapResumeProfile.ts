@@ -1,10 +1,8 @@
 import { escapeLatex, escapeLatexWithBold } from "./escapeLatex";
 
-type NullableRecord = Record<string, unknown> | null | undefined;
-
 type ResumeProfileLike = {
   summary?: string | null;
-  basics?: NullableRecord;
+  basics?: unknown;
   links?: unknown;
   skills?: unknown;
   experiences?: unknown;
@@ -46,7 +44,7 @@ function formatEduLocationDates(locationRaw: unknown, datesRaw: unknown) {
 }
 
 export function mapResumeProfile(profile: ResumeProfileLike) {
-  const basics = asRecord(profile.basics as NullableRecord);
+  const basics = asRecord(profile.basics);
   const links = asArray(profile.links) as Record<string, unknown>[];
   const skills = asArray(profile.skills) as Record<string, unknown>[];
   const experiences = asArray(profile.experiences) as Record<string, unknown>[];
