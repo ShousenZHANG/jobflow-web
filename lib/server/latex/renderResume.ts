@@ -63,13 +63,13 @@ function renderSkills(groups: SkillsGroup[]) {
   return groups
     .map((group) => {
       const items = group.items.join(", ");
-      return `\\\\textbf{${group.label}:} ${items} \\\\`;
+      return `\\textbf{${group.label}:} ${items} \\\\`;
     })
     .join("\n");
 }
 
 function renderBullets(items: string[]) {
-  return items.map((item) => `\\\\item ${item}`).join("\n");
+  return items.map((item) => `\\item ${item}`).join("\n");
 }
 
 function formatExperienceMeta(location: string, dates: string) {
@@ -83,19 +83,19 @@ function formatExperienceMeta(location: string, dates: string) {
 
 function renderExperienceBlock(entry: ExperienceEntry) {
   const meta = formatExperienceMeta(entry.location, entry.dates);
-  const header = `\\\\begin{twocolentry}{\n    ${meta}\n}\n  \\\\textbf{${entry.title}} \\\\\n  ${entry.company}\n\\\\end{twocolentry}`;
+  const header = `\\begin{twocolentry}{\n    ${meta}\n}\n  \\textbf{${entry.title}} \\\\\n  ${entry.company}\n\\end{twocolentry}`;
 
   if (entry.bullets.length === 0) {
     return header;
   }
 
-  return `${header}\n\n\\\\vspace{0.10 cm}\n\\\\begin{onecolentry}\n\\\\begin{highlights}\n${renderBullets(entry.bullets)}\n\\\\end{highlights}\n\\\\end{onecolentry}`;
+  return `${header}\n\n\\vspace{0.10 cm}\n\\begin{onecolentry}\n\\begin{highlights}\n${renderBullets(entry.bullets)}\n\\end{highlights}\n\\end{onecolentry}`;
 }
 
 function renderExperiences(entries: ExperienceEntry[]) {
   return entries
     .map((entry, index) => {
-      const spacer = index < entries.length - 1 ? "\n\n\\\\vspace{0.25 cm}\n" : "";
+      const spacer = index < entries.length - 1 ? "\n\n\\vspace{0.25 cm}\n" : "";
       return `${renderExperienceBlock(entry)}${spacer}`;
     })
     .join("\n");
@@ -113,16 +113,16 @@ function formatEducationMeta(location: string, dates: string) {
 function renderEducationBlock(entry: EducationEntry) {
   const meta = formatEducationMeta(entry.location, entry.dates);
   const hasDetail = entry.detail?.trim().length;
-  const detailLine = hasDetail ? `\n  \\\\textit{${entry.detail}}` : "";
+  const detailLine = hasDetail ? `\n  \\textit{${entry.detail}}` : "";
   const detailBreak = hasDetail ? " \\\\" : "";
 
-  return `\\\\begin{twocolentry}{\n    ${meta}\n}\n  \\\\textbf{${entry.schoolDegree}}${detailBreak}${detailLine}\n\\\\end{twocolentry}`;
+  return `\\begin{twocolentry}{\n    ${meta}\n}\n  \\textbf{${entry.schoolDegree}}${detailBreak}${detailLine}\n\\end{twocolentry}`;
 }
 
 function renderEducation(entries: EducationEntry[]) {
   return entries
     .map((entry, index) => {
-      const spacer = index < entries.length - 1 ? "\n\n\\\\vspace{0.1cm}\n" : "";
+      const spacer = index < entries.length - 1 ? "\n\n\\vspace{0.1cm}\n" : "";
       return `${renderEducationBlock(entry)}${spacer}`;
     })
     .join("\n");
@@ -130,7 +130,7 @@ function renderEducation(entries: EducationEntry[]) {
 
 function renderEducationSection(entries: EducationEntry[]) {
   if (entries.length === 0) return "";
-  return `\\\\section{Education}\n\\\\vspace{0.1cm}\n\n${renderEducation(entries)}`;
+  return `\\section{Education}\n\\vspace{0.1cm}\n\n${renderEducation(entries)}`;
 }
 
 function sanitizeRendered(tex: string) {
