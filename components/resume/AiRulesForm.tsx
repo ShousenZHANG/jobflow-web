@@ -96,6 +96,12 @@ export function AiRulesForm() {
     }
   };
 
+  const handleResetDefaults = () => {
+    setCvRulesText(joinRules(DEFAULT_CV_RULES));
+    setCoverRulesText(joinRules(DEFAULT_COVER_RULES));
+    toast({ title: "Defaults restored." });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -120,9 +126,19 @@ export function AiRulesForm() {
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{loading ? "Loading..." : "Changes apply to future generations."}</span>
-        <Button type="button" onClick={handleSave} disabled={saving || loading}>
-          {saving ? "Saving..." : "Save rules"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleResetDefaults}
+            disabled={saving || loading}
+          >
+            Restore defaults
+          </Button>
+          <Button type="button" onClick={handleSave} disabled={saving || loading}>
+            {saving ? "Saving..." : "Save rules"}
+          </Button>
+        </div>
       </div>
     </div>
   );

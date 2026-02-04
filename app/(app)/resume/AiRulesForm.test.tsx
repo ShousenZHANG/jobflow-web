@@ -27,6 +27,7 @@ describe("AiRulesForm", () => {
 
     expect(await screen.findByLabelText("CV Rules (one rule per line)")).toBeInTheDocument();
     expect(screen.getByLabelText("Cover Letter Rules (one rule per line)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Restore defaults" })).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("CV Rules (one rule per line)"), {
       target: { value: "New CV Rule" },
