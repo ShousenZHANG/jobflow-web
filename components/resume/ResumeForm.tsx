@@ -41,9 +41,7 @@ type ResumeProject = {
   location: string;
   stack: string;
   dates: string;
-  githubUrl: string;
-  demoUrl: string;
-  links?: { label: string; url: string }[];
+  links: ResumeLink[];
   bullets: string[];
 };
 
@@ -58,6 +56,11 @@ type ResumeEducation = {
 type ResumeSkillGroup = {
   category: string;
   label?: string;
+  itemsText: string;
+};
+
+type ResumeSkillPayload = {
+  category: string;
   items: string[];
 };
 
@@ -68,7 +71,7 @@ type ResumeProfilePayload = {
   experiences?: ResumeExperience[] | null;
   projects?: ResumeProject[] | null;
   education?: ResumeEducation[] | null;
-  skills?: ResumeSkillGroup[] | null;
+  skills?: ResumeSkillPayload[] | null;
 };
 
 const steps = ["Personal info", "Summary", "Experience", "Projects", "Education", "Skills"] as const;
@@ -93,8 +96,7 @@ const emptyProject = (): ResumeProject => ({
   location: "",
   stack: "",
   dates: "",
-  githubUrl: "",
-  demoUrl: "",
+  links: [{ label: "", url: "" }],
   bullets: [""],
 });
 
@@ -108,7 +110,7 @@ const emptyEducation = (): ResumeEducation => ({
 
 const emptySkillGroup = (): ResumeSkillGroup => ({
   category: "",
-  items: [""],
+  itemsText: "",
 });
 
 const defaultLinks: ResumeLink[] = [
@@ -127,6 +129,13 @@ function hasBullets(items: string[]) {
 
 function normalizeBullets(items: string[]) {
   return items.map((item) => item.trim()).filter(Boolean);
+}
+
+function normalizeCommaItems(text: string) {
+  return text
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 export function ResumeForm() {
@@ -149,6 +158,42 @@ export function ResumeForm() {
   const [projects, setProjects] = useState<ResumeProject[]>([emptyProject()]);
   const [education, setEducation] = useState<ResumeEducation[]>([emptyEducation()]);
   const [skills, setSkills] = useState<ResumeSkillGroup[]>([emptySkillGroup()]);
+  const markdownRefs = useRef<
+    Record<string, HTMLInputElement | HTMLTextAreaElement | null>
+  >({});
+
+  const registerMarkdownRef =
+    (key: string) => (element: HTMLInputElement | HTMLTextAreaElement | null) => {
+      markdownRefs.current[key] = element;
+    };
+
+  const applyBoldMarkdown = useCallback(
+    (
+      key: string,
+      currentValue: string,
+      onChange: (nextValue: string) => void,
+    ) => {
+      const field = markdownRefs.current[key];
+      const start = field?.selectionStart ?? currentValue.length;
+      const end = field?.selectionEnd ?? currentValue.length;
+      const before = currentValue.slice(0, start);
+      const selected = currentValue.slice(start, end);
+      const after = currentValue.slice(end);
+      const wrapped = `**${selected || "keyword"}**`;
+      const nextValue = `${before}${wrapped}${after}`;
+      const selectionStart = before.length + 2;
+      const selectionEnd = selectionStart + (selected || "keyword").length;
+
+      onChange(nextValue);
+      requestAnimationFrame(() => {
+        const nextField = markdownRefs.current[key];
+        if (!nextField) return;
+        nextField.focus();
+        nextField.setSelectionRange(selectionStart, selectionEnd);
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     let active = true;
@@ -192,16 +237,15 @@ export function ResumeForm() {
             location: entry.location ?? "",
             stack: entry.stack ?? (("role" in entry ? (entry as { role?: string }).role : "") ?? ""),
             dates: entry.dates ?? "",
-            githubUrl:
-              Array.isArray(entry.links)
-                ? entry.links.find((link) => link.label?.toLowerCase() === "github")?.url ?? ""
-                : "",
-            demoUrl:
-              Array.isArray(entry.links)
-                ? entry.links.find((link) =>
-                    ["demo", "live demo"].includes(link.label?.toLowerCase() ?? ""),
-                  )?.url ?? ""
-                : (("link" in entry ? (entry as { link?: string }).link : "") ?? ""),
+            links:
+              Array.isArray(entry.links) && entry.links.length > 0
+                ? entry.links.map((link) => ({
+                    label: link.label ?? "",
+                    url: link.url ?? "",
+                  }))
+                : (("link" in entry && (entry as { link?: string }).link
+                    ? [{ label: "Link", url: (entry as { link?: string }).link ?? "" }]
+                    : [{ label: "", url: "" }]) as ResumeLink[]),
             bullets:
               Array.isArray(entry.bullets) && entry.bullets.length > 0
                 ? entry.bullets
@@ -223,11 +267,16 @@ export function ResumeForm() {
       }
 
       if (Array.isArray(profile.skills) && profile.skills.length > 0) {
-        const skillGroups = profile.skills.map((group) => ({
-          category: group.category ?? group.label ?? "",
-          items:
-            Array.isArray(group.items) && group.items.length > 0 ? group.items : [""],
-        }));
+        const skillGroups = profile.skills.map((group) => {
+          const source = group as { category?: string; label?: string; items?: string[] };
+          return {
+            category: source.category ?? source.label ?? "",
+            itemsText:
+              Array.isArray(source.items) && source.items.length > 0
+                ? source.items.join(", ")
+                : "",
+          };
+        });
         setSkills(skillGroups);
       }
     };
@@ -305,7 +354,10 @@ export function ResumeForm() {
       if (stepIndex === 5) {
         return (
           skills.length > 0 &&
-          skills.every((group) => hasContent(group.category) && hasBullets(group.items))
+          skills.every(
+            (group) =>
+              hasContent(group.category) && normalizeCommaItems(group.itemsText).length > 0,
+          )
         );
       }
       return false;
@@ -391,6 +443,41 @@ export function ResumeForm() {
     );
   };
 
+  const updateProjectLink = (
+    projectIndex: number,
+    linkIndex: number,
+    field: keyof ResumeLink,
+    value: string,
+  ) => {
+    setProjects((prev) =>
+      prev.map((entry, idx) => {
+        if (idx !== projectIndex) return entry;
+        const links = entry.links.map((link, lIdx) =>
+          lIdx === linkIndex ? { ...link, [field]: value } : link,
+        );
+        return { ...entry, links };
+      }),
+    );
+  };
+
+  const addProjectLink = (projectIndex: number) => {
+    setProjects((prev) =>
+      prev.map((entry, idx) =>
+        idx === projectIndex ? { ...entry, links: [...entry.links, { label: "", url: "" }] } : entry,
+      ),
+    );
+  };
+
+  const removeProjectLink = (projectIndex: number, linkIndex: number) => {
+    setProjects((prev) =>
+      prev.map((entry, idx) => {
+        if (idx !== projectIndex) return entry;
+        const links = entry.links.filter((_, lIdx) => lIdx !== linkIndex);
+        return { ...entry, links: links.length > 0 ? links : [{ label: "", url: "" }] };
+      }),
+    );
+  };
+
   const addProject = () => {
     setProjects((prev) => [...prev, emptyProject()]);
   };
@@ -447,40 +534,12 @@ export function ResumeForm() {
     );
   };
 
-  const updateSkillItem = (groupIndex: number, itemIndex: number, value: string) => {
-    setSkills((prev) =>
-      prev.map((entry, idx) => {
-        if (idx !== groupIndex) return entry;
-        const items = entry.items.map((item, iIdx) => (iIdx === itemIndex ? value : item));
-        return { ...entry, items };
-      }),
-    );
-  };
-
   const addSkillGroup = () => {
     setSkills((prev) => [...prev, emptySkillGroup()]);
   };
 
   const removeSkillGroup = (index: number) => {
     setSkills((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== index) : prev));
-  };
-
-  const addSkillItem = (groupIndex: number) => {
-    setSkills((prev) =>
-      prev.map((entry, idx) =>
-        idx === groupIndex ? { ...entry, items: [...entry.items, ""] } : entry,
-      ),
-    );
-  };
-
-  const removeSkillItem = (groupIndex: number, itemIndex: number) => {
-    setSkills((prev) =>
-      prev.map((entry, idx) => {
-        if (idx !== groupIndex) return entry;
-        const nextItems = entry.items.filter((_, iIdx) => iIdx !== itemIndex);
-        return { ...entry, items: nextItems.length > 0 ? nextItems : [""] };
-      }),
-    );
   };
 
   const buildPayload = useCallback(
@@ -495,16 +554,16 @@ export function ResumeForm() {
       }));
 
       const cleanedProjects = projects.map((entry) => {
-        const github = entry.githubUrl.trim();
-        const demo = entry.demoUrl.trim();
+        const cleanedLinks = entry.links
+          .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+          .filter((link) => link.label && link.url);
+
         return {
-          ...entry,
-          githubUrl: github,
-          demoUrl: demo,
-          links: [
-            github ? { label: "GitHub", url: github } : null,
-            demo ? { label: "Live Demo", url: demo } : null,
-          ].filter(Boolean) as { label: string; url: string }[],
+          name: entry.name.trim(),
+          location: entry.location.trim(),
+          stack: entry.stack.trim(),
+          dates: entry.dates.trim(),
+          links: cleanedLinks,
           bullets: normalizeBullets(entry.bullets),
         };
       });
@@ -516,7 +575,7 @@ export function ResumeForm() {
 
       const cleanedSkills = skills.map((group) => ({
         category: group.category.trim(),
-        items: normalizeBullets(group.items),
+        items: normalizeCommaItems(group.itemsText),
       }));
 
       const previewExperiences =
@@ -548,7 +607,7 @@ export function ResumeForm() {
       const previewSkills =
         mode === "preview"
           ? cleanedSkills.filter(
-              (group) => hasContent(group.category) && hasBullets(group.items),
+              (group) => hasContent(group.category) && group.items.length > 0,
             )
           : cleanedSkills;
 
@@ -586,8 +645,7 @@ export function ResumeForm() {
         hasContent(entry.stack) ||
         hasContent(entry.location) ||
         hasContent(entry.dates) ||
-        hasContent(entry.githubUrl) ||
-        hasContent(entry.demoUrl) ||
+        entry.links.some((link) => hasContent(link.label) || hasContent(link.url)) ||
         hasBullets(entry.bullets),
     );
     const educationFilled = education.some(
@@ -598,7 +656,7 @@ export function ResumeForm() {
         hasContent(entry.dates),
     );
     const skillsFilled = skills.some(
-      (group) => hasContent(group.category) || hasBullets(group.items),
+      (group) => hasContent(group.category) || hasContent(group.itemsText),
     );
 
     return (
@@ -910,9 +968,20 @@ export function ResumeForm() {
             </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="resume-summary">Summary</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="resume-summary">Summary</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => applyBoldMarkdown("summary", summary, setSummary)}
+              >
+                Bold selected
+              </Button>
+            </div>
             <Textarea
               id="resume-summary"
+              ref={registerMarkdownRef("summary")}
               value={summary}
               onChange={(event) => setSummary(event.target.value)}
               placeholder="Write a concise summary that highlights your strengths."
@@ -1003,9 +1072,26 @@ export function ResumeForm() {
                     {entry.bullets.map((bullet, bulletIndex) => (
                       <div key={`exp-${index}-bullet-${bulletIndex}`} className="flex gap-2">
                         <div className="flex-1 space-y-2">
-                          <Label htmlFor={`experience-bullet-${index}-${bulletIndex}`}>Experience bullet</Label>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor={`experience-bullet-${index}-${bulletIndex}`}>Experience bullet</Label>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                applyBoldMarkdown(
+                                  `exp-bullet-${index}-${bulletIndex}`,
+                                  bullet,
+                                  (next) => updateExperienceBullet(index, bulletIndex, next),
+                                )
+                              }
+                            >
+                              Bold selected
+                            </Button>
+                          </div>
                           <Input
                             id={`experience-bullet-${index}-${bulletIndex}`}
+                            ref={registerMarkdownRef(`exp-bullet-${index}-${bulletIndex}`)}
                             value={bullet}
                             onChange={(event) =>
                               updateExperienceBullet(index, bulletIndex, event.target.value)
@@ -1103,24 +1189,40 @@ export function ResumeForm() {
                     />
                   </div>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor={`project-github-${index}`}>GitHub URL</Label>
-                    <Input
-                      id={`project-github-${index}`}
-                      value={entry.githubUrl}
-                      onChange={(event) => updateProject(index, "githubUrl", event.target.value)}
-                      placeholder="https://github.com/..."
-                    />
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Project links (optional)</Label>
+                    <Button type="button" variant="secondary" onClick={() => addProjectLink(index)}>
+                      Add link
+                    </Button>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`project-demo-${index}`}>Live demo URL</Label>
-                    <Input
-                      id={`project-demo-${index}`}
-                      value={entry.demoUrl}
-                      onChange={(event) => updateProject(index, "demoUrl", event.target.value)}
-                      placeholder="https://"
-                    />
+                    {entry.links.map((link, linkIndex) => (
+                      <div key={`project-${index}-link-${linkIndex}`} className="grid gap-2 md:grid-cols-[1fr_2fr_auto]">
+                        <Input
+                          value={link.label}
+                          onChange={(event) =>
+                            updateProjectLink(index, linkIndex, "label", event.target.value)
+                          }
+                          placeholder="GitHub / Live Demo / Case Study"
+                        />
+                        <Input
+                          value={link.url}
+                          onChange={(event) =>
+                            updateProjectLink(index, linkIndex, "url", event.target.value)
+                          }
+                          placeholder="https://"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="text-xs text-slate-500 hover:text-slate-900"
+                          onClick={() => removeProjectLink(index, linkIndex)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -1134,9 +1236,26 @@ export function ResumeForm() {
                     {entry.bullets.map((bullet, bulletIndex) => (
                       <div key={`project-${index}-bullet-${bulletIndex}`} className="flex gap-2">
                         <div className="flex-1 space-y-2">
-                          <Label htmlFor={`project-bullet-${index}-${bulletIndex}`}>Project bullet</Label>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor={`project-bullet-${index}-${bulletIndex}`}>Project bullet</Label>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                applyBoldMarkdown(
+                                  `project-bullet-${index}-${bulletIndex}`,
+                                  bullet,
+                                  (next) => updateProjectBullet(index, bulletIndex, next),
+                                )
+                              }
+                            >
+                              Bold selected
+                            </Button>
+                          </div>
                           <Input
                             id={`project-bullet-${index}-${bulletIndex}`}
+                            ref={registerMarkdownRef(`project-bullet-${index}-${bulletIndex}`)}
                             value={bullet}
                             onChange={(event) =>
                               updateProjectBullet(index, bulletIndex, event.target.value)
@@ -1284,43 +1403,19 @@ export function ResumeForm() {
                 <Label htmlFor={`skill-label-${index}`}>Category</Label>
                 <Input
                   id={`skill-label-${index}`}
-                    value={group.category}
-                      onChange={(event) => updateSkillGroup(index, "category", event.target.value)}
+                  value={group.category}
+                  onChange={(event) => updateSkillGroup(index, "category", event.target.value)}
                   placeholder="Frontend"
                 />
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label>Items</Label>
-                  <Button type="button" variant="secondary" onClick={() => addSkillItem(index)}>
-                    Add item
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {group.items.map((item, itemIndex) => (
-                    <div key={`skill-${index}-item-${itemIndex}`} className="flex gap-2">
-                      <div className="flex-1 space-y-2">
-                        <Label htmlFor={`skill-item-${index}-${itemIndex}`}>Skill item</Label>
-                        <Input
-                          id={`skill-item-${index}-${itemIndex}`}
-                          value={item}
-                          onChange={(event) => updateSkillItem(index, itemIndex, event.target.value)}
-                          placeholder="React"
-                        />
-                      </div>
-                      <div className="flex items-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="text-xs text-slate-500 hover:text-slate-900"
-                          onClick={() => removeSkillItem(index, itemIndex)}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor={`skill-items-${index}`}>Items (comma-separated)</Label>
+                <Input
+                  id={`skill-items-${index}`}
+                  value={group.itemsText}
+                  onChange={(event) => updateSkillGroup(index, "itemsText", event.target.value)}
+                  placeholder="React, Next.js, TypeScript, Tailwind CSS"
+                />
               </div>
             </div>
           ))}
