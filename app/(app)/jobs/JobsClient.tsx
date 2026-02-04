@@ -202,6 +202,7 @@ export function JobsClient({
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
+  const [coverGeneratingIds, setCoverGeneratingIds] = useState<Set<string>>(new Set());
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -527,6 +528,61 @@ export function JobsClient({
       });
     } finally {
       setGeneratingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(job.id);
+        return next;
+      });
+    }
+  }
+
+  async function generateCoverLetter(job: JobItem) {
+    setCoverGeneratingIds((prev) => new Set(prev).add(job.id));
+    setError(null);
+    try {
+      const res = await fetch("/api/applications/generate-cover-letter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId: job.id }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(
+          json?.error?.message || json?.error || "Failed to generate cover letter",
+        );
+      }
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download =
+        filenameFromDisposition(res.headers.get("content-disposition")) || "cover-letter.pdf";
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(objectUrl);
+
+      toast({
+        title: "Cover letter generated",
+        description: "PDF downloaded and application record updated.",
+        duration: 2000,
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
+    } catch (e) {
+      const message = getErrorMessage(e, "Failed to generate cover letter");
+      setError(message);
+      toast({
+        title: "Generate failed",
+        description: message,
+        variant: "destructive",
+        duration: 2600,
+        className:
+          "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
+      });
+    } finally {
+      setCoverGeneratingIds((prev) => {
         const next = new Set(prev);
         next.delete(job.id);
         return next;
@@ -1047,7 +1103,19 @@ export function JobsClient({
                     className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
                   >
                     <FileText className="h-4 w-4" />
-                    {generatingIds.has(selectedJob.id) ? "Generating..." : "Generate PDF"}
+                    {generatingIds.has(selectedJob.id) ? "Generating..." : "Generate CV"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={coverGeneratingIds.has(selectedJob.id)}
+                    onClick={() => generateCoverLetter(selectedJob)}
+                    className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {coverGeneratingIds.has(selectedJob.id)
+                      ? "Generating..."
+                      : "Generate Cover Letter"}
                   </Button>
                   <Button
                     variant="outline"

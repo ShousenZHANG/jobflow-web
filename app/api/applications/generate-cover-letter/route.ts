@@ -6,7 +6,7 @@ import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
-import { renderResumeTex } from "@/lib/server/latex/renderResume";
+import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { tailorApplicationContent } from "@/lib/server/ai/tailorApplication";
 
@@ -21,7 +21,7 @@ function toSafeFileSegment(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return cleaned || "resume";
+  return cleaned || "cover-letter";
 }
 
 export async function POST(req: Request) {
@@ -93,15 +93,26 @@ export async function POST(req: Request) {
     company: job.company || "the company",
     description: job.description || "",
   });
-  const cvInput = {
-    ...renderInput,
-    summary: tailored.cvSummary || renderInput.summary,
-  };
-  const tex = renderResumeTex(cvInput);
+
+  const coverTex = renderCoverLetterTex({
+    candidate: {
+      name: renderInput.candidate.name,
+      title: renderInput.candidate.title,
+      phone: renderInput.candidate.phone,
+      email: renderInput.candidate.email,
+      linkedinUrl: renderInput.candidate.linkedinUrl,
+      linkedinText: renderInput.candidate.linkedinText,
+    },
+    company: job.company || "the company",
+    role: job.title,
+    paragraphOne: tailored.cover.paragraphOne,
+    paragraphTwo: tailored.cover.paragraphTwo,
+    paragraphThree: tailored.cover.paragraphThree,
+  });
 
   let pdf: Buffer;
   try {
-    pdf = await compileLatexToPdf(tex);
+    pdf = await compileLatexToPdf(coverTex);
   } catch (err) {
     if (err instanceof LatexRenderError) {
       return NextResponse.json(
@@ -149,7 +160,7 @@ export async function POST(req: Request) {
   const today = new Date().toISOString().slice(0, 10);
   const candidate = toSafeFileSegment(renderInput.candidate.name);
   const role = toSafeFileSegment(job.title);
-  const filename = `resume-${candidate}-${role}-${today}.pdf`;
+  const filename = `cover-letter-${candidate}-${role}-${today}.pdf`;
 
   return new NextResponse(new Uint8Array(pdf), {
     status: 200,
@@ -161,3 +172,4 @@ export async function POST(req: Request) {
     },
   });
 }
+
