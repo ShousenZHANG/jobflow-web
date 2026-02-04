@@ -14,6 +14,7 @@ export function TopNav() {
     { href: "/jobs", label: "Jobs" },
     { href: "/fetch", label: "Fetch" },
     { href: "/resume", label: "Resume" },
+    { href: "/resume/ai-rules", label: "AI Rules" },
   ];
   const email = data?.user?.email ?? "";
 

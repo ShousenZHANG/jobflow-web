@@ -40,13 +40,14 @@ model User {
   accounts Account[]
   sessions Session[]
 
-  jobs           Job[]
-  savedSearches  SavedSearch[]
-  fetchRuns      FetchRun[]
-  deletedJobUrls DeletedJobUrl[]
-  dailyCheckins  DailyCheckin[]
-  resumeProfiles ResumeProfile[]
-  applications   Application[]
+  jobs            Job[]
+  savedSearches   SavedSearch[]
+  fetchRuns       FetchRun[]
+  deletedJobUrls  DeletedJobUrl[]
+  dailyCheckins   DailyCheckin[]
+  resumeProfiles  ResumeProfile[]
+  aiPromptProfile AiPromptProfile?
+  applications    Application[]
 }
 
 model Account {
@@ -196,6 +197,18 @@ model ResumeProfile {
   applications Application[]
 
   @@index([userId, updatedAt])
+}
+
+model AiPromptProfile {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cvRules    Json
+  coverRules Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Application {

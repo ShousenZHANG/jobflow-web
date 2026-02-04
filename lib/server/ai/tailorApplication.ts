@@ -1,12 +1,14 @@
 import { buildTailorPrompts } from "./buildPrompt";
 import { getPromptSkillRules } from "./promptSkills";
 import { parseTailorModelOutput } from "./schema";
+import { getAiPromptProfile } from "@/lib/server/aiPromptProfile";
 
 type TailorInput = {
   baseSummary: string;
   jobTitle: string;
   company: string;
   description: string;
+  userId?: string;
 };
 
 type TailorResult = {
@@ -68,10 +70,29 @@ function normalizeText(value: unknown, fallback = "") {
   return text || fallback;
 }
 
-export async function tailorApplicationContent(input: TailorInput): Promise<TailorResult> {
+function normalizeRuleArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const trimmed = value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+export async function tailorApplicationContent(
+  input: TailorInput,
+): Promise<TailorResult> {
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || FALLBACK_MODEL;
-  const skillRules = getPromptSkillRules();
+  const profile = input.userId ? await getAiPromptProfile(input.userId) : null;
+  const skillRules = getPromptSkillRules(
+    profile
+      ? {
+          cvRules: normalizeRuleArray(profile.cvRules),
+          coverRules: normalizeRuleArray(profile.coverRules),
+        }
+      : undefined,
+  );
 
   if (!apiKey) {
     return buildFallback(input);

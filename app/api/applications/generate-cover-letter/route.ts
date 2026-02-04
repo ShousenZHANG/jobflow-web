@@ -92,6 +92,7 @@ export async function POST(req: Request) {
     jobTitle: job.title,
     company: job.company || "the company",
     description: job.description || "",
+    userId,
   });
 
   const coverTex = renderCoverLetterTex({

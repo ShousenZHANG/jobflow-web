@@ -1,4 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const buildTailorPrompts = vi.hoisted(() =>
+  vi.fn(() => ({
+    systemPrompt: "system",
+    userPrompt: "user",
+  })),
+);
+
+const getAiPromptProfile = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/server/ai/buildPrompt", () => ({
+  buildTailorPrompts,
+}));
+
+vi.mock("@/lib/server/aiPromptProfile", () => ({
+  getAiPromptProfile,
+}));
+
 import { tailorApplicationContent } from "@/lib/server/ai/tailorApplication";
 
 const INPUT = {
@@ -16,6 +34,7 @@ describe("tailorApplicationContent", () => {
     process.env.OPENAI_API_KEY = originalKey;
     process.env.OPENAI_MODEL = originalModel;
     vi.unstubAllGlobals();
+    vi.clearAllMocks();
   });
 
   it("keeps base summary when API key is missing", async () => {
@@ -40,5 +59,26 @@ describe("tailorApplicationContent", () => {
     expect(result.cvSummary).toBe(INPUT.baseSummary);
     expect(result.source.cv).toBe("base");
   });
-});
 
+  it("uses user-specific rules when profile exists", async () => {
+    process.env.OPENAI_API_KEY = "test-key";
+    getAiPromptProfile.mockResolvedValueOnce({
+      cvRules: ["CUSTOM CV RULE"],
+      coverRules: ["CUSTOM COVER RULE"],
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        json: async () => ({}),
+      })),
+    );
+
+    await tailorApplicationContent({ ...INPUT, userId: "user-1" });
+
+    expect(buildTailorPrompts).toHaveBeenCalled();
+    const passedRules = buildTailorPrompts.mock.calls[0][0];
+    expect(passedRules.cvRules).toEqual(["CUSTOM CV RULE"]);
+    expect(passedRules.coverRules).toEqual(["CUSTOM COVER RULE"]);
+  });
+});
