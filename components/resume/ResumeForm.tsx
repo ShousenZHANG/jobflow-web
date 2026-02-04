@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 type ResumeBasics = {
@@ -126,6 +127,7 @@ export function ResumeForm() {
     "idle",
   );
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewZoom, setPreviewZoom] = useState("125");
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewAbortRef = useRef<AbortController | null>(null);
 
@@ -684,6 +686,14 @@ export function ResumeForm() {
       setDownloading(false);
     }
   };
+
+  const previewUrl = useMemo(() => {
+    if (!pdfUrl) {
+      return null;
+    }
+
+    return `${pdfUrl}#zoom=${previewZoom}`;
+  }, [pdfUrl, previewZoom]);
 
   const renderStep = () => {
     if (currentStep === 0) {
@@ -1248,25 +1258,39 @@ export function ResumeForm() {
               Refreshes after Next or Save.
             </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleDownload}
-            disabled={!pdfUrl || downloading}
-          >
-            {downloading ? "Downloading..." : "Download PDF"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select value={previewZoom} onValueChange={setPreviewZoom}>
+              <SelectTrigger className="h-8 w-20 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {["90", "100", "110", "125", "150"].map((zoom) => (
+                  <SelectItem key={zoom} value={zoom}>
+                    {zoom}%
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDownload}
+              disabled={!pdfUrl || downloading}
+            >
+              {downloading ? "Downloading..." : "Download PDF"}
+            </Button>
+          </div>
         </div>
         <div className="relative rounded-lg border border-slate-900/10 bg-white/60 p-2">
-          {pdfUrl ? (
+          {previewUrl ? (
             <iframe
               title="Resume preview"
-              src={pdfUrl}
-              className="h-[520px] w-full rounded-md border border-slate-900/10 bg-white"
+              src={previewUrl}
+              className="h-[560px] w-full rounded-md border border-slate-900/10 bg-white sm:h-[640px] lg:h-[720px]"
             />
           ) : (
-            <div className="flex h-[520px] items-center justify-center text-xs text-muted-foreground">
+            <div className="flex h-[560px] items-center justify-center text-xs text-muted-foreground sm:h-[640px] lg:h-[720px]">
               Click Next or Save to generate a preview.
             </div>
           )}
