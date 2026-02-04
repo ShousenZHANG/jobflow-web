@@ -1,3 +1,7 @@
+import { buildTailorPrompts } from "./buildPrompt";
+import { getPromptSkillRules } from "./promptSkills";
+import { parseTailorModelOutput } from "./schema";
+
 type TailorInput = {
   baseSummary: string;
   jobTitle: string;
@@ -64,74 +68,16 @@ function normalizeText(value: unknown, fallback = "") {
   return text || fallback;
 }
 
-function parseModelPayload(raw: string): ParsedModelPayload | null {
-  try {
-    const parsed = JSON.parse(raw) as {
-      cvSummary?: unknown;
-      cover?: {
-        paragraphOne?: unknown;
-        paragraphTwo?: unknown;
-        paragraphThree?: unknown;
-      };
-    };
-
-    const cvSummary = normalizeText(parsed.cvSummary);
-    const paragraphOne = normalizeText(parsed.cover?.paragraphOne);
-    const paragraphTwo = normalizeText(parsed.cover?.paragraphTwo);
-    const paragraphThree = normalizeText(parsed.cover?.paragraphThree);
-
-    if (!cvSummary && !paragraphOne && !paragraphTwo && !paragraphThree) {
-      return null;
-    }
-
-    return {
-      cvSummary,
-      cover: {
-        paragraphOne,
-        paragraphTwo,
-        paragraphThree,
-      },
-    };
-  } catch {
-    return null;
-  }
-}
-
 export async function tailorApplicationContent(input: TailorInput): Promise<TailorResult> {
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || FALLBACK_MODEL;
+  const skillRules = getPromptSkillRules();
 
   if (!apiKey) {
     return buildFallback(input);
   }
 
-  const systemPrompt =
-    "You are a resume and cover-letter assistant. Return strict JSON only.";
-  const userPrompt = `
-Generate tailored CV summary and cover letter paragraphs.
-
-Return JSON exactly in this shape:
-{
-  "cvSummary": "string",
-  "cover": {
-    "paragraphOne": "string",
-    "paragraphTwo": "string",
-    "paragraphThree": "string"
-  }
-}
-
-Constraints:
-- Keep each paragraph concise and professional.
-- No markdown.
-- No LaTeX.
-- Reuse candidate base summary style but tailor to role.
-
-Input:
-- Base summary: ${truncate(input.baseSummary, 1200)}
-- Job title: ${input.jobTitle}
-- Company: ${input.company}
-- Job description: ${truncate(input.description, 2400)}
-`.trim();
+  const { systemPrompt, userPrompt } = buildTailorPrompts(skillRules, input);
 
   try {
     const controller = new AbortController();
@@ -167,7 +113,17 @@ Input:
       choices?: Array<{ message?: { content?: string } }>;
     };
     const content = json.choices?.[0]?.message?.content ?? "";
-    const parsed = parseModelPayload(content);
+    const parsedRaw = parseTailorModelOutput(content);
+    const parsed: ParsedModelPayload | null = parsedRaw
+      ? {
+          cvSummary: normalizeText(parsedRaw.cvSummary),
+          cover: {
+            paragraphOne: normalizeText(parsedRaw.cover.paragraphOne),
+            paragraphTwo: normalizeText(parsedRaw.cover.paragraphTwo),
+            paragraphThree: normalizeText(parsedRaw.cover.paragraphThree),
+          },
+        }
+      : null;
     if (!parsed) {
       return buildFallback(input);
     }
