@@ -203,6 +203,9 @@ export function JobsClient({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [coverGeneratingIds, setCoverGeneratingIds] = useState<Set<string>>(new Set());
+  const [tailorSourceByJob, setTailorSourceByJob] = useState<
+    Record<string, { cv?: "ai" | "base"; cover?: "ai" | "fallback" }>
+  >({});
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -498,6 +501,12 @@ export function JobsClient({
       }
 
       const blob = await res.blob();
+      const rawCvSource = res.headers.get("x-tailor-cv-source");
+      const cvSource: "ai" | "base" = rawCvSource === "ai" ? "ai" : "base";
+      setTailorSourceByJob((prev) => ({
+        ...prev,
+        [job.id]: { ...prev[job.id], cv: cvSource },
+      }));
       const objectUrl = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = objectUrl;
@@ -510,7 +519,10 @@ export function JobsClient({
 
       toast({
         title: "Resume generated",
-        description: "PDF downloaded and application record updated.",
+        description:
+          cvSource === "ai"
+            ? "AI-tailored summary applied. PDF downloaded."
+            : "Base summary preserved. PDF downloaded.",
         duration: 2000,
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
@@ -553,6 +565,13 @@ export function JobsClient({
       }
 
       const blob = await res.blob();
+      const rawCoverSource = res.headers.get("x-tailor-cover-source");
+      const coverSource: "ai" | "fallback" =
+        rawCoverSource === "ai" ? "ai" : "fallback";
+      setTailorSourceByJob((prev) => ({
+        ...prev,
+        [job.id]: { ...prev[job.id], cover: coverSource },
+      }));
       const objectUrl = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = objectUrl;
@@ -565,7 +584,10 @@ export function JobsClient({
 
       toast({
         title: "Cover letter generated",
-        description: "PDF downloaded and application record updated.",
+        description:
+          coverSource === "ai"
+            ? "AI-tailored cover letter applied. PDF downloaded."
+            : "Fallback template used. PDF downloaded.",
         duration: 2000,
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
@@ -662,6 +684,7 @@ export function JobsClient({
   }, [items, selectedId]);
 
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
+  const selectedTailorSource = selectedJob ? tailorSourceByJob[selectedJob.id] : undefined;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const listPadding = 12;
   const rowVirtualizer = useVirtualizer({
@@ -1128,6 +1151,20 @@ export function JobsClient({
                     Remove
                   </Button>
                 </div>
+                {selectedTailorSource ? (
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                    {selectedTailorSource.cv ? (
+                      <span className="rounded-full border border-slate-900/10 bg-slate-100/70 px-2 py-0.5">
+                        CV: {selectedTailorSource.cv === "ai" ? "AI" : "Base"}
+                      </span>
+                    ) : null}
+                    {selectedTailorSource.cover ? (
+                      <span className="rounded-full border border-slate-900/10 bg-slate-100/70 px-2 py-0.5">
+                        Cover: {selectedTailorSource.cover === "ai" ? "AI" : "Fallback"}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className="text-sm text-muted-foreground">Select a job to preview details.</div>

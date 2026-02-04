@@ -12,6 +12,19 @@ type TailorResult = {
     paragraphTwo: string;
     paragraphThree: string;
   };
+  source: {
+    cv: "ai" | "base";
+    cover: "ai" | "fallback";
+  };
+};
+
+type ParsedModelPayload = {
+  cvSummary: string;
+  cover: {
+    paragraphOne: string;
+    paragraphTwo: string;
+    paragraphThree: string;
+  };
 };
 
 const FALLBACK_MODEL = "gpt-4o-mini";
@@ -28,9 +41,8 @@ function buildFallback(input: TailorInput): TailorResult {
   const baseSummary = input.baseSummary.trim();
 
   return {
-    cvSummary: baseSummary
-      ? `${baseSummary}\n\nFocused on ${title} opportunities at ${company}, with emphasis on direct impact, delivery quality, and cross-functional collaboration.`
-      : `Focused on ${title} opportunities at ${company}, with emphasis on direct impact, delivery quality, and cross-functional collaboration.`,
+    // Mainstream safe behavior: fallback never mutates user's stored summary.
+    cvSummary: baseSummary,
     cover: {
       paragraphOne: `I am applying for the ${title} position at ${company}. The role aligns strongly with my recent engineering experience and the way I approach product delivery.`,
       paragraphTwo: shortDesc
@@ -38,6 +50,10 @@ function buildFallback(input: TailorInput): TailorResult {
         : `I can contribute quickly by combining strong implementation skills, clear communication, and reliable delivery practices.`,
       paragraphThree:
         "I am excited about the opportunity to bring a user-focused, execution-oriented mindset to your team and help ship meaningful outcomes.",
+    },
+    source: {
+      cv: "base",
+      cover: "fallback",
     },
   };
 }
@@ -48,7 +64,7 @@ function normalizeText(value: unknown, fallback = "") {
   return text || fallback;
 }
 
-function parseModelPayload(raw: string): TailorResult | null {
+function parseModelPayload(raw: string): ParsedModelPayload | null {
   try {
     const parsed = JSON.parse(raw) as {
       cvSummary?: unknown;
@@ -118,22 +134,30 @@ Input:
 `.trim();
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    let response: Response;
+    try {
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       return buildFallback(input);
@@ -156,9 +180,15 @@ Input:
         paragraphTwo: parsed.cover.paragraphTwo || fallback.cover.paragraphTwo,
         paragraphThree: parsed.cover.paragraphThree || fallback.cover.paragraphThree,
       },
+      source: {
+        cv: parsed.cvSummary ? "ai" : "base",
+        cover:
+          parsed.cover.paragraphOne || parsed.cover.paragraphTwo || parsed.cover.paragraphThree
+            ? "ai"
+            : "fallback",
+      },
     };
   } catch {
     return buildFallback(input);
   }
 }
-

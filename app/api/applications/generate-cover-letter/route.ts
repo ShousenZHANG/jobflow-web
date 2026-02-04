@@ -169,7 +169,8 @@ export async function POST(req: Request) {
       "content-disposition": `attachment; filename="${filename}"`,
       "x-application-id": application.id,
       "x-request-id": requestId,
+      "x-tailor-cv-source": tailored.source.cv,
+      "x-tailor-cover-source": tailored.source.cover,
     },
   });
 }
-
