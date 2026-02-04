@@ -8,6 +8,11 @@ afterEach(() => {
 });
 
 describe("ResumeForm", () => {
+  const closePreviewIfOpen = async () => {
+    const closeButton = await screen.findByRole("button", { name: "Close" });
+    fireEvent.click(closeButton);
+  };
+
   it("renders personal info step with required fields", async () => {
     vi.stubGlobal(
       "fetch",
@@ -53,6 +58,7 @@ describe("ResumeForm", () => {
     expect(nextButton).toBeTruthy();
     fireEvent.click(nextButton!);
 
+    await closePreviewIfOpen();
     expect(await screen.findByRole("heading", { name: "Summary" })).toBeInTheDocument();
     expect(screen.getByLabelText("Summary")).toBeInTheDocument();
   });
@@ -83,6 +89,7 @@ describe("ResumeForm", () => {
       .find((button) => !button.hasAttribute("disabled"));
     expect(firstNextButton).toBeTruthy();
     fireEvent.click(firstNextButton!);
+    await closePreviewIfOpen();
     fireEvent.change(await screen.findByLabelText("Summary"), {
       target: { value: "Focused engineer." },
     });
@@ -91,6 +98,7 @@ describe("ResumeForm", () => {
       .find((button) => !button.hasAttribute("disabled"));
     expect(secondNextButton).toBeTruthy();
     fireEvent.click(secondNextButton!);
+    await closePreviewIfOpen();
 
     const addBulletButtons = screen.getAllByRole("button", { name: "Add bullet" });
     fireEvent.click(addBulletButtons[0]);
@@ -99,7 +107,7 @@ describe("ResumeForm", () => {
     expect(bulletInputs.length).toBe(2);
   });
 
-  it("disables generate pdf when no saved profile", async () => {
+  it("opens preview dialog from the preview button", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
@@ -107,7 +115,8 @@ describe("ResumeForm", () => {
 
     render(<ResumeForm />);
 
-    const buttons = await screen.findAllByRole("button", { name: "Download PDF" });
-    buttons.forEach((button) => expect(button).toBeDisabled());
+    const previewButton = await screen.findByRole("button", { name: "Preview" });
+    fireEvent.click(previewButton);
+    expect(await screen.findByRole("heading", { name: "PDF preview" })).toBeInTheDocument();
   });
 });

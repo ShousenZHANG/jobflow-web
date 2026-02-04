@@ -6,14 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -129,13 +127,11 @@ export function ResumeForm() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [downloading, setDownloading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [previewStatus, setPreviewStatus] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
   );
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const [previewZoom, setPreviewZoom] = useState("125");
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewAbortRef = useRef<AbortController | null>(null);
@@ -551,7 +547,7 @@ export function ResumeForm() {
   );
 
   const schedulePreview = useCallback(
-    (delayMs = 800) => {
+    (delayMs = 800, openDialog = false) => {
       if (previewTimerRef.current) {
         clearTimeout(previewTimerRef.current);
       }
@@ -560,6 +556,9 @@ export function ResumeForm() {
       const payload = buildPayload("preview");
       setPreviewStatus("loading");
       setPreviewError(null);
+      if (openDialog) {
+        setPreviewOpen(true);
+      }
 
       const runPreview = async (attempt: number) => {
         const controller = new AbortController();
@@ -627,7 +626,7 @@ export function ResumeForm() {
   const handleNext = () => {
     if (!canContinue) return;
     setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
-    schedulePreview(0);
+    schedulePreview(0, true);
   };
 
   const handleBack = () => {
@@ -661,48 +660,17 @@ export function ResumeForm() {
       title: "Saved",
       description: "Your master resume has been updated.",
     });
-    schedulePreview(0);
+    schedulePreview(0, true);
   };
 
-  const handleDownload = async () => {
+  const handleOpenPreview = () => {
+    setPreviewOpen(true);
     if (!pdfUrl) {
-      toast({
-        title: "Preview not ready",
-        description: "Generate a preview before downloading.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setDownloading(true);
-    try {
-      const anchor = document.createElement("a");
-      anchor.href = pdfUrl;
-      const dateStamp = new Date().toISOString().slice(0, 10);
-      const safeName = basics.fullName.trim() || "resume";
-      anchor.download = `resume-${safeName}-${dateStamp}.pdf`;
-      anchor.click();
-      toast({
-        title: "Resume ready",
-        description: "Your PDF has been downloaded.",
-      });
-    } catch {
-      toast({
-        title: "Download failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDownloading(false);
+      schedulePreview(0);
     }
   };
 
-  const previewUrl = useMemo(() => {
-    if (!pdfUrl) {
-      return null;
-    }
-
-    return `${pdfUrl}#zoom=${previewZoom}`;
-  }, [pdfUrl, previewZoom]);
+  const previewUrl = useMemo(() => pdfUrl, [pdfUrl]);
 
   const renderPreviewFrame = (heightClass: string) => (
     <div className="relative rounded-lg border border-slate-900/10 bg-white/60 p-2">
@@ -722,16 +690,16 @@ export function ResumeForm() {
           Generating preview…
         </div>
       ) : null}
-      {previewStatus === "error" ? (
-        <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-          <span>{previewError ?? "Preview failed. Try again."}</span>
-          <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0)}>
-            Retry
-          </Button>
+          {previewStatus === "error" ? (
+            <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+              <span>{previewError ?? "Preview failed. Try again."}</span>
+              <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0, true)}>
+                Retry
+              </Button>
+            </div>
+          ) : null}
         </div>
-      ) : null}
-    </div>
-  );
+      );
 
   const renderStep = () => {
     if (currentStep === 0) {
@@ -1244,130 +1212,62 @@ export function ResumeForm() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-      <div className="space-y-6">
-        <div className="flex flex-wrap gap-2">
-          {steps.map((step, index) => {
-            const isActive = index === currentStep;
-            const isAvailable = index <= maxStep;
-            return (
-              <button
-                key={step}
-                type="button"
-                onClick={() => (isAvailable ? setCurrentStep(index) : null)}
-                disabled={!isAvailable}
-                className={`rounded-full border px-4 py-2 text-sm transition ${
-                  isActive
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-600"
-                } ${!isAvailable ? "opacity-50" : "hover:border-emerald-300"}`}
-              >
-                {step}
-              </button>
-            );
-          })}
-        </div>
+    <div className="space-y-6">
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-[min(96vw,980px)]">
+          <DialogHeader>
+            <DialogTitle>PDF preview</DialogTitle>
+            <DialogDescription>Refreshes after Next or Save.</DialogDescription>
+          </DialogHeader>
+          {renderPreviewFrame("h-[72vh]")}
+        </DialogContent>
+      </Dialog>
 
-        <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-6">
-          {renderStep()}
-        </div>
+      <div className="flex flex-wrap gap-2">
+        {steps.map((step, index) => {
+          const isActive = index === currentStep;
+          const isAvailable = index <= maxStep;
+          return (
+            <button
+              key={step}
+              type="button"
+              onClick={() => (isAvailable ? setCurrentStep(index) : null)}
+              disabled={!isAvailable}
+              className={`rounded-full border px-4 py-2 text-sm transition ${
+                isActive
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                  : "border-slate-200 bg-white text-slate-600"
+              } ${!isAvailable ? "opacity-50" : "hover:border-emerald-300"}`}
+            >
+              {step}
+            </button>
+          );
+        })}
+      </div>
 
-        <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-4 lg:hidden">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-900">PDF preview</p>
-              <p className="text-xs text-muted-foreground">Tap to open the preview.</p>
-            </div>
-            <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-              <DialogTrigger asChild>
-                <Button type="button" variant="outline" size="sm">
-                  Open preview
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[min(96vw,900px)]">
-                <DialogHeader>
-                  <DialogTitle>PDF preview</DialogTitle>
-                  <DialogDescription>Refreshes after Next or Save.</DialogDescription>
-                </DialogHeader>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <Select value={previewZoom} onValueChange={setPreviewZoom}>
-                    <SelectTrigger className="h-8 w-20 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="end">
-                      {["90", "100", "110", "125", "150"].map((zoom) => (
-                        <SelectItem key={zoom} value={zoom}>
-                          {zoom}%
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownload}
-                    disabled={!pdfUrl || downloading}
-                  >
-                    {downloading ? "Downloading..." : "Download PDF"}
-                  </Button>
-                </div>
-                {renderPreviewFrame("h-[70vh]")}
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+      <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-6">
+        {renderStep()}
+      </div>
 
-        <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
           <Button type="button" variant="ghost" onClick={handleBack} disabled={currentStep === 0}>
             Back
           </Button>
-          {currentStep < steps.length - 1 ? (
-            <Button type="button" onClick={handleNext} disabled={!canContinue}>
-              Next
-            </Button>
-          ) : (
-            <Button onClick={handleSave} disabled={!canContinue || saving} className="edu-cta edu-cta--press">
-              {saving ? "Saving..." : "Save master resume"}
-            </Button>
-          )}
+          <Button type="button" variant="outline" onClick={handleOpenPreview}>
+            Preview
+          </Button>
         </div>
+        {currentStep < steps.length - 1 ? (
+          <Button type="button" onClick={handleNext} disabled={!canContinue}>
+            Next
+          </Button>
+        ) : (
+          <Button onClick={handleSave} disabled={!canContinue || saving} className="edu-cta edu-cta--press">
+            {saving ? "Saving..." : "Save master resume"}
+          </Button>
+        )}
       </div>
-
-      <aside className="hidden space-y-4 rounded-2xl border border-slate-900/10 bg-white/70 p-6 lg:block">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-semibold text-slate-900">PDF preview</h3>
-            <p className="text-xs text-muted-foreground">
-              Refreshes after Next or Save.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={previewZoom} onValueChange={setPreviewZoom}>
-              <SelectTrigger className="h-8 w-20 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="end">
-                {["90", "100", "110", "125", "150"].map((zoom) => (
-                  <SelectItem key={zoom} value={zoom}>
-                    {zoom}%
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleDownload}
-              disabled={!pdfUrl || downloading}
-            >
-              {downloading ? "Downloading..." : "Download PDF"}
-            </Button>
-          </div>
-        </div>
-        {renderPreviewFrame("h-[560px] sm:h-[640px] lg:h-[720px]")}
-      </aside>
     </div>
   );
 }
