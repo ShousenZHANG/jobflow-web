@@ -25,6 +25,10 @@ function toStringValue(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
+function hasText(value: string) {
+  return value.trim().length > 0;
+}
+
 function formatSchoolDegree(schoolRaw: unknown, degreeRaw: unknown) {
   const school = escapeLatex(toStringValue(schoolRaw)).trim();
   const degree = escapeLatex(toStringValue(degreeRaw)).trim();
@@ -36,7 +40,7 @@ function formatEduLocationDates(locationRaw: unknown, datesRaw: unknown) {
   const location = escapeLatex(toStringValue(locationRaw)).trim();
   const dates = escapeLatex(toStringValue(datesRaw)).trim();
   return {
-    location: location || "~",
+    location,
     dates,
   };
 }
@@ -58,17 +62,6 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
   const github = findLink("github");
   const website = findLink("portfolio") || findLink("website") || links[0];
 
-  const edu1 = education[0] ?? {};
-  const edu2 = education[1] ?? {};
-  const edu1LocationDates = formatEduLocationDates(
-    (edu1 as Record<string, unknown>).location,
-    (edu1 as Record<string, unknown>).dates,
-  );
-  const edu2LocationDates = formatEduLocationDates(
-    (edu2 as Record<string, unknown>).location,
-    (edu2 as Record<string, unknown>).dates,
-  );
-
   const projectBlocks = projects
     .map((proj) => {
       const name = escapeLatex(toStringValue(proj.name));
@@ -77,6 +70,21 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
       return line;
     })
     .join("\n\n\\vspace{0.2 cm}\n");
+
+  const educationEntries = education
+    .map((edu) => {
+      const record = edu as Record<string, unknown>;
+      const locationDates = formatEduLocationDates(record.location, record.dates);
+      const schoolDegree = formatSchoolDegree(record.school, record.degree);
+      const detail = escapeLatex(toStringValue(record.details)).trim();
+      return {
+        location: locationDates.location,
+        dates: locationDates.dates,
+        schoolDegree,
+        detail,
+      };
+    })
+    .filter((entry) => hasText(entry.schoolDegree));
 
   return {
     candidate: {
@@ -103,21 +111,7 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
       company: escapeLatex(toStringValue(entry.company)),
       bullets: asArray(entry.bullets).map((item) => escapeLatexWithBold(toStringValue(item))),
     })),
-    education: {
-      edu1Location: edu1LocationDates.location,
-      edu1Dates: edu1LocationDates.dates,
-      edu1SchoolDegree: formatSchoolDegree(
-        (edu1 as Record<string, unknown>).school,
-        (edu1 as Record<string, unknown>).degree,
-      ),
-      edu1Detail: escapeLatex(toStringValue((edu1 as Record<string, unknown>).details)),
-      edu2Location: edu2LocationDates.location,
-      edu2Dates: edu2LocationDates.dates,
-      edu2SchoolDegree: formatSchoolDegree(
-        (edu2 as Record<string, unknown>).school,
-        (edu2 as Record<string, unknown>).degree,
-      ),
-    },
+    education: educationEntries,
     openSourceProjects: projectBlocks || "",
   };
 }

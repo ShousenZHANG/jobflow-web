@@ -26,15 +26,19 @@ describe("renderResumeTex", () => {
           bullets: ["Delivered features", "Improved performance"],
         },
       ],
-      education: {
-        edu1Location: "Sydney",
-        edu1Dates: "2023-2025",
-        edu1SchoolDegree: "UNSW - MIT",
-        edu1Detail: "WAM 80",
-        edu2Location: "Jiangsu",
-        edu2Dates: "2016-2020",
-        edu2SchoolDegree: "JUST - BE",
-      },
+      education: [
+        {
+          location: "Sydney",
+          dates: "2023-2025",
+          schoolDegree: "UNSW - MIT",
+          detail: "WAM 80",
+        },
+        {
+          location: "Jiangsu",
+          dates: "2016-2020",
+          schoolDegree: "JUST - BE",
+        },
+      ],
       openSourceProjects: "\\textbf{Project A}",
     });
 

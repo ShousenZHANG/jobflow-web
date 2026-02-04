@@ -27,14 +27,11 @@ type ExperienceEntry = {
   bullets: string[];
 };
 
-type EducationInfo = {
-  edu1Location: string;
-  edu1Dates: string;
-  edu1SchoolDegree: string;
-  edu1Detail?: string;
-  edu2Location: string;
-  edu2Dates: string;
-  edu2SchoolDegree: string;
+type EducationEntry = {
+  location: string;
+  dates: string;
+  schoolDegree: string;
+  detail?: string;
 };
 
 type RenderResumeInput = {
@@ -42,7 +39,7 @@ type RenderResumeInput = {
   summary: string;
   skills: SkillsGroup[];
   experiences: ExperienceEntry[];
-  education: EducationInfo;
+  education: EducationEntry[];
   openSourceProjects: string;
   lastUpdated?: string;
 };
@@ -75,8 +72,18 @@ function renderBullets(items: string[]) {
   return items.map((item) => `\\\\item ${item}`).join("\n");
 }
 
+function formatExperienceMeta(location: string, dates: string) {
+  const loc = location.trim();
+  const when = dates.trim();
+  if (loc && when) {
+    return `${loc} \\\\ ${when}`;
+  }
+  return loc || when || "~";
+}
+
 function renderExperienceBlock(entry: ExperienceEntry) {
-  const header = `\\\\begin{twocolentry}{\n    ${entry.location} \\\\ ${entry.dates}\n}\n  \\\\textbf{${entry.title}} \\\\\n  ${entry.company}\n\\\\end{twocolentry}`;
+  const meta = formatExperienceMeta(entry.location, entry.dates);
+  const header = `\\\\begin{twocolentry}{\n    ${meta}\n}\n  \\\\textbf{${entry.title}} \\\\\n  ${entry.company}\n\\\\end{twocolentry}`;
 
   if (entry.bullets.length === 0) {
     return header;
@@ -92,6 +99,38 @@ function renderExperiences(entries: ExperienceEntry[]) {
       return `${renderExperienceBlock(entry)}${spacer}`;
     })
     .join("\n");
+}
+
+function formatEducationMeta(location: string, dates: string) {
+  const loc = location.trim();
+  const when = dates.trim();
+  if (loc && when) {
+    return `${loc} \\\\ ${when}`;
+  }
+  return loc || when || "~";
+}
+
+function renderEducationBlock(entry: EducationEntry) {
+  const meta = formatEducationMeta(entry.location, entry.dates);
+  const hasDetail = entry.detail?.trim().length;
+  const detailLine = hasDetail ? `\n  \\\\textit{${entry.detail}}` : "";
+  const detailBreak = hasDetail ? " \\\\" : "";
+
+  return `\\\\begin{twocolentry}{\n    ${meta}\n}\n  \\\\textbf{${entry.schoolDegree}}${detailBreak}${detailLine}\n\\\\end{twocolentry}`;
+}
+
+function renderEducation(entries: EducationEntry[]) {
+  return entries
+    .map((entry, index) => {
+      const spacer = index < entries.length - 1 ? "\n\n\\\\vspace{0.1cm}\n" : "";
+      return `${renderEducationBlock(entry)}${spacer}`;
+    })
+    .join("\n");
+}
+
+function renderEducationSection(entries: EducationEntry[]) {
+  if (entries.length === 0) return "";
+  return `\\\\section{Education}\n\\\\vspace{0.1cm}\n\n${renderEducation(entries)}`;
 }
 
 function sanitizeRendered(tex: string) {
@@ -119,6 +158,8 @@ export function renderResumeTex(input: RenderResumeInput) {
     EXPERIENCE_SECTION: renderExperiences(input.experiences),
   });
 
+  const educationRendered = renderEducationSection(input.education);
+
   const rendered = replaceAll(main, {
     CANDIDATE_NAME: input.candidate.name,
     CANDIDATE_TITLE: input.candidate.title,
@@ -132,13 +173,7 @@ export function renderResumeTex(input: RenderResumeInput) {
     CANDIDATE_WEBSITE_TEXT: input.candidate.websiteText ?? "",
     OPEN_SOURCE_PROJECTS: input.openSourceProjects,
     LAST_UPDATED: input.lastUpdated ?? "",
-    EDU1_LOCATION: input.education.edu1Location,
-    EDU1_DATES: input.education.edu1Dates,
-    EDU1_SCHOOL_DEGREE: input.education.edu1SchoolDegree,
-    EDU1_DETAIL: input.education.edu1Detail ?? "",
-    EDU2_LOCATION: input.education.edu2Location,
-    EDU2_DATES: input.education.edu2Dates,
-    EDU2_SCHOOL_DEGREE: input.education.edu2SchoolDegree,
+    EDUCATION_SECTION: educationRendered,
   })
     .replace("\\input{sections/summary.tex}", summaryRendered)
     .replace("\\input{sections/skills.tex}", skillsRendered)
