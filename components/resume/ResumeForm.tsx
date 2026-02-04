@@ -546,8 +546,63 @@ export function ResumeForm() {
     [basics, links, summary, experiences, projects, education, skills],
   );
 
+  const hasAnyContent = useMemo(() => {
+    const basicsFilled =
+      hasContent(basics.fullName) ||
+      hasContent(basics.title) ||
+      hasContent(basics.email) ||
+      hasContent(basics.phone);
+    const linksFilled = links.some((link) => hasContent(link.url));
+    const experienceFilled = experiences.some(
+      (entry) =>
+        hasContent(entry.title) ||
+        hasContent(entry.company) ||
+        hasContent(entry.location) ||
+        hasContent(entry.dates) ||
+        hasBullets(entry.bullets),
+    );
+    const projectsFilled = projects.some(
+      (entry) =>
+        hasContent(entry.name) ||
+        hasContent(entry.role) ||
+        hasContent(entry.dates) ||
+        hasContent(entry.link ?? "") ||
+        hasBullets(entry.bullets),
+    );
+    const educationFilled = education.some(
+      (entry) =>
+        hasContent(entry.school) ||
+        hasContent(entry.degree) ||
+        hasContent(entry.location) ||
+        hasContent(entry.dates),
+    );
+    const skillsFilled = skills.some(
+      (group) => hasContent(group.category) || hasBullets(group.items),
+    );
+
+    return (
+      basicsFilled ||
+      linksFilled ||
+      hasContent(summary) ||
+      experienceFilled ||
+      projectsFilled ||
+      educationFilled ||
+      skillsFilled
+    );
+  }, [basics, links, summary, experiences, projects, education, skills]);
+
   const schedulePreview = useCallback(
     (delayMs = 800, openDialog = false) => {
+      if (!hasAnyContent) {
+        if (openDialog) {
+          toast({
+            title: "Add details first",
+            description: "Fill in at least one section before previewing.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
       if (previewTimerRef.current) {
         clearTimeout(previewTimerRef.current);
       }
@@ -620,7 +675,7 @@ export function ResumeForm() {
         runPreview(0);
       }, delayMs);
     },
-    [buildPayload],
+    [buildPayload, hasAnyContent, toast],
   );
 
   const handleNext = () => {
@@ -664,21 +719,31 @@ export function ResumeForm() {
   };
 
   const handleOpenPreview = () => {
-    setPreviewOpen(true);
-    if (!pdfUrl) {
-      schedulePreview(0);
+    schedulePreview(0, true);
+    if (hasAnyContent) {
+      setPreviewOpen(true);
     }
   };
 
   const previewUrl = useMemo(() => pdfUrl, [pdfUrl]);
 
-  const renderPreviewFrame = (heightClass: string) => (
-    <div className="relative rounded-lg border border-slate-900/10 bg-white/60 p-2">
+  const renderPreviewFrame = (heightClass: string, framed = true) => (
+    <div
+      className={
+        framed
+          ? "relative rounded-lg border border-slate-900/10 bg-white/60 p-2"
+          : "relative h-full w-full overflow-hidden rounded-lg bg-white"
+      }
+    >
       {previewUrl ? (
         <iframe
           title="Resume preview"
           src={previewUrl}
-          className={`${heightClass} w-full rounded-md border border-slate-900/10 bg-white`}
+          className={
+            framed
+              ? `${heightClass} w-full rounded-md border border-slate-900/10 bg-white`
+              : `${heightClass} w-full`
+          }
         />
       ) : (
         <div className={`flex ${heightClass} items-center justify-center text-xs text-muted-foreground`}>
@@ -686,17 +751,29 @@ export function ResumeForm() {
         </div>
       )}
       {previewStatus === "loading" ? (
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/70 text-xs text-slate-500">
+        <div
+          className={
+            framed
+              ? "absolute inset-0 flex items-center justify-center rounded-lg bg-white/70 text-xs text-slate-500"
+              : "absolute inset-0 flex items-center justify-center bg-white/70 text-xs text-slate-500"
+          }
+        >
           Generating preview…
         </div>
       ) : null}
-          {previewStatus === "error" ? (
-            <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              <span>{previewError ?? "Preview failed. Try again."}</span>
-              <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0, true)}>
-                Retry
-              </Button>
-            </div>
+      {previewStatus === "error" ? (
+        <div
+          className={
+            framed
+              ? "absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700"
+              : "absolute inset-x-4 bottom-4 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700"
+          }
+        >
+          <span>{previewError ?? "Preview failed. Try again."}</span>
+          <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0, true)}>
+            Retry
+          </Button>
+        </div>
           ) : null}
         </div>
       );
@@ -1214,12 +1291,12 @@ export function ResumeForm() {
   return (
     <div className="space-y-6">
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-[min(96vw,980px)]">
-          <DialogHeader>
+        <DialogContent className="max-w-[min(96vw,1100px)] p-0">
+          <DialogHeader className="sr-only">
             <DialogTitle>PDF preview</DialogTitle>
             <DialogDescription>Refreshes after Next or Save.</DialogDescription>
           </DialogHeader>
-          {renderPreviewFrame("h-[72vh]")}
+          {renderPreviewFrame("h-[80vh]", false)}
         </DialogContent>
       </Dialog>
 
@@ -1254,7 +1331,12 @@ export function ResumeForm() {
           <Button type="button" variant="ghost" onClick={handleBack} disabled={currentStep === 0}>
             Back
           </Button>
-          <Button type="button" variant="outline" onClick={handleOpenPreview}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleOpenPreview}
+            disabled={!hasAnyContent}
+          >
             Preview
           </Button>
         </div>

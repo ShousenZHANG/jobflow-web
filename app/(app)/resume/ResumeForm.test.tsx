@@ -29,6 +29,9 @@ describe("ResumeForm", () => {
 
     const nextButtons = screen.getAllByRole("button", { name: "Next" });
     nextButtons.forEach((button) => expect(button).toBeDisabled());
+
+    const previewButton = screen.getByRole("button", { name: "Preview" });
+    expect(previewButton).toBeDisabled();
   });
 
   it("advances to summary after basics are filled", async () => {
@@ -115,7 +118,20 @@ describe("ResumeForm", () => {
 
     render(<ResumeForm />);
 
-    const previewButton = await screen.findByRole("button", { name: "Preview" });
+    fireEvent.change(await screen.findByLabelText("Full name"), {
+      target: { value: "Jane Doe" },
+    });
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Software Engineer" },
+    });
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "jane@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Phone"), {
+      target: { value: "+1 555 0100" },
+    });
+
+    const previewButton = screen.getByRole("button", { name: "Preview" });
     fireEvent.click(previewButton);
     expect(await screen.findByRole("heading", { name: "PDF preview" })).toBeInTheDocument();
   });
