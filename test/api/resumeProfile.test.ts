@@ -77,9 +77,10 @@ describe("resume profile api", () => {
       projects: [
         {
           name: "Jobflow",
+          location: "Sydney, Australia",
           dates: "2024",
-          link: "https://example.com",
-          summary: "",
+          stack: "Next.js, TypeScript",
+          links: [{ label: "GitHub", url: "https://example.com" }],
           bullets: ["Shipped"],
         },
       ],

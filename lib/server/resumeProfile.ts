@@ -27,9 +27,13 @@ export type ResumeProfileInput = {
   }[] | null;
   projects?: {
     name: string;
+    location?: string | null;
     dates: string;
-    link?: string | null;
-    summary?: string | null;
+    stack?: string | null;
+    links?: {
+      label: string;
+      url: string;
+    }[] | null;
     bullets: string[];
   }[] | null;
   education?: {

@@ -27,6 +27,20 @@ type ExperienceEntry = {
   bullets: string[];
 };
 
+type ProjectLink = {
+  label: string;
+  url: string;
+};
+
+type ProjectEntry = {
+  name: string;
+  location: string;
+  dates: string;
+  stack: string;
+  links: ProjectLink[];
+  bullets: string[];
+};
+
 type EducationEntry = {
   location: string;
   dates: string;
@@ -39,8 +53,8 @@ type RenderResumeInput = {
   summary: string;
   skills: SkillsGroup[];
   experiences: ExperienceEntry[];
+  projects: ProjectEntry[];
   education: EducationEntry[];
-  openSourceProjects: string;
   lastUpdated?: string;
 };
 
@@ -133,6 +147,58 @@ function renderEducationSection(entries: EducationEntry[]) {
   return `\\section{Education}\n\\vspace{0.1cm}\n\n${renderEducation(entries)}`;
 }
 
+function formatProjectMeta(location: string, dates: string) {
+  const loc = location.trim();
+  const when = dates.trim();
+  if (loc && when) {
+    return `${loc} \\\\ ${when}`;
+  }
+  return loc || when || "~";
+}
+
+function renderProjectLinks(links: ProjectLink[]) {
+  if (links.length === 0) return "";
+  return links
+    .map((link) => `\\href{${link.url}}{${link.label}}`)
+    .join(" \\;|\\; ");
+}
+
+function renderProjectStackLine(entry: ProjectEntry) {
+  const stack = entry.stack.trim();
+  const linkLine = renderProjectLinks(entry.links);
+  if (!stack && !linkLine) return "";
+  const stackPart = stack ? `\\textit{${stack}}` : "";
+  const separator = stack && linkLine ? " \\;|\\; " : "";
+  return `${stackPart}${separator}${linkLine}`;
+}
+
+function renderProjectBlock(entry: ProjectEntry) {
+  const meta = formatProjectMeta(entry.location, entry.dates);
+  const stackLine = renderProjectStackLine(entry);
+  const stackSection = stackLine ? ` \\\\\n  ${stackLine}` : "";
+  const header = `\\begin{twocolentry}{\n    ${meta}\n}\n  \\textbf{${entry.name}}${stackSection}\n\\end{twocolentry}`;
+
+  if (entry.bullets.length === 0) {
+    return header;
+  }
+
+  return `${header}\n\n\\vspace{0.10 cm}\n\\begin{onecolentry}\n\\begin{highlights}\n${renderBullets(entry.bullets)}\n\\end{highlights}\n\\end{onecolentry}`;
+}
+
+function renderProjects(entries: ProjectEntry[]) {
+  return entries
+    .map((entry, index) => {
+      const spacer = index < entries.length - 1 ? "\n\n\\vspace{0.25 cm}\n" : "";
+      return `${renderProjectBlock(entry)}${spacer}`;
+    })
+    .join("\n");
+}
+
+function renderProjectsSection(entries: ProjectEntry[]) {
+  if (entries.length === 0) return "";
+  return `\\section{Projects}\n\\vspace{0.1cm}\n\n${renderProjects(entries)}`;
+}
+
 function sanitizeRendered(tex: string) {
   return tex
     .replace(/[\uD800-\uDFFF]/g, "")
@@ -158,6 +224,8 @@ export function renderResumeTex(input: RenderResumeInput) {
     EXPERIENCE_SECTION: renderExperiences(input.experiences),
   });
 
+  const projectsRendered = renderProjectsSection(input.projects);
+
   const educationRendered = renderEducationSection(input.education);
 
   const rendered = replaceAll(main, {
@@ -171,8 +239,8 @@ export function renderResumeTex(input: RenderResumeInput) {
     CANDIDATE_GITHUB_TEXT: input.candidate.githubText ?? "",
     CANDIDATE_WEBSITE_URL: input.candidate.websiteUrl ?? "",
     CANDIDATE_WEBSITE_TEXT: input.candidate.websiteText ?? "",
-    OPEN_SOURCE_PROJECTS: input.openSourceProjects,
     LAST_UPDATED: input.lastUpdated ?? "",
+    PROJECTS_SECTION: projectsRendered,
     EDUCATION_SECTION: educationRendered,
   })
     .replace("\\input{sections/summary.tex}", summaryRendered)

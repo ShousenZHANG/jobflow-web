@@ -26,6 +26,16 @@ describe("renderResumeTex", () => {
           bullets: ["Delivered features", "Improved performance"],
         },
       ],
+      projects: [
+        {
+          name: "Jobflow",
+          location: "Sydney, Australia",
+          dates: "2024",
+          stack: "Next.js, TypeScript",
+          links: [{ label: "GitHub", url: "https://github.com/example" }],
+          bullets: ["Shipped features"],
+        },
+      ],
       education: [
         {
           location: "Sydney",
@@ -39,14 +49,13 @@ describe("renderResumeTex", () => {
           schoolDegree: "JUST - BE",
         },
       ],
-      openSourceProjects: "\\textbf{Project A}",
     });
 
     expect(output).toContain("Focused engineer.");
     expect(output).toContain("\\item Delivered features");
     expect(output).toContain("Frontend");
     expect(output).toContain("React, TypeScript");
-    expect(output).toContain("Project A");
+    expect(output).toContain("Jobflow");
     expect(output).toContain("Jane Doe");
     expect(output).toContain("Example Co");
   });

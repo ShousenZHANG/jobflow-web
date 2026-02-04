@@ -64,12 +64,36 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
 
   const projectBlocks = projects
     .map((proj) => {
-      const name = escapeLatex(toStringValue(proj.name));
-      const dates = escapeLatex(toStringValue(proj.dates));
-      const line = `\\begin{twocolentry}{${escapeLatex("")}}\n  \\textbf{${name}} \\ ${dates}\n\\end{twocolentry}`;
-      return line;
+      const record = proj as Record<string, unknown>;
+      const linksRaw = asArray(record.links) as Record<string, unknown>[];
+      const legacyLink = toStringValue(record.link);
+      const roleRaw = toStringValue(record.role);
+      const stackRaw = toStringValue(record.stack || roleRaw);
+
+      const links = linksRaw
+        .map((item) => ({
+          label: escapeLatex(toStringValue(item.label)),
+          url: escapeLatex(toStringValue(item.url)),
+        }))
+        .filter((item) => hasText(item.label) && hasText(item.url));
+
+      if (!links.length && hasText(legacyLink)) {
+        links.push({
+          label: "Link",
+          url: escapeLatex(legacyLink),
+        });
+      }
+
+      return {
+        name: escapeLatex(toStringValue(record.name)),
+        location: escapeLatex(toStringValue(record.location)),
+        dates: escapeLatex(toStringValue(record.dates)),
+        stack: escapeLatex(stackRaw),
+        links,
+        bullets: asArray(record.bullets).map((item) => escapeLatexWithBold(toStringValue(item))),
+      };
     })
-    .join("\n\n\\vspace{0.2 cm}\n");
+    .filter((entry) => hasText(entry.name));
 
   const educationEntries = education
     .map((edu) => {
@@ -111,8 +135,8 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
       company: escapeLatex(toStringValue(entry.company)),
       bullets: asArray(entry.bullets).map((item) => escapeLatexWithBold(toStringValue(item))),
     })),
+    projects: projectBlocks,
     education: educationEntries,
-    openSourceProjects: projectBlocks || "",
   };
 }
 

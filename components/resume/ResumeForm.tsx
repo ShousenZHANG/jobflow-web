@@ -38,9 +38,12 @@ type ResumeExperience = {
 
 type ResumeProject = {
   name: string;
-  role: string;
+  location: string;
+  stack: string;
   dates: string;
-  link?: string;
+  githubUrl: string;
+  demoUrl: string;
+  links?: { label: string; url: string }[];
   bullets: string[];
 };
 
@@ -87,9 +90,11 @@ const emptyExperience = (): ResumeExperience => ({
 
 const emptyProject = (): ResumeProject => ({
   name: "",
-  role: "",
+  location: "",
+  stack: "",
   dates: "",
-  link: "",
+  githubUrl: "",
+  demoUrl: "",
   bullets: [""],
 });
 
@@ -184,9 +189,19 @@ export function ResumeForm() {
         setProjects(
           profile.projects.map((entry) => ({
             name: entry.name ?? "",
-            role: entry.role ?? "",
+            location: entry.location ?? "",
+            stack: entry.stack ?? (("role" in entry ? (entry as { role?: string }).role : "") ?? ""),
             dates: entry.dates ?? "",
-            link: entry.link ?? "",
+            githubUrl:
+              Array.isArray(entry.links)
+                ? entry.links.find((link) => link.label?.toLowerCase() === "github")?.url ?? ""
+                : "",
+            demoUrl:
+              Array.isArray(entry.links)
+                ? entry.links.find((link) =>
+                    ["demo", "live demo"].includes(link.label?.toLowerCase() ?? ""),
+                  )?.url ?? ""
+                : (("link" in entry ? (entry as { link?: string }).link : "") ?? ""),
             bullets:
               Array.isArray(entry.bullets) && entry.bullets.length > 0
                 ? entry.bullets
@@ -271,7 +286,6 @@ export function ResumeForm() {
           projects.every(
             (entry) =>
               hasContent(entry.name) &&
-              hasContent(entry.role) &&
               hasContent(entry.dates) &&
               hasBullets(entry.bullets),
           )
@@ -480,11 +494,20 @@ export function ResumeForm() {
         bullets: normalizeBullets(entry.bullets),
       }));
 
-      const cleanedProjects = projects.map((entry) => ({
-        ...entry,
-        link: entry.link?.trim() ?? "",
-        bullets: normalizeBullets(entry.bullets),
-      }));
+      const cleanedProjects = projects.map((entry) => {
+        const github = entry.githubUrl.trim();
+        const demo = entry.demoUrl.trim();
+        return {
+          ...entry,
+          githubUrl: github,
+          demoUrl: demo,
+          links: [
+            github ? { label: "GitHub", url: github } : null,
+            demo ? { label: "Live Demo", url: demo } : null,
+          ].filter(Boolean) as { label: string; url: string }[],
+          bullets: normalizeBullets(entry.bullets),
+        };
+      });
 
       const cleanedEducation = education.map((entry) => ({
         ...entry,
@@ -507,15 +530,10 @@ export function ResumeForm() {
             )
           : cleanedExperiences;
 
-      const previewProjects =
-        mode === "preview"
-          ? cleanedProjects.filter(
-              (entry) =>
-                hasContent(entry.name) &&
-                hasContent(entry.role) &&
-                hasContent(entry.dates),
-            )
-          : cleanedProjects;
+        const previewProjects =
+          mode === "preview"
+            ? cleanedProjects.filter((entry) => hasContent(entry.name) && hasContent(entry.dates))
+            : cleanedProjects;
 
       const previewEducation =
         mode === "preview"
@@ -565,9 +583,11 @@ export function ResumeForm() {
     const projectsFilled = projects.some(
       (entry) =>
         hasContent(entry.name) ||
-        hasContent(entry.role) ||
+        hasContent(entry.stack) ||
+        hasContent(entry.location) ||
         hasContent(entry.dates) ||
-        hasContent(entry.link ?? "") ||
+        hasContent(entry.githubUrl) ||
+        hasContent(entry.demoUrl) ||
         hasBullets(entry.bullets),
     );
     const educationFilled = education.some(
@@ -1056,12 +1076,12 @@ export function ResumeForm() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`project-role-${index}`}>Project role</Label>
+                    <Label htmlFor={`project-location-${index}`}>Project location</Label>
                     <Input
-                      id={`project-role-${index}`}
-                      value={entry.role}
-                      onChange={(event) => updateProject(index, "role", event.target.value)}
-                      placeholder="Frontend Engineer"
+                      id={`project-location-${index}`}
+                      value={entry.location}
+                      onChange={(event) => updateProject(index, "location", event.target.value)}
+                      placeholder="Sydney, Australia"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1074,11 +1094,31 @@ export function ResumeForm() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`project-link-${index}`}>Project link</Label>
+                    <Label htmlFor={`project-stack-${index}`}>Tech stack</Label>
                     <Input
-                      id={`project-link-${index}`}
-                      value={entry.link ?? ""}
-                      onChange={(event) => updateProject(index, "link", event.target.value)}
+                      id={`project-stack-${index}`}
+                      value={entry.stack}
+                      onChange={(event) => updateProject(index, "stack", event.target.value)}
+                      placeholder="Next.js, TypeScript, Prisma, PostgreSQL"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor={`project-github-${index}`}>GitHub URL</Label>
+                    <Input
+                      id={`project-github-${index}`}
+                      value={entry.githubUrl}
+                      onChange={(event) => updateProject(index, "githubUrl", event.target.value)}
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`project-demo-${index}`}>Live demo URL</Label>
+                    <Input
+                      id={`project-demo-${index}`}
+                      value={entry.demoUrl}
+                      onChange={(event) => updateProject(index, "demoUrl", event.target.value)}
                       placeholder="https://"
                     />
                   </div>

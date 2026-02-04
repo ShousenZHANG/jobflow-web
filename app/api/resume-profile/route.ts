@@ -29,9 +29,10 @@ const ResumeLinkSchema = z.object({
 
 const ResumeProjectSchema = z.object({
   name: z.string().trim().min(1).max(140),
+  location: z.string().trim().min(1).max(120).optional().nullable(),
   dates: z.string().trim().min(1).max(80),
-  link: z.string().trim().url().max(300).optional().nullable(),
-  summary: z.string().trim().max(400).optional().nullable(),
+  stack: z.string().trim().max(300).optional().nullable(),
+  links: z.array(ResumeLinkSchema).max(4).optional().nullable(),
   bullets: z.array(z.string().trim().min(1).max(220)).max(12),
 });
 
