@@ -1,4 +1,4 @@
-﻿import { escapeLatex } from "./escapeLatex";
+import { escapeLatex, escapeLatexWithBold } from "./escapeLatex";
 
 type NullableRecord = Record<string, unknown> | null | undefined;
 
@@ -91,7 +91,7 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
       websiteUrl: website?.url ? escapeLatex(toStringValue(website.url)) : undefined,
       websiteText: website?.label ? escapeLatex(toStringValue(website.label)) : undefined,
     },
-    summary: escapeLatex(toStringValue(profile.summary)),
+    summary: escapeLatexWithBold(toStringValue(profile.summary)),
     skills: skills.map((group) => ({
       label: escapeLatex(toStringValue((group as Record<string, unknown>).category) || toStringValue((group as Record<string, unknown>).label)),
       items: asArray(group.items).map((item) => escapeLatex(toStringValue(item))),
@@ -101,7 +101,7 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
       dates: escapeLatex(toStringValue(entry.dates)),
       title: escapeLatex(toStringValue(entry.title)),
       company: escapeLatex(toStringValue(entry.company)),
-      bullets: asArray(entry.bullets).map((item) => escapeLatex(toStringValue(item))),
+      bullets: asArray(entry.bullets).map((item) => escapeLatexWithBold(toStringValue(item))),
     })),
     education: {
       edu1Location: edu1LocationDates.location,
@@ -121,6 +121,8 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
     openSourceProjects: projectBlocks || "",
   };
 }
+
+
 
 
 

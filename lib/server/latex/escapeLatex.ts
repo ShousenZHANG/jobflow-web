@@ -29,3 +29,26 @@ export function escapeLatex(value: string) {
     .replace(/~/g, "\\textasciitilde{}")
     .replace(/\^/g, "\\textasciicircum{}");
 }
+
+export function escapeLatexWithBold(value: string) {
+  const input = value ?? "";
+  const pattern = /\*\*([^*]+)\*\*/g;
+  let result = "";
+  let lastIndex = 0;
+  let hasMatch = false;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(input)) !== null) {
+    hasMatch = true;
+    result += escapeLatex(input.slice(lastIndex, match.index));
+    result += `\\textbf{${escapeLatex(match[1])}}`;
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (!hasMatch) {
+    return escapeLatex(input);
+  }
+
+  result += escapeLatex(input.slice(lastIndex));
+  return result;
+}
