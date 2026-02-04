@@ -7,6 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
 type ResumeBasics = {
@@ -128,6 +136,7 @@ export function ResumeForm() {
   );
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewZoom, setPreviewZoom] = useState("125");
+  const [previewOpen, setPreviewOpen] = useState(false);
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewAbortRef = useRef<AbortController | null>(null);
 
@@ -695,6 +704,35 @@ export function ResumeForm() {
     return `${pdfUrl}#zoom=${previewZoom}`;
   }, [pdfUrl, previewZoom]);
 
+  const renderPreviewFrame = (heightClass: string) => (
+    <div className="relative rounded-lg border border-slate-900/10 bg-white/60 p-2">
+      {previewUrl ? (
+        <iframe
+          title="Resume preview"
+          src={previewUrl}
+          className={`${heightClass} w-full rounded-md border border-slate-900/10 bg-white`}
+        />
+      ) : (
+        <div className={`flex ${heightClass} items-center justify-center text-xs text-muted-foreground`}>
+          Click Next or Save to generate a preview.
+        </div>
+      )}
+      {previewStatus === "loading" ? (
+        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/70 text-xs text-slate-500">
+          Generating preview…
+        </div>
+      ) : null}
+      {previewStatus === "error" ? (
+        <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+          <span>{previewError ?? "Preview failed. Try again."}</span>
+          <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0)}>
+            Retry
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+
   const renderStep = () => {
     if (currentStep === 0) {
       return (
@@ -1234,6 +1272,52 @@ export function ResumeForm() {
           {renderStep()}
         </div>
 
+        <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-4 lg:hidden">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">PDF preview</p>
+              <p className="text-xs text-muted-foreground">Tap to open the preview.</p>
+            </div>
+            <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+              <DialogTrigger asChild>
+                <Button type="button" variant="outline" size="sm">
+                  Open preview
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[min(96vw,900px)]">
+                <DialogHeader>
+                  <DialogTitle>PDF preview</DialogTitle>
+                  <DialogDescription>Refreshes after Next or Save.</DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <Select value={previewZoom} onValueChange={setPreviewZoom}>
+                    <SelectTrigger className="h-8 w-20 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      {["90", "100", "110", "125", "150"].map((zoom) => (
+                        <SelectItem key={zoom} value={zoom}>
+                          {zoom}%
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownload}
+                    disabled={!pdfUrl || downloading}
+                  >
+                    {downloading ? "Downloading..." : "Download PDF"}
+                  </Button>
+                </div>
+                {renderPreviewFrame("h-[70vh]")}
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <Button type="button" variant="ghost" onClick={handleBack} disabled={currentStep === 0}>
             Back
@@ -1250,7 +1334,7 @@ export function ResumeForm() {
         </div>
       </div>
 
-      <aside className="space-y-4 rounded-2xl border border-slate-900/10 bg-white/70 p-6">
+      <aside className="hidden space-y-4 rounded-2xl border border-slate-900/10 bg-white/70 p-6 lg:block">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-slate-900">PDF preview</h3>
@@ -1282,32 +1366,7 @@ export function ResumeForm() {
             </Button>
           </div>
         </div>
-        <div className="relative rounded-lg border border-slate-900/10 bg-white/60 p-2">
-          {previewUrl ? (
-            <iframe
-              title="Resume preview"
-              src={previewUrl}
-              className="h-[560px] w-full rounded-md border border-slate-900/10 bg-white sm:h-[640px] lg:h-[720px]"
-            />
-          ) : (
-            <div className="flex h-[560px] items-center justify-center text-xs text-muted-foreground sm:h-[640px] lg:h-[720px]">
-              Click Next or Save to generate a preview.
-            </div>
-          )}
-          {previewStatus === "loading" ? (
-            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/70 text-xs text-slate-500">
-              Generating preview…
-            </div>
-          ) : null}
-          {previewStatus === "error" ? (
-            <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              <span>{previewError ?? "Preview failed. Try again."}</span>
-              <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0)}>
-                Retry
-              </Button>
-            </div>
-          ) : null}
-        </div>
+        {renderPreviewFrame("h-[560px] sm:h-[640px] lg:h-[720px]")}
       </aside>
     </div>
   );
