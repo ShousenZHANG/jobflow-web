@@ -15,6 +15,7 @@ export function TopNav() {
     { href: "/fetch", label: "Fetch" },
     { href: "/resume", label: "Resume" },
   ];
+  const email = data?.user?.email ?? "";
 
   return (
     <div className="sticky top-0 z-40">
@@ -47,7 +48,14 @@ export function TopNav() {
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">{data?.user?.email ?? ""}</span>
+            {email ? (
+              <a
+                href={`mailto:${email}`}
+                className="hidden text-emerald-700 transition hover:text-emerald-800 hover:underline sm:inline"
+              >
+                {email}
+              </a>
+            ) : null}
             <Button
               variant="outline"
               size="sm"
