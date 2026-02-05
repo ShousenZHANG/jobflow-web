@@ -160,18 +160,34 @@ export async function tailorApplicationContent(
       providerConfig.provider,
       providerConfig.model,
     );
+    const defaultModel = getDefaultModel(providerConfig.provider);
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     let content = "";
     try {
-      content = await callProvider(providerConfig.provider, {
-        apiKey: providerConfig.apiKey,
-        model: normalizedModel,
-        systemPrompt,
-        userPrompt,
-        signal: controller.signal,
-      });
+      try {
+        content = await callProvider(providerConfig.provider, {
+          apiKey: providerConfig.apiKey,
+          model: normalizedModel,
+          systemPrompt,
+          userPrompt,
+          signal: controller.signal,
+        });
+      } catch (error) {
+        // Retry once on provider/model errors with provider default model.
+        if (normalizedModel !== defaultModel) {
+          content = await callProvider(providerConfig.provider, {
+            apiKey: providerConfig.apiKey,
+            model: defaultModel,
+            systemPrompt,
+            userPrompt,
+            signal: controller.signal,
+          });
+        } else {
+          throw error;
+        }
+      }
     } finally {
       clearTimeout(timeout);
     }

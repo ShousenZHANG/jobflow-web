@@ -132,4 +132,44 @@ describe("tailorApplicationContent", () => {
       expect.objectContaining({ apiKey: "user-key", model: "gpt-4o" }),
     );
   });
+
+  it("retries with provider default model when custom model fails", async () => {
+    process.env.GEMINI_API_KEY = "";
+    getUserAiProvider.mockReset();
+    getUserAiProvider.mockResolvedValue({
+      provider: "OPENAI",
+      model: "GPT-5 mini",
+      apiKeyCiphertext: "cipher",
+      apiKeyIv: "iv",
+      apiKeyTag: "tag",
+    });
+
+    const callProviderSpy = vi
+      .spyOn(providers, "callProvider")
+      .mockRejectedValueOnce(new Error("OPENAI_400"))
+      .mockResolvedValueOnce(
+        JSON.stringify({
+          cvSummary: "AI Summary",
+          cover: {
+            paragraphOne: "One",
+            paragraphTwo: "Two",
+            paragraphThree: "Three",
+          },
+        }),
+      );
+
+    const result = await tailorApplicationContent({ ...INPUT, userId: "user-1" });
+
+    expect(result.reason).toBe("ai_ok");
+    expect(callProviderSpy).toHaveBeenNthCalledWith(
+      1,
+      "openai",
+      expect.objectContaining({ model: "gpt-5-mini" }),
+    );
+    expect(callProviderSpy).toHaveBeenNthCalledWith(
+      2,
+      "openai",
+      expect.objectContaining({ model: "gpt-4o-mini" }),
+    );
+  });
 });

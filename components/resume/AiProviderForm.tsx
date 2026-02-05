@@ -183,7 +183,7 @@ export function AiProviderForm() {
           type="password"
           value={apiKey}
           onChange={(event) => setApiKey(event.target.value)}
-          placeholder={hasKey ? "Saved — enter a new key to replace" : "Enter your API key"}
+          placeholder={hasKey ? "Saved, enter a new key to replace" : "Enter your API key"}
         />
         <p className="text-xs text-muted-foreground">
           {hasKey
