@@ -82,13 +82,15 @@ function normalizeCover(value: unknown) {
   return { paragraphOne: "", paragraphTwo: "", paragraphThree: "" };
 }
 
-function normalizeTailorPayload(raw: unknown) {
+function normalizeTailorPayload(raw: unknown): TailorModelOutput {
   if (!raw || typeof raw !== "object") {
     return { cvSummary: "", cover: normalizeCover(undefined) };
   }
   if (Array.isArray(raw)) {
     const firstObject = raw.find((item) => item && typeof item === "object");
-    return firstObject ? normalizeTailorPayload(firstObject) : { cvSummary: "", cover: normalizeCover(undefined) };
+    return firstObject
+      ? normalizeTailorPayload(firstObject)
+      : { cvSummary: "", cover: normalizeCover(undefined) };
   }
   const record = raw as Record<string, unknown>;
   const cvSummary = pickFirstText(record, [
@@ -104,7 +106,9 @@ function normalizeTailorPayload(raw: unknown) {
   return { cvSummary, cover };
 }
 
-function recoverFromText(input: string) {
+function recoverFromText(
+  input: string,
+): { cvSummary: string; cover: { paragraphOne: string; paragraphTwo: string; paragraphThree: string } } | null {
   const text = input
     .replace(/^```(?:json)?/i, "")
     .replace(/```$/g, "")
