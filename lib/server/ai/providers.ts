@@ -18,6 +18,35 @@ export function getDefaultModel(provider: AiProviderName) {
   return DEFAULT_MODELS[provider];
 }
 
+function normalizeOpenAiModel(rawModel: string) {
+  const normalized = rawModel.trim().toLowerCase().replace(/[\s_]+/g, "-");
+  if (!normalized) return getDefaultModel("openai");
+  if (normalized.includes("gpt-5") && normalized.includes("mini")) {
+    return "gpt-5-mini";
+  }
+  return normalized;
+}
+
+function normalizeGeminiModel(rawModel: string) {
+  const normalized = rawModel.trim();
+  return normalized || getDefaultModel("gemini");
+}
+
+function normalizeClaudeModel(rawModel: string) {
+  const normalized = rawModel.trim();
+  return normalized || getDefaultModel("claude");
+}
+
+export function normalizeProviderModel(provider: AiProviderName, model: string) {
+  if (provider === "openai") {
+    return normalizeOpenAiModel(model);
+  }
+  if (provider === "claude") {
+    return normalizeClaudeModel(model);
+  }
+  return normalizeGeminiModel(model);
+}
+
 export async function callOpenAI(request: ProviderRequest) {
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",

@@ -8,6 +8,7 @@ import {
   callProvider,
   getDefaultModel,
   type AiProviderName,
+  normalizeProviderModel,
 } from "@/lib/server/ai/providers";
 
 type TailorInput = {
@@ -155,6 +156,10 @@ export async function tailorApplicationContent(
     }
 
     const { systemPrompt, userPrompt } = buildTailorPrompts(skillRules, input);
+    const normalizedModel = normalizeProviderModel(
+      providerConfig.provider,
+      providerConfig.model,
+    );
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
@@ -162,7 +167,7 @@ export async function tailorApplicationContent(
     try {
       content = await callProvider(providerConfig.provider, {
         apiKey: providerConfig.apiKey,
-        model: providerConfig.model,
+        model: normalizedModel,
         systemPrompt,
         userPrompt,
         signal: controller.signal,

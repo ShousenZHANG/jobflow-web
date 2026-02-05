@@ -81,12 +81,16 @@ export function AiProviderForm() {
 
     setSaving(true);
     try {
+      const normalizedModel =
+        provider === "openai"
+          ? model.trim().toLowerCase().replace(/[\s_]+/g, "-")
+          : model.trim();
       const res = await fetch("/api/user-ai-key", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           provider,
-          model: model.trim() || undefined,
+          model: normalizedModel || undefined,
           apiKey: apiKey.trim(),
         }),
       });
@@ -101,6 +105,7 @@ export function AiProviderForm() {
       }
 
       setApiKey("");
+      setModel(normalizedModel);
       setHasKey(true);
       toast({ title: "Provider configuration saved." });
     } finally {
@@ -163,6 +168,11 @@ export function AiProviderForm() {
             onChange={(event) => setModel(event.target.value)}
             placeholder={defaultModel}
           />
+          <p className="text-xs text-muted-foreground">
+            {provider === "openai"
+              ? "Use model IDs like gpt-5-mini or gpt-4o-mini."
+              : "Leave blank to use the default model."}
+          </p>
         </div>
       </div>
 
