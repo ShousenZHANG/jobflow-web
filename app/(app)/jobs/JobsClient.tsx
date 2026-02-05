@@ -16,6 +16,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { ToastAction } from "@/components/ui/toast";
@@ -31,6 +32,8 @@ type JobItem = {
   jobType: string | null;
   jobLevel: string | null;
   status: JobStatus;
+  resumePdfUrl?: string | null;
+  resumePdfName?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -203,6 +206,12 @@ export function JobsClient({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [coverGeneratingIds, setCoverGeneratingIds] = useState<Set<string>>(new Set());
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [pdfPreview, setPdfPreview] = useState<{
+    url: string;
+    filename: string;
+    label: string;
+  } | null>(null);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: "ai" | "base"; cover?: "ai" | "fallback" }>
   >({});
@@ -282,6 +291,14 @@ export function JobsClient({
   useEffect(() => {
     statusFilterRef.current = statusFilter;
   }, [statusFilter]);
+
+  useEffect(() => {
+    return () => {
+      if (pdfPreview?.url) {
+        URL.revokeObjectURL(pdfPreview.url);
+      }
+    };
+  }, [pdfPreview?.url]);
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
@@ -389,6 +406,12 @@ export function JobsClient({
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to update status");
+      return json as {
+        resumeSaved?: boolean;
+        resumePdfUrl?: string | null;
+        resumePdfName?: string | null;
+        saveError?: { code: string; message: string } | null;
+      };
     },
     onMutate: async ({ id, status }) => {
       setError(null);
@@ -422,7 +445,7 @@ export function JobsClient({
           "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
       });
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       toast({
         title: "Status updated",
@@ -431,6 +454,38 @@ export function JobsClient({
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
+
+      if (data?.resumePdfUrl) {
+        queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            items: old.items.map((it) =>
+              it.id === variables.id
+                ? { ...it, resumePdfUrl: data.resumePdfUrl, resumePdfName: data.resumePdfName }
+                : it,
+            ),
+          };
+        });
+      }
+
+      if (data?.saveError) {
+        toast({
+          title: "Saved with warnings",
+          description: data.saveError.message,
+          duration: 2400,
+          className:
+            "border-amber-200 bg-amber-50 text-amber-900 animate-in fade-in zoom-in-95",
+        });
+      } else if (data?.resumeSaved) {
+        toast({
+          title: "Resume saved",
+          description: "Saved to your applied job.",
+          duration: 2000,
+          className:
+            "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+        });
+      }
     },
     onSettled: (_data, _error, variables) => {
       if (!variables) return;
@@ -485,6 +540,12 @@ export function JobsClient({
     return match?.[1] ?? null;
   }
 
+  function openPdfPreview(blob: Blob, filename: string, label: string) {
+    const objectUrl = URL.createObjectURL(blob);
+    setPdfPreview({ url: objectUrl, filename, label });
+    setPreviewOpen(true);
+  }
+
   async function generateResume(job: JobItem) {
     setGeneratingIds((prev) => new Set(prev).add(job.id));
     setError(null);
@@ -507,22 +568,13 @@ export function JobsClient({
         ...prev,
         [job.id]: { ...prev[job.id], cv: cvSource },
       }));
-      const objectUrl = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = objectUrl;
-      anchor.download =
+      const filename =
         filenameFromDisposition(res.headers.get("content-disposition")) || "resume.pdf";
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-      URL.revokeObjectURL(objectUrl);
+      openPdfPreview(blob, filename, "Resume preview");
 
       toast({
         title: "Resume generated",
-        description:
-          cvSource === "ai"
-            ? "AI-tailored summary applied. PDF downloaded."
-            : "Base summary preserved. PDF downloaded.",
+        description: cvSource === "ai" ? "AI-tailored summary applied." : "Base summary preserved.",
         duration: 2000,
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
@@ -572,22 +624,16 @@ export function JobsClient({
         ...prev,
         [job.id]: { ...prev[job.id], cover: coverSource },
       }));
-      const objectUrl = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = objectUrl;
-      anchor.download =
+      const filename =
         filenameFromDisposition(res.headers.get("content-disposition")) || "cover-letter.pdf";
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-      URL.revokeObjectURL(objectUrl);
+      openPdfPreview(blob, filename, "Cover letter preview");
 
       toast({
         title: "Cover letter generated",
         description:
           coverSource === "ai"
-            ? "AI-tailored cover letter applied. PDF downloaded."
-            : "Fallback template used. PDF downloaded.",
+            ? "AI-tailored cover letter applied."
+            : "Fallback template used.",
         duration: 2000,
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
@@ -775,10 +821,57 @@ export function JobsClient({
 
 
   return (
-    <div
-      data-testid="jobs-shell"
-      className="edu-page-enter relative flex h-full flex-1 min-h-0 flex-col gap-6 text-foreground"
-    >
+    <>
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent
+          className="h-[92vh] w-[98vw] max-w-[min(98vw,1280px)] overflow-hidden p-0"
+          showCloseButton={false}
+        >
+          <DialogHeader className="sr-only">
+            <DialogTitle>{pdfPreview?.label ?? "PDF preview"}</DialogTitle>
+            <DialogDescription>Preview the generated PDF.</DialogDescription>
+          </DialogHeader>
+          <div className="flex h-full flex-col">
+            <div className="flex h-11 items-center justify-between border-b border-slate-900/10 bg-white/90 px-3">
+              <div className="text-xs font-medium text-slate-600">
+                {pdfPreview?.label ?? "PDF preview"}
+              </div>
+              <div className="flex items-center gap-2">
+                {pdfPreview ? (
+                  <Button asChild size="sm" className="edu-cta edu-cta--press h-8 px-3">
+                    <a href={pdfPreview.url} download={pdfPreview.filename}>
+                      Download PDF
+                    </a>
+                  </Button>
+                ) : null}
+                <DialogClose asChild>
+                  <Button type="button" variant="ghost" size="sm">
+                    Close
+                  </Button>
+                </DialogClose>
+              </div>
+            </div>
+            <div className="flex-1 bg-white">
+              {pdfPreview ? (
+                <iframe
+                  title={pdfPreview.label}
+                  src={pdfPreview.url}
+                  className="h-full w-full"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  No preview available.
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div
+        data-testid="jobs-shell"
+        className="edu-page-enter relative flex h-full flex-1 min-h-0 flex-col gap-6 text-foreground"
+      >
       <div className="flex h-full min-h-0 flex-1 flex-col gap-6">
         <div
         data-testid="jobs-toolbar"
@@ -1140,6 +1233,22 @@ export function JobsClient({
                       ? "Generating..."
                       : "Generate Cover Letter"}
                   </Button>
+                  {selectedJob.resumePdfUrl ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                    >
+                      <a
+                        href={selectedJob.resumePdfUrl}
+                        download={selectedJob.resumePdfName ?? "resume.pdf"}
+                      >
+                        <FileText className="h-4 w-4" />
+                        Saved CV
+                      </a>
+                    </Button>
+                  ) : null}
                   <Button
                     variant="outline"
                     size="sm"
@@ -1295,6 +1404,7 @@ export function JobsClient({
         </div>
         </section>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

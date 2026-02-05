@@ -27,10 +27,15 @@ export default async function JobsPage() {
       status: true,
       createdAt: true,
       updatedAt: true,
+      applications: {
+        select: { resumePdfUrl: true, resumePdfName: true },
+      },
     },
   });
-  const items = itemsRaw.map((it) => ({
+  const items = itemsRaw.map(({ applications, ...it }) => ({
     ...it,
+    resumePdfUrl: applications?.[0]?.resumePdfUrl ?? null,
+    resumePdfName: applications?.[0]?.resumePdfName ?? null,
     createdAt: it.createdAt.toISOString(),
     updatedAt: it.updatedAt.toISOString(),
   }));

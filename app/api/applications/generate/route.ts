@@ -5,10 +5,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
-import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
-import { renderResumeTex } from "@/lib/server/latex/renderResume";
-import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
-import { tailorApplicationContent } from "@/lib/server/ai/tailorApplication";
+import { LatexRenderError } from "@/lib/server/latex/compilePdf";
+import { buildResumePdfForJob } from "@/lib/server/applications/buildResumePdf";
 
 export const runtime = "nodejs";
 
@@ -86,23 +84,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const renderInput = mapResumeProfile(profile);
-  const tailored = await tailorApplicationContent({
-    baseSummary: renderInput.summary,
-    jobTitle: job.title,
-    company: job.company || "the company",
-    description: job.description || "",
-    userId,
-  });
-  const cvInput = {
-    ...renderInput,
-    summary: tailored.cvSummary || renderInput.summary,
-  };
-  const tex = renderResumeTex(cvInput);
-
-  let pdf: Buffer;
+  let pdfResult: Awaited<ReturnType<typeof buildResumePdfForJob>>;
   try {
-    pdf = await compileLatexToPdf(tex);
+    pdfResult = await buildResumePdfForJob({ userId, profile, job });
   } catch (err) {
     if (err instanceof LatexRenderError) {
       return NextResponse.json(
@@ -148,19 +132,19 @@ export async function POST(req: Request) {
   });
 
   const today = new Date().toISOString().slice(0, 10);
-  const candidate = toSafeFileSegment(renderInput.candidate.name);
+  const candidate = toSafeFileSegment(pdfResult.renderInput.candidate.name);
   const role = toSafeFileSegment(job.title);
   const filename = `resume-${candidate}-${role}-${today}.pdf`;
 
-  return new NextResponse(new Uint8Array(pdf), {
+  return new NextResponse(new Uint8Array(pdfResult.pdf), {
     status: 200,
     headers: {
       "content-type": "application/pdf",
       "content-disposition": `attachment; filename="${filename}"`,
       "x-application-id": application.id,
       "x-request-id": requestId,
-      "x-tailor-cv-source": tailored.source.cv,
-      "x-tailor-cover-source": tailored.source.cover,
+      "x-tailor-cv-source": pdfResult.cvSource,
+      "x-tailor-cover-source": pdfResult.coverSource,
     },
   });
 }

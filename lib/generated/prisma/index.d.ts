@@ -14665,6 +14665,7 @@ export namespace Prisma {
     role: string | null
     resumeTexUrl: string | null
     resumePdfUrl: string | null
+    resumePdfName: string | null
     coverTexUrl: string | null
     coverPdfUrl: string | null
     createdAt: Date | null
@@ -14680,6 +14681,7 @@ export namespace Prisma {
     role: string | null
     resumeTexUrl: string | null
     resumePdfUrl: string | null
+    resumePdfName: string | null
     coverTexUrl: string | null
     coverPdfUrl: string | null
     createdAt: Date | null
@@ -14695,6 +14697,7 @@ export namespace Prisma {
     role: number
     resumeTexUrl: number
     resumePdfUrl: number
+    resumePdfName: number
     coverTexUrl: number
     coverPdfUrl: number
     createdAt: number
@@ -14712,6 +14715,7 @@ export namespace Prisma {
     role?: true
     resumeTexUrl?: true
     resumePdfUrl?: true
+    resumePdfName?: true
     coverTexUrl?: true
     coverPdfUrl?: true
     createdAt?: true
@@ -14727,6 +14731,7 @@ export namespace Prisma {
     role?: true
     resumeTexUrl?: true
     resumePdfUrl?: true
+    resumePdfName?: true
     coverTexUrl?: true
     coverPdfUrl?: true
     createdAt?: true
@@ -14742,6 +14747,7 @@ export namespace Prisma {
     role?: true
     resumeTexUrl?: true
     resumePdfUrl?: true
+    resumePdfName?: true
     coverTexUrl?: true
     coverPdfUrl?: true
     createdAt?: true
@@ -14830,6 +14836,7 @@ export namespace Prisma {
     role: string | null
     resumeTexUrl: string | null
     resumePdfUrl: string | null
+    resumePdfName: string | null
     coverTexUrl: string | null
     coverPdfUrl: string | null
     createdAt: Date
@@ -14862,6 +14869,7 @@ export namespace Prisma {
     role?: boolean
     resumeTexUrl?: boolean
     resumePdfUrl?: boolean
+    resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
     createdAt?: boolean
@@ -14880,6 +14888,7 @@ export namespace Prisma {
     role?: boolean
     resumeTexUrl?: boolean
     resumePdfUrl?: boolean
+    resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
     createdAt?: boolean
@@ -14898,6 +14907,7 @@ export namespace Prisma {
     role?: boolean
     resumeTexUrl?: boolean
     resumePdfUrl?: boolean
+    resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
     createdAt?: boolean
@@ -14916,13 +14926,14 @@ export namespace Prisma {
     role?: boolean
     resumeTexUrl?: boolean
     resumePdfUrl?: boolean
+    resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobId" | "resumeProfileId" | "company" | "role" | "resumeTexUrl" | "resumePdfUrl" | "coverTexUrl" | "coverPdfUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["application"]>
+  export type ApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobId" | "resumeProfileId" | "company" | "role" | "resumeTexUrl" | "resumePdfUrl" | "resumePdfName" | "coverTexUrl" | "coverPdfUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["application"]>
   export type ApplicationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     job?: boolean | Application$jobArgs<ExtArgs>
@@ -14955,6 +14966,7 @@ export namespace Prisma {
       role: string | null
       resumeTexUrl: string | null
       resumePdfUrl: string | null
+      resumePdfName: string | null
       coverTexUrl: string | null
       coverPdfUrl: string | null
       createdAt: Date
@@ -15393,6 +15405,7 @@ export namespace Prisma {
     readonly role: FieldRef<"Application", 'String'>
     readonly resumeTexUrl: FieldRef<"Application", 'String'>
     readonly resumePdfUrl: FieldRef<"Application", 'String'>
+    readonly resumePdfName: FieldRef<"Application", 'String'>
     readonly coverTexUrl: FieldRef<"Application", 'String'>
     readonly coverPdfUrl: FieldRef<"Application", 'String'>
     readonly createdAt: FieldRef<"Application", 'DateTime'>
@@ -16033,6 +16046,7 @@ export namespace Prisma {
     role: 'role',
     resumeTexUrl: 'resumeTexUrl',
     resumePdfUrl: 'resumePdfUrl',
+    resumePdfName: 'resumePdfName',
     coverTexUrl: 'coverTexUrl',
     coverPdfUrl: 'coverPdfUrl',
     createdAt: 'createdAt',
@@ -17080,6 +17094,7 @@ export namespace Prisma {
     role?: StringNullableFilter<"Application"> | string | null
     resumeTexUrl?: StringNullableFilter<"Application"> | string | null
     resumePdfUrl?: StringNullableFilter<"Application"> | string | null
+    resumePdfName?: StringNullableFilter<"Application"> | string | null
     coverTexUrl?: StringNullableFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableFilter<"Application"> | string | null
     createdAt?: DateTimeFilter<"Application"> | Date | string
@@ -17098,6 +17113,7 @@ export namespace Prisma {
     role?: SortOrderInput | SortOrder
     resumeTexUrl?: SortOrderInput | SortOrder
     resumePdfUrl?: SortOrderInput | SortOrder
+    resumePdfName?: SortOrderInput | SortOrder
     coverTexUrl?: SortOrderInput | SortOrder
     coverPdfUrl?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -17120,6 +17136,7 @@ export namespace Prisma {
     role?: StringNullableFilter<"Application"> | string | null
     resumeTexUrl?: StringNullableFilter<"Application"> | string | null
     resumePdfUrl?: StringNullableFilter<"Application"> | string | null
+    resumePdfName?: StringNullableFilter<"Application"> | string | null
     coverTexUrl?: StringNullableFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableFilter<"Application"> | string | null
     createdAt?: DateTimeFilter<"Application"> | Date | string
@@ -17138,6 +17155,7 @@ export namespace Prisma {
     role?: SortOrderInput | SortOrder
     resumeTexUrl?: SortOrderInput | SortOrder
     resumePdfUrl?: SortOrderInput | SortOrder
+    resumePdfName?: SortOrderInput | SortOrder
     coverTexUrl?: SortOrderInput | SortOrder
     coverPdfUrl?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -17159,6 +17177,7 @@ export namespace Prisma {
     role?: StringNullableWithAggregatesFilter<"Application"> | string | null
     resumeTexUrl?: StringNullableWithAggregatesFilter<"Application"> | string | null
     resumePdfUrl?: StringNullableWithAggregatesFilter<"Application"> | string | null
+    resumePdfName?: StringNullableWithAggregatesFilter<"Application"> | string | null
     coverTexUrl?: StringNullableWithAggregatesFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableWithAggregatesFilter<"Application"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Application"> | Date | string
@@ -18109,6 +18128,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -18127,6 +18147,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -18139,6 +18160,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18157,6 +18179,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18172,6 +18195,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -18184,6 +18208,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18199,6 +18224,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19124,6 +19150,7 @@ export namespace Prisma {
     role?: SortOrder
     resumeTexUrl?: SortOrder
     resumePdfUrl?: SortOrder
+    resumePdfName?: SortOrder
     coverTexUrl?: SortOrder
     coverPdfUrl?: SortOrder
     createdAt?: SortOrder
@@ -19139,6 +19166,7 @@ export namespace Prisma {
     role?: SortOrder
     resumeTexUrl?: SortOrder
     resumePdfUrl?: SortOrder
+    resumePdfName?: SortOrder
     coverTexUrl?: SortOrder
     coverPdfUrl?: SortOrder
     createdAt?: SortOrder
@@ -19154,6 +19182,7 @@ export namespace Prisma {
     role?: SortOrder
     resumeTexUrl?: SortOrder
     resumePdfUrl?: SortOrder
+    resumePdfName?: SortOrder
     coverTexUrl?: SortOrder
     coverPdfUrl?: SortOrder
     createdAt?: SortOrder
@@ -20599,6 +20628,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -20615,6 +20645,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -20968,6 +20999,7 @@ export namespace Prisma {
     role?: StringNullableFilter<"Application"> | string | null
     resumeTexUrl?: StringNullableFilter<"Application"> | string | null
     resumePdfUrl?: StringNullableFilter<"Application"> | string | null
+    resumePdfName?: StringNullableFilter<"Application"> | string | null
     coverTexUrl?: StringNullableFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableFilter<"Application"> | string | null
     createdAt?: DateTimeFilter<"Application"> | Date | string
@@ -21217,6 +21249,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -21233,6 +21266,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -21751,6 +21785,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -21767,6 +21802,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -22383,6 +22419,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -22666,6 +22703,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22682,6 +22720,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22696,6 +22735,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22710,6 +22750,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -22722,6 +22763,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22738,6 +22780,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22752,6 +22795,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22766,6 +22810,7 @@ export namespace Prisma {
     role?: string | null
     resumeTexUrl?: string | null
     resumePdfUrl?: string | null
+    resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
     createdAt?: Date | string
@@ -22778,6 +22823,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22794,6 +22840,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22808,6 +22855,7 @@ export namespace Prisma {
     role?: NullableStringFieldUpdateOperationsInput | string | null
     resumeTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     resumePdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

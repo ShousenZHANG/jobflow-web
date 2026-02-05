@@ -250,6 +250,7 @@ model Application {
 
   resumeTexUrl String?
   resumePdfUrl String?
+  resumePdfName String?
   coverTexUrl  String?
   coverPdfUrl  String?
 

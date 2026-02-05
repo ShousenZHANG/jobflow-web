@@ -248,10 +248,11 @@ model Application {
   company String?
   role    String?
 
-  resumeTexUrl String?
-  resumePdfUrl String?
-  coverTexUrl  String?
-  coverPdfUrl  String?
+  resumeTexUrl  String?
+  resumePdfUrl  String?
+  resumePdfName String?
+  coverTexUrl   String?
+  coverPdfUrl   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -120,10 +120,23 @@ export async function GET(req: Request) {
       status: true,
       createdAt: true,
       updatedAt: true,
+      applications: {
+        select: { resumePdfUrl: true, resumePdfName: true },
+      },
     },
   });
 
-  const { items: jobs, nextCursor } = getCursorPage(jobsWithExtra, limit);
+  const normalized = jobsWithExtra.map((job) => {
+    const { applications, ...rest } = job;
+    const application = applications?.[0] ?? null;
+    return {
+      ...rest,
+      resumePdfUrl: application?.resumePdfUrl ?? null,
+      resumePdfName: application?.resumePdfName ?? null,
+    };
+  });
+
+  const { items: jobs, nextCursor } = getCursorPage(normalized, limit);
   const lastUpdated = jobs.length ? jobs[0].updatedAt?.toISOString?.() : "empty";
   const etag = `W/"jobs:${userId}:${cursor ?? "start"}:${jobs.length}:${lastUpdated}"`;
   if (ifNoneMatch && ifNoneMatch === etag) {

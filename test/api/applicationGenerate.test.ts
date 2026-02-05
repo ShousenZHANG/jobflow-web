@@ -40,38 +40,26 @@ vi.mock("@/lib/server/resumeProfile", () => ({
   getResumeProfile: vi.fn(),
 }));
 
-vi.mock("@/lib/server/latex/mapResumeProfile", () => ({
-  mapResumeProfile: vi.fn(() => ({
-    candidate: {
-      name: "Jane Doe",
-      title: "Software Engineer",
-      email: "jane@example.com",
-      phone: "+1 555 0100",
+vi.mock("@/lib/server/applications/buildResumePdf", () => ({
+  buildResumePdfForJob: vi.fn(async () => ({
+    pdf: Buffer.from([37, 80, 68, 70]),
+    tex: "\\documentclass{article}",
+    cvSource: "ai",
+    coverSource: "ai",
+    renderInput: {
+      candidate: {
+        name: "Jane Doe",
+        title: "Software Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+      },
+      summary: "Summary",
+      skills: [],
+      experiences: [],
+      projects: [],
+      education: [],
     },
-    summary: "Summary",
-    skills: [],
-    experiences: [],
-    projects: [],
-    education: [],
   })),
-}));
-
-vi.mock("@/lib/server/latex/renderResume", () => ({
-  renderResumeTex: vi.fn(() => "\\documentclass{article}"),
-}));
-
-vi.mock("@/lib/server/latex/compilePdf", () => ({
-  LatexRenderError: class LatexRenderError extends Error {
-    constructor(
-      public code: string,
-      public status: number,
-      message: string,
-      public details?: unknown,
-    ) {
-      super(message);
-    }
-  },
-  compileLatexToPdf: vi.fn(async () => Buffer.from([37, 80, 68, 70])),
 }));
 
 import { getServerSession } from "next-auth/next";
