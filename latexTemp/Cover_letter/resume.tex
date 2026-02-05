@@ -28,18 +28,10 @@
 \rfoot{\color{gray}\small Page \thepage\ of 1}
 
 % ===================== Fonts =====================
-\usepackage{fontspec}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{charter}
 \definecolor{PrimaryBlue}{RGB}{0,79,144}
-
-\IfFontExistsTF{Source Sans Pro}{
-  \setmainfont{Source Sans Pro}[
-    UprightFont = * Regular,
-    BoldFont    = * Semibold,
-    ItalicFont  = * Italic
-  ]
-}{
-  \setmainfont{TeX Gyre Heros}
-}
 
 % ===================== AU-style date (e.g., 12 January 2026) =====================
 \makeatletter

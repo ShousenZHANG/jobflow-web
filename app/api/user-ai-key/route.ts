@@ -67,7 +67,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const encrypted = encryptSecret(parsed.data.apiKey);
+  let encrypted;
+  try {
+    encrypted = encryptSecret(parsed.data.apiKey);
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "ENCRYPTION_FAILED",
+          message: err instanceof Error ? err.message : "Failed to encrypt API key",
+        },
+      },
+      { status: 500 },
+    );
+  }
   const config = await upsertUserAiProvider(userId, {
     provider: toDbProvider(parsed.data.provider),
     model: parsed.data.model ?? null,

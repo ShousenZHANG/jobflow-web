@@ -125,11 +125,21 @@ export async function tailorApplicationContent(
       decryptedKey = "";
     }
     const providerName = toProviderName(userProviderConfig.provider);
-    providerConfig = {
-      provider: providerName,
-      apiKey: decryptedKey,
-      model: userProviderConfig.model ?? getDefaultModel(providerName),
-    };
+    if (decryptedKey) {
+      providerConfig = {
+        provider: providerName,
+        apiKey: decryptedKey,
+        model: userProviderConfig.model ?? getDefaultModel(providerName),
+      };
+    } else if (defaultProviderConfig.apiKey) {
+      providerConfig = defaultProviderConfig;
+    } else {
+      providerConfig = {
+        provider: providerName,
+        apiKey: "",
+        model: userProviderConfig.model ?? getDefaultModel(providerName),
+      };
+    }
   }
 
   if (!providerConfig.apiKey) {

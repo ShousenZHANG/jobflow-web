@@ -13,11 +13,24 @@ function getKey(): Buffer {
   if (!raw) {
     throw new Error("APP_ENC_KEY is required");
   }
-  const key = Buffer.from(raw, "utf8");
-  if (key.length !== 32) {
-    throw new Error("APP_ENC_KEY must be 32 bytes");
+  const utf8Key = Buffer.from(raw, "utf8");
+  if (utf8Key.length === 32) {
+    return utf8Key;
   }
-  return key;
+
+  const base64Key = Buffer.from(raw, "base64");
+  if (base64Key.length === 32) {
+    return base64Key;
+  }
+
+  if (/^[0-9a-fA-F]+$/.test(raw)) {
+    const hexKey = Buffer.from(raw, "hex");
+    if (hexKey.length === 32) {
+      return hexKey;
+    }
+  }
+
+  throw new Error("APP_ENC_KEY must be 32 bytes (raw) or 32-byte base64/hex");
 }
 
 export function encryptSecret(value: string): EncryptedPayload {
