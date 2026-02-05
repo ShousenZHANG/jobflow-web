@@ -2,6 +2,13 @@ import { buildTailorPrompts } from "./buildPrompt";
 import { getPromptSkillRules } from "./promptSkills";
 import { parseTailorModelOutput } from "./schema";
 import { getAiPromptProfile } from "@/lib/server/aiPromptProfile";
+import { decryptSecret } from "@/lib/server/crypto/encryption";
+import { getUserAiProvider } from "@/lib/server/userAiProvider";
+import {
+  callProvider,
+  getDefaultModel,
+  type AiProviderName,
+} from "@/lib/server/ai/providers";
 
 type TailorInput = {
   baseSummary: string;
@@ -33,7 +40,7 @@ type ParsedModelPayload = {
   };
 };
 
-const FALLBACK_MODEL = "gpt-4o-mini";
+const DEFAULT_PROVIDER: AiProviderName = "gemini";
 
 function truncate(text: string, max = 1600) {
   if (text.length <= max) return text;
@@ -82,8 +89,6 @@ function normalizeRuleArray(value: unknown): string[] | undefined {
 export async function tailorApplicationContent(
   input: TailorInput,
 ): Promise<TailorResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || FALLBACK_MODEL;
   const profile = input.userId ? await getAiPromptProfile(input.userId) : null;
   const skillRules = getPromptSkillRules(
     profile
@@ -94,7 +99,40 @@ export async function tailorApplicationContent(
       : undefined,
   );
 
-  if (!apiKey) {
+  const userProviderConfig = input.userId
+    ? await getUserAiProvider(input.userId)
+    : null;
+
+  const toProviderName = (value: string) =>
+    value.toLowerCase() as AiProviderName;
+
+  const defaultProviderConfig = {
+    provider: DEFAULT_PROVIDER,
+    apiKey: process.env.GEMINI_API_KEY,
+    model: process.env.GEMINI_MODEL || getDefaultModel(DEFAULT_PROVIDER),
+  };
+
+  let providerConfig = defaultProviderConfig;
+  if (userProviderConfig) {
+    let decryptedKey = "";
+    try {
+      decryptedKey = decryptSecret({
+        ciphertext: userProviderConfig.apiKeyCiphertext,
+        iv: userProviderConfig.apiKeyIv,
+        tag: userProviderConfig.apiKeyTag,
+      });
+    } catch {
+      decryptedKey = "";
+    }
+    const providerName = toProviderName(userProviderConfig.provider);
+    providerConfig = {
+      provider: providerName,
+      apiKey: decryptedKey,
+      model: userProviderConfig.model ?? getDefaultModel(providerName),
+    };
+  }
+
+  if (!providerConfig.apiKey) {
     return buildFallback(input);
   }
 
@@ -103,37 +141,19 @@ export async function tailorApplicationContent(
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
-    let response: Response;
+    let content = "";
     try {
-      response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          temperature: 0.2,
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-        }),
+      content = await callProvider(providerConfig.provider, {
+        apiKey: providerConfig.apiKey,
+        model: providerConfig.model,
+        systemPrompt,
+        userPrompt,
         signal: controller.signal,
       });
     } finally {
       clearTimeout(timeout);
     }
 
-    if (!response.ok) {
-      return buildFallback(input);
-    }
-
-    const json = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = json.choices?.[0]?.message?.content ?? "";
     const parsedRaw = parseTailorModelOutput(content);
     const parsed: ParsedModelPayload | null = parsedRaw
       ? {

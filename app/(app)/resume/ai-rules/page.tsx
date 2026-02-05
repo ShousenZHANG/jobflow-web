@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
+import { AiProviderForm } from "@/components/resume/AiProviderForm";
 import { AiRulesForm } from "@/components/resume/AiRulesForm";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,10 @@ export default async function AiRulesPage() {
             Customize the default CV and cover letter rules applied by the AI generator.
           </p>
         </div>
-        <AiRulesForm />
+        <div className="space-y-6">
+          <AiProviderForm />
+          <AiRulesForm />
+        </div>
       </section>
     </main>
   );

@@ -64,6 +64,11 @@ export type ResumeProfile = $Result.DefaultSelection<Prisma.$ResumeProfilePayloa
  */
 export type AiPromptProfile = $Result.DefaultSelection<Prisma.$AiPromptProfilePayload>
 /**
+ * Model UserAiProviderConfig
+ * 
+ */
+export type UserAiProviderConfig = $Result.DefaultSelection<Prisma.$UserAiProviderConfigPayload>
+/**
  * Model Application
  * 
  */
@@ -91,6 +96,15 @@ export const FetchRunStatus: {
 
 export type FetchRunStatus = (typeof FetchRunStatus)[keyof typeof FetchRunStatus]
 
+
+export const AiProvider: {
+  OPENAI: 'OPENAI',
+  GEMINI: 'GEMINI',
+  CLAUDE: 'CLAUDE'
+};
+
+export type AiProvider = (typeof AiProvider)[keyof typeof AiProvider]
+
 }
 
 export type JobStatus = $Enums.JobStatus
@@ -100,6 +114,10 @@ export const JobStatus: typeof $Enums.JobStatus
 export type FetchRunStatus = $Enums.FetchRunStatus
 
 export const FetchRunStatus: typeof $Enums.FetchRunStatus
+
+export type AiProvider = $Enums.AiProvider
+
+export const AiProvider: typeof $Enums.AiProvider
 
 /**
  * ##  Prisma Client ʲˢ
@@ -317,6 +335,16 @@ export class PrismaClient<
     * ```
     */
   get aiPromptProfile(): Prisma.AiPromptProfileDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userAiProviderConfig`: Exposes CRUD operations for the **UserAiProviderConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserAiProviderConfigs
+    * const userAiProviderConfigs = await prisma.userAiProviderConfig.findMany()
+    * ```
+    */
+  get userAiProviderConfig(): Prisma.UserAiProviderConfigDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.application`: Exposes CRUD operations for the **Application** model.
@@ -771,6 +799,7 @@ export namespace Prisma {
     FetchRun: 'FetchRun',
     ResumeProfile: 'ResumeProfile',
     AiPromptProfile: 'AiPromptProfile',
+    UserAiProviderConfig: 'UserAiProviderConfig',
     Application: 'Application'
   };
 
@@ -787,7 +816,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "savedSearch" | "fetchRun" | "resumeProfile" | "aiPromptProfile" | "application"
+      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "savedSearch" | "fetchRun" | "resumeProfile" | "aiPromptProfile" | "userAiProviderConfig" | "application"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1531,6 +1560,80 @@ export namespace Prisma {
           }
         }
       }
+      UserAiProviderConfig: {
+        payload: Prisma.$UserAiProviderConfigPayload<ExtArgs>
+        fields: Prisma.UserAiProviderConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserAiProviderConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserAiProviderConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.UserAiProviderConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserAiProviderConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>
+          }
+          findMany: {
+            args: Prisma.UserAiProviderConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>[]
+          }
+          create: {
+            args: Prisma.UserAiProviderConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>
+          }
+          createMany: {
+            args: Prisma.UserAiProviderConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserAiProviderConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.UserAiProviderConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>
+          }
+          update: {
+            args: Prisma.UserAiProviderConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserAiProviderConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserAiProviderConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserAiProviderConfigUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserAiProviderConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserAiProviderConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.UserAiProviderConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserAiProviderConfig>
+          }
+          groupBy: {
+            args: Prisma.UserAiProviderConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserAiProviderConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserAiProviderConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<UserAiProviderConfigCountAggregateOutputType> | number
+          }
+        }
+      }
       Application: {
         payload: Prisma.$ApplicationPayload<ExtArgs>
         fields: Prisma.ApplicationFieldRefs
@@ -1723,6 +1826,7 @@ export namespace Prisma {
     fetchRun?: FetchRunOmit
     resumeProfile?: ResumeProfileOmit
     aiPromptProfile?: AiPromptProfileOmit
+    userAiProviderConfig?: UserAiProviderConfigOmit
     application?: ApplicationOmit
   }
 
@@ -2157,6 +2261,7 @@ export namespace Prisma {
     dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
     resumeProfiles?: boolean | User$resumeProfilesArgs<ExtArgs>
     aiPromptProfile?: boolean | User$aiPromptProfileArgs<ExtArgs>
+    aiProviderConfig?: boolean | User$aiProviderConfigArgs<ExtArgs>
     applications?: boolean | User$applicationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -2202,6 +2307,7 @@ export namespace Prisma {
     dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
     resumeProfiles?: boolean | User$resumeProfilesArgs<ExtArgs>
     aiPromptProfile?: boolean | User$aiPromptProfileArgs<ExtArgs>
+    aiProviderConfig?: boolean | User$aiProviderConfigArgs<ExtArgs>
     applications?: boolean | User$applicationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -2220,6 +2326,7 @@ export namespace Prisma {
       dailyCheckins: Prisma.$DailyCheckinPayload<ExtArgs>[]
       resumeProfiles: Prisma.$ResumeProfilePayload<ExtArgs>[]
       aiPromptProfile: Prisma.$AiPromptProfilePayload<ExtArgs> | null
+      aiProviderConfig: Prisma.$UserAiProviderConfigPayload<ExtArgs> | null
       applications: Prisma.$ApplicationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -2633,6 +2740,7 @@ export namespace Prisma {
     dailyCheckins<T extends User$dailyCheckinsArgs<ExtArgs> = {}>(args?: Subset<T, User$dailyCheckinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     resumeProfiles<T extends User$resumeProfilesArgs<ExtArgs> = {}>(args?: Subset<T, User$resumeProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResumeProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiPromptProfile<T extends User$aiPromptProfileArgs<ExtArgs> = {}>(args?: Subset<T, User$aiPromptProfileArgs<ExtArgs>>): Prisma__AiPromptProfileClient<$Result.GetResult<Prisma.$AiPromptProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    aiProviderConfig<T extends User$aiProviderConfigArgs<ExtArgs> = {}>(args?: Subset<T, User$aiProviderConfigArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     applications<T extends User$applicationsArgs<ExtArgs> = {}>(args?: Subset<T, User$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3266,6 +3374,25 @@ export namespace Prisma {
      */
     include?: AiPromptProfileInclude<ExtArgs> | null
     where?: AiPromptProfileWhereInput
+  }
+
+  /**
+   * User.aiProviderConfig
+   */
+  export type User$aiProviderConfigArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    where?: UserAiProviderConfigWhereInput
   }
 
   /**
@@ -13410,6 +13537,1116 @@ export namespace Prisma {
 
 
   /**
+   * Model UserAiProviderConfig
+   */
+
+  export type AggregateUserAiProviderConfig = {
+    _count: UserAiProviderConfigCountAggregateOutputType | null
+    _min: UserAiProviderConfigMinAggregateOutputType | null
+    _max: UserAiProviderConfigMaxAggregateOutputType | null
+  }
+
+  export type UserAiProviderConfigMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    provider: $Enums.AiProvider | null
+    model: string | null
+    apiKeyCiphertext: string | null
+    apiKeyIv: string | null
+    apiKeyTag: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserAiProviderConfigMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    provider: $Enums.AiProvider | null
+    model: string | null
+    apiKeyCiphertext: string | null
+    apiKeyIv: string | null
+    apiKeyTag: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserAiProviderConfigCountAggregateOutputType = {
+    id: number
+    userId: number
+    provider: number
+    model: number
+    apiKeyCiphertext: number
+    apiKeyIv: number
+    apiKeyTag: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserAiProviderConfigMinAggregateInputType = {
+    id?: true
+    userId?: true
+    provider?: true
+    model?: true
+    apiKeyCiphertext?: true
+    apiKeyIv?: true
+    apiKeyTag?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserAiProviderConfigMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    provider?: true
+    model?: true
+    apiKeyCiphertext?: true
+    apiKeyIv?: true
+    apiKeyTag?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserAiProviderConfigCountAggregateInputType = {
+    id?: true
+    userId?: true
+    provider?: true
+    model?: true
+    apiKeyCiphertext?: true
+    apiKeyIv?: true
+    apiKeyTag?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserAiProviderConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserAiProviderConfig to aggregate.
+     */
+    where?: UserAiProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserAiProviderConfigs to fetch.
+     */
+    orderBy?: UserAiProviderConfigOrderByWithRelationInput | UserAiProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserAiProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserAiProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserAiProviderConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserAiProviderConfigs
+    **/
+    _count?: true | UserAiProviderConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserAiProviderConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserAiProviderConfigMaxAggregateInputType
+  }
+
+  export type GetUserAiProviderConfigAggregateType<T extends UserAiProviderConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserAiProviderConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserAiProviderConfig[P]>
+      : GetScalarType<T[P], AggregateUserAiProviderConfig[P]>
+  }
+
+
+
+
+  export type UserAiProviderConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserAiProviderConfigWhereInput
+    orderBy?: UserAiProviderConfigOrderByWithAggregationInput | UserAiProviderConfigOrderByWithAggregationInput[]
+    by: UserAiProviderConfigScalarFieldEnum[] | UserAiProviderConfigScalarFieldEnum
+    having?: UserAiProviderConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserAiProviderConfigCountAggregateInputType | true
+    _min?: UserAiProviderConfigMinAggregateInputType
+    _max?: UserAiProviderConfigMaxAggregateInputType
+  }
+
+  export type UserAiProviderConfigGroupByOutputType = {
+    id: string
+    userId: string
+    provider: $Enums.AiProvider
+    model: string | null
+    apiKeyCiphertext: string
+    apiKeyIv: string
+    apiKeyTag: string
+    createdAt: Date
+    updatedAt: Date
+    _count: UserAiProviderConfigCountAggregateOutputType | null
+    _min: UserAiProviderConfigMinAggregateOutputType | null
+    _max: UserAiProviderConfigMaxAggregateOutputType | null
+  }
+
+  type GetUserAiProviderConfigGroupByPayload<T extends UserAiProviderConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserAiProviderConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserAiProviderConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserAiProviderConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], UserAiProviderConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserAiProviderConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    provider?: boolean
+    model?: boolean
+    apiKeyCiphertext?: boolean
+    apiKeyIv?: boolean
+    apiKeyTag?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userAiProviderConfig"]>
+
+  export type UserAiProviderConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    provider?: boolean
+    model?: boolean
+    apiKeyCiphertext?: boolean
+    apiKeyIv?: boolean
+    apiKeyTag?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userAiProviderConfig"]>
+
+  export type UserAiProviderConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    provider?: boolean
+    model?: boolean
+    apiKeyCiphertext?: boolean
+    apiKeyIv?: boolean
+    apiKeyTag?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userAiProviderConfig"]>
+
+  export type UserAiProviderConfigSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    provider?: boolean
+    model?: boolean
+    apiKeyCiphertext?: boolean
+    apiKeyIv?: boolean
+    apiKeyTag?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserAiProviderConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "provider" | "model" | "apiKeyCiphertext" | "apiKeyIv" | "apiKeyTag" | "createdAt" | "updatedAt", ExtArgs["result"]["userAiProviderConfig"]>
+  export type UserAiProviderConfigInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserAiProviderConfigIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserAiProviderConfigIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $UserAiProviderConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserAiProviderConfig"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      provider: $Enums.AiProvider
+      model: string | null
+      apiKeyCiphertext: string
+      apiKeyIv: string
+      apiKeyTag: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userAiProviderConfig"]>
+    composites: {}
+  }
+
+  type UserAiProviderConfigGetPayload<S extends boolean | null | undefined | UserAiProviderConfigDefaultArgs> = $Result.GetResult<Prisma.$UserAiProviderConfigPayload, S>
+
+  type UserAiProviderConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserAiProviderConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserAiProviderConfigCountAggregateInputType | true
+    }
+
+  export interface UserAiProviderConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserAiProviderConfig'], meta: { name: 'UserAiProviderConfig' } }
+    /**
+     * Find zero or one UserAiProviderConfig that matches the filter.
+     * @param {UserAiProviderConfigFindUniqueArgs} args - Arguments to find a UserAiProviderConfig
+     * @example
+     * // Get one UserAiProviderConfig
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserAiProviderConfigFindUniqueArgs>(args: SelectSubset<T, UserAiProviderConfigFindUniqueArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserAiProviderConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserAiProviderConfigFindUniqueOrThrowArgs} args - Arguments to find a UserAiProviderConfig
+     * @example
+     * // Get one UserAiProviderConfig
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserAiProviderConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, UserAiProviderConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserAiProviderConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAiProviderConfigFindFirstArgs} args - Arguments to find a UserAiProviderConfig
+     * @example
+     * // Get one UserAiProviderConfig
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserAiProviderConfigFindFirstArgs>(args?: SelectSubset<T, UserAiProviderConfigFindFirstArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserAiProviderConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAiProviderConfigFindFirstOrThrowArgs} args - Arguments to find a UserAiProviderConfig
+     * @example
+     * // Get one UserAiProviderConfig
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserAiProviderConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, UserAiProviderConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserAiProviderConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAiProviderConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserAiProviderConfigs
+     * const userAiProviderConfigs = await prisma.userAiProviderConfig.findMany()
+     * 
+     * // Get first 10 UserAiProviderConfigs
+     * const userAiProviderConfigs = await prisma.userAiProviderConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userAiProviderConfigWithIdOnly = await prisma.userAiProviderConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserAiProviderConfigFindManyArgs>(args?: SelectSubset<T, UserAiProviderConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserAiProviderConfig.
+     * @param {UserAiProviderConfigCreateArgs} args - Arguments to create a UserAiProviderConfig.
+     * @example
+     * // Create one UserAiProviderConfig
+     * const UserAiProviderConfig = await prisma.userAiProviderConfig.create({
+     *   data: {
+     *     // ... data to create a UserAiProviderConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserAiProviderConfigCreateArgs>(args: SelectSubset<T, UserAiProviderConfigCreateArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserAiProviderConfigs.
+     * @param {UserAiProviderConfigCreateManyArgs} args - Arguments to create many UserAiProviderConfigs.
+     * @example
+     * // Create many UserAiProviderConfigs
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserAiProviderConfigCreateManyArgs>(args?: SelectSubset<T, UserAiProviderConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserAiProviderConfigs and returns the data saved in the database.
+     * @param {UserAiProviderConfigCreateManyAndReturnArgs} args - Arguments to create many UserAiProviderConfigs.
+     * @example
+     * // Create many UserAiProviderConfigs
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserAiProviderConfigs and only return the `id`
+     * const userAiProviderConfigWithIdOnly = await prisma.userAiProviderConfig.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserAiProviderConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, UserAiProviderConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserAiProviderConfig.
+     * @param {UserAiProviderConfigDeleteArgs} args - Arguments to delete one UserAiProviderConfig.
+     * @example
+     * // Delete one UserAiProviderConfig
+     * const UserAiProviderConfig = await prisma.userAiProviderConfig.delete({
+     *   where: {
+     *     // ... filter to delete one UserAiProviderConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserAiProviderConfigDeleteArgs>(args: SelectSubset<T, UserAiProviderConfigDeleteArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserAiProviderConfig.
+     * @param {UserAiProviderConfigUpdateArgs} args - Arguments to update one UserAiProviderConfig.
+     * @example
+     * // Update one UserAiProviderConfig
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserAiProviderConfigUpdateArgs>(args: SelectSubset<T, UserAiProviderConfigUpdateArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserAiProviderConfigs.
+     * @param {UserAiProviderConfigDeleteManyArgs} args - Arguments to filter UserAiProviderConfigs to delete.
+     * @example
+     * // Delete a few UserAiProviderConfigs
+     * const { count } = await prisma.userAiProviderConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserAiProviderConfigDeleteManyArgs>(args?: SelectSubset<T, UserAiProviderConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserAiProviderConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAiProviderConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserAiProviderConfigs
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserAiProviderConfigUpdateManyArgs>(args: SelectSubset<T, UserAiProviderConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserAiProviderConfigs and returns the data updated in the database.
+     * @param {UserAiProviderConfigUpdateManyAndReturnArgs} args - Arguments to update many UserAiProviderConfigs.
+     * @example
+     * // Update many UserAiProviderConfigs
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserAiProviderConfigs and only return the `id`
+     * const userAiProviderConfigWithIdOnly = await prisma.userAiProviderConfig.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserAiProviderConfigUpdateManyAndReturnArgs>(args: SelectSubset<T, UserAiProviderConfigUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserAiProviderConfig.
+     * @param {UserAiProviderConfigUpsertArgs} args - Arguments to update or create a UserAiProviderConfig.
+     * @example
+     * // Update or create a UserAiProviderConfig
+     * const userAiProviderConfig = await prisma.userAiProviderConfig.upsert({
+     *   create: {
+     *     // ... data to create a UserAiProviderConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserAiProviderConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserAiProviderConfigUpsertArgs>(args: SelectSubset<T, UserAiProviderConfigUpsertArgs<ExtArgs>>): Prisma__UserAiProviderConfigClient<$Result.GetResult<Prisma.$UserAiProviderConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserAiProviderConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAiProviderConfigCountArgs} args - Arguments to filter UserAiProviderConfigs to count.
+     * @example
+     * // Count the number of UserAiProviderConfigs
+     * const count = await prisma.userAiProviderConfig.count({
+     *   where: {
+     *     // ... the filter for the UserAiProviderConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserAiProviderConfigCountArgs>(
+      args?: Subset<T, UserAiProviderConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserAiProviderConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserAiProviderConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAiProviderConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserAiProviderConfigAggregateArgs>(args: Subset<T, UserAiProviderConfigAggregateArgs>): Prisma.PrismaPromise<GetUserAiProviderConfigAggregateType<T>>
+
+    /**
+     * Group by UserAiProviderConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAiProviderConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserAiProviderConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserAiProviderConfigGroupByArgs['orderBy'] }
+        : { orderBy?: UserAiProviderConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserAiProviderConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserAiProviderConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserAiProviderConfig model
+   */
+  readonly fields: UserAiProviderConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserAiProviderConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserAiProviderConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserAiProviderConfig model
+   */
+  interface UserAiProviderConfigFieldRefs {
+    readonly id: FieldRef<"UserAiProviderConfig", 'String'>
+    readonly userId: FieldRef<"UserAiProviderConfig", 'String'>
+    readonly provider: FieldRef<"UserAiProviderConfig", 'AiProvider'>
+    readonly model: FieldRef<"UserAiProviderConfig", 'String'>
+    readonly apiKeyCiphertext: FieldRef<"UserAiProviderConfig", 'String'>
+    readonly apiKeyIv: FieldRef<"UserAiProviderConfig", 'String'>
+    readonly apiKeyTag: FieldRef<"UserAiProviderConfig", 'String'>
+    readonly createdAt: FieldRef<"UserAiProviderConfig", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserAiProviderConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserAiProviderConfig findUnique
+   */
+  export type UserAiProviderConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which UserAiProviderConfig to fetch.
+     */
+    where: UserAiProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * UserAiProviderConfig findUniqueOrThrow
+   */
+  export type UserAiProviderConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which UserAiProviderConfig to fetch.
+     */
+    where: UserAiProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * UserAiProviderConfig findFirst
+   */
+  export type UserAiProviderConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which UserAiProviderConfig to fetch.
+     */
+    where?: UserAiProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserAiProviderConfigs to fetch.
+     */
+    orderBy?: UserAiProviderConfigOrderByWithRelationInput | UserAiProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserAiProviderConfigs.
+     */
+    cursor?: UserAiProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserAiProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserAiProviderConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserAiProviderConfigs.
+     */
+    distinct?: UserAiProviderConfigScalarFieldEnum | UserAiProviderConfigScalarFieldEnum[]
+  }
+
+  /**
+   * UserAiProviderConfig findFirstOrThrow
+   */
+  export type UserAiProviderConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which UserAiProviderConfig to fetch.
+     */
+    where?: UserAiProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserAiProviderConfigs to fetch.
+     */
+    orderBy?: UserAiProviderConfigOrderByWithRelationInput | UserAiProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserAiProviderConfigs.
+     */
+    cursor?: UserAiProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserAiProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserAiProviderConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserAiProviderConfigs.
+     */
+    distinct?: UserAiProviderConfigScalarFieldEnum | UserAiProviderConfigScalarFieldEnum[]
+  }
+
+  /**
+   * UserAiProviderConfig findMany
+   */
+  export type UserAiProviderConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which UserAiProviderConfigs to fetch.
+     */
+    where?: UserAiProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserAiProviderConfigs to fetch.
+     */
+    orderBy?: UserAiProviderConfigOrderByWithRelationInput | UserAiProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserAiProviderConfigs.
+     */
+    cursor?: UserAiProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserAiProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserAiProviderConfigs.
+     */
+    skip?: number
+    distinct?: UserAiProviderConfigScalarFieldEnum | UserAiProviderConfigScalarFieldEnum[]
+  }
+
+  /**
+   * UserAiProviderConfig create
+   */
+  export type UserAiProviderConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserAiProviderConfig.
+     */
+    data: XOR<UserAiProviderConfigCreateInput, UserAiProviderConfigUncheckedCreateInput>
+  }
+
+  /**
+   * UserAiProviderConfig createMany
+   */
+  export type UserAiProviderConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserAiProviderConfigs.
+     */
+    data: UserAiProviderConfigCreateManyInput | UserAiProviderConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserAiProviderConfig createManyAndReturn
+   */
+  export type UserAiProviderConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserAiProviderConfigs.
+     */
+    data: UserAiProviderConfigCreateManyInput | UserAiProviderConfigCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserAiProviderConfig update
+   */
+  export type UserAiProviderConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserAiProviderConfig.
+     */
+    data: XOR<UserAiProviderConfigUpdateInput, UserAiProviderConfigUncheckedUpdateInput>
+    /**
+     * Choose, which UserAiProviderConfig to update.
+     */
+    where: UserAiProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * UserAiProviderConfig updateMany
+   */
+  export type UserAiProviderConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserAiProviderConfigs.
+     */
+    data: XOR<UserAiProviderConfigUpdateManyMutationInput, UserAiProviderConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which UserAiProviderConfigs to update
+     */
+    where?: UserAiProviderConfigWhereInput
+    /**
+     * Limit how many UserAiProviderConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserAiProviderConfig updateManyAndReturn
+   */
+  export type UserAiProviderConfigUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * The data used to update UserAiProviderConfigs.
+     */
+    data: XOR<UserAiProviderConfigUpdateManyMutationInput, UserAiProviderConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which UserAiProviderConfigs to update
+     */
+    where?: UserAiProviderConfigWhereInput
+    /**
+     * Limit how many UserAiProviderConfigs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserAiProviderConfig upsert
+   */
+  export type UserAiProviderConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserAiProviderConfig to update in case it exists.
+     */
+    where: UserAiProviderConfigWhereUniqueInput
+    /**
+     * In case the UserAiProviderConfig found by the `where` argument doesn't exist, create a new UserAiProviderConfig with this data.
+     */
+    create: XOR<UserAiProviderConfigCreateInput, UserAiProviderConfigUncheckedCreateInput>
+    /**
+     * In case the UserAiProviderConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserAiProviderConfigUpdateInput, UserAiProviderConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * UserAiProviderConfig delete
+   */
+  export type UserAiProviderConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+    /**
+     * Filter which UserAiProviderConfig to delete.
+     */
+    where: UserAiProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * UserAiProviderConfig deleteMany
+   */
+  export type UserAiProviderConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserAiProviderConfigs to delete
+     */
+    where?: UserAiProviderConfigWhereInput
+    /**
+     * Limit how many UserAiProviderConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserAiProviderConfig without action
+   */
+  export type UserAiProviderConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserAiProviderConfig
+     */
+    select?: UserAiProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserAiProviderConfig
+     */
+    omit?: UserAiProviderConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserAiProviderConfigInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Application
    */
 
@@ -14772,6 +16009,21 @@ export namespace Prisma {
   export type AiPromptProfileScalarFieldEnum = (typeof AiPromptProfileScalarFieldEnum)[keyof typeof AiPromptProfileScalarFieldEnum]
 
 
+  export const UserAiProviderConfigScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    provider: 'provider',
+    model: 'model',
+    apiKeyCiphertext: 'apiKeyCiphertext',
+    apiKeyIv: 'apiKeyIv',
+    apiKeyTag: 'apiKeyTag',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserAiProviderConfigScalarFieldEnum = (typeof UserAiProviderConfigScalarFieldEnum)[keyof typeof UserAiProviderConfigScalarFieldEnum]
+
+
   export const ApplicationScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -14935,6 +16187,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'AiProvider'
+   */
+  export type EnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider'>
+    
+
+
+  /**
+   * Reference to a field of type 'AiProvider[]'
+   */
+  export type ListEnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -14971,6 +16237,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinListRelationFilter
     resumeProfiles?: ResumeProfileListRelationFilter
     aiPromptProfile?: XOR<AiPromptProfileNullableScalarRelationFilter, AiPromptProfileWhereInput> | null
+    aiProviderConfig?: XOR<UserAiProviderConfigNullableScalarRelationFilter, UserAiProviderConfigWhereInput> | null
     applications?: ApplicationListRelationFilter
   }
 
@@ -14991,6 +16258,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinOrderByRelationAggregateInput
     resumeProfiles?: ResumeProfileOrderByRelationAggregateInput
     aiPromptProfile?: AiPromptProfileOrderByWithRelationInput
+    aiProviderConfig?: UserAiProviderConfigOrderByWithRelationInput
     applications?: ApplicationOrderByRelationAggregateInput
   }
 
@@ -15014,6 +16282,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinListRelationFilter
     resumeProfiles?: ResumeProfileListRelationFilter
     aiPromptProfile?: XOR<AiPromptProfileNullableScalarRelationFilter, AiPromptProfileWhereInput> | null
+    aiProviderConfig?: XOR<UserAiProviderConfigNullableScalarRelationFilter, UserAiProviderConfigWhereInput> | null
     applications?: ApplicationListRelationFilter
   }, "id" | "email">
 
@@ -15724,6 +16993,81 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"AiPromptProfile"> | Date | string
   }
 
+  export type UserAiProviderConfigWhereInput = {
+    AND?: UserAiProviderConfigWhereInput | UserAiProviderConfigWhereInput[]
+    OR?: UserAiProviderConfigWhereInput[]
+    NOT?: UserAiProviderConfigWhereInput | UserAiProviderConfigWhereInput[]
+    id?: UuidFilter<"UserAiProviderConfig"> | string
+    userId?: UuidFilter<"UserAiProviderConfig"> | string
+    provider?: EnumAiProviderFilter<"UserAiProviderConfig"> | $Enums.AiProvider
+    model?: StringNullableFilter<"UserAiProviderConfig"> | string | null
+    apiKeyCiphertext?: StringFilter<"UserAiProviderConfig"> | string
+    apiKeyIv?: StringFilter<"UserAiProviderConfig"> | string
+    apiKeyTag?: StringFilter<"UserAiProviderConfig"> | string
+    createdAt?: DateTimeFilter<"UserAiProviderConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"UserAiProviderConfig"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type UserAiProviderConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    provider?: SortOrder
+    model?: SortOrderInput | SortOrder
+    apiKeyCiphertext?: SortOrder
+    apiKeyIv?: SortOrder
+    apiKeyTag?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type UserAiProviderConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: UserAiProviderConfigWhereInput | UserAiProviderConfigWhereInput[]
+    OR?: UserAiProviderConfigWhereInput[]
+    NOT?: UserAiProviderConfigWhereInput | UserAiProviderConfigWhereInput[]
+    provider?: EnumAiProviderFilter<"UserAiProviderConfig"> | $Enums.AiProvider
+    model?: StringNullableFilter<"UserAiProviderConfig"> | string | null
+    apiKeyCiphertext?: StringFilter<"UserAiProviderConfig"> | string
+    apiKeyIv?: StringFilter<"UserAiProviderConfig"> | string
+    apiKeyTag?: StringFilter<"UserAiProviderConfig"> | string
+    createdAt?: DateTimeFilter<"UserAiProviderConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"UserAiProviderConfig"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId">
+
+  export type UserAiProviderConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    provider?: SortOrder
+    model?: SortOrderInput | SortOrder
+    apiKeyCiphertext?: SortOrder
+    apiKeyIv?: SortOrder
+    apiKeyTag?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserAiProviderConfigCountOrderByAggregateInput
+    _max?: UserAiProviderConfigMaxOrderByAggregateInput
+    _min?: UserAiProviderConfigMinOrderByAggregateInput
+  }
+
+  export type UserAiProviderConfigScalarWhereWithAggregatesInput = {
+    AND?: UserAiProviderConfigScalarWhereWithAggregatesInput | UserAiProviderConfigScalarWhereWithAggregatesInput[]
+    OR?: UserAiProviderConfigScalarWhereWithAggregatesInput[]
+    NOT?: UserAiProviderConfigScalarWhereWithAggregatesInput | UserAiProviderConfigScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"UserAiProviderConfig"> | string
+    userId?: UuidWithAggregatesFilter<"UserAiProviderConfig"> | string
+    provider?: EnumAiProviderWithAggregatesFilter<"UserAiProviderConfig"> | $Enums.AiProvider
+    model?: StringNullableWithAggregatesFilter<"UserAiProviderConfig"> | string | null
+    apiKeyCiphertext?: StringWithAggregatesFilter<"UserAiProviderConfig"> | string
+    apiKeyIv?: StringWithAggregatesFilter<"UserAiProviderConfig"> | string
+    apiKeyTag?: StringWithAggregatesFilter<"UserAiProviderConfig"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"UserAiProviderConfig"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserAiProviderConfig"> | Date | string
+  }
+
   export type ApplicationWhereInput = {
     AND?: ApplicationWhereInput | ApplicationWhereInput[]
     OR?: ApplicationWhereInput[]
@@ -15838,6 +17182,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -15858,6 +17203,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -15878,6 +17224,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -15898,6 +17245,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -16672,6 +18020,89 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserAiProviderConfigCreateInput = {
+    id?: string
+    provider: $Enums.AiProvider
+    model?: string | null
+    apiKeyCiphertext: string
+    apiKeyIv: string
+    apiKeyTag: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutAiProviderConfigInput
+  }
+
+  export type UserAiProviderConfigUncheckedCreateInput = {
+    id?: string
+    userId: string
+    provider: $Enums.AiProvider
+    model?: string | null
+    apiKeyCiphertext: string
+    apiKeyIv: string
+    apiKeyTag: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserAiProviderConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    apiKeyCiphertext?: StringFieldUpdateOperationsInput | string
+    apiKeyIv?: StringFieldUpdateOperationsInput | string
+    apiKeyTag?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAiProviderConfigNestedInput
+  }
+
+  export type UserAiProviderConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    apiKeyCiphertext?: StringFieldUpdateOperationsInput | string
+    apiKeyIv?: StringFieldUpdateOperationsInput | string
+    apiKeyTag?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserAiProviderConfigCreateManyInput = {
+    id?: string
+    userId: string
+    provider: $Enums.AiProvider
+    model?: string | null
+    apiKeyCiphertext: string
+    apiKeyIv: string
+    apiKeyTag: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserAiProviderConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    apiKeyCiphertext?: StringFieldUpdateOperationsInput | string
+    apiKeyIv?: StringFieldUpdateOperationsInput | string
+    apiKeyTag?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserAiProviderConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    apiKeyCiphertext?: StringFieldUpdateOperationsInput | string
+    apiKeyIv?: StringFieldUpdateOperationsInput | string
+    apiKeyTag?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ApplicationCreateInput = {
     id?: string
     company?: string | null
@@ -16874,6 +18305,11 @@ export namespace Prisma {
   export type AiPromptProfileNullableScalarRelationFilter = {
     is?: AiPromptProfileWhereInput | null
     isNot?: AiPromptProfileWhereInput | null
+  }
+
+  export type UserAiProviderConfigNullableScalarRelationFilter = {
+    is?: UserAiProviderConfigWhereInput | null
+    isNot?: UserAiProviderConfigWhereInput | null
   }
 
   export type ApplicationListRelationFilter = {
@@ -17599,6 +19035,59 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type EnumAiProviderFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiProviderFilter<$PrismaModel> | $Enums.AiProvider
+  }
+
+  export type UserAiProviderConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    provider?: SortOrder
+    model?: SortOrder
+    apiKeyCiphertext?: SortOrder
+    apiKeyIv?: SortOrder
+    apiKeyTag?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserAiProviderConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    provider?: SortOrder
+    model?: SortOrder
+    apiKeyCiphertext?: SortOrder
+    apiKeyIv?: SortOrder
+    apiKeyTag?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserAiProviderConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    provider?: SortOrder
+    model?: SortOrder
+    apiKeyCiphertext?: SortOrder
+    apiKeyIv?: SortOrder
+    apiKeyTag?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumAiProviderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiProviderWithAggregatesFilter<$PrismaModel> | $Enums.AiProvider
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAiProviderFilter<$PrismaModel>
+    _max?: NestedEnumAiProviderFilter<$PrismaModel>
+  }
+
   export type UuidNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -17748,6 +19237,12 @@ export namespace Prisma {
     connect?: AiPromptProfileWhereUniqueInput
   }
 
+  export type UserAiProviderConfigCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserAiProviderConfigCreateWithoutUserInput, UserAiProviderConfigUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserAiProviderConfigCreateOrConnectWithoutUserInput
+    connect?: UserAiProviderConfigWhereUniqueInput
+  }
+
   export type ApplicationCreateNestedManyWithoutUserInput = {
     create?: XOR<ApplicationCreateWithoutUserInput, ApplicationUncheckedCreateWithoutUserInput> | ApplicationCreateWithoutUserInput[] | ApplicationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ApplicationCreateOrConnectWithoutUserInput | ApplicationCreateOrConnectWithoutUserInput[]
@@ -17815,6 +19310,12 @@ export namespace Prisma {
     create?: XOR<AiPromptProfileCreateWithoutUserInput, AiPromptProfileUncheckedCreateWithoutUserInput>
     connectOrCreate?: AiPromptProfileCreateOrConnectWithoutUserInput
     connect?: AiPromptProfileWhereUniqueInput
+  }
+
+  export type UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserAiProviderConfigCreateWithoutUserInput, UserAiProviderConfigUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserAiProviderConfigCreateOrConnectWithoutUserInput
+    connect?: UserAiProviderConfigWhereUniqueInput
   }
 
   export type ApplicationUncheckedCreateNestedManyWithoutUserInput = {
@@ -17962,6 +19463,16 @@ export namespace Prisma {
     update?: XOR<XOR<AiPromptProfileUpdateToOneWithWhereWithoutUserInput, AiPromptProfileUpdateWithoutUserInput>, AiPromptProfileUncheckedUpdateWithoutUserInput>
   }
 
+  export type UserAiProviderConfigUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserAiProviderConfigCreateWithoutUserInput, UserAiProviderConfigUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserAiProviderConfigCreateOrConnectWithoutUserInput
+    upsert?: UserAiProviderConfigUpsertWithoutUserInput
+    disconnect?: UserAiProviderConfigWhereInput | boolean
+    delete?: UserAiProviderConfigWhereInput | boolean
+    connect?: UserAiProviderConfigWhereUniqueInput
+    update?: XOR<XOR<UserAiProviderConfigUpdateToOneWithWhereWithoutUserInput, UserAiProviderConfigUpdateWithoutUserInput>, UserAiProviderConfigUncheckedUpdateWithoutUserInput>
+  }
+
   export type ApplicationUpdateManyWithoutUserNestedInput = {
     create?: XOR<ApplicationCreateWithoutUserInput, ApplicationUncheckedCreateWithoutUserInput> | ApplicationCreateWithoutUserInput[] | ApplicationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ApplicationCreateOrConnectWithoutUserInput | ApplicationCreateOrConnectWithoutUserInput[]
@@ -18096,6 +19607,16 @@ export namespace Prisma {
     delete?: AiPromptProfileWhereInput | boolean
     connect?: AiPromptProfileWhereUniqueInput
     update?: XOR<XOR<AiPromptProfileUpdateToOneWithWhereWithoutUserInput, AiPromptProfileUpdateWithoutUserInput>, AiPromptProfileUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserAiProviderConfigCreateWithoutUserInput, UserAiProviderConfigUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserAiProviderConfigCreateOrConnectWithoutUserInput
+    upsert?: UserAiProviderConfigUpsertWithoutUserInput
+    disconnect?: UserAiProviderConfigWhereInput | boolean
+    delete?: UserAiProviderConfigWhereInput | boolean
+    connect?: UserAiProviderConfigWhereUniqueInput
+    update?: XOR<XOR<UserAiProviderConfigUpdateToOneWithWhereWithoutUserInput, UserAiProviderConfigUpdateWithoutUserInput>, UserAiProviderConfigUncheckedUpdateWithoutUserInput>
   }
 
   export type ApplicationUncheckedUpdateManyWithoutUserNestedInput = {
@@ -18348,6 +19869,24 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutAiPromptProfileInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAiPromptProfileInput, UserUpdateWithoutAiPromptProfileInput>, UserUncheckedUpdateWithoutAiPromptProfileInput>
+  }
+
+  export type UserCreateNestedOneWithoutAiProviderConfigInput = {
+    create?: XOR<UserCreateWithoutAiProviderConfigInput, UserUncheckedCreateWithoutAiProviderConfigInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAiProviderConfigInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumAiProviderFieldUpdateOperationsInput = {
+    set?: $Enums.AiProvider
+  }
+
+  export type UserUpdateOneRequiredWithoutAiProviderConfigNestedInput = {
+    create?: XOR<UserCreateWithoutAiProviderConfigInput, UserUncheckedCreateWithoutAiProviderConfigInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAiProviderConfigInput
+    upsert?: UserUpsertWithoutAiProviderConfigInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAiProviderConfigInput, UserUpdateWithoutAiProviderConfigInput>, UserUncheckedUpdateWithoutAiProviderConfigInput>
   }
 
   export type UserCreateNestedOneWithoutApplicationsInput = {
@@ -18702,6 +20241,23 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type NestedEnumAiProviderFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiProviderFilter<$PrismaModel> | $Enums.AiProvider
+  }
+
+  export type NestedEnumAiProviderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiProviderWithAggregatesFilter<$PrismaModel> | $Enums.AiProvider
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAiProviderFilter<$PrismaModel>
+    _max?: NestedEnumAiProviderFilter<$PrismaModel>
+  }
+
   export type NestedUuidNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -19008,6 +20564,33 @@ export namespace Prisma {
   export type AiPromptProfileCreateOrConnectWithoutUserInput = {
     where: AiPromptProfileWhereUniqueInput
     create: XOR<AiPromptProfileCreateWithoutUserInput, AiPromptProfileUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserAiProviderConfigCreateWithoutUserInput = {
+    id?: string
+    provider: $Enums.AiProvider
+    model?: string | null
+    apiKeyCiphertext: string
+    apiKeyIv: string
+    apiKeyTag: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserAiProviderConfigUncheckedCreateWithoutUserInput = {
+    id?: string
+    provider: $Enums.AiProvider
+    model?: string | null
+    apiKeyCiphertext: string
+    apiKeyIv: string
+    apiKeyTag: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserAiProviderConfigCreateOrConnectWithoutUserInput = {
+    where: UserAiProviderConfigWhereUniqueInput
+    create: XOR<UserAiProviderConfigCreateWithoutUserInput, UserAiProviderConfigUncheckedCreateWithoutUserInput>
   }
 
   export type ApplicationCreateWithoutUserInput = {
@@ -19324,6 +20907,39 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserAiProviderConfigUpsertWithoutUserInput = {
+    update: XOR<UserAiProviderConfigUpdateWithoutUserInput, UserAiProviderConfigUncheckedUpdateWithoutUserInput>
+    create: XOR<UserAiProviderConfigCreateWithoutUserInput, UserAiProviderConfigUncheckedCreateWithoutUserInput>
+    where?: UserAiProviderConfigWhereInput
+  }
+
+  export type UserAiProviderConfigUpdateToOneWithWhereWithoutUserInput = {
+    where?: UserAiProviderConfigWhereInput
+    data: XOR<UserAiProviderConfigUpdateWithoutUserInput, UserAiProviderConfigUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserAiProviderConfigUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    apiKeyCiphertext?: StringFieldUpdateOperationsInput | string
+    apiKeyIv?: StringFieldUpdateOperationsInput | string
+    apiKeyTag?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserAiProviderConfigUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    apiKeyCiphertext?: StringFieldUpdateOperationsInput | string
+    apiKeyIv?: StringFieldUpdateOperationsInput | string
+    apiKeyTag?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ApplicationUpsertWithWhereUniqueWithoutUserInput = {
     where: ApplicationWhereUniqueInput
     update: XOR<ApplicationUpdateWithoutUserInput, ApplicationUncheckedUpdateWithoutUserInput>
@@ -19374,6 +20990,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -19393,6 +21010,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19428,6 +21046,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -19447,6 +21066,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19466,6 +21086,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -19485,6 +21106,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19520,6 +21142,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -19539,6 +21162,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19558,6 +21182,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -19577,6 +21202,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19650,6 +21276,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -19669,6 +21296,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19704,6 +21332,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -19723,6 +21352,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19758,6 +21388,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -19777,6 +21408,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19796,6 +21428,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -19815,6 +21448,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19850,6 +21484,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -19869,6 +21504,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19888,6 +21524,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -19907,6 +21544,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19942,6 +21580,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -19961,6 +21600,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19980,6 +21620,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -19999,6 +21640,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20034,6 +21676,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -20053,6 +21696,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20072,6 +21716,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -20091,6 +21736,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20164,6 +21810,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -20183,6 +21830,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20218,6 +21866,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
   }
 
@@ -20237,6 +21886,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20272,6 +21922,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
   }
 
@@ -20291,6 +21942,103 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
+    applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutAiProviderConfigInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    jobs?: JobCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
+    aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    applications?: ApplicationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAiProviderConfigInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    savedSearches?: SavedSearchUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
+    aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAiProviderConfigInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAiProviderConfigInput, UserUncheckedCreateWithoutAiProviderConfigInput>
+  }
+
+  export type UserUpsertWithoutAiProviderConfigInput = {
+    update: XOR<UserUpdateWithoutAiProviderConfigInput, UserUncheckedUpdateWithoutAiProviderConfigInput>
+    create: XOR<UserCreateWithoutAiProviderConfigInput, UserUncheckedCreateWithoutAiProviderConfigInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAiProviderConfigInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAiProviderConfigInput, UserUncheckedUpdateWithoutAiProviderConfigInput>
+  }
+
+  export type UserUpdateWithoutAiProviderConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    jobs?: JobUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
+    aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    applications?: ApplicationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAiProviderConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
+    savedSearches?: SavedSearchUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
+    aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20311,6 +22059,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutApplicationsInput = {
@@ -20330,6 +22079,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     aiPromptProfile?: AiPromptProfileUncheckedCreateNestedOneWithoutUserInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutApplicationsInput = {
@@ -20433,6 +22183,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutApplicationsInput = {
@@ -20452,6 +22203,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     aiPromptProfile?: AiPromptProfileUncheckedUpdateOneWithoutUserNestedInput
+    aiProviderConfig?: UserAiProviderConfigUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type JobUpsertWithoutApplicationsInput = {
