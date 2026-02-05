@@ -86,6 +86,10 @@ function normalizeTailorPayload(raw: unknown) {
   if (!raw || typeof raw !== "object") {
     return { cvSummary: "", cover: normalizeCover(undefined) };
   }
+  if (Array.isArray(raw)) {
+    const firstObject = raw.find((item) => item && typeof item === "object");
+    return firstObject ? normalizeTailorPayload(firstObject) : { cvSummary: "", cover: normalizeCover(undefined) };
+  }
   const record = raw as Record<string, unknown>;
   const cvSummary = pickFirstText(record, [
     "cvSummary",
@@ -100,6 +104,76 @@ function normalizeTailorPayload(raw: unknown) {
   return { cvSummary, cover };
 }
 
+function recoverFromText(input: string) {
+  const text = input
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/g, "")
+    .trim();
+
+  const findSection = (pattern: RegExp) => {
+    const match = pattern.exec(text);
+    return match?.[1]?.trim() ?? "";
+  };
+
+  const summary =
+    findSection(/cv summary\s*[:\-]?\s*([\s\S]*?)(?:cover|paragraph|p1|$)/i) ||
+    findSection(/summary\s*[:\-]?\s*([\s\S]*?)(?:cover|paragraph|p1|$)/i);
+
+  const paragraphOne =
+    findSection(/paragraph\s*(?:one|1)\s*[:\-]?\s*([\s\S]*?)(?:paragraph\s*(?:two|2)|p2|$)/i) ||
+    findSection(/p1\s*[:\-]?\s*([\s\S]*?)(?:p2|$)/i);
+
+  const paragraphTwo =
+    findSection(/paragraph\s*(?:two|2)\s*[:\-]?\s*([\s\S]*?)(?:paragraph\s*(?:three|3)|p3|$)/i) ||
+    findSection(/p2\s*[:\-]?\s*([\s\S]*?)(?:p3|$)/i);
+
+  const paragraphThree =
+    findSection(/paragraph\s*(?:three|3)\s*[:\-]?\s*([\s\S]*?)(?:$)/i) ||
+    findSection(/p3\s*[:\-]?\s*([\s\S]*?)(?:$)/i);
+
+  if (!summary && !paragraphOne && !paragraphTwo && !paragraphThree) {
+    const parts = text
+      .split(/\n{2,}/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    const recovered = {
+      cvSummary: parts[0] ?? "",
+      cover: {
+        paragraphOne: parts[1] ?? "",
+        paragraphTwo: parts[2] ?? "",
+        paragraphThree: parts[3] ?? "",
+      },
+    };
+    const length =
+      recovered.cvSummary.length +
+      recovered.cover.paragraphOne.length +
+      recovered.cover.paragraphTwo.length +
+      recovered.cover.paragraphThree.length;
+    if (length < 80) {
+      return null;
+    }
+    return recovered;
+  }
+
+  const recovered = {
+    cvSummary: summary,
+    cover: {
+      paragraphOne,
+      paragraphTwo,
+      paragraphThree,
+    },
+  };
+  const length =
+    recovered.cvSummary.length +
+    recovered.cover.paragraphOne.length +
+    recovered.cover.paragraphTwo.length +
+    recovered.cover.paragraphThree.length;
+  if (length < 80) {
+    return null;
+  }
+  return recovered;
+}
+
 function repairJsonText(input: string) {
   let text = input
     .replace(/[\u2018\u2019]/g, "'")
@@ -109,6 +183,8 @@ function repairJsonText(input: string) {
 
   // Remove trailing commas before closing braces/brackets.
   text = text.replace(/,\s*([}\]])/g, "$1");
+  // Escape invalid backslashes (e.g. \C) so JSON.parse can recover.
+  text = text.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
 
   // Replace unescaped newlines within JSON strings with \n
   let result = "";
@@ -200,7 +276,15 @@ export function parseTailorModelOutput(raw: string): TailorModelOutput | null {
     try {
       return tryParse(repairedSlice);
     } catch {
-      return null;
+      // continue
+    }
+  }
+
+  const recovered = recoverFromText(text);
+  if (recovered) {
+    const recoveredResult = TailorModelOutputSchema.safeParse(recovered);
+    if (recoveredResult.success) {
+      return recoveredResult.data;
     }
   }
 
