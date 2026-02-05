@@ -18,6 +18,7 @@ export type ResumePdfResult = {
   tex: string;
   cvSource: "ai" | "base";
   coverSource: "ai" | "fallback";
+  tailorReason: string;
   renderInput: ReturnType<typeof mapResumeProfile>;
 };
 
@@ -48,6 +49,7 @@ export async function buildResumePdfForJob(input: {
     tex,
     cvSource: tailored.source.cv,
     coverSource: tailored.source.cover,
+    tailorReason: tailored.reason,
     renderInput,
   };
 }

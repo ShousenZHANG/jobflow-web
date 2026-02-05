@@ -29,6 +29,12 @@ type TailorResult = {
     cv: "ai" | "base";
     cover: "ai" | "fallback";
   };
+  reason:
+    | "ai_ok"
+    | "missing_api_key"
+    | "provider_error"
+    | "parse_failed"
+    | "exception";
 };
 
 type ParsedModelPayload = {
@@ -47,7 +53,7 @@ function truncate(text: string, max = 1600) {
   return `${text.slice(0, max)}...`;
 }
 
-function buildFallback(input: TailorInput): TailorResult {
+function buildFallback(input: TailorInput, reason: TailorResult["reason"]): TailorResult {
   const title = input.jobTitle || "the role";
   const company = input.company || "the company";
   const shortDesc = truncate(input.description.replace(/\s+/g, " ").trim(), 280);
@@ -68,6 +74,7 @@ function buildFallback(input: TailorInput): TailorResult {
       cv: "base",
       cover: "fallback",
     },
+    reason,
   };
 }
 
@@ -89,66 +96,66 @@ function normalizeRuleArray(value: unknown): string[] | undefined {
 export async function tailorApplicationContent(
   input: TailorInput,
 ): Promise<TailorResult> {
-  const profile = input.userId ? await getAiPromptProfile(input.userId) : null;
-  const skillRules = getPromptSkillRules(
-    profile
-      ? {
-          cvRules: normalizeRuleArray(profile.cvRules),
-          coverRules: normalizeRuleArray(profile.coverRules),
-        }
-      : undefined,
-  );
-
-  const userProviderConfig = input.userId
-    ? await getUserAiProvider(input.userId)
-    : null;
-
-  const toProviderName = (value: string) =>
-    value.toLowerCase() as AiProviderName;
-
-  const defaultProviderConfig = {
-    provider: DEFAULT_PROVIDER,
-    apiKey: process.env.GEMINI_API_KEY,
-    model: process.env.GEMINI_MODEL || getDefaultModel(DEFAULT_PROVIDER),
-  };
-
-  let providerConfig = defaultProviderConfig;
-  if (userProviderConfig) {
-    let decryptedKey = "";
-    try {
-      decryptedKey = decryptSecret({
-        ciphertext: userProviderConfig.apiKeyCiphertext,
-        iv: userProviderConfig.apiKeyIv,
-        tag: userProviderConfig.apiKeyTag,
-      });
-    } catch {
-      decryptedKey = "";
-    }
-    const providerName = toProviderName(userProviderConfig.provider);
-    if (decryptedKey) {
-      providerConfig = {
-        provider: providerName,
-        apiKey: decryptedKey,
-        model: userProviderConfig.model ?? getDefaultModel(providerName),
-      };
-    } else if (defaultProviderConfig.apiKey) {
-      providerConfig = defaultProviderConfig;
-    } else {
-      providerConfig = {
-        provider: providerName,
-        apiKey: "",
-        model: userProviderConfig.model ?? getDefaultModel(providerName),
-      };
-    }
-  }
-
-  if (!providerConfig.apiKey) {
-    return buildFallback(input);
-  }
-
-  const { systemPrompt, userPrompt } = buildTailorPrompts(skillRules, input);
-
   try {
+    const profile = input.userId ? await getAiPromptProfile(input.userId) : null;
+    const skillRules = getPromptSkillRules(
+      profile
+        ? {
+            cvRules: normalizeRuleArray(profile.cvRules),
+            coverRules: normalizeRuleArray(profile.coverRules),
+          }
+        : undefined,
+    );
+
+    const userProviderConfig = input.userId
+      ? await getUserAiProvider(input.userId)
+      : null;
+
+    const toProviderName = (value: string) =>
+      value.toLowerCase() as AiProviderName;
+
+    const defaultProviderConfig = {
+      provider: DEFAULT_PROVIDER,
+      apiKey: process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_MODEL || getDefaultModel(DEFAULT_PROVIDER),
+    };
+
+    let providerConfig = defaultProviderConfig;
+    if (userProviderConfig) {
+      let decryptedKey = "";
+      try {
+        decryptedKey = decryptSecret({
+          ciphertext: userProviderConfig.apiKeyCiphertext,
+          iv: userProviderConfig.apiKeyIv,
+          tag: userProviderConfig.apiKeyTag,
+        });
+      } catch {
+        decryptedKey = "";
+      }
+      const providerName = toProviderName(userProviderConfig.provider);
+      if (decryptedKey) {
+        providerConfig = {
+          provider: providerName,
+          apiKey: decryptedKey,
+          model: userProviderConfig.model ?? getDefaultModel(providerName),
+        };
+      } else if (defaultProviderConfig.apiKey) {
+        providerConfig = defaultProviderConfig;
+      } else {
+        providerConfig = {
+          provider: providerName,
+          apiKey: "",
+          model: userProviderConfig.model ?? getDefaultModel(providerName),
+        };
+      }
+    }
+
+    if (!providerConfig.apiKey) {
+      return buildFallback(input, "missing_api_key");
+    }
+
+    const { systemPrompt, userPrompt } = buildTailorPrompts(skillRules, input);
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     let content = "";
@@ -176,10 +183,10 @@ export async function tailorApplicationContent(
         }
       : null;
     if (!parsed) {
-      return buildFallback(input);
+      return buildFallback(input, "parse_failed");
     }
 
-    const fallback = buildFallback(input);
+    const fallback = buildFallback(input, "ai_ok");
     return {
       cvSummary: parsed.cvSummary || fallback.cvSummary,
       cover: {
@@ -194,8 +201,9 @@ export async function tailorApplicationContent(
             ? "ai"
             : "fallback",
       },
+      reason: "ai_ok",
     };
   } catch {
-    return buildFallback(input);
+    return buildFallback(input, "provider_error");
   }
 }

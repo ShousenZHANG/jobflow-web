@@ -145,6 +145,7 @@ export async function POST(req: Request) {
       "x-request-id": requestId,
       "x-tailor-cv-source": pdfResult.cvSource,
       "x-tailor-cover-source": pdfResult.coverSource,
+      "x-tailor-reason": pdfResult.tailorReason,
     },
   });
 }

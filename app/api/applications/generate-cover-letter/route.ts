@@ -172,6 +172,7 @@ export async function POST(req: Request) {
       "x-request-id": requestId,
       "x-tailor-cv-source": tailored.source.cv,
       "x-tailor-cover-source": tailored.source.cover,
+      "x-tailor-reason": tailored.reason,
     },
   });
 }

@@ -19,13 +19,42 @@ export const TailorModelOutputSchema = z.object({
 export type TailorModelOutput = z.infer<typeof TailorModelOutputSchema>;
 
 export function parseTailorModelOutput(raw: string): TailorModelOutput | null {
-  try {
-    const parsed = JSON.parse(raw);
+  const text = raw.trim();
+
+  const tryParse = (value: string) => {
+    const parsed = JSON.parse(value);
     const result = TailorModelOutputSchema.safeParse(parsed);
     if (!result.success) return null;
     return result.data;
-  } catch {
-    return null;
-  }
-}
+  };
 
+  try {
+    return tryParse(text);
+  } catch {
+    // continue
+  }
+
+  const withoutFences = text
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/, "")
+    .trim();
+
+  try {
+    return tryParse(withoutFences);
+  } catch {
+    // continue
+  }
+
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start >= 0 && end > start) {
+    const slice = text.slice(start, end + 1);
+    try {
+      return tryParse(slice);
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
