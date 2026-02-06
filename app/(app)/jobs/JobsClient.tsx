@@ -8,7 +8,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import { ExternalLink, FileText, MapPin, Search, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, FileText, MapPin, Search, Trash2, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { ToastAction } from "@/components/ui/toast";
@@ -42,6 +43,9 @@ type JobsResponse = {
   items: JobItem[];
   nextCursor: string | null;
 };
+
+type CvSource = "ai" | "base" | "manual_import";
+type CoverSource = "ai" | "fallback" | "manual_import";
 
 const HIGHLIGHT_KEYWORDS = [
   "HTML",
@@ -212,8 +216,15 @@ export function JobsClient({
     filename: string;
     label: string;
   } | null>(null);
+  const [promptDialogOpen, setPromptDialogOpen] = useState(false);
+  const [promptLoading, setPromptLoading] = useState(false);
+  const [promptText, setPromptText] = useState("");
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importTarget, setImportTarget] = useState<"resume" | "cover">("resume");
+  const [importModelOutput, setImportModelOutput] = useState("");
+  const [importGenerating, setImportGenerating] = useState(false);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
-    Record<string, { cv?: "ai" | "base"; cover?: "ai" | "fallback" }>
+    Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -546,6 +557,135 @@ export function JobsClient({
     setPreviewOpen(true);
   }
 
+  async function copyTailorPrompt(job: JobItem) {
+    setPromptLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/applications/prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId: job.id }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.error?.message || json?.error || "Failed to build prompt");
+      }
+
+      const composed = [
+        "SYSTEM PROMPT",
+        json.prompt?.systemPrompt ?? "",
+        "",
+        "USER PROMPT",
+        json.prompt?.userPrompt ?? "",
+        "",
+        "REQUIRED JSON SHAPE",
+        JSON.stringify(json.expectedJsonShape ?? {}, null, 2),
+      ].join("\n");
+
+      setPromptText(composed);
+      setPromptDialogOpen(true);
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(composed);
+        toast({
+          title: "Prompt copied",
+          description: "Paste it into ChatGPT/Gemini/Claude and import JSON back here.",
+          duration: 2200,
+          className:
+            "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+        });
+      } else {
+        toast({
+          title: "Prompt ready",
+          description: "Clipboard unavailable. Copy from the dialog.",
+          duration: 2200,
+          className:
+            "border-slate-200 bg-slate-50 text-slate-900 animate-in fade-in zoom-in-95",
+        });
+      }
+    } catch (e) {
+      const message = getErrorMessage(e, "Failed to build prompt");
+      setError(message);
+      toast({
+        title: "Prompt failed",
+        description: message,
+        variant: "destructive",
+        duration: 2600,
+        className:
+          "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
+      });
+    } finally {
+      setPromptLoading(false);
+    }
+  }
+
+  function openManualImportDialog(target: "resume" | "cover") {
+    setImportTarget(target);
+    setImportModelOutput("");
+    setImportDialogOpen(true);
+  }
+
+  async function generateFromImportedJson(job: JobItem, target: "resume" | "cover") {
+    setImportGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/applications/manual-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobId: job.id,
+          target,
+          modelOutput: importModelOutput,
+        }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json?.error?.message || json?.error || "Failed to generate PDF");
+      }
+
+      const blob = await res.blob();
+      const filename =
+        filenameFromDisposition(res.headers.get("content-disposition")) ||
+        (target === "resume" ? "resume.pdf" : "cover-letter.pdf");
+      openPdfPreview(blob, filename, target === "resume" ? "Resume preview" : "Cover letter preview");
+
+      if (target === "resume") {
+        setTailorSourceByJob((prev) => ({
+          ...prev,
+          [job.id]: { ...prev[job.id], cv: "manual_import" },
+        }));
+      } else {
+        setTailorSourceByJob((prev) => ({
+          ...prev,
+          [job.id]: { ...prev[job.id], cover: "manual_import" },
+        }));
+      }
+
+      setImportDialogOpen(false);
+      toast({
+        title: "PDF generated",
+        description: target === "resume" ? "CV generated from imported JSON." : "Cover letter generated from imported JSON.",
+        duration: 2200,
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
+    } catch (e) {
+      const message = getErrorMessage(e, "Failed to generate PDF");
+      setError(message);
+      toast({
+        title: "Import failed",
+        description: message,
+        variant: "destructive",
+        duration: 2600,
+        className:
+          "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
+      });
+    } finally {
+      setImportGenerating(false);
+    }
+  }
+
   async function generateResume(job: JobItem) {
     setGeneratingIds((prev) => new Set(prev).add(job.id));
     setError(null);
@@ -822,6 +962,62 @@ export function JobsClient({
 
   return (
     <>
+      <Dialog open={promptDialogOpen} onOpenChange={setPromptDialogOpen}>
+        <DialogContent className="w-[min(96vw,980px)] max-w-[980px]">
+          <DialogHeader>
+            <DialogTitle>Tailoring Prompt</DialogTitle>
+            <DialogDescription>
+              Paste this into your external AI chat and ask for strict JSON output only.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea value={promptText} readOnly className="min-h-[360px] font-mono text-xs" />
+          <div className="flex justify-end">
+            <DialogClose asChild>
+              <Button variant="outline" size="sm">
+                Close
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent className="w-[min(96vw,980px)] max-w-[980px]">
+          <DialogHeader>
+            <DialogTitle>
+              Import AI JSON ({importTarget === "resume" ? "CV" : "Cover Letter"})
+            </DialogTitle>
+            <DialogDescription>
+              Paste JSON response from your external AI chat. The app will validate and generate PDF.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={importModelOutput}
+            onChange={(e) => setImportModelOutput(e.target.value)}
+            placeholder='{"cvSummary":"...","cover":{"paragraphOne":"...","paragraphTwo":"...","paragraphThree":"..."}}'
+            className="min-h-[340px] font-mono text-xs"
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportDialogOpen(false)}
+              disabled={importGenerating}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="edu-cta edu-cta--press"
+              disabled={!selectedJob || importGenerating || importModelOutput.trim().length < 20}
+              onClick={() => selectedJob && generateFromImportedJson(selectedJob, importTarget)}
+            >
+              {importGenerating ? "Generating..." : "Generate PDF"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent
           className="h-[92vh] w-[98vw] max-w-[min(98vw,1280px)] overflow-hidden p-0"
@@ -1233,6 +1429,34 @@ export function JobsClient({
                       ? "Generating..."
                       : "Generate Cover Letter"}
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={promptLoading}
+                    onClick={() => copyTailorPrompt(selectedJob)}
+                    className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                  >
+                    <Copy className="h-4 w-4" />
+                    {promptLoading ? "Building..." : "Copy Prompt"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openManualImportDialog("resume")}
+                    className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Import CV JSON
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openManualImportDialog("cover")}
+                    className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Import Cover JSON
+                  </Button>
                   {selectedJob.resumePdfUrl ? (
                     <Button
                       variant="outline"
@@ -1264,12 +1488,12 @@ export function JobsClient({
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                     {selectedTailorSource.cv ? (
                       <span className="rounded-full border border-slate-900/10 bg-slate-100/70 px-2 py-0.5">
-                        CV: {selectedTailorSource.cv === "ai" ? "AI" : "Base"}
+                        CV: {selectedTailorSource.cv === "ai" ? "AI" : selectedTailorSource.cv === "manual_import" ? "Manual" : "Base"}
                       </span>
                     ) : null}
                     {selectedTailorSource.cover ? (
                       <span className="rounded-full border border-slate-900/10 bg-slate-100/70 px-2 py-0.5">
-                        Cover: {selectedTailorSource.cover === "ai" ? "AI" : "Fallback"}
+                        Cover: {selectedTailorSource.cover === "ai" ? "AI" : selectedTailorSource.cover === "manual_import" ? "Manual" : "Fallback"}
                       </span>
                     ) : null}
                   </div>

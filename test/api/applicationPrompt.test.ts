@@ -1,0 +1,89 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const jobStore = vi.hoisted(() => ({
+  findFirst: vi.fn(),
+}));
+
+vi.mock("@/lib/server/prisma", () => ({
+  prisma: {
+    job: jobStore,
+  },
+}));
+
+vi.mock("@/auth", () => ({
+  authOptions: {},
+}));
+
+vi.mock("next-auth/next", () => ({
+  getServerSession: vi.fn(),
+}));
+
+vi.mock("@/lib/server/resumeProfile", () => ({
+  getResumeProfile: vi.fn(),
+}));
+
+vi.mock("@/lib/server/latex/mapResumeProfile", () => ({
+  mapResumeProfile: vi.fn(() => ({
+    summary: "Base summary",
+  })),
+}));
+
+import { getServerSession } from "next-auth/next";
+import { getResumeProfile } from "@/lib/server/resumeProfile";
+import { POST } from "@/app/api/applications/prompt/route";
+
+const VALID_JOB_ID = "550e8400-e29b-41d4-a716-446655440000";
+
+describe("applications prompt api", () => {
+  beforeEach(() => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockReset();
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockReset();
+    jobStore.findFirst.mockReset();
+  });
+
+  it("returns 404 when job does not exist", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce(null);
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/prompt", {
+        method: "POST",
+        body: JSON.stringify({ jobId: VALID_JOB_ID }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(404);
+    expect(json.error.code).toBe("JOB_NOT_FOUND");
+  });
+
+  it("returns composed prompt payload", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/prompt", {
+        method: "POST",
+        body: JSON.stringify({ jobId: VALID_JOB_ID }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(typeof json.prompt.systemPrompt).toBe("string");
+    expect(typeof json.prompt.userPrompt).toBe("string");
+    expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
+  });
+});
+
