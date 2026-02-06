@@ -36,6 +36,7 @@ export function PromptRulesManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [downloadingPack, setDownloadingPack] = useState(false);
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
   const activeTemplate = useMemo(
@@ -145,6 +146,40 @@ export function PromptRulesManager() {
     }
   }
 
+  async function downloadSkillPack() {
+    setDownloadingPack(true);
+    try {
+      const res = await fetch("/api/prompt-rules/skill-pack", { cache: "no-store" });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json?.error?.message || json?.error || "Failed to download skill pack");
+      }
+
+      const blob = await res.blob();
+      const disposition = res.headers.get("content-disposition");
+      const fallbackName = "jobflow-skill-pack.tar.gz";
+      const filenameMatch = disposition?.match(/filename="?([^"]+)"?/i);
+      const filename = filenameMatch?.[1] ?? fallbackName;
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      toast({ title: "Downloaded", description: "Global skill pack saved." });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: error instanceof Error ? error.message : "Failed to download skill pack.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingPack(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-900/10 bg-white p-4">
@@ -155,9 +190,14 @@ export function PromptRulesManager() {
               Prompt generation uses the active template version.
             </p>
           </div>
-          <Button variant="outline" onClick={resetToDefault} disabled={resetting}>
-            {resetting ? "Resetting..." : "Restore default"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={downloadSkillPack} disabled={downloadingPack}>
+              {downloadingPack ? "Preparing..." : "Download skill pack"}
+            </Button>
+            <Button variant="outline" onClick={resetToDefault} disabled={resetting}>
+              {resetting ? "Resetting..." : "Restore default"}
+            </Button>
+          </div>
         </div>
         {activeTemplate ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
