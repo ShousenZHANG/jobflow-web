@@ -121,6 +121,32 @@ const RESPONSIBILITY_STOPWORDS = new Set([
   "across",
   "using",
   "through",
+  "experience",
+  "experienced",
+  "strong",
+  "ability",
+  "abilities",
+  "knowledge",
+  "understanding",
+  "familiarity",
+  "support",
+  "supporting",
+  "deliver",
+  "delivering",
+  "work",
+  "working",
+  "team",
+  "teams",
+  "stakeholders",
+  "candidate",
+  "role",
+  "responsibility",
+  "responsibilities",
+  "required",
+  "preferred",
+  "must",
+  "should",
+  "would",
 ]);
 
 function parseJsonCandidate(raw: string): unknown | null {
@@ -290,10 +316,14 @@ function extractTopResponsibilities(description: string | null | undefined) {
 }
 
 function extractResponsibilityKeywords(line: string) {
-  return normalizeTextForMatch(line)
+  return Array.from(
+    new Set(
+      normalizeTextForMatch(line)
     .split(" ")
     .map((token) => token.trim())
-    .filter((token) => token.length >= 4 && !RESPONSIBILITY_STOPWORDS.has(token));
+        .filter((token) => token.length >= 4 && !RESPONSIBILITY_STOPWORDS.has(token)),
+    ),
+  );
 }
 
 function bulletMatchesResponsibility(bullet: string, responsibility: string) {
@@ -303,10 +333,12 @@ function bulletMatchesResponsibility(bullet: string, responsibility: string) {
 
   let hits = 0;
   for (const kw of keywords) {
-    if (bulletNorm.includes(kw)) hits += 1;
-    if (hits >= 2) return true;
+    const re = new RegExp(`\\b${escapeRegExp(kw)}\\b`, "i");
+    if (re.test(bulletNorm)) hits += 1;
   }
-  return false;
+  const hitRatio = hits / keywords.length;
+  const minHits = keywords.length >= 6 ? 3 : 2;
+  return hits >= minHits && hitRatio >= 0.34;
 }
 
 function extractJdSkills(title: string, description: string | null | undefined) {
@@ -503,7 +535,7 @@ export async function POST(req: Request) {
             (resp) => !baseLatest.bullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
           );
           if (missingFromBase.length > 0) {
-            const minRequiredAdditions = Math.min(missingFromBase.length, 3);
+            const minRequiredAdditions = Math.min(Math.max(2, missingFromBase.length), 3);
             if (addedBullets.length < minRequiredAdditions || addedBullets.length > 3) {
               return NextResponse.json(
                 {

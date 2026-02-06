@@ -6,7 +6,7 @@ export const DEFAULT_CV_RULES = [
   "Return latestExperience.bullets as the COMPLETE final bullet list for the latest experience block (full ordered output, not delta).",
   "Reorder latest experience bullets to mirror JD Responsibilities order and you may rewrite wording for stronger JD alignment.",
   "If any of the top three JD responsibilities are missing in base latest experience, add new bullets so the final list covers all top three responsibilities.",
-  "When top-three responsibilities are missing, add at least one bullet per missing responsibility, up to 3 bullets total.",
+  "When top-three responsibilities are missing, add 2 to 3 new bullets (minimum 2), each grounded in the base resume context.",
   "Place added bullets first in the same order as the missing responsibilities they cover.",
   "Keep every latest experience bullet grounded in base resume facts and technologies; no fabricated scope, systems, or outcomes.",
   "Any new bullet must follow Google XYZ style: achieved X by doing Y, resulting in Z (or equivalent qualitative outcome).",
