@@ -1,6 +1,15 @@
 import { buildTailorPrompts } from "@/lib/server/ai/buildPrompt";
 import type { PromptSkillRuleSet } from "@/lib/server/ai/promptSkills";
 
+type SkillPackContext = {
+  jobId: string;
+  jobTitle: string;
+  company: string;
+  description: string;
+  baseSummary: string;
+  resumeSnapshot: unknown;
+};
+
 const OUTPUT_SCHEMA = {
   cvSummary: "string",
   cover: {
@@ -10,16 +19,60 @@ const OUTPUT_SCHEMA = {
   },
 };
 
-export function buildGlobalSkillPackFiles(rules: PromptSkillRuleSet) {
-  const prompts = buildTailorPrompts(rules, {
+function list(items: string[]) {
+  return items.map((item, index) => `${index + 1}. ${item}`).join("\n");
+}
+
+function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext) {
+  const placeholderPrompts = buildTailorPrompts(rules, {
     baseSummary: "{{BASE_SUMMARY}}",
     jobTitle: "{{JOB_TITLE}}",
     company: "{{COMPANY}}",
     description: "{{JOB_DESCRIPTION}}",
   });
+  const files = [
+    { name: "jobflow-skill-pack/prompts/system-prompt.txt", content: placeholderPrompts.systemPrompt },
+    { name: "jobflow-skill-pack/prompts/user-prompt-template.txt", content: placeholderPrompts.userPrompt },
+  ];
 
-  const list = (items: string[]) => items.map((item, index) => `${index + 1}. ${item}`).join("\n");
+  if (!context) return files;
 
+  const runtimePrompts = buildTailorPrompts(rules, {
+    baseSummary: context.baseSummary,
+    jobTitle: context.jobTitle,
+    company: context.company,
+    description: context.description,
+  });
+
+  files.push(
+    { name: "jobflow-skill-pack/context/current-job-id.txt", content: context.jobId },
+    {
+      name: "jobflow-skill-pack/context/current-job.json",
+      content: JSON.stringify(
+        {
+          id: context.jobId,
+          title: context.jobTitle,
+          company: context.company,
+        },
+        null,
+        2,
+      ),
+    },
+    { name: "jobflow-skill-pack/context/current-jd.txt", content: context.description || "" },
+    {
+      name: "jobflow-skill-pack/context/resume-snapshot.json",
+      content: JSON.stringify(context.resumeSnapshot ?? {}, null, 2),
+    },
+    {
+      name: "jobflow-skill-pack/prompts/user-prompt-current-job.txt",
+      content: runtimePrompts.userPrompt,
+    },
+  );
+
+  return files;
+}
+
+export function buildGlobalSkillPackFiles(rules: PromptSkillRuleSet, context?: SkillPackContext) {
   const readme = `# Jobflow Global Skill Pack
 
 This pack defines reusable rules and prompt templates for CV/Cover generation.
@@ -38,6 +91,10 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
 
 ## Notes
 - This is a global template pack, not bound to one specific job.
+- When downloaded from a job context, this pack also includes:
+  - latest resume snapshot from your account
+  - current job description
+  - a prefilled prompt for that job
 - Rules version id: ${rules.id}
 - Locale: ${rules.locale}
 `;
@@ -108,8 +165,7 @@ Must strictly follow \`schema/output-schema.json\`.
     { name: "jobflow-skill-pack/rules/cv-rules.md", content: list(rules.cvRules) },
     { name: "jobflow-skill-pack/rules/cover-rules.md", content: list(rules.coverRules) },
     { name: "jobflow-skill-pack/rules/hard-constraints.md", content: list(rules.hardConstraints) },
-    { name: "jobflow-skill-pack/prompts/system-prompt.txt", content: prompts.systemPrompt },
-    { name: "jobflow-skill-pack/prompts/user-prompt-template.txt", content: prompts.userPrompt },
+    ...buildPromptFiles(rules, context),
     {
       name: "jobflow-skill-pack/schema/output-schema.json",
       content: JSON.stringify(OUTPUT_SCHEMA, null, 2),

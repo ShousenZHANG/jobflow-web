@@ -18,6 +18,22 @@ vi.mock("@/lib/server/promptRuleTemplates", () => ({
   })),
 }));
 
+vi.mock("@/lib/server/prisma", () => ({
+  prisma: {
+    job: {
+      findFirst: vi.fn(async () => null),
+    },
+  },
+}));
+
+vi.mock("@/lib/server/resumeProfile", () => ({
+  getResumeProfile: vi.fn(async () => null),
+}));
+
+vi.mock("@/lib/server/latex/mapResumeProfile", () => ({
+  mapResumeProfile: vi.fn(() => ({ summary: "" })),
+}));
+
 import { getServerSession } from "next-auth/next";
 import { GET } from "@/app/api/prompt-rules/skill-pack/route";
 
@@ -28,7 +44,7 @@ describe("prompt rules skill pack api", () => {
 
   it("requires auth", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
-    const res = await GET();
+    const res = await GET(new Request("http://localhost/api/prompt-rules/skill-pack"));
     expect(res.status).toBe(401);
   });
 
@@ -36,10 +52,20 @@ describe("prompt rules skill pack api", () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       user: { id: "user-1" },
     });
-    const res = await GET();
+    const res = await GET(new Request("http://localhost/api/prompt-rules/skill-pack"));
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("application/gzip");
     expect(res.headers.get("content-disposition")).toContain(".tar.gz");
   });
-});
 
+  it("supports job-scoped skill pack download", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      user: { id: "user-1" },
+    });
+    const res = await GET(
+      new Request("http://localhost/api/prompt-rules/skill-pack?jobId=550e8400-e29b-41d4-a716-446655440000"),
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/gzip");
+  });
+});
