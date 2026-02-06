@@ -46,12 +46,20 @@ type JobsResponse = {
 
 type CvSource = "ai" | "base" | "manual_import";
 type CoverSource = "ai" | "fallback" | "manual_import";
-type TailorModelOutput = {
+type ResumeImportOutput = {
   cvSummary: string;
+};
+
+type CoverImportOutput = {
   cover: {
+    subject?: string;
+    date?: string;
+    salutation?: string;
     paragraphOne: string;
     paragraphTwo: string;
     paragraphThree: string;
+    closing?: string;
+    signatureName?: string;
   };
 };
 
@@ -316,7 +324,10 @@ export function JobsClient({
     return fallback;
   }
 
-  function parseTailorOutput(raw: string): TailorModelOutput | null {
+  function parseTailorOutput(
+    raw: string,
+    target: "resume" | "cover",
+  ): ResumeImportOutput | CoverImportOutput | null {
     const source = raw.trim();
     if (!source) return null;
 
@@ -336,22 +347,65 @@ export function JobsClient({
     if (!parsed || typeof parsed !== "object") return null;
 
     const obj = parsed as Record<string, unknown>;
-    const cvSummary = typeof obj.cvSummary === "string" ? obj.cvSummary.trim() : "";
-    const cover = obj.cover as Record<string, unknown> | undefined;
-    const paragraphOne =
-      cover && typeof cover.paragraphOne === "string" ? cover.paragraphOne.trim() : "";
-    const paragraphTwo =
-      cover && typeof cover.paragraphTwo === "string" ? cover.paragraphTwo.trim() : "";
-    const paragraphThree =
-      cover && typeof cover.paragraphThree === "string" ? cover.paragraphThree.trim() : "";
-
-    if (!cvSummary && !paragraphOne && !paragraphTwo && !paragraphThree) {
-      return null;
+    if (target === "resume") {
+      const cvSummary =
+        typeof obj.cvSummary === "string"
+          ? obj.cvSummary.trim()
+          : typeof obj.summary === "string"
+            ? obj.summary.trim()
+            : "";
+      const latestExperience =
+        obj.latestExperience && typeof obj.latestExperience === "object"
+          ? (obj.latestExperience as Record<string, unknown>)
+          : null;
+      const bullets =
+        latestExperience && Array.isArray(latestExperience.bullets)
+          ? latestExperience.bullets.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean)
+          : [];
+      if (!cvSummary || bullets.length === 0) return null;
+      return { cvSummary };
     }
 
+    const coverRoot =
+      obj.cover && typeof obj.cover === "object"
+        ? (obj.cover as Record<string, unknown>)
+        : obj;
+    const paragraphOne =
+      typeof coverRoot.paragraphOne === "string"
+        ? coverRoot.paragraphOne.trim()
+        : typeof coverRoot.p1 === "string"
+          ? coverRoot.p1.trim()
+          : "";
+    const paragraphTwo =
+      typeof coverRoot.paragraphTwo === "string"
+        ? coverRoot.paragraphTwo.trim()
+        : typeof coverRoot.p2 === "string"
+          ? coverRoot.p2.trim()
+          : "";
+    const paragraphThree =
+      typeof coverRoot.paragraphThree === "string"
+        ? coverRoot.paragraphThree.trim()
+        : typeof coverRoot.p3 === "string"
+          ? coverRoot.p3.trim()
+          : "";
+
+    if (!paragraphOne || !paragraphTwo || !paragraphThree) return null;
+
     return {
-      cvSummary,
-      cover: { paragraphOne, paragraphTwo, paragraphThree },
+      cover: {
+        subject: typeof coverRoot.subject === "string" ? coverRoot.subject.trim() : undefined,
+        date: typeof coverRoot.date === "string" ? coverRoot.date.trim() : undefined,
+        salutation:
+          typeof coverRoot.salutation === "string" ? coverRoot.salutation.trim() : undefined,
+        paragraphOne,
+        paragraphTwo,
+        paragraphThree,
+        closing: typeof coverRoot.closing === "string" ? coverRoot.closing.trim() : undefined,
+        signatureName:
+          typeof coverRoot.signatureName === "string"
+            ? coverRoot.signatureName.trim()
+            : undefined,
+      },
     };
   }
 
@@ -934,8 +988,8 @@ export function JobsClient({
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const selectedTailorSource = selectedJob ? tailorSourceByJob[selectedJob.id] : undefined;
   const parsedExternalOutput = useMemo(
-    () => parseTailorOutput(externalModelOutput),
-    [externalModelOutput],
+    () => parseTailorOutput(externalModelOutput, externalTarget),
+    [externalModelOutput, externalTarget],
   );
   const canOpenStep2 = externalSkillPackFresh;
   const canOpenStep3 = externalPromptText.trim().length > 0;
@@ -1164,8 +1218,8 @@ export function JobsClient({
                     onChange={(e) => setExternalModelOutput(e.target.value)}
                     placeholder={
                       externalTarget === "resume"
-                        ? '{"cvSummary":"..."}'
-                        : '{"cover":{"paragraphOne":"...","paragraphTwo":"...","paragraphThree":"..."}}'
+                        ? '{"cvSummary":"...","latestExperience":{"bullets":["..."]},"skillsAdditions":[{"category":"...","items":["..."]}]}'
+                        : '{"cover":{"subject":"...","date":"...","salutation":"...","paragraphOne":"...","paragraphTwo":"...","paragraphThree":"...","closing":"...","signatureName":"..."}}'
                     }
                     className="min-h-[220px] font-mono text-xs"
                   />

@@ -1,4 +1,3 @@
-import { buildTailorPrompts } from "@/lib/server/ai/buildPrompt";
 import type { PromptSkillRuleSet } from "@/lib/server/ai/promptSkills";
 
 type SkillPackContext = {
@@ -6,12 +5,29 @@ type SkillPackContext = {
   resumeSnapshotUpdatedAt: string;
 };
 
-const OUTPUT_SCHEMA = {
+const OUTPUT_SCHEMA_RESUME = {
   cvSummary: "string",
+  latestExperience: {
+    bullets: ["string"],
+  },
+  skillsAdditions: [
+    {
+      category: "string",
+      items: ["string"],
+    },
+  ],
+};
+
+const OUTPUT_SCHEMA_COVER = {
   cover: {
+    subject: "string (optional)",
+    date: "string (optional)",
+    salutation: "string (optional)",
     paragraphOne: "string",
     paragraphTwo: "string",
     paragraphThree: "string",
+    closing: "string (optional)",
+    signatureName: "string (optional)",
   },
 };
 
@@ -20,15 +36,49 @@ function list(items: string[]) {
 }
 
 function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext) {
-  const placeholderPrompts = buildTailorPrompts(rules, {
-    baseSummary: "[Read from jobflow-skill-pack/context/resume-snapshot.json.summary]",
-    jobTitle: "{{JOB_TITLE}}",
-    company: "{{COMPANY}}",
-    description: "{{JOB_DESCRIPTION}}",
-  });
+  const hardRules = list(rules.hardConstraints);
+  const cvRules = list(rules.cvRules);
+  const coverRules = list(rules.coverRules);
+
+  const resumePromptTemplate = [
+    "Task: Generate role-tailored CV payload only.",
+    "",
+    "Required JSON shape:",
+    JSON.stringify(OUTPUT_SCHEMA_RESUME, null, 2),
+    "",
+    "Hard Constraints:",
+    hardRules,
+    "",
+    "CV Rules:",
+    cvRules,
+    "",
+    "Job Input:",
+    "- Job title: {{JOB_TITLE}}",
+    "- Company: {{COMPANY}}",
+    "- Job description: {{JOB_DESCRIPTION}}",
+  ].join("\n");
+
+  const coverPromptTemplate = [
+    "Task: Generate role-tailored cover payload only.",
+    "",
+    "Required JSON shape:",
+    JSON.stringify(OUTPUT_SCHEMA_COVER, null, 2),
+    "",
+    "Hard Constraints:",
+    hardRules,
+    "",
+    "Cover Rules:",
+    coverRules,
+    "",
+    "Job Input:",
+    "- Job title: {{JOB_TITLE}}",
+    "- Company: {{COMPANY}}",
+    "- Job description: {{JOB_DESCRIPTION}}",
+  ].join("\n");
+
   const files = [
-    { name: "jobflow-skill-pack/prompts/system-prompt.txt", content: placeholderPrompts.systemPrompt },
-    { name: "jobflow-skill-pack/prompts/user-prompt-template.txt", content: placeholderPrompts.userPrompt },
+    { name: "jobflow-skill-pack/prompts/resume-user-prompt-template.txt", content: resumePromptTemplate },
+    { name: "jobflow-skill-pack/prompts/cover-user-prompt-template.txt", content: coverPromptTemplate },
   ];
 
   if (!context) return files;
@@ -55,12 +105,11 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
 1. Open your external AI chat tool.
 2. Upload or paste files from this pack.
 3. Replace placeholders in prompts with your current job data:
-   - {{BASE_SUMMARY}}
    - {{JOB_TITLE}}
    - {{COMPANY}}
    - {{JOB_DESCRIPTION}}
-4. Request output in strict JSON shape from \`schema/output-schema.json\`.
-5. Paste JSON back into Jobflow via Import CV JSON / Import Cover JSON.
+4. Use \`schema/output-schema.resume.json\` for CV or \`schema/output-schema.cover.json\` for cover.
+5. Paste target JSON back into Jobflow via Generate CV / Generate Cover Letter.
 
 ## Notes
 - This is a global template pack, not bound to one specific job.
@@ -111,19 +160,36 @@ ${list(rules.coverRules)}
 - Keep cover letter concise and factual; avoid invented company details.
 
 ## Output
-Must strictly follow \`schema/output-schema.json\`.
+Resume target must follow \`schema/output-schema.resume.json\`.
+Cover target must follow \`schema/output-schema.cover.json\`.
 `;
 
   const exampleJson = JSON.stringify(
     {
       cvSummary:
         "Focused software engineer with product delivery ownership across end-to-end features and cross-functional collaboration.",
+      latestExperience: {
+        bullets: ["...", "..."],
+      },
+      skillsAdditions: [{ category: "Cloud", items: ["GCP"] }],
+    },
+    null,
+    2,
+  );
+
+  const coverExampleJson = JSON.stringify(
+    {
       cover: {
+        subject: "Application for {{JOB_TITLE}}",
+        date: "5 February 2026",
+        salutation: "Hiring Team at {{COMPANY}}",
         paragraphOne: "I am applying for the {{JOB_TITLE}} role at {{COMPANY}}.",
         paragraphTwo:
           "My recent work aligns strongly with the responsibilities in your job description.",
         paragraphThree:
           "I am interested in {{COMPANY}} because of its mission and practical impact.",
+        closing: "Yours sincerely,",
+        signatureName: "{{CANDIDATE_NAME}}",
       },
     },
     null,
@@ -138,10 +204,15 @@ Must strictly follow \`schema/output-schema.json\`.
     { name: "jobflow-skill-pack/rules/hard-constraints.md", content: list(rules.hardConstraints) },
     ...buildPromptFiles(rules, context),
     {
-      name: "jobflow-skill-pack/schema/output-schema.json",
-      content: JSON.stringify(OUTPUT_SCHEMA, null, 2),
+      name: "jobflow-skill-pack/schema/output-schema.resume.json",
+      content: JSON.stringify(OUTPUT_SCHEMA_RESUME, null, 2),
     },
-    { name: "jobflow-skill-pack/examples/output.example.json", content: exampleJson },
+    {
+      name: "jobflow-skill-pack/schema/output-schema.cover.json",
+      content: JSON.stringify(OUTPUT_SCHEMA_COVER, null, 2),
+    },
+    { name: "jobflow-skill-pack/examples/output.resume.example.json", content: exampleJson },
+    { name: "jobflow-skill-pack/examples/output.cover.example.json", content: coverExampleJson },
   ];
 }
 

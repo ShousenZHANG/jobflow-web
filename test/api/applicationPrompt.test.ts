@@ -89,6 +89,8 @@ describe("applications prompt api", () => {
     expect(typeof json.prompt.systemPrompt).toBe("string");
     expect(typeof json.prompt.userPrompt).toBe("string");
     expect(json.expectedJsonShape.cvSummary).toBe("string");
+    expect(Array.isArray(json.expectedJsonShape.latestExperience.bullets)).toBe(true);
+    expect(Array.isArray(json.expectedJsonShape.skillsAdditions)).toBe(true);
     expect(json.expectedJsonShape.cover).toBeUndefined();
     expect(json.promptMeta.ruleSetId).toBe("rules-1");
     expect(json.promptMeta.resumeSnapshotUpdatedAt).toBe("2026-02-06T00:00:00.000Z");
@@ -120,5 +122,7 @@ describe("applications prompt api", () => {
     expect(res.status).toBe(200);
     expect(json.expectedJsonShape.cvSummary).toBeUndefined();
     expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
+    expect(json.expectedJsonShape.cover.salutation).toBe("string (optional)");
+    expect(json.expectedJsonShape.cover.subject).toBe("string (optional)");
   });
 });

@@ -90,13 +90,28 @@ export async function POST(req: Request) {
   ].join("\n\n");
   const isResumeTarget = parsed.data.target === "resume";
   const requiredJsonShape = isResumeTarget
-    ? ['{', '  "cvSummary": "string"', '}']
+    ? [
+        "{",
+        '  "cvSummary": "string",',
+        '  "latestExperience": {',
+        '    "bullets": ["string", "string"]',
+        "  },",
+        '  "skillsAdditions": [',
+        '    { "category": "string", "items": ["string"] }',
+        "  ]",
+        "}",
+      ]
     : [
         "{",
         '  "cover": {',
+        '    "subject": "string (optional)",',
+        '    "date": "string (optional)",',
+        '    "salutation": "string (optional)",',
         '    "paragraphOne": "string",',
         '    "paragraphTwo": "string",',
-        '    "paragraphThree": "string"',
+        '    "paragraphThree": "string",',
+        '    "closing": "string (optional)",',
+        '    "signatureName": "string (optional)"',
         "  }",
         "}",
       ];
@@ -123,12 +138,28 @@ export async function POST(req: Request) {
   ].join("\n");
 
   const expectedJsonShape = isResumeTarget
-    ? { cvSummary: "string" }
+    ? {
+        cvSummary: "string",
+        latestExperience: {
+          bullets: ["string"],
+        },
+        skillsAdditions: [
+          {
+            category: "string",
+            items: ["string"],
+          },
+        ],
+      }
     : {
         cover: {
+          subject: "string (optional)",
+          date: "string (optional)",
+          salutation: "string (optional)",
           paragraphOne: "string",
           paragraphTwo: "string",
           paragraphThree: "string",
+          closing: "string (optional)",
+          signatureName: "string (optional)",
         },
       };
 

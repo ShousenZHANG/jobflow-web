@@ -15,9 +15,14 @@ type RenderCoverLetterInput = {
   candidate: CoverCandidate;
   company: string;
   role: string;
+  subject?: string;
+  date?: string;
+  salutation?: string;
   paragraphOne: string;
   paragraphTwo: string;
   paragraphThree: string;
+  closing?: string;
+  signatureName?: string;
 };
 
 const TEMPLATE_ROOT = path.join(process.cwd(), "latexTemp", "Cover_letter");
@@ -56,9 +61,26 @@ export function renderCoverLetterTex(input: RenderCoverLetterInput) {
     ),
     COVER_COMPANY: normalizeLine(escapeLatex(input.company)),
     COVER_ROLE: normalizeLine(escapeLatex(input.role)),
+    COVER_SUBJECT: normalizeLine(
+      escapeLatex(input.subject || `Application for ${input.role}`),
+      `Application for ${escapeLatex(input.role)}`,
+    ),
+    COVER_DATE: input.date?.trim() ? escapeLatex(input.date) : "\\today",
+    COVER_SALUTATION: normalizeLine(
+      escapeLatex(input.salutation || `Hiring Team at ${input.company}`),
+      `Hiring Team at ${escapeLatex(input.company)}`,
+    ),
     COVER_BODY: escapeLatexWithBold(input.paragraphOne),
     COVER_P2: escapeLatexWithBold(input.paragraphTwo),
     COVER_P3: escapeLatexWithBold(input.paragraphThree),
+    COVER_CLOSING: normalizeLine(
+      escapeLatex(input.closing || "Yours sincerely,"),
+      "Yours sincerely,",
+    ),
+    COVER_SIGNATURE_NAME: normalizeLine(
+      escapeLatex(input.signatureName || input.candidate.name),
+      normalizeLine(escapeLatex(input.candidate.name), "Candidate"),
+    ),
   });
 
   return main.replace("\\input{content}", renderedContent);

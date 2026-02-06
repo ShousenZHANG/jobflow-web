@@ -9,7 +9,6 @@ import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
-import { parseTailorModelOutput } from "@/lib/server/ai/schema";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 
 export const runtime = "nodejs";
@@ -25,6 +24,164 @@ const ManualGenerateSchema = z.object({
     })
     .optional(),
 });
+
+const ResumeSkillAdditionSchema = z.object({
+  category: z.string().trim().min(1).max(60),
+  items: z.array(z.string().trim().min(1).max(60)).min(1).max(30),
+});
+
+const ResumeManualOutputSchema = z.object({
+  cvSummary: z.string().trim().min(1).max(2000),
+  latestExperience: z.object({
+    bullets: z.array(z.string().trim().min(1).max(220)).min(1).max(15),
+  }),
+  skillsAdditions: z.array(ResumeSkillAdditionSchema).max(20).optional(),
+});
+
+const CoverContentSchema = z.object({
+  subject: z.string().trim().max(220).optional(),
+  date: z.string().trim().max(80).optional(),
+  salutation: z.string().trim().max(220).optional(),
+  paragraphOne: z.string().trim().min(1).max(2000),
+  paragraphTwo: z.string().trim().min(1).max(2000),
+  paragraphThree: z.string().trim().min(1).max(2000),
+  closing: z.string().trim().max(300).optional(),
+  signatureName: z.string().trim().max(120).optional(),
+});
+
+const CoverManualOutputSchema = z.object({
+  cover: CoverContentSchema,
+});
+
+function parseJsonCandidate(raw: string): unknown | null {
+  const text = raw.trim();
+  if (!text) return null;
+
+  const parse = (value: string): unknown | null => {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return null;
+    }
+  };
+
+  const direct = parse(text);
+  if (direct) return direct;
+
+  const noFence = text.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+  const fromFence = parse(noFence);
+  if (fromFence) return fromFence;
+
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start >= 0 && end > start) {
+    return parse(text.slice(start, end + 1));
+  }
+
+  return null;
+}
+
+function parseResumeManualOutput(raw: string) {
+  const candidate = parseJsonCandidate(raw);
+  if (!candidate || typeof candidate !== "object") return null;
+
+  const record = candidate as Record<string, unknown>;
+  const payload: Record<string, unknown> = {
+    cvSummary:
+      typeof record.cvSummary === "string"
+        ? record.cvSummary
+        : typeof record.summary === "string"
+          ? record.summary
+          : "",
+    latestExperience:
+      record.latestExperience && typeof record.latestExperience === "object"
+        ? record.latestExperience
+        : Array.isArray(record.latestExperienceBullets)
+          ? { bullets: record.latestExperienceBullets }
+          : undefined,
+    skillsAdditions: Array.isArray(record.skillsAdditions) ? record.skillsAdditions : undefined,
+  };
+
+  const parsed = ResumeManualOutputSchema.safeParse(payload);
+  return parsed.success ? parsed.data : null;
+}
+
+function parseCoverManualOutput(raw: string) {
+  const candidate = parseJsonCandidate(raw);
+  if (!candidate || typeof candidate !== "object") return null;
+
+  const record = candidate as Record<string, unknown>;
+  const coverRecord =
+    record.cover && typeof record.cover === "object" ? (record.cover as Record<string, unknown>) : record;
+
+  const payload = {
+    cover: {
+      subject: typeof coverRecord.subject === "string" ? coverRecord.subject : undefined,
+      date: typeof coverRecord.date === "string" ? coverRecord.date : undefined,
+      salutation: typeof coverRecord.salutation === "string" ? coverRecord.salutation : undefined,
+      paragraphOne:
+        typeof coverRecord.paragraphOne === "string"
+          ? coverRecord.paragraphOne
+          : typeof coverRecord.p1 === "string"
+            ? coverRecord.p1
+            : "",
+      paragraphTwo:
+        typeof coverRecord.paragraphTwo === "string"
+          ? coverRecord.paragraphTwo
+          : typeof coverRecord.p2 === "string"
+            ? coverRecord.p2
+            : "",
+      paragraphThree:
+        typeof coverRecord.paragraphThree === "string"
+          ? coverRecord.paragraphThree
+          : typeof coverRecord.p3 === "string"
+            ? coverRecord.p3
+            : "",
+      closing: typeof coverRecord.closing === "string" ? coverRecord.closing : undefined,
+      signatureName:
+        typeof coverRecord.signatureName === "string" ? coverRecord.signatureName : undefined,
+    },
+  };
+
+  const parsed = CoverManualOutputSchema.safeParse(payload);
+  return parsed.success ? parsed.data : null;
+}
+
+function mergeSkillAdditions(
+  base: Array<{ label: string; items: string[] }>,
+  additions?: Array<{ category: string; items: string[] }>,
+) {
+  if (!additions || additions.length === 0) return base;
+  const result = [...base.map((group) => ({ ...group, items: [...group.items] }))];
+
+  for (const addition of additions) {
+    const category = addition.category.trim();
+    const incoming = addition.items.map((item) => item.trim()).filter(Boolean);
+    if (!category || incoming.length === 0) continue;
+
+    const targetIndex = result.findIndex(
+      (group) => group.label.trim().toLowerCase() === category.toLowerCase(),
+    );
+    if (targetIndex >= 0) {
+      const existingSet = new Set(result[targetIndex].items.map((item) => item.toLowerCase()));
+      for (const item of incoming) {
+        if (!existingSet.has(item.toLowerCase())) {
+          result[targetIndex].items.push(item);
+          existingSet.add(item.toLowerCase());
+        }
+      }
+      continue;
+    }
+
+    result.push({ label: category, items: Array.from(new Set(incoming)) });
+  }
+
+  return result;
+}
+
+function normalizeBulletForCompare(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 function toSafeFileSegment(value: string) {
   const cleaned = value
@@ -128,20 +285,6 @@ export async function POST(req: Request) {
     }
   }
 
-  const tailored = parseTailorModelOutput(parsed.data.modelOutput);
-  if (!tailored) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "PARSE_FAILED",
-          message: "Unable to parse model output. Ensure valid JSON with cvSummary and cover paragraphs.",
-        },
-        requestId,
-      },
-      { status: 400 },
-    );
-  }
-
   const renderInput = mapResumeProfile(profile);
 
   let pdf: Buffer;
@@ -149,41 +292,111 @@ export async function POST(req: Request) {
 
   try {
     if (parsed.data.target === "resume") {
-      const cvSummary = tailored.cvSummary.trim();
-      if (!cvSummary) {
+      const resumeOutput = parseResumeManualOutput(parsed.data.modelOutput);
+      if (!resumeOutput) {
         return NextResponse.json(
           {
             error: {
-              code: "MISSING_CV_SUMMARY",
-              message: "cvSummary is required when target is resume.",
+              code: "PARSE_FAILED",
+              message:
+                "Unable to parse model output. Resume JSON must include cvSummary and latestExperience.bullets (skillsAdditions optional).",
             },
             requestId,
           },
           { status: 400 },
         );
       }
+      const cvSummary = resumeOutput.cvSummary.trim();
+      const baseLatest = renderInput.experiences[0];
+      const incomingBullets = resumeOutput.latestExperience?.bullets;
+      if (baseLatest && incomingBullets) {
+        const minAllowed = baseLatest.bullets.length;
+        const maxAllowed = Math.max(baseLatest.bullets.length + 3, 3);
+        if (incomingBullets.length < minAllowed) {
+          return NextResponse.json(
+            {
+              error: {
+                code: "INVALID_LATEST_EXPERIENCE_BULLETS",
+                message: `latestExperience.bullets must include all existing bullets (${minAllowed} required).`,
+              },
+              requestId,
+            },
+            { status: 400 },
+          );
+        }
+        if (incomingBullets.length > maxAllowed) {
+          return NextResponse.json(
+            {
+              error: {
+                code: "INVALID_LATEST_EXPERIENCE_BULLETS",
+                message: `latestExperience.bullets exceeds allowed size (${maxAllowed}).`,
+              },
+              requestId,
+            },
+            { status: 400 },
+          );
+        }
+
+        const incomingSet = new Set(incomingBullets.map(normalizeBulletForCompare));
+        const missingBaseBullets = baseLatest.bullets.filter(
+          (bullet) => !incomingSet.has(normalizeBulletForCompare(bullet)),
+        );
+        if (missingBaseBullets.length > 0) {
+          return NextResponse.json(
+            {
+              error: {
+                code: "BULLET_REWRITE_NOT_ALLOWED",
+                message:
+                  "latestExperience.bullets must preserve every existing bullet text and only change order/additions.",
+                details: {
+                  missingBaseBullets,
+                },
+              },
+              requestId,
+            },
+            { status: 400 },
+          );
+        }
+      }
+
+      const nextExperiences =
+        baseLatest && incomingBullets && incomingBullets.length > 0
+          ? [
+              {
+                ...baseLatest,
+                bullets: incomingBullets,
+              },
+              ...renderInput.experiences.slice(1),
+            ]
+          : renderInput.experiences;
+      const nextSkills = mergeSkillAdditions(renderInput.skills, resumeOutput.skillsAdditions);
+
       const tex = renderResumeTex({
         ...renderInput,
         summary: cvSummary,
+        experiences: nextExperiences,
+        skills: nextSkills,
       });
       pdf = await compileLatexToPdf(tex);
       filename = parseFilename("resume", renderInput.candidate.name, job.title);
     } else {
-      const p1 = tailored.cover.paragraphOne.trim();
-      const p2 = tailored.cover.paragraphTwo.trim();
-      const p3 = tailored.cover.paragraphThree.trim();
-      if (!p1 || !p2 || !p3) {
+      const coverOutput = parseCoverManualOutput(parsed.data.modelOutput);
+      if (!coverOutput) {
         return NextResponse.json(
           {
             error: {
-              code: "MISSING_COVER_PARAGRAPHS",
-              message: "paragraphOne, paragraphTwo and paragraphThree are all required for cover.",
+              code: "PARSE_FAILED",
+              message:
+                "Unable to parse model output. Cover JSON must include cover.paragraphOne/paragraphTwo/paragraphThree.",
             },
             requestId,
           },
           { status: 400 },
         );
       }
+      const p1 = coverOutput.cover.paragraphOne.trim();
+      const p2 = coverOutput.cover.paragraphTwo.trim();
+      const p3 = coverOutput.cover.paragraphThree.trim();
       const coverTex = renderCoverLetterTex({
         candidate: {
           name: renderInput.candidate.name,
@@ -195,9 +408,14 @@ export async function POST(req: Request) {
         },
         company: job.company || "the company",
         role: job.title,
+        subject: coverOutput.cover.subject,
+        date: coverOutput.cover.date,
+        salutation: coverOutput.cover.salutation,
         paragraphOne: p1,
         paragraphTwo: p2,
         paragraphThree: p3,
+        closing: coverOutput.cover.closing,
+        signatureName: coverOutput.cover.signatureName,
       });
       pdf = await compileLatexToPdf(coverTex);
       filename = parseFilename("cover-letter", renderInput.candidate.name, job.title);
