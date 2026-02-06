@@ -492,46 +492,28 @@ export async function POST(req: Request) {
           );
         }
 
-        const incomingSet = new Set(incomingBullets.map(normalizeBulletForCompare));
-        const missingBaseBullets = baseLatest.bullets.filter(
-          (bullet) => !incomingSet.has(normalizeBulletForCompare(bullet)),
+        const baseSet = new Set(baseLatest.bullets.map(normalizeBulletForCompare));
+        const addedBullets = incomingBullets.filter(
+          (bullet) => !baseSet.has(normalizeBulletForCompare(bullet)),
         );
-        if (missingBaseBullets.length > 0) {
-          return NextResponse.json(
-            {
-              error: {
-                code: "BULLET_REWRITE_NOT_ALLOWED",
-                message:
-                  "latestExperience.bullets must preserve every existing bullet text and only change order/additions.",
-                details: {
-                  missingBaseBullets,
-                },
-              },
-              requestId,
-            },
-            { status: 400 },
-          );
-        }
 
         const topResponsibilities = extractTopResponsibilities(job.description);
         if (topResponsibilities.length > 0) {
-          const baseCoverageCount = topResponsibilities.filter((resp) =>
-            baseLatest.bullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
-          ).length;
-
-          const baseSet = new Set(baseLatest.bullets.map(normalizeBulletForCompare));
-          const addedBullets = incomingBullets.filter(
-            (bullet) => !baseSet.has(normalizeBulletForCompare(bullet)),
+          const missingFromBase = topResponsibilities.filter(
+            (resp) => !baseLatest.bullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
           );
-
-          if (baseCoverageCount === 0) {
-            if (addedBullets.length < 2 || addedBullets.length > 3) {
+          if (missingFromBase.length > 0) {
+            const minRequiredAdditions = Math.min(missingFromBase.length, 3);
+            if (addedBullets.length < minRequiredAdditions || addedBullets.length > 3) {
               return NextResponse.json(
                 {
                   error: {
                     code: "RESPONSIBILITY_TOP3_NEEDS_ADDITIONS",
                     message:
-                      "Top 3 JD responsibilities are not covered by base bullets. Add 2-3 new bullets at the front aligned to those responsibilities.",
+                      `Top 3 JD responsibilities are not fully covered by base bullets. Add ${minRequiredAdditions} to 3 new bullets aligned to missing responsibilities.`,
+                    details: {
+                      missingResponsibilities: missingFromBase,
+                    },
                   },
                   requestId,
                 },
@@ -539,17 +521,19 @@ export async function POST(req: Request) {
               );
             }
 
-            const prefix = incomingBullets.slice(0, addedBullets.length);
-            const prefixSet = new Set(prefix.map(normalizeBulletForCompare));
-            const addedSet = new Set(addedBullets.map(normalizeBulletForCompare));
-            const allAddedAtFront = [...addedSet].every((item) => prefixSet.has(item));
-            if (!allAddedAtFront) {
+            const uncoveredInResult = topResponsibilities.filter(
+              (resp) => !incomingBullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
+            );
+            if (uncoveredInResult.length > 0) {
               return NextResponse.json(
                 {
                   error: {
-                    code: "RESPONSIBILITY_ADDITIONS_ORDER_INVALID",
+                    code: "RESPONSIBILITY_TOP3_NOT_COVERED",
                     message:
-                      "When top responsibilities are uncovered, new bullets must be placed at the start in responsibility order.",
+                      "Final latestExperience.bullets must cover all top 3 JD responsibilities.",
+                    details: {
+                      uncoveredResponsibilities: uncoveredInResult,
+                    },
                   },
                   requestId,
                 },

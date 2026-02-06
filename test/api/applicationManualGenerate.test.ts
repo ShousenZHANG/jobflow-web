@@ -260,7 +260,7 @@ describe("applications manual generate api", () => {
     ]);
   });
 
-  it("rejects resume output that rewrites existing latest-experience bullets", async () => {
+  it("rejects resume output when top responsibilities stay uncovered", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -268,7 +268,7 @@ describe("applications manual generate api", () => {
       id: VALID_JOB_ID,
       title: "Software Engineer",
       company: "Example Co",
-      description: "Build product features",
+      description: "Design and build scalable backend services and CI/CD pipelines for cloud platform delivery.",
     });
     (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       id: "rp-1",
@@ -321,7 +321,71 @@ describe("applications manual generate api", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error.code).toBe("BULLET_REWRITE_NOT_ALLOWED");
+    expect(json.error.code).toBe("RESPONSIBILITY_TOP3_NOT_COVERED");
+  });
+
+  it("accepts markdown-only formatting differences in existing bullets", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    (mapResumeProfile as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      candidate: {
+        name: "Jane Doe",
+        title: "Software Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+      },
+      summary: "Base summary",
+      skills: [],
+      experiences: [
+        {
+          location: "Sydney, AU",
+          dates: "2022-2023",
+          title: "Engineer",
+          company: "Example",
+          bullets: ["Delivered repeatable releases with Docker and Linux CI/CD pipelines."],
+        },
+      ],
+      projects: [],
+      education: [],
+    });
+
+    const formattingOnlyPatch = JSON.stringify({
+      cvSummary: "Tailored summary",
+      latestExperience: {
+        bullets: ["Delivered repeatable releases with **Docker **and **Linux** CI/CD pipelines."],
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "resume",
+          modelOutput: formattingOnlyPatch,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/pdf");
   });
 
   it("returns 409 when prompt meta is stale", async () => {
