@@ -23,6 +23,7 @@ export function buildGlobalSkillPackFiles(rules: PromptSkillRuleSet) {
   const readme = `# Jobflow Global Skill Pack
 
 This pack defines reusable rules and prompt templates for CV/Cover generation.
+The default rule profile is recruiter-grade and enforces Google XYZ-style bullets for new experience points.
 
 ## How to use
 1. Open your external AI chat tool.
@@ -44,9 +45,19 @@ This pack defines reusable rules and prompt templates for CV/Cover generation.
   const skillMd = `# jobflow-tailor-skill
 
 ## Objective
-Generate role-tailored CV summary and Cover Letter JSON that is safe for downstream PDF generation.
+Generate role-tailored CV summary and cover letter JSON that is safe for downstream PDF generation.
 
-## Constraints
+## When to Use
+- You have a base resume summary and a target JD.
+- You need recruiter-grade tailoring with strict JSON output.
+
+## Inputs
+- Base summary
+- Job title
+- Company
+- Job description
+
+## Hard Constraints
 ${list(rules.hardConstraints)}
 
 ## CV Rules
@@ -54,6 +65,22 @@ ${list(rules.cvRules)}
 
 ## Cover Rules
 ${list(rules.coverRules)}
+
+## Procedure
+1. Read JD responsibilities and required skills.
+2. Apply CV rules in order, preserving truthfulness and scope.
+3. Apply cover rules in order, keeping exactly three paragraphs.
+4. Validate output fields and JSON escaping.
+5. Return JSON only.
+
+## Quality Gates
+- No markdown/code fence.
+- No fabricated skills, employers, or metrics.
+- JSON schema compliance is mandatory.
+
+## Failure Policy
+- If required context is missing, keep base summary unchanged.
+- Keep cover letter concise and factual; avoid invented company details.
 
 ## Output
 Must strictly follow \`schema/output-schema.json\`.

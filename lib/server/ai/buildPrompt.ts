@@ -22,7 +22,7 @@ export function buildTailorPrompts(
   input: TailorPromptInput,
 ) {
   const systemPrompt = [
-    `You are Jobflow's resume tailoring assistant (${rules.locale}).`,
+    `You are Jobflow's resume tailoring assistant (${rules.locale}) and a senior recruiter-level writing reviewer.`,
     "Output strict JSON only (no markdown, no code fences).",
     "Ensure valid JSON strings: use \\n for line breaks and escape quotes.",
     formatRules("Hard Constraints:", rules.hardConstraints),
