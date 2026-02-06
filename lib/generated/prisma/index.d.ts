@@ -58,6 +58,11 @@ export type ResumeProfile = $Result.DefaultSelection<Prisma.$ResumeProfilePayloa
  * 
  */
 export type Application = $Result.DefaultSelection<Prisma.$ApplicationPayload>
+/**
+ * Model PromptRuleTemplate
+ * 
+ */
+export type PromptRuleTemplate = $Result.DefaultSelection<Prisma.$PromptRuleTemplatePayload>
 
 /**
  * Enums
@@ -297,6 +302,16 @@ export class PrismaClient<
     * ```
     */
   get application(): Prisma.ApplicationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.promptRuleTemplate`: Exposes CRUD operations for the **PromptRuleTemplate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PromptRuleTemplates
+    * const promptRuleTemplates = await prisma.promptRuleTemplate.findMany()
+    * ```
+    */
+  get promptRuleTemplate(): Prisma.PromptRuleTemplateDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -739,7 +754,8 @@ export namespace Prisma {
     DailyCheckin: 'DailyCheckin',
     FetchRun: 'FetchRun',
     ResumeProfile: 'ResumeProfile',
-    Application: 'Application'
+    Application: 'Application',
+    PromptRuleTemplate: 'PromptRuleTemplate'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -755,7 +771,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "application"
+      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "application" | "promptRuleTemplate"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1425,6 +1441,80 @@ export namespace Prisma {
           }
         }
       }
+      PromptRuleTemplate: {
+        payload: Prisma.$PromptRuleTemplatePayload<ExtArgs>
+        fields: Prisma.PromptRuleTemplateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PromptRuleTemplateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PromptRuleTemplateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>
+          }
+          findFirst: {
+            args: Prisma.PromptRuleTemplateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PromptRuleTemplateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>
+          }
+          findMany: {
+            args: Prisma.PromptRuleTemplateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>[]
+          }
+          create: {
+            args: Prisma.PromptRuleTemplateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>
+          }
+          createMany: {
+            args: Prisma.PromptRuleTemplateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PromptRuleTemplateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>[]
+          }
+          delete: {
+            args: Prisma.PromptRuleTemplateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>
+          }
+          update: {
+            args: Prisma.PromptRuleTemplateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>
+          }
+          deleteMany: {
+            args: Prisma.PromptRuleTemplateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PromptRuleTemplateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PromptRuleTemplateUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>[]
+          }
+          upsert: {
+            args: Prisma.PromptRuleTemplateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PromptRuleTemplatePayload>
+          }
+          aggregate: {
+            args: Prisma.PromptRuleTemplateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePromptRuleTemplate>
+          }
+          groupBy: {
+            args: Prisma.PromptRuleTemplateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PromptRuleTemplateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PromptRuleTemplateCountArgs<ExtArgs>
+            result: $Utils.Optional<PromptRuleTemplateCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1542,6 +1632,7 @@ export namespace Prisma {
     fetchRun?: FetchRunOmit
     resumeProfile?: ResumeProfileOmit
     application?: ApplicationOmit
+    promptRuleTemplate?: PromptRuleTemplateOmit
   }
 
   /* Types for Logging */
@@ -1630,6 +1721,7 @@ export namespace Prisma {
     dailyCheckins: number
     resumeProfiles: number
     applications: number
+    promptRuleTemplates: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1641,6 +1733,7 @@ export namespace Prisma {
     dailyCheckins?: boolean | UserCountOutputTypeCountDailyCheckinsArgs
     resumeProfiles?: boolean | UserCountOutputTypeCountResumeProfilesArgs
     applications?: boolean | UserCountOutputTypeCountApplicationsArgs
+    promptRuleTemplates?: boolean | UserCountOutputTypeCountPromptRuleTemplatesArgs
   }
 
   // Custom InputTypes
@@ -1708,6 +1801,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountApplicationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ApplicationWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPromptRuleTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PromptRuleTemplateWhereInput
   }
 
 
@@ -1965,6 +2065,7 @@ export namespace Prisma {
     dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
     resumeProfiles?: boolean | User$resumeProfilesArgs<ExtArgs>
     applications?: boolean | User$applicationsArgs<ExtArgs>
+    promptRuleTemplates?: boolean | User$promptRuleTemplatesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2008,6 +2109,7 @@ export namespace Prisma {
     dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
     resumeProfiles?: boolean | User$resumeProfilesArgs<ExtArgs>
     applications?: boolean | User$applicationsArgs<ExtArgs>
+    promptRuleTemplates?: boolean | User$promptRuleTemplatesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2024,6 +2126,7 @@ export namespace Prisma {
       dailyCheckins: Prisma.$DailyCheckinPayload<ExtArgs>[]
       resumeProfiles: Prisma.$ResumeProfilePayload<ExtArgs>[]
       applications: Prisma.$ApplicationPayload<ExtArgs>[]
+      promptRuleTemplates: Prisma.$PromptRuleTemplatePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2435,6 +2538,7 @@ export namespace Prisma {
     dailyCheckins<T extends User$dailyCheckinsArgs<ExtArgs> = {}>(args?: Subset<T, User$dailyCheckinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     resumeProfiles<T extends User$resumeProfilesArgs<ExtArgs> = {}>(args?: Subset<T, User$resumeProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResumeProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     applications<T extends User$applicationsArgs<ExtArgs> = {}>(args?: Subset<T, User$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    promptRuleTemplates<T extends User$promptRuleTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, User$promptRuleTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3048,6 +3152,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ApplicationScalarFieldEnum | ApplicationScalarFieldEnum[]
+  }
+
+  /**
+   * User.promptRuleTemplates
+   */
+  export type User$promptRuleTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    where?: PromptRuleTemplateWhereInput
+    orderBy?: PromptRuleTemplateOrderByWithRelationInput | PromptRuleTemplateOrderByWithRelationInput[]
+    cursor?: PromptRuleTemplateWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PromptRuleTemplateScalarFieldEnum | PromptRuleTemplateScalarFieldEnum[]
   }
 
   /**
@@ -12190,6 +12318,1164 @@ export namespace Prisma {
 
 
   /**
+   * Model PromptRuleTemplate
+   */
+
+  export type AggregatePromptRuleTemplate = {
+    _count: PromptRuleTemplateCountAggregateOutputType | null
+    _avg: PromptRuleTemplateAvgAggregateOutputType | null
+    _sum: PromptRuleTemplateSumAggregateOutputType | null
+    _min: PromptRuleTemplateMinAggregateOutputType | null
+    _max: PromptRuleTemplateMaxAggregateOutputType | null
+  }
+
+  export type PromptRuleTemplateAvgAggregateOutputType = {
+    version: number | null
+  }
+
+  export type PromptRuleTemplateSumAggregateOutputType = {
+    version: number | null
+  }
+
+  export type PromptRuleTemplateMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    name: string | null
+    version: number | null
+    locale: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PromptRuleTemplateMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    name: string | null
+    version: number | null
+    locale: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PromptRuleTemplateCountAggregateOutputType = {
+    id: number
+    userId: number
+    name: number
+    version: number
+    locale: number
+    cvRules: number
+    coverRules: number
+    hardConstraints: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PromptRuleTemplateAvgAggregateInputType = {
+    version?: true
+  }
+
+  export type PromptRuleTemplateSumAggregateInputType = {
+    version?: true
+  }
+
+  export type PromptRuleTemplateMinAggregateInputType = {
+    id?: true
+    userId?: true
+    name?: true
+    version?: true
+    locale?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PromptRuleTemplateMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    name?: true
+    version?: true
+    locale?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PromptRuleTemplateCountAggregateInputType = {
+    id?: true
+    userId?: true
+    name?: true
+    version?: true
+    locale?: true
+    cvRules?: true
+    coverRules?: true
+    hardConstraints?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PromptRuleTemplateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PromptRuleTemplate to aggregate.
+     */
+    where?: PromptRuleTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PromptRuleTemplates to fetch.
+     */
+    orderBy?: PromptRuleTemplateOrderByWithRelationInput | PromptRuleTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PromptRuleTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PromptRuleTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PromptRuleTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PromptRuleTemplates
+    **/
+    _count?: true | PromptRuleTemplateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PromptRuleTemplateAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PromptRuleTemplateSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PromptRuleTemplateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PromptRuleTemplateMaxAggregateInputType
+  }
+
+  export type GetPromptRuleTemplateAggregateType<T extends PromptRuleTemplateAggregateArgs> = {
+        [P in keyof T & keyof AggregatePromptRuleTemplate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePromptRuleTemplate[P]>
+      : GetScalarType<T[P], AggregatePromptRuleTemplate[P]>
+  }
+
+
+
+
+  export type PromptRuleTemplateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PromptRuleTemplateWhereInput
+    orderBy?: PromptRuleTemplateOrderByWithAggregationInput | PromptRuleTemplateOrderByWithAggregationInput[]
+    by: PromptRuleTemplateScalarFieldEnum[] | PromptRuleTemplateScalarFieldEnum
+    having?: PromptRuleTemplateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PromptRuleTemplateCountAggregateInputType | true
+    _avg?: PromptRuleTemplateAvgAggregateInputType
+    _sum?: PromptRuleTemplateSumAggregateInputType
+    _min?: PromptRuleTemplateMinAggregateInputType
+    _max?: PromptRuleTemplateMaxAggregateInputType
+  }
+
+  export type PromptRuleTemplateGroupByOutputType = {
+    id: string
+    userId: string
+    name: string
+    version: number
+    locale: string
+    cvRules: JsonValue
+    coverRules: JsonValue
+    hardConstraints: JsonValue
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: PromptRuleTemplateCountAggregateOutputType | null
+    _avg: PromptRuleTemplateAvgAggregateOutputType | null
+    _sum: PromptRuleTemplateSumAggregateOutputType | null
+    _min: PromptRuleTemplateMinAggregateOutputType | null
+    _max: PromptRuleTemplateMaxAggregateOutputType | null
+  }
+
+  type GetPromptRuleTemplateGroupByPayload<T extends PromptRuleTemplateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PromptRuleTemplateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PromptRuleTemplateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PromptRuleTemplateGroupByOutputType[P]>
+            : GetScalarType<T[P], PromptRuleTemplateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PromptRuleTemplateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    name?: boolean
+    version?: boolean
+    locale?: boolean
+    cvRules?: boolean
+    coverRules?: boolean
+    hardConstraints?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["promptRuleTemplate"]>
+
+  export type PromptRuleTemplateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    name?: boolean
+    version?: boolean
+    locale?: boolean
+    cvRules?: boolean
+    coverRules?: boolean
+    hardConstraints?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["promptRuleTemplate"]>
+
+  export type PromptRuleTemplateSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    name?: boolean
+    version?: boolean
+    locale?: boolean
+    cvRules?: boolean
+    coverRules?: boolean
+    hardConstraints?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["promptRuleTemplate"]>
+
+  export type PromptRuleTemplateSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    name?: boolean
+    version?: boolean
+    locale?: boolean
+    cvRules?: boolean
+    coverRules?: boolean
+    hardConstraints?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PromptRuleTemplateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "version" | "locale" | "cvRules" | "coverRules" | "hardConstraints" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["promptRuleTemplate"]>
+  export type PromptRuleTemplateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PromptRuleTemplateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PromptRuleTemplateIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $PromptRuleTemplatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PromptRuleTemplate"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      name: string
+      version: number
+      locale: string
+      cvRules: Prisma.JsonValue
+      coverRules: Prisma.JsonValue
+      hardConstraints: Prisma.JsonValue
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["promptRuleTemplate"]>
+    composites: {}
+  }
+
+  type PromptRuleTemplateGetPayload<S extends boolean | null | undefined | PromptRuleTemplateDefaultArgs> = $Result.GetResult<Prisma.$PromptRuleTemplatePayload, S>
+
+  type PromptRuleTemplateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PromptRuleTemplateFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PromptRuleTemplateCountAggregateInputType | true
+    }
+
+  export interface PromptRuleTemplateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PromptRuleTemplate'], meta: { name: 'PromptRuleTemplate' } }
+    /**
+     * Find zero or one PromptRuleTemplate that matches the filter.
+     * @param {PromptRuleTemplateFindUniqueArgs} args - Arguments to find a PromptRuleTemplate
+     * @example
+     * // Get one PromptRuleTemplate
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PromptRuleTemplateFindUniqueArgs>(args: SelectSubset<T, PromptRuleTemplateFindUniqueArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PromptRuleTemplate that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PromptRuleTemplateFindUniqueOrThrowArgs} args - Arguments to find a PromptRuleTemplate
+     * @example
+     * // Get one PromptRuleTemplate
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PromptRuleTemplateFindUniqueOrThrowArgs>(args: SelectSubset<T, PromptRuleTemplateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PromptRuleTemplate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PromptRuleTemplateFindFirstArgs} args - Arguments to find a PromptRuleTemplate
+     * @example
+     * // Get one PromptRuleTemplate
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PromptRuleTemplateFindFirstArgs>(args?: SelectSubset<T, PromptRuleTemplateFindFirstArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PromptRuleTemplate that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PromptRuleTemplateFindFirstOrThrowArgs} args - Arguments to find a PromptRuleTemplate
+     * @example
+     * // Get one PromptRuleTemplate
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PromptRuleTemplateFindFirstOrThrowArgs>(args?: SelectSubset<T, PromptRuleTemplateFindFirstOrThrowArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PromptRuleTemplates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PromptRuleTemplateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PromptRuleTemplates
+     * const promptRuleTemplates = await prisma.promptRuleTemplate.findMany()
+     * 
+     * // Get first 10 PromptRuleTemplates
+     * const promptRuleTemplates = await prisma.promptRuleTemplate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const promptRuleTemplateWithIdOnly = await prisma.promptRuleTemplate.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PromptRuleTemplateFindManyArgs>(args?: SelectSubset<T, PromptRuleTemplateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PromptRuleTemplate.
+     * @param {PromptRuleTemplateCreateArgs} args - Arguments to create a PromptRuleTemplate.
+     * @example
+     * // Create one PromptRuleTemplate
+     * const PromptRuleTemplate = await prisma.promptRuleTemplate.create({
+     *   data: {
+     *     // ... data to create a PromptRuleTemplate
+     *   }
+     * })
+     * 
+     */
+    create<T extends PromptRuleTemplateCreateArgs>(args: SelectSubset<T, PromptRuleTemplateCreateArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PromptRuleTemplates.
+     * @param {PromptRuleTemplateCreateManyArgs} args - Arguments to create many PromptRuleTemplates.
+     * @example
+     * // Create many PromptRuleTemplates
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PromptRuleTemplateCreateManyArgs>(args?: SelectSubset<T, PromptRuleTemplateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PromptRuleTemplates and returns the data saved in the database.
+     * @param {PromptRuleTemplateCreateManyAndReturnArgs} args - Arguments to create many PromptRuleTemplates.
+     * @example
+     * // Create many PromptRuleTemplates
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PromptRuleTemplates and only return the `id`
+     * const promptRuleTemplateWithIdOnly = await prisma.promptRuleTemplate.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PromptRuleTemplateCreateManyAndReturnArgs>(args?: SelectSubset<T, PromptRuleTemplateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PromptRuleTemplate.
+     * @param {PromptRuleTemplateDeleteArgs} args - Arguments to delete one PromptRuleTemplate.
+     * @example
+     * // Delete one PromptRuleTemplate
+     * const PromptRuleTemplate = await prisma.promptRuleTemplate.delete({
+     *   where: {
+     *     // ... filter to delete one PromptRuleTemplate
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PromptRuleTemplateDeleteArgs>(args: SelectSubset<T, PromptRuleTemplateDeleteArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PromptRuleTemplate.
+     * @param {PromptRuleTemplateUpdateArgs} args - Arguments to update one PromptRuleTemplate.
+     * @example
+     * // Update one PromptRuleTemplate
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PromptRuleTemplateUpdateArgs>(args: SelectSubset<T, PromptRuleTemplateUpdateArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PromptRuleTemplates.
+     * @param {PromptRuleTemplateDeleteManyArgs} args - Arguments to filter PromptRuleTemplates to delete.
+     * @example
+     * // Delete a few PromptRuleTemplates
+     * const { count } = await prisma.promptRuleTemplate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PromptRuleTemplateDeleteManyArgs>(args?: SelectSubset<T, PromptRuleTemplateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PromptRuleTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PromptRuleTemplateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PromptRuleTemplates
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PromptRuleTemplateUpdateManyArgs>(args: SelectSubset<T, PromptRuleTemplateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PromptRuleTemplates and returns the data updated in the database.
+     * @param {PromptRuleTemplateUpdateManyAndReturnArgs} args - Arguments to update many PromptRuleTemplates.
+     * @example
+     * // Update many PromptRuleTemplates
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PromptRuleTemplates and only return the `id`
+     * const promptRuleTemplateWithIdOnly = await prisma.promptRuleTemplate.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PromptRuleTemplateUpdateManyAndReturnArgs>(args: SelectSubset<T, PromptRuleTemplateUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PromptRuleTemplate.
+     * @param {PromptRuleTemplateUpsertArgs} args - Arguments to update or create a PromptRuleTemplate.
+     * @example
+     * // Update or create a PromptRuleTemplate
+     * const promptRuleTemplate = await prisma.promptRuleTemplate.upsert({
+     *   create: {
+     *     // ... data to create a PromptRuleTemplate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PromptRuleTemplate we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PromptRuleTemplateUpsertArgs>(args: SelectSubset<T, PromptRuleTemplateUpsertArgs<ExtArgs>>): Prisma__PromptRuleTemplateClient<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PromptRuleTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PromptRuleTemplateCountArgs} args - Arguments to filter PromptRuleTemplates to count.
+     * @example
+     * // Count the number of PromptRuleTemplates
+     * const count = await prisma.promptRuleTemplate.count({
+     *   where: {
+     *     // ... the filter for the PromptRuleTemplates we want to count
+     *   }
+     * })
+    **/
+    count<T extends PromptRuleTemplateCountArgs>(
+      args?: Subset<T, PromptRuleTemplateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PromptRuleTemplateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PromptRuleTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PromptRuleTemplateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PromptRuleTemplateAggregateArgs>(args: Subset<T, PromptRuleTemplateAggregateArgs>): Prisma.PrismaPromise<GetPromptRuleTemplateAggregateType<T>>
+
+    /**
+     * Group by PromptRuleTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PromptRuleTemplateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PromptRuleTemplateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PromptRuleTemplateGroupByArgs['orderBy'] }
+        : { orderBy?: PromptRuleTemplateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PromptRuleTemplateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPromptRuleTemplateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PromptRuleTemplate model
+   */
+  readonly fields: PromptRuleTemplateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PromptRuleTemplate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PromptRuleTemplateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PromptRuleTemplate model
+   */
+  interface PromptRuleTemplateFieldRefs {
+    readonly id: FieldRef<"PromptRuleTemplate", 'String'>
+    readonly userId: FieldRef<"PromptRuleTemplate", 'String'>
+    readonly name: FieldRef<"PromptRuleTemplate", 'String'>
+    readonly version: FieldRef<"PromptRuleTemplate", 'Int'>
+    readonly locale: FieldRef<"PromptRuleTemplate", 'String'>
+    readonly cvRules: FieldRef<"PromptRuleTemplate", 'Json'>
+    readonly coverRules: FieldRef<"PromptRuleTemplate", 'Json'>
+    readonly hardConstraints: FieldRef<"PromptRuleTemplate", 'Json'>
+    readonly isActive: FieldRef<"PromptRuleTemplate", 'Boolean'>
+    readonly createdAt: FieldRef<"PromptRuleTemplate", 'DateTime'>
+    readonly updatedAt: FieldRef<"PromptRuleTemplate", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PromptRuleTemplate findUnique
+   */
+  export type PromptRuleTemplateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PromptRuleTemplate to fetch.
+     */
+    where: PromptRuleTemplateWhereUniqueInput
+  }
+
+  /**
+   * PromptRuleTemplate findUniqueOrThrow
+   */
+  export type PromptRuleTemplateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PromptRuleTemplate to fetch.
+     */
+    where: PromptRuleTemplateWhereUniqueInput
+  }
+
+  /**
+   * PromptRuleTemplate findFirst
+   */
+  export type PromptRuleTemplateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PromptRuleTemplate to fetch.
+     */
+    where?: PromptRuleTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PromptRuleTemplates to fetch.
+     */
+    orderBy?: PromptRuleTemplateOrderByWithRelationInput | PromptRuleTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PromptRuleTemplates.
+     */
+    cursor?: PromptRuleTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PromptRuleTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PromptRuleTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PromptRuleTemplates.
+     */
+    distinct?: PromptRuleTemplateScalarFieldEnum | PromptRuleTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * PromptRuleTemplate findFirstOrThrow
+   */
+  export type PromptRuleTemplateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PromptRuleTemplate to fetch.
+     */
+    where?: PromptRuleTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PromptRuleTemplates to fetch.
+     */
+    orderBy?: PromptRuleTemplateOrderByWithRelationInput | PromptRuleTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PromptRuleTemplates.
+     */
+    cursor?: PromptRuleTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PromptRuleTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PromptRuleTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PromptRuleTemplates.
+     */
+    distinct?: PromptRuleTemplateScalarFieldEnum | PromptRuleTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * PromptRuleTemplate findMany
+   */
+  export type PromptRuleTemplateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PromptRuleTemplates to fetch.
+     */
+    where?: PromptRuleTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PromptRuleTemplates to fetch.
+     */
+    orderBy?: PromptRuleTemplateOrderByWithRelationInput | PromptRuleTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PromptRuleTemplates.
+     */
+    cursor?: PromptRuleTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PromptRuleTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PromptRuleTemplates.
+     */
+    skip?: number
+    distinct?: PromptRuleTemplateScalarFieldEnum | PromptRuleTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * PromptRuleTemplate create
+   */
+  export type PromptRuleTemplateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PromptRuleTemplate.
+     */
+    data: XOR<PromptRuleTemplateCreateInput, PromptRuleTemplateUncheckedCreateInput>
+  }
+
+  /**
+   * PromptRuleTemplate createMany
+   */
+  export type PromptRuleTemplateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PromptRuleTemplates.
+     */
+    data: PromptRuleTemplateCreateManyInput | PromptRuleTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PromptRuleTemplate createManyAndReturn
+   */
+  export type PromptRuleTemplateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to create many PromptRuleTemplates.
+     */
+    data: PromptRuleTemplateCreateManyInput | PromptRuleTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PromptRuleTemplate update
+   */
+  export type PromptRuleTemplateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PromptRuleTemplate.
+     */
+    data: XOR<PromptRuleTemplateUpdateInput, PromptRuleTemplateUncheckedUpdateInput>
+    /**
+     * Choose, which PromptRuleTemplate to update.
+     */
+    where: PromptRuleTemplateWhereUniqueInput
+  }
+
+  /**
+   * PromptRuleTemplate updateMany
+   */
+  export type PromptRuleTemplateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PromptRuleTemplates.
+     */
+    data: XOR<PromptRuleTemplateUpdateManyMutationInput, PromptRuleTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which PromptRuleTemplates to update
+     */
+    where?: PromptRuleTemplateWhereInput
+    /**
+     * Limit how many PromptRuleTemplates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PromptRuleTemplate updateManyAndReturn
+   */
+  export type PromptRuleTemplateUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to update PromptRuleTemplates.
+     */
+    data: XOR<PromptRuleTemplateUpdateManyMutationInput, PromptRuleTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which PromptRuleTemplates to update
+     */
+    where?: PromptRuleTemplateWhereInput
+    /**
+     * Limit how many PromptRuleTemplates to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PromptRuleTemplate upsert
+   */
+  export type PromptRuleTemplateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PromptRuleTemplate to update in case it exists.
+     */
+    where: PromptRuleTemplateWhereUniqueInput
+    /**
+     * In case the PromptRuleTemplate found by the `where` argument doesn't exist, create a new PromptRuleTemplate with this data.
+     */
+    create: XOR<PromptRuleTemplateCreateInput, PromptRuleTemplateUncheckedCreateInput>
+    /**
+     * In case the PromptRuleTemplate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PromptRuleTemplateUpdateInput, PromptRuleTemplateUncheckedUpdateInput>
+  }
+
+  /**
+   * PromptRuleTemplate delete
+   */
+  export type PromptRuleTemplateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+    /**
+     * Filter which PromptRuleTemplate to delete.
+     */
+    where: PromptRuleTemplateWhereUniqueInput
+  }
+
+  /**
+   * PromptRuleTemplate deleteMany
+   */
+  export type PromptRuleTemplateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PromptRuleTemplates to delete
+     */
+    where?: PromptRuleTemplateWhereInput
+    /**
+     * Limit how many PromptRuleTemplates to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PromptRuleTemplate without action
+   */
+  export type PromptRuleTemplateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PromptRuleTemplate
+     */
+    select?: PromptRuleTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PromptRuleTemplate
+     */
+    omit?: PromptRuleTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PromptRuleTemplateInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -12340,6 +13626,23 @@ export namespace Prisma {
   };
 
   export type ApplicationScalarFieldEnum = (typeof ApplicationScalarFieldEnum)[keyof typeof ApplicationScalarFieldEnum]
+
+
+  export const PromptRuleTemplateScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    name: 'name',
+    version: 'version',
+    locale: 'locale',
+    cvRules: 'cvRules',
+    coverRules: 'coverRules',
+    hardConstraints: 'hardConstraints',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PromptRuleTemplateScalarFieldEnum = (typeof PromptRuleTemplateScalarFieldEnum)[keyof typeof PromptRuleTemplateScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -12522,6 +13825,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinListRelationFilter
     resumeProfiles?: ResumeProfileListRelationFilter
     applications?: ApplicationListRelationFilter
+    promptRuleTemplates?: PromptRuleTemplateListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -12540,6 +13844,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinOrderByRelationAggregateInput
     resumeProfiles?: ResumeProfileOrderByRelationAggregateInput
     applications?: ApplicationOrderByRelationAggregateInput
+    promptRuleTemplates?: PromptRuleTemplateOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -12561,6 +13866,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinListRelationFilter
     resumeProfiles?: ResumeProfileListRelationFilter
     applications?: ApplicationListRelationFilter
+    promptRuleTemplates?: PromptRuleTemplateListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -13240,6 +14546,94 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Application"> | Date | string
   }
 
+  export type PromptRuleTemplateWhereInput = {
+    AND?: PromptRuleTemplateWhereInput | PromptRuleTemplateWhereInput[]
+    OR?: PromptRuleTemplateWhereInput[]
+    NOT?: PromptRuleTemplateWhereInput | PromptRuleTemplateWhereInput[]
+    id?: UuidFilter<"PromptRuleTemplate"> | string
+    userId?: UuidFilter<"PromptRuleTemplate"> | string
+    name?: StringFilter<"PromptRuleTemplate"> | string
+    version?: IntFilter<"PromptRuleTemplate"> | number
+    locale?: StringFilter<"PromptRuleTemplate"> | string
+    cvRules?: JsonFilter<"PromptRuleTemplate">
+    coverRules?: JsonFilter<"PromptRuleTemplate">
+    hardConstraints?: JsonFilter<"PromptRuleTemplate">
+    isActive?: BoolFilter<"PromptRuleTemplate"> | boolean
+    createdAt?: DateTimeFilter<"PromptRuleTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"PromptRuleTemplate"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type PromptRuleTemplateOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    version?: SortOrder
+    locale?: SortOrder
+    cvRules?: SortOrder
+    coverRules?: SortOrder
+    hardConstraints?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type PromptRuleTemplateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_version?: PromptRuleTemplateUserIdVersionCompoundUniqueInput
+    AND?: PromptRuleTemplateWhereInput | PromptRuleTemplateWhereInput[]
+    OR?: PromptRuleTemplateWhereInput[]
+    NOT?: PromptRuleTemplateWhereInput | PromptRuleTemplateWhereInput[]
+    userId?: UuidFilter<"PromptRuleTemplate"> | string
+    name?: StringFilter<"PromptRuleTemplate"> | string
+    version?: IntFilter<"PromptRuleTemplate"> | number
+    locale?: StringFilter<"PromptRuleTemplate"> | string
+    cvRules?: JsonFilter<"PromptRuleTemplate">
+    coverRules?: JsonFilter<"PromptRuleTemplate">
+    hardConstraints?: JsonFilter<"PromptRuleTemplate">
+    isActive?: BoolFilter<"PromptRuleTemplate"> | boolean
+    createdAt?: DateTimeFilter<"PromptRuleTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"PromptRuleTemplate"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId_version">
+
+  export type PromptRuleTemplateOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    version?: SortOrder
+    locale?: SortOrder
+    cvRules?: SortOrder
+    coverRules?: SortOrder
+    hardConstraints?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PromptRuleTemplateCountOrderByAggregateInput
+    _avg?: PromptRuleTemplateAvgOrderByAggregateInput
+    _max?: PromptRuleTemplateMaxOrderByAggregateInput
+    _min?: PromptRuleTemplateMinOrderByAggregateInput
+    _sum?: PromptRuleTemplateSumOrderByAggregateInput
+  }
+
+  export type PromptRuleTemplateScalarWhereWithAggregatesInput = {
+    AND?: PromptRuleTemplateScalarWhereWithAggregatesInput | PromptRuleTemplateScalarWhereWithAggregatesInput[]
+    OR?: PromptRuleTemplateScalarWhereWithAggregatesInput[]
+    NOT?: PromptRuleTemplateScalarWhereWithAggregatesInput | PromptRuleTemplateScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"PromptRuleTemplate"> | string
+    userId?: UuidWithAggregatesFilter<"PromptRuleTemplate"> | string
+    name?: StringWithAggregatesFilter<"PromptRuleTemplate"> | string
+    version?: IntWithAggregatesFilter<"PromptRuleTemplate"> | number
+    locale?: StringWithAggregatesFilter<"PromptRuleTemplate"> | string
+    cvRules?: JsonWithAggregatesFilter<"PromptRuleTemplate">
+    coverRules?: JsonWithAggregatesFilter<"PromptRuleTemplate">
+    hardConstraints?: JsonWithAggregatesFilter<"PromptRuleTemplate">
+    isActive?: BoolWithAggregatesFilter<"PromptRuleTemplate"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"PromptRuleTemplate"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PromptRuleTemplate"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email?: string | null
@@ -13256,6 +14650,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -13274,6 +14669,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -13292,6 +14688,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -13310,6 +14707,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -14054,6 +15452,103 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PromptRuleTemplateCreateInput = {
+    id?: string
+    name: string
+    version: number
+    locale?: string
+    cvRules: JsonNullValueInput | InputJsonValue
+    coverRules: JsonNullValueInput | InputJsonValue
+    hardConstraints: JsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPromptRuleTemplatesInput
+  }
+
+  export type PromptRuleTemplateUncheckedCreateInput = {
+    id?: string
+    userId: string
+    name: string
+    version: number
+    locale?: string
+    cvRules: JsonNullValueInput | InputJsonValue
+    coverRules: JsonNullValueInput | InputJsonValue
+    hardConstraints: JsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PromptRuleTemplateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
+    cvRules?: JsonNullValueInput | InputJsonValue
+    coverRules?: JsonNullValueInput | InputJsonValue
+    hardConstraints?: JsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPromptRuleTemplatesNestedInput
+  }
+
+  export type PromptRuleTemplateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
+    cvRules?: JsonNullValueInput | InputJsonValue
+    coverRules?: JsonNullValueInput | InputJsonValue
+    hardConstraints?: JsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PromptRuleTemplateCreateManyInput = {
+    id?: string
+    userId: string
+    name: string
+    version: number
+    locale?: string
+    cvRules: JsonNullValueInput | InputJsonValue
+    coverRules: JsonNullValueInput | InputJsonValue
+    hardConstraints: JsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PromptRuleTemplateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
+    cvRules?: JsonNullValueInput | InputJsonValue
+    coverRules?: JsonNullValueInput | InputJsonValue
+    hardConstraints?: JsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PromptRuleTemplateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
+    cvRules?: JsonNullValueInput | InputJsonValue
+    coverRules?: JsonNullValueInput | InputJsonValue
+    hardConstraints?: JsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -14151,6 +15646,12 @@ export namespace Prisma {
     none?: ApplicationWhereInput
   }
 
+  export type PromptRuleTemplateListRelationFilter = {
+    every?: PromptRuleTemplateWhereInput
+    some?: PromptRuleTemplateWhereInput
+    none?: PromptRuleTemplateWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -14185,6 +15686,10 @@ export namespace Prisma {
   }
 
   export type ApplicationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PromptRuleTemplateOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -14890,6 +16395,55 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type PromptRuleTemplateUserIdVersionCompoundUniqueInput = {
+    userId: string
+    version: number
+  }
+
+  export type PromptRuleTemplateCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    version?: SortOrder
+    locale?: SortOrder
+    cvRules?: SortOrder
+    coverRules?: SortOrder
+    hardConstraints?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PromptRuleTemplateAvgOrderByAggregateInput = {
+    version?: SortOrder
+  }
+
+  export type PromptRuleTemplateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    version?: SortOrder
+    locale?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PromptRuleTemplateMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    version?: SortOrder
+    locale?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PromptRuleTemplateSumOrderByAggregateInput = {
+    version?: SortOrder
+  }
+
   export type AccountCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -14946,6 +16500,13 @@ export namespace Prisma {
     connect?: ApplicationWhereUniqueInput | ApplicationWhereUniqueInput[]
   }
 
+  export type PromptRuleTemplateCreateNestedManyWithoutUserInput = {
+    create?: XOR<PromptRuleTemplateCreateWithoutUserInput, PromptRuleTemplateUncheckedCreateWithoutUserInput> | PromptRuleTemplateCreateWithoutUserInput[] | PromptRuleTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PromptRuleTemplateCreateOrConnectWithoutUserInput | PromptRuleTemplateCreateOrConnectWithoutUserInput[]
+    createMany?: PromptRuleTemplateCreateManyUserInputEnvelope
+    connect?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -15000,6 +16561,13 @@ export namespace Prisma {
     connectOrCreate?: ApplicationCreateOrConnectWithoutUserInput | ApplicationCreateOrConnectWithoutUserInput[]
     createMany?: ApplicationCreateManyUserInputEnvelope
     connect?: ApplicationWhereUniqueInput | ApplicationWhereUniqueInput[]
+  }
+
+  export type PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PromptRuleTemplateCreateWithoutUserInput, PromptRuleTemplateUncheckedCreateWithoutUserInput> | PromptRuleTemplateCreateWithoutUserInput[] | PromptRuleTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PromptRuleTemplateCreateOrConnectWithoutUserInput | PromptRuleTemplateCreateOrConnectWithoutUserInput[]
+    createMany?: PromptRuleTemplateCreateManyUserInputEnvelope
+    connect?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -15130,6 +16698,20 @@ export namespace Prisma {
     deleteMany?: ApplicationScalarWhereInput | ApplicationScalarWhereInput[]
   }
 
+  export type PromptRuleTemplateUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PromptRuleTemplateCreateWithoutUserInput, PromptRuleTemplateUncheckedCreateWithoutUserInput> | PromptRuleTemplateCreateWithoutUserInput[] | PromptRuleTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PromptRuleTemplateCreateOrConnectWithoutUserInput | PromptRuleTemplateCreateOrConnectWithoutUserInput[]
+    upsert?: PromptRuleTemplateUpsertWithWhereUniqueWithoutUserInput | PromptRuleTemplateUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PromptRuleTemplateCreateManyUserInputEnvelope
+    set?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    disconnect?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    delete?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    connect?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    update?: PromptRuleTemplateUpdateWithWhereUniqueWithoutUserInput | PromptRuleTemplateUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PromptRuleTemplateUpdateManyWithWhereWithoutUserInput | PromptRuleTemplateUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PromptRuleTemplateScalarWhereInput | PromptRuleTemplateScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -15240,6 +16822,20 @@ export namespace Prisma {
     update?: ApplicationUpdateWithWhereUniqueWithoutUserInput | ApplicationUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ApplicationUpdateManyWithWhereWithoutUserInput | ApplicationUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ApplicationScalarWhereInput | ApplicationScalarWhereInput[]
+  }
+
+  export type PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PromptRuleTemplateCreateWithoutUserInput, PromptRuleTemplateUncheckedCreateWithoutUserInput> | PromptRuleTemplateCreateWithoutUserInput[] | PromptRuleTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PromptRuleTemplateCreateOrConnectWithoutUserInput | PromptRuleTemplateCreateOrConnectWithoutUserInput[]
+    upsert?: PromptRuleTemplateUpsertWithWhereUniqueWithoutUserInput | PromptRuleTemplateUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PromptRuleTemplateCreateManyUserInputEnvelope
+    set?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    disconnect?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    delete?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    connect?: PromptRuleTemplateWhereUniqueInput | PromptRuleTemplateWhereUniqueInput[]
+    update?: PromptRuleTemplateUpdateWithWhereUniqueWithoutUserInput | PromptRuleTemplateUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PromptRuleTemplateUpdateManyWithWhereWithoutUserInput | PromptRuleTemplateUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PromptRuleTemplateScalarWhereInput | PromptRuleTemplateScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -15496,6 +17092,20 @@ export namespace Prisma {
     delete?: ResumeProfileWhereInput | boolean
     connect?: ResumeProfileWhereUniqueInput
     update?: XOR<XOR<ResumeProfileUpdateToOneWithWhereWithoutApplicationsInput, ResumeProfileUpdateWithoutApplicationsInput>, ResumeProfileUncheckedUpdateWithoutApplicationsInput>
+  }
+
+  export type UserCreateNestedOneWithoutPromptRuleTemplatesInput = {
+    create?: XOR<UserCreateWithoutPromptRuleTemplatesInput, UserUncheckedCreateWithoutPromptRuleTemplatesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPromptRuleTemplatesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutPromptRuleTemplatesNestedInput = {
+    create?: XOR<UserCreateWithoutPromptRuleTemplatesInput, UserUncheckedCreateWithoutPromptRuleTemplatesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPromptRuleTemplatesInput
+    upsert?: UserUpsertWithoutPromptRuleTemplatesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPromptRuleTemplatesInput, UserUpdateWithoutPromptRuleTemplatesInput>, UserUncheckedUpdateWithoutPromptRuleTemplatesInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -16101,6 +17711,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PromptRuleTemplateCreateWithoutUserInput = {
+    id?: string
+    name: string
+    version: number
+    locale?: string
+    cvRules: JsonNullValueInput | InputJsonValue
+    coverRules: JsonNullValueInput | InputJsonValue
+    hardConstraints: JsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PromptRuleTemplateUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    version: number
+    locale?: string
+    cvRules: JsonNullValueInput | InputJsonValue
+    coverRules: JsonNullValueInput | InputJsonValue
+    hardConstraints: JsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PromptRuleTemplateCreateOrConnectWithoutUserInput = {
+    where: PromptRuleTemplateWhereUniqueInput
+    create: XOR<PromptRuleTemplateCreateWithoutUserInput, PromptRuleTemplateUncheckedCreateWithoutUserInput>
+  }
+
+  export type PromptRuleTemplateCreateManyUserInputEnvelope = {
+    data: PromptRuleTemplateCreateManyUserInput | PromptRuleTemplateCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput
     update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
@@ -16355,6 +18001,39 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Application"> | Date | string
   }
 
+  export type PromptRuleTemplateUpsertWithWhereUniqueWithoutUserInput = {
+    where: PromptRuleTemplateWhereUniqueInput
+    update: XOR<PromptRuleTemplateUpdateWithoutUserInput, PromptRuleTemplateUncheckedUpdateWithoutUserInput>
+    create: XOR<PromptRuleTemplateCreateWithoutUserInput, PromptRuleTemplateUncheckedCreateWithoutUserInput>
+  }
+
+  export type PromptRuleTemplateUpdateWithWhereUniqueWithoutUserInput = {
+    where: PromptRuleTemplateWhereUniqueInput
+    data: XOR<PromptRuleTemplateUpdateWithoutUserInput, PromptRuleTemplateUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PromptRuleTemplateUpdateManyWithWhereWithoutUserInput = {
+    where: PromptRuleTemplateScalarWhereInput
+    data: XOR<PromptRuleTemplateUpdateManyMutationInput, PromptRuleTemplateUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PromptRuleTemplateScalarWhereInput = {
+    AND?: PromptRuleTemplateScalarWhereInput | PromptRuleTemplateScalarWhereInput[]
+    OR?: PromptRuleTemplateScalarWhereInput[]
+    NOT?: PromptRuleTemplateScalarWhereInput | PromptRuleTemplateScalarWhereInput[]
+    id?: UuidFilter<"PromptRuleTemplate"> | string
+    userId?: UuidFilter<"PromptRuleTemplate"> | string
+    name?: StringFilter<"PromptRuleTemplate"> | string
+    version?: IntFilter<"PromptRuleTemplate"> | number
+    locale?: StringFilter<"PromptRuleTemplate"> | string
+    cvRules?: JsonFilter<"PromptRuleTemplate">
+    coverRules?: JsonFilter<"PromptRuleTemplate">
+    hardConstraints?: JsonFilter<"PromptRuleTemplate">
+    isActive?: BoolFilter<"PromptRuleTemplate"> | boolean
+    createdAt?: DateTimeFilter<"PromptRuleTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"PromptRuleTemplate"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email?: string | null
@@ -16370,6 +18049,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -16387,6 +18067,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -16420,6 +18101,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -16437,6 +18119,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -16454,6 +18137,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -16471,6 +18155,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -16504,6 +18189,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -16521,6 +18207,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutJobsInput = {
@@ -16538,6 +18225,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJobsInput = {
@@ -16555,6 +18243,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJobsInput = {
@@ -16628,6 +18317,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJobsInput = {
@@ -16645,6 +18335,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ApplicationUpsertWithWhereUniqueWithoutJobInput = {
@@ -16678,6 +18369,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDeletedJobUrlsInput = {
@@ -16695,6 +18387,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDeletedJobUrlsInput = {
@@ -16728,6 +18421,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDeletedJobUrlsInput = {
@@ -16745,6 +18439,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDailyCheckinsInput = {
@@ -16762,6 +18457,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDailyCheckinsInput = {
@@ -16779,6 +18475,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDailyCheckinsInput = {
@@ -16812,6 +18509,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDailyCheckinsInput = {
@@ -16829,6 +18527,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFetchRunsInput = {
@@ -16846,6 +18545,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFetchRunsInput = {
@@ -16863,6 +18563,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFetchRunsInput = {
@@ -16896,6 +18597,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFetchRunsInput = {
@@ -16913,6 +18615,7 @@ export namespace Prisma {
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutResumeProfilesInput = {
@@ -16930,6 +18633,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutResumeProfilesInput = {
@@ -16947,6 +18651,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutResumeProfilesInput = {
@@ -17020,6 +18725,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutResumeProfilesInput = {
@@ -17037,6 +18743,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ApplicationUpsertWithWhereUniqueWithoutResumeProfileInput = {
@@ -17070,6 +18777,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutApplicationsInput = {
@@ -17087,6 +18795,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutApplicationsInput = {
@@ -17188,6 +18897,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutApplicationsInput = {
@@ -17205,6 +18915,7 @@ export namespace Prisma {
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type JobUpsertWithoutApplicationsInput = {
@@ -17285,6 +18996,94 @@ export namespace Prisma {
     education?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateWithoutPromptRuleTemplatesInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    jobs?: JobCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
+    applications?: ApplicationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPromptRuleTemplatesInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
+    applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPromptRuleTemplatesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPromptRuleTemplatesInput, UserUncheckedCreateWithoutPromptRuleTemplatesInput>
+  }
+
+  export type UserUpsertWithoutPromptRuleTemplatesInput = {
+    update: XOR<UserUpdateWithoutPromptRuleTemplatesInput, UserUncheckedUpdateWithoutPromptRuleTemplatesInput>
+    create: XOR<UserCreateWithoutPromptRuleTemplatesInput, UserUncheckedCreateWithoutPromptRuleTemplatesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPromptRuleTemplatesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPromptRuleTemplatesInput, UserUncheckedUpdateWithoutPromptRuleTemplatesInput>
+  }
+
+  export type UserUpdateWithoutPromptRuleTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    jobs?: JobUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
+    applications?: ApplicationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPromptRuleTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
+    applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -17377,6 +19176,19 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PromptRuleTemplateCreateManyUserInput = {
+    id?: string
+    name: string
+    version: number
+    locale?: string
+    cvRules: JsonNullValueInput | InputJsonValue
+    coverRules: JsonNullValueInput | InputJsonValue
+    hardConstraints: JsonNullValueInput | InputJsonValue
+    isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -17663,6 +19475,45 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PromptRuleTemplateUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
+    cvRules?: JsonNullValueInput | InputJsonValue
+    coverRules?: JsonNullValueInput | InputJsonValue
+    hardConstraints?: JsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PromptRuleTemplateUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
+    cvRules?: JsonNullValueInput | InputJsonValue
+    coverRules?: JsonNullValueInput | InputJsonValue
+    hardConstraints?: JsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PromptRuleTemplateUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
+    cvRules?: JsonNullValueInput | InputJsonValue
+    coverRules?: JsonNullValueInput | InputJsonValue
+    hardConstraints?: JsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

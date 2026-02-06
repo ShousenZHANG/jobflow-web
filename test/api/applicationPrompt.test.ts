@@ -28,6 +28,16 @@ vi.mock("@/lib/server/latex/mapResumeProfile", () => ({
   })),
 }));
 
+vi.mock("@/lib/server/promptRuleTemplates", () => ({
+  getActivePromptSkillRulesForUser: vi.fn(() => ({
+    id: "rules-1",
+    locale: "en-AU",
+    cvRules: ["cv-rule"],
+    coverRules: ["cover-rule"],
+    hardConstraints: ["json-only"],
+  })),
+}));
+
 import { getServerSession } from "next-auth/next";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { POST } from "@/app/api/applications/prompt/route";
@@ -86,4 +96,3 @@ describe("applications prompt api", () => {
     expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
   });
 });
-

@@ -1,5 +1,6 @@
 import { buildTailorPrompts } from "./buildPrompt";
 import { getPromptSkillRules } from "./promptSkills";
+import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 import { parseTailorModelOutput } from "./schema";
 import {
   callProvider,
@@ -86,7 +87,9 @@ export async function tailorApplicationContent(
   input: TailorInput,
 ): Promise<TailorResult> {
   try {
-    const skillRules = getPromptSkillRules();
+    const skillRules = input.userId
+      ? await getActivePromptSkillRulesForUser(input.userId)
+      : getPromptSkillRules();
     const defaultProviderConfig = {
       provider: DEFAULT_PROVIDER,
       apiKey: process.env.GEMINI_API_KEY,

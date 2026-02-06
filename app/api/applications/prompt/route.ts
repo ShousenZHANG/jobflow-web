@@ -7,7 +7,7 @@ import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { buildTailorPrompts } from "@/lib/server/ai/buildPrompt";
-import { getPromptSkillRules } from "@/lib/server/ai/promptSkills";
+import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 
 export const runtime = "nodejs";
 
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
   }
 
   const renderInput = mapResumeProfile(profile);
-  const rules = getPromptSkillRules();
+  const rules = await getActivePromptSkillRulesForUser(userId);
   const prompts = buildTailorPrompts(rules, {
     baseSummary: renderInput.summary,
     jobTitle: job.title,
@@ -98,4 +98,3 @@ export async function POST(req: Request) {
     },
   });
 }
-

@@ -8,17 +8,19 @@ export type PromptSkillRuleSet = {
   hardConstraints: string[];
 };
 
-const DEFAULT_RULES: PromptSkillRuleSet = {
+export const DEFAULT_HARD_CONSTRAINTS: string[] = [
+  "Return JSON only, no markdown or code fences.",
+  "Do not output LaTeX in model response.",
+  "Never invent skills, tools, metrics, employers, or responsibilities not in provided context.",
+  "If JD responsibilities or required skills are unclear, keep base summary unchanged and do not add new bullets.",
+];
+
+export const DEFAULT_RULES: PromptSkillRuleSet = {
   id: "jobflow-default-v1",
   locale: "en-AU",
   cvRules: DEFAULT_CV_RULES,
   coverRules: DEFAULT_COVER_RULES,
-  hardConstraints: [
-    "Return JSON only, no markdown or code fences.",
-    "Do not output LaTeX in model response.",
-    "Never invent skills, tools, metrics, employers, or responsibilities not in provided context.",
-    "If JD responsibilities or required skills are unclear, keep base summary unchanged and do not add new bullets.",
-  ],
+  hardConstraints: DEFAULT_HARD_CONSTRAINTS,
 };
 
 type PromptSkillOverrides = Partial<Pick<PromptSkillRuleSet, "cvRules" | "coverRules">>;

@@ -11,6 +11,16 @@ vi.mock("@/lib/server/ai/buildPrompt", () => ({
   buildTailorPrompts,
 }));
 
+vi.mock("@/lib/server/promptRuleTemplates", () => ({
+  getActivePromptSkillRulesForUser: vi.fn(() => ({
+    id: "rules-active-1",
+    locale: "en-AU",
+    cvRules: ["cv-rule"],
+    coverRules: ["cover-rule"],
+    hardConstraints: ["json-only"],
+  })),
+}));
+
 import { tailorApplicationContent } from "@/lib/server/ai/tailorApplication";
 import * as providers from "@/lib/server/ai/providers";
 

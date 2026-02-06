@@ -46,6 +46,7 @@ model User {
   dailyCheckins  DailyCheckin[]
   resumeProfiles ResumeProfile[]
   applications   Application[]
+  promptRuleTemplates PromptRuleTemplate[]
 }
 
 model Account {
@@ -207,4 +208,24 @@ model Application {
 
   @@unique([userId, jobId])
   @@index([userId, createdAt])
+}
+
+model PromptRuleTemplate {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  version   Int
+  locale    String   @default("en-AU")
+  cvRules   Json
+  coverRules Json
+  hardConstraints Json
+  isActive  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, version])
+  @@index([userId, isActive, updatedAt])
 }
