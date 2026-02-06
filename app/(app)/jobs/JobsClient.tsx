@@ -275,7 +275,6 @@ export function JobsClient({
   const [externalModelOutput, setExternalModelOutput] = useState("");
   const [externalGenerating, setExternalGenerating] = useState(false);
   const [externalStep, setExternalStep] = useState<1 | 2 | 3>(1);
-  const [externalBaseSummary, setExternalBaseSummary] = useState("");
   const [externalPromptMeta, setExternalPromptMeta] = useState<ExternalPromptMeta | null>(null);
   const [externalSkillPackFresh, setExternalSkillPackFresh] = useState(false);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
@@ -697,19 +696,12 @@ export function JobsClient({
     setError(null);
     setExternalPromptLoading(true);
     try {
-      const [{ promptText, promptMeta }, profileRes] = await Promise.all([
-        loadTailorPrompt(job),
-        fetch("/api/resume-profile", { cache: "no-store" }),
-      ]);
+      const { promptText, promptMeta } = await loadTailorPrompt(job);
       setExternalPromptText(promptText);
       setExternalPromptMeta(promptMeta);
       const fresh = isSkillPackFresh(promptMeta);
       setExternalSkillPackFresh(fresh);
       setExternalStep(fresh ? 2 : 1);
-      const profileJson = await profileRes.json().catch(() => ({}));
-      setExternalBaseSummary(
-        typeof profileJson?.profile?.summary === "string" ? profileJson.profile.summary : "",
-      );
     } catch (e) {
       const message = getErrorMessage(e, "Failed to initialize external AI flow");
       setError(message);
@@ -740,9 +732,16 @@ export function JobsClient({
       });
       return;
     }
+    const blob = new Blob([externalPromptText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "jobflow-tailor-prompt.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
     toast({
       title: "Prompt ready",
-      description: "Clipboard unavailable. Copy from the textbox.",
+      description: "Clipboard unavailable. Prompt text downloaded as a file.",
       duration: 2200,
       className: "border-slate-200 bg-slate-50 text-slate-900 animate-in fade-in zoom-in-95",
     });
@@ -940,11 +939,6 @@ export function JobsClient({
   );
   const canOpenStep2 = externalSkillPackFresh;
   const canOpenStep3 = externalPromptText.trim().length > 0;
-  const summaryChanged = useMemo(() => {
-    if (!parsedExternalOutput?.cvSummary) return false;
-    return parsedExternalOutput.cvSummary.trim() !== externalBaseSummary.trim();
-  }, [externalBaseSummary, parsedExternalOutput?.cvSummary]);
-  const coverPreview = parsedExternalOutput?.cover;
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const listPadding = 12;
   const rowVirtualizer = useVirtualizer({
@@ -1037,7 +1031,7 @@ export function JobsClient({
   return (
     <>
       <Dialog open={externalDialogOpen} onOpenChange={setExternalDialogOpen}>
-        <DialogContent className="w-[min(96vw,1100px)] max-w-[1100px]">
+        <DialogContent className="flex h-[min(88vh,760px)] w-[min(96vw,860px)] max-w-[860px] flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>
               {externalTarget === "resume" ? "Generate CV with External AI" : "Generate Cover Letter with External AI"}
@@ -1047,14 +1041,14 @@ export function JobsClient({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-4">
             <div className="grid grid-cols-3 gap-2">
               <Button
                 type="button"
                 variant={externalStep === 1 ? "default" : "outline"}
                 size="sm"
                 onClick={() => setExternalStep(1)}
-                className="h-9"
+                className="h-9 text-xs sm:text-sm"
               >
                 1. Skill Pack
               </Button>
@@ -1064,7 +1058,7 @@ export function JobsClient({
                 size="sm"
                 disabled={!canOpenStep2}
                 onClick={() => setExternalStep(2)}
-                className="h-9"
+                className="h-9 text-xs sm:text-sm"
               >
                 2. Copy Prompt
               </Button>
@@ -1074,13 +1068,13 @@ export function JobsClient({
                 size="sm"
                 disabled={!canOpenStep3}
                 onClick={() => setExternalStep(3)}
-                className="h-9"
+                className="h-9 text-xs sm:text-sm"
               >
                 3. Paste JSON
               </Button>
             </div>
 
-            <div className="min-h-[380px] rounded-xl border border-slate-900/10 bg-slate-50/40 p-4">
+            <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-900/10 bg-slate-50/40 p-4">
               {externalStep === 1 ? (
                 <div className="space-y-3">
                   <p className="text-sm text-slate-700">
@@ -1093,7 +1087,7 @@ export function JobsClient({
                       Required: latest rules and resume snapshot.
                     </div>
                   ) : null}
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -1151,7 +1145,7 @@ export function JobsClient({
                     value={externalModelOutput}
                     onChange={(e) => setExternalModelOutput(e.target.value)}
                     placeholder='{"cvSummary":"...","cover":{"paragraphOne":"...","paragraphTwo":"...","paragraphThree":"..."}}'
-                    className="min-h-[180px] font-mono text-xs"
+                    className="min-h-[220px] font-mono text-xs"
                   />
                   {!externalModelOutput.trim() ? null : parsedExternalOutput ? (
                     <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-emerald-900">
@@ -1163,39 +1157,6 @@ export function JobsClient({
                     </div>
                   )}
 
-                  <div className="space-y-2 rounded-xl border border-slate-900/10 bg-white p-3">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Change Preview
-                    </div>
-                    {externalTarget === "resume" ? (
-                      <div className="space-y-2">
-                        <div className="text-[11px] text-slate-500">Summary (before)</div>
-                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                          {externalBaseSummary || "(empty)"}
-                        </div>
-                        <div className="text-[11px] text-slate-500">Summary (AI result)</div>
-                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                          {parsedExternalOutput?.cvSummary || "(missing cvSummary)"}
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          {summaryChanged ? "Detected change: Summary will be updated." : "No summary change detected."}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="text-[11px] text-slate-500">Cover paragraphs (AI result)</div>
-                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                          {(coverPreview?.paragraphOne || "(missing paragraphOne)")}
-                        </div>
-                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                          {(coverPreview?.paragraphTwo || "(missing paragraphTwo)")}
-                        </div>
-                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                          {(coverPreview?.paragraphThree || "(missing paragraphThree)")}
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
               ) : null}
             </div>
