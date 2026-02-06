@@ -250,7 +250,14 @@ function mergeSkillAdditions(
 }
 
 function normalizeBulletForCompare(value: string) {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
+  return value
+    .normalize("NFKC")
+    .replace(/\*\*|__|`/g, "")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function normalizeTextForMatch(value: string) {
