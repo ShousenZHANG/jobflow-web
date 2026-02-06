@@ -948,6 +948,10 @@ export function JobsClient({
       ] satisfies Array<{ id: 1 | 2 | 3; label: string; disabled: boolean }>,
     [canOpenStep2, canOpenStep3],
   );
+  const externalBtnSecondary =
+    "h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none";
+  const externalBtnPrimary =
+    "h-10 rounded-xl border border-emerald-500 bg-emerald-500 px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:border-emerald-600 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none";
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const listPadding = 12;
   const rowVirtualizer = useVirtualizer({
@@ -1108,7 +1112,7 @@ export function JobsClient({
                       size="sm"
                       disabled={!selectedJob || externalSkillPackLoading}
                       onClick={() => selectedJob && downloadSkillPack()}
-                      className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
+                      className={externalBtnSecondary}
                     >
                       {externalSkillPackLoading
                         ? "Downloading..."
@@ -1117,7 +1121,7 @@ export function JobsClient({
                           : "Download Skill Pack"}
                     </Button>
                     {externalSkillPackFresh ? (
-                      <Button type="button" size="sm" onClick={() => setExternalStep(2)} className="edu-cta edu-cta--press h-10 rounded-xl px-4 text-sm">
+                      <Button type="button" size="sm" onClick={() => setExternalStep(2)} className={externalBtnPrimary}>
                         Continue
                       </Button>
                     ) : null}
@@ -1140,12 +1144,12 @@ export function JobsClient({
                       size="sm"
                       disabled={externalPromptLoading || !externalPromptText.trim()}
                       onClick={copyPromptText}
-                      className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
+                      className={externalBtnSecondary}
                     >
                       <Copy className="h-4 w-4" />
                       {externalPromptLoading ? "Building..." : "Copy Prompt"}
                     </Button>
-                    <Button type="button" size="sm" onClick={() => setExternalStep(3)} className="edu-cta edu-cta--press h-10 rounded-xl px-4 text-sm">
+                    <Button type="button" size="sm" onClick={() => setExternalStep(3)} className={externalBtnPrimary}>
                       Continue
                     </Button>
                   </div>
@@ -1184,7 +1188,7 @@ export function JobsClient({
                 size="sm"
                 onClick={() => setExternalStep((prev) => (prev === 3 ? 2 : 1))}
                 disabled={externalGenerating}
-                className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
+                className={externalBtnSecondary}
               >
                 Back
               </Button>
@@ -1195,13 +1199,13 @@ export function JobsClient({
               size="sm"
               onClick={() => setExternalDialogOpen(false)}
               disabled={externalGenerating}
-              className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
+              className={externalBtnSecondary}
             >
               Cancel
             </Button>
             <Button
               size="sm"
-              className="edu-cta edu-cta--press h-10 rounded-xl px-5 text-sm"
+              className={externalBtnPrimary}
               disabled={
                 !selectedJob ||
                 externalGenerating ||
