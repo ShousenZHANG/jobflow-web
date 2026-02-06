@@ -20,7 +20,6 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, Di
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { ToastAction } from "@/components/ui/toast";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -306,17 +305,6 @@ export function JobsClient({
   const resultsScrollRef = useRef<HTMLDivElement | null>(null);
   const resultsViewportRef = useRef<HTMLDivElement | null>(null);
   const [resultsViewportReady, setResultsViewportReady] = useState(false);
-  const pendingDeleteRef = useRef<
-    Map<
-      string,
-      {
-        timeoutId: ReturnType<typeof setTimeout>;
-        previous: JobsResponse | undefined;
-        previousSelectedId: string | null;
-      }
-    >
-  >(new Map());
-  const deleteUndoMs = 2400;
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -436,14 +424,6 @@ export function JobsClient({
     ) as HTMLDivElement | null;
     resultsViewportRef.current = viewport;
     setResultsViewportReady(Boolean(viewport));
-  }, []);
-
-  useEffect(() => {
-    const pendingDeletes = pendingDeleteRef.current;
-    return () => {
-      pendingDeletes.forEach((pending) => clearTimeout(pending.timeoutId));
-      pendingDeletes.clear();
-    };
   }, []);
 
   useEffect(() => {
@@ -661,9 +641,37 @@ export function JobsClient({
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to delete job");
     },
-    onError: (e) => {
+    onMutate: async (id) => {
+      setError(null);
+      setDeletingIds((prev) => new Set(prev).add(id));
+      const queryKey = ["jobs", queryString, cursor] as const;
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<JobsResponse>(queryKey);
+      const previousSelectedId = selectedId;
+
+      let nextSelectedId = selectedId;
+      queryClient.setQueryData<JobsResponse>(queryKey, (old) => {
+        if (!old) return old;
+        const nextItems = old.items.filter((it) => it.id !== id);
+        if (selectedId === id) nextSelectedId = nextItems[0]?.id ?? null;
+        return { ...old, items: nextItems };
+      });
+      if (selectedId === id) {
+        setSelectedId(nextSelectedId);
+      }
+
+      return { previous, previousSelectedId, queryKey };
+    },
+    onError: (e, id, context) => {
       setError(getErrorMessage(e, "Failed to delete job"));
-      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      if (context?.previous) {
+        queryClient.setQueryData(context.queryKey, context.previous);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      }
+      if (context?.previousSelectedId) {
+        setSelectedId(context.previousSelectedId);
+      }
       toast({
         title: "Delete failed",
         description: getErrorMessage(e, "The job could not be removed."),
@@ -674,7 +682,14 @@ export function JobsClient({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "inactive" });
+      toast({
+        title: "Job deleted",
+        description: "The role was removed.",
+        duration: 1800,
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
     },
     onSettled: (_data, _error, id) => {
       if (!id) return;
@@ -915,62 +930,10 @@ export function JobsClient({
   }
 
   function scheduleDelete(job: JobItem) {
-    const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
-    const previousSelectedId = selectedId;
-    setError(null);
-    setDeletingIds((prev) => new Set(prev).add(job.id));
-    queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
-      if (!old) return old;
-      return { ...old, items: old.items.filter((it) => it.id !== job.id) };
-    });
-    if (selectedId === job.id) {
-      setSelectedId(null);
-    }
-
-    const commitDelete = () => {
-      pendingDeleteRef.current.delete(job.id);
-      deleteMutation.mutate(job.id);
-    };
-    const timeoutId = setTimeout(commitDelete, deleteUndoMs);
-
-    pendingDeleteRef.current.set(job.id, { timeoutId, previous, previousSelectedId });
-
-    const undo = () => {
-      const pending = pendingDeleteRef.current.get(job.id);
-      if (!pending) return;
-      clearTimeout(pending.timeoutId);
-      pendingDeleteRef.current.delete(job.id);
-      setDeletingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(job.id);
-        return next;
-      });
-      if (pending.previous) {
-        queryClient.setQueryData(["jobs", queryString, cursor], pending.previous);
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      }
-      if (pending.previousSelectedId) {
-        setSelectedId(pending.previousSelectedId);
-      }
-    };
-
-    toast({
-      title: "Job removed",
-      description: "Undo to restore this role.",
-      duration: deleteUndoMs,
-      className:
-        "border-slate-900/10 bg-white/95 text-slate-900 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.25)] backdrop-blur animate-in fade-in zoom-in-95",
-      action: (
-        <ToastAction
-          altText="Undo"
-          onClick={undo}
-          className="border-slate-900/15 bg-slate-900/5 text-slate-900 hover:bg-slate-900/10"
-        >
-          Undo
-        </ToastAction>
-      ),
-    });
+    if (deletingIds.has(job.id)) return;
+    const confirmed = window.confirm(`Delete "${job.title}"? This action cannot be undone.`);
+    if (!confirmed) return;
+    deleteMutation.mutate(job.id);
   }
 
   const statusClass: Record<JobStatus, string> = {
@@ -1654,13 +1617,13 @@ export function JobsClient({
                     {selectedJob.jobType ?? "Unknown"} · {selectedJob.jobLevel ?? "Unknown"}
                   </div>
                 </div>
-                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+                <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 whitespace-nowrap lg:w-auto lg:justify-end">
                   <Select
                     value={selectedJob.status}
                     onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
                     disabled={updatingIds.has(selectedJob.id)}
                   >
-                    <SelectTrigger className="h-10 w-[132px] rounded-xl border-slate-200 bg-white shadow-sm">
+                    <SelectTrigger className="h-10 w-[132px] shrink-0 rounded-xl border-slate-200 bg-white shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1672,7 +1635,7 @@ export function JobsClient({
                   <Button
                     asChild
                     size="sm"
-                    className="h-10 rounded-xl border border-emerald-500 bg-emerald-500 px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px]"
+                    className="h-10 shrink-0 rounded-xl border border-emerald-500 bg-emerald-500 px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px]"
                   >
                     <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="mr-1 h-4 w-4" />
@@ -1684,7 +1647,7 @@ export function JobsClient({
                     size="sm"
                     disabled={externalPromptLoading}
                     onClick={() => openExternalGenerateDialog(selectedJob, "resume")}
-                    className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                    className="h-10 shrink-0 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                   >
                     <FileText className="mr-1 h-4 w-4" />
                     Generate CV
@@ -1694,7 +1657,7 @@ export function JobsClient({
                     size="sm"
                     disabled={externalPromptLoading}
                     onClick={() => openExternalGenerateDialog(selectedJob, "cover")}
-                    className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                    className="h-10 shrink-0 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                   >
                     <FileText className="mr-1 h-4 w-4" />
                     Generate Cover Letter
@@ -1704,7 +1667,7 @@ export function JobsClient({
                       variant="outline"
                       size="sm"
                       asChild
-                      className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
+                      className="h-10 shrink-0 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
                     >
                       <a
                         href={selectedJob.resumePdfUrl}
@@ -1720,7 +1683,7 @@ export function JobsClient({
                     size="sm"
                     disabled={deletingIds.has(selectedJob.id)}
                     onClick={() => scheduleDelete(selectedJob)}
-                    className="ml-auto h-10 rounded-xl border-rose-200 bg-rose-50 px-4 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none lg:ml-0"
+                    className="h-10 shrink-0 rounded-xl border-rose-200 bg-rose-50 px-4 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                   >
                     <Trash2 className="mr-1 h-4 w-4" />
                     Remove
