@@ -17,6 +17,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -284,6 +294,8 @@ export function JobsClient({
   const [externalStep, setExternalStep] = useState<1 | 2 | 3>(1);
   const [externalPromptMeta, setExternalPromptMeta] = useState<ExternalPromptMeta | null>(null);
   const [externalSkillPackFresh, setExternalSkillPackFresh] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
@@ -931,9 +943,15 @@ export function JobsClient({
 
   function scheduleDelete(job: JobItem) {
     if (deletingIds.has(job.id)) return;
-    const confirmed = window.confirm(`Delete "${job.title}"? This action cannot be undone.`);
-    if (!confirmed) return;
-    deleteMutation.mutate(job.id);
+    setDeleteCandidate({ id: job.id, title: job.title });
+    setDeleteConfirmOpen(true);
+  }
+
+  function confirmDeleteCandidate() {
+    if (!deleteCandidate) return;
+    deleteMutation.mutate(deleteCandidate.id);
+    setDeleteConfirmOpen(false);
+    setDeleteCandidate(null);
   }
 
   const statusClass: Record<JobStatus, string> = {
@@ -1660,7 +1678,7 @@ export function JobsClient({
                     className="h-10 shrink-0 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                   >
                     <FileText className="mr-1 h-4 w-4" />
-                    Generate Cover Letter
+                    Generate CL
                   </Button>
                   {selectedJob.resumePdfUrl ? (
                     <Button
@@ -1834,6 +1852,35 @@ export function JobsClient({
         </section>
       </div>
       </div>
+      <AlertDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(open) => {
+          setDeleteConfirmOpen(open);
+          if (!open) setDeleteCandidate(null);
+        }}
+      >
+        <AlertDialogContent className="max-w-md rounded-2xl border-slate-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this job?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove{" "}
+              <span className="font-medium text-slate-900">
+                {deleteCandidate?.title ?? "this role"}
+              </span>{" "}
+              from your list. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteCandidate}
+              className="rounded-xl bg-rose-600 text-white hover:bg-rose-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
