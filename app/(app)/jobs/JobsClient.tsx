@@ -274,6 +274,7 @@ export function JobsClient({
   const [externalPromptText, setExternalPromptText] = useState("");
   const [externalModelOutput, setExternalModelOutput] = useState("");
   const [externalGenerating, setExternalGenerating] = useState(false);
+  const [externalStep, setExternalStep] = useState<1 | 2 | 3>(1);
   const [externalBaseSummary, setExternalBaseSummary] = useState("");
   const [externalPromptMeta, setExternalPromptMeta] = useState<ExternalPromptMeta | null>(null);
   const [externalSkillPackFresh, setExternalSkillPackFresh] = useState(false);
@@ -688,6 +689,7 @@ export function JobsClient({
   async function openExternalGenerateDialog(job: JobItem, target: "resume" | "cover") {
     setExternalDialogOpen(true);
     setExternalTarget(target);
+    setExternalStep(1);
     setExternalModelOutput("");
     setExternalPromptText("");
     setExternalPromptMeta(null);
@@ -701,7 +703,9 @@ export function JobsClient({
       ]);
       setExternalPromptText(promptText);
       setExternalPromptMeta(promptMeta);
-      setExternalSkillPackFresh(isSkillPackFresh(promptMeta));
+      const fresh = isSkillPackFresh(promptMeta);
+      setExternalSkillPackFresh(fresh);
+      setExternalStep(fresh ? 2 : 1);
       const profileJson = await profileRes.json().catch(() => ({}));
       setExternalBaseSummary(
         typeof profileJson?.profile?.summary === "string" ? profileJson.profile.summary : "",
@@ -726,6 +730,7 @@ export function JobsClient({
     if (!externalPromptText.trim()) return;
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(externalPromptText);
+      setExternalStep(3);
       toast({
         title: "Prompt copied",
         description: "Paste it into ChatGPT/Gemini/Claude and return JSON here.",
@@ -766,6 +771,7 @@ export function JobsClient({
       if (externalPromptMeta) {
         writeSavedSkillPackMeta(externalPromptMeta);
         setExternalSkillPackFresh(true);
+        setExternalStep(2);
       }
       toast({
         title: "Skill pack downloaded",
@@ -932,6 +938,8 @@ export function JobsClient({
     () => parseTailorOutput(externalModelOutput),
     [externalModelOutput],
   );
+  const canOpenStep2 = externalSkillPackFresh;
+  const canOpenStep3 = externalPromptText.trim().length > 0;
   const summaryChanged = useMemo(() => {
     if (!parsedExternalOutput?.cvSummary) return false;
     return parsedExternalOutput.cvSummary.trim() !== externalBaseSummary.trim();
@@ -1035,115 +1043,176 @@ export function JobsClient({
               {externalTarget === "resume" ? "Generate CV with External AI" : "Generate Cover Letter with External AI"}
             </DialogTitle>
             <DialogDescription>
-              {externalSkillPackFresh
-                ? "Skill pack is up to date. Copy prompt, run in your AI chat, then paste JSON."
-                : "Download or refresh skill pack first, then run prompt in your AI chat and paste JSON."}
+              Complete three steps, then generate your PDF.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="space-y-3">
-              {!externalSkillPackFresh ? (
-                <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
-                  Skill pack refresh required for latest rules/resume snapshot.
-                </div>
-              ) : null}
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Step 1 · {externalSkillPackFresh ? "Skill Package (Optional)" : "Skill Package (Required)"}
-              </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant={externalStep === 1 ? "default" : "outline"}
                 size="sm"
-                disabled={!selectedJob || externalSkillPackLoading}
-                onClick={() => selectedJob && downloadSkillPack()}
-                className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                onClick={() => setExternalStep(1)}
+                className="h-9"
               >
-                {externalSkillPackLoading
-                  ? "Downloading..."
-                  : externalSkillPackFresh
-                    ? "Re-download Skill Pack"
-                    : "Download Skill Pack"}
+                1. Skill Pack
               </Button>
-
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Step 2 · Copy Prompt
-              </div>
-              <Textarea
-                value={externalPromptText}
-                readOnly
-                className="min-h-[180px] font-mono text-xs"
-              />
               <Button
                 type="button"
-                variant="outline"
+                variant={externalStep === 2 ? "default" : "outline"}
                 size="sm"
-                disabled={externalPromptLoading || !externalPromptText.trim()}
-                onClick={copyPromptText}
-                className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                disabled={!canOpenStep2}
+                onClick={() => setExternalStep(2)}
+                className="h-9"
               >
-                <Copy className="h-4 w-4" />
-                {externalPromptLoading ? "Building..." : "Copy Prompt"}
+                2. Copy Prompt
+              </Button>
+              <Button
+                type="button"
+                variant={externalStep === 3 ? "default" : "outline"}
+                size="sm"
+                disabled={!canOpenStep3}
+                onClick={() => setExternalStep(3)}
+                className="h-9"
+              >
+                3. Paste JSON
               </Button>
             </div>
 
-            <div className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Step 3 · Paste AI JSON Result
-              </div>
-              <Textarea
-                value={externalModelOutput}
-                onChange={(e) => setExternalModelOutput(e.target.value)}
-                placeholder='{"cvSummary":"...","cover":{"paragraphOne":"...","paragraphTwo":"...","paragraphThree":"..."}}'
-                className="min-h-[180px] font-mono text-xs"
-              />
-              {!externalModelOutput.trim() ? null : parsedExternalOutput ? (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-emerald-900">
-                  JSON parsed successfully.
+            <div className="min-h-[380px] rounded-xl border border-slate-900/10 bg-slate-50/40 p-4">
+              {externalStep === 1 ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-700">
+                    {externalSkillPackFresh
+                      ? "Your skill pack is up to date. You can skip to Step 2."
+                      : "Download the latest skill pack before generating content."}
+                  </p>
+                  {!externalSkillPackFresh ? (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                      Required: latest rules and resume snapshot.
+                    </div>
+                  ) : null}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!selectedJob || externalSkillPackLoading}
+                      onClick={() => selectedJob && downloadSkillPack()}
+                      className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                    >
+                      {externalSkillPackLoading
+                        ? "Downloading..."
+                        : externalSkillPackFresh
+                          ? "Re-download Skill Pack"
+                          : "Download Skill Pack"}
+                    </Button>
+                    {externalSkillPackFresh ? (
+                      <Button type="button" size="sm" onClick={() => setExternalStep(2)} className="h-9">
+                        Continue
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
-              ) : (
-                <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-3 text-xs text-rose-900">
-                  JSON parse failed. Keep strict JSON with required keys.
-                </div>
-              )}
+              ) : null}
 
-              <div className="space-y-2 rounded-xl border border-slate-900/10 bg-slate-50/50 p-3">
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Change Preview
+              {externalStep === 2 ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-700">
+                    Copy prompt and paste it in ChatGPT/Gemini/Claude with your imported skill pack.
+                  </p>
+                  <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+                    Prompt length: {externalPromptText.length} chars
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={externalPromptLoading || !externalPromptText.trim()}
+                      onClick={copyPromptText}
+                      className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                    >
+                      <Copy className="h-4 w-4" />
+                      {externalPromptLoading ? "Building..." : "Copy Prompt"}
+                    </Button>
+                    <Button type="button" size="sm" onClick={() => setExternalStep(3)} className="h-9">
+                      Continue
+                    </Button>
+                  </div>
                 </div>
-                {externalTarget === "resume" ? (
-                  <div className="space-y-2">
-                    <div className="text-[11px] text-slate-500">Summary (before)</div>
-                    <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                      {externalBaseSummary || "(empty)"}
+              ) : null}
+
+              {externalStep === 3 ? (
+                <div className="space-y-3">
+                  <div className="text-sm font-medium text-slate-900">Paste AI JSON result</div>
+                  <Textarea
+                    value={externalModelOutput}
+                    onChange={(e) => setExternalModelOutput(e.target.value)}
+                    placeholder='{"cvSummary":"...","cover":{"paragraphOne":"...","paragraphTwo":"...","paragraphThree":"..."}}'
+                    className="min-h-[180px] font-mono text-xs"
+                  />
+                  {!externalModelOutput.trim() ? null : parsedExternalOutput ? (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-emerald-900">
+                      JSON parsed successfully.
                     </div>
-                    <div className="text-[11px] text-slate-500">Summary (AI result)</div>
-                    <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                      {parsedExternalOutput?.cvSummary || "(missing cvSummary)"}
+                  ) : (
+                    <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-3 text-xs text-rose-900">
+                      JSON parse failed. Keep strict JSON with required keys.
                     </div>
-                    <div className="text-[11px] text-slate-500">
-                      {summaryChanged ? "Detected change: Summary will be updated." : "No summary change detected."}
+                  )}
+
+                  <div className="space-y-2 rounded-xl border border-slate-900/10 bg-white p-3">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Change Preview
                     </div>
+                    {externalTarget === "resume" ? (
+                      <div className="space-y-2">
+                        <div className="text-[11px] text-slate-500">Summary (before)</div>
+                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
+                          {externalBaseSummary || "(empty)"}
+                        </div>
+                        <div className="text-[11px] text-slate-500">Summary (AI result)</div>
+                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
+                          {parsedExternalOutput?.cvSummary || "(missing cvSummary)"}
+                        </div>
+                        <div className="text-[11px] text-slate-500">
+                          {summaryChanged ? "Detected change: Summary will be updated." : "No summary change detected."}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="text-[11px] text-slate-500">Cover paragraphs (AI result)</div>
+                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
+                          {(coverPreview?.paragraphOne || "(missing paragraphOne)")}
+                        </div>
+                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
+                          {(coverPreview?.paragraphTwo || "(missing paragraphTwo)")}
+                        </div>
+                        <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
+                          {(coverPreview?.paragraphThree || "(missing paragraphThree)")}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="text-[11px] text-slate-500">Cover paragraphs (AI result)</div>
-                    <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                      {(coverPreview?.paragraphOne || "(missing paragraphOne)")}
-                    </div>
-                    <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                      {(coverPreview?.paragraphTwo || "(missing paragraphTwo)")}
-                    </div>
-                    <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700">
-                      {(coverPreview?.paragraphThree || "(missing paragraphThree)")}
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : null}
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
+            {externalStep > 1 ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setExternalStep((prev) => (prev === 3 ? 2 : 1))}
+                disabled={externalGenerating}
+              >
+                Back
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="outline"
@@ -1159,6 +1228,7 @@ export function JobsClient({
               disabled={
                 !selectedJob ||
                 externalGenerating ||
+                externalStep !== 3 ||
                 !parsedExternalOutput ||
                 externalModelOutput.trim().length < 20
               }
