@@ -11,6 +11,7 @@ export const runtime = "nodejs";
 
 const PromptSchema = z.object({
   jobId: z.string().uuid(),
+  target: z.enum(["resume", "cover"]),
 });
 
 function formatRuleBlock(title: string, items: string[]) {
@@ -87,29 +88,49 @@ export async function POST(req: Request) {
     "Ensure valid JSON strings: use \\n for line breaks and escape quotes.",
     formatRuleBlock("Hard Constraints:", rules.hardConstraints),
   ].join("\n\n");
+  const isResumeTarget = parsed.data.target === "resume";
+  const requiredJsonShape = isResumeTarget
+    ? ['{', '  "cvSummary": "string"', '}']
+    : [
+        "{",
+        '  "cover": {',
+        '    "paragraphOne": "string",',
+        '    "paragraphTwo": "string",',
+        '    "paragraphThree": "string"',
+        "  }",
+        "}",
+      ];
+  const targetTaskLine = isResumeTarget
+    ? "Generate role-tailored CV summary using the imported skill pack."
+    : "Generate role-tailored Cover Letter content using the imported skill pack.";
+  const targetRulesBlock = isResumeTarget
+    ? formatRuleBlock("CV Skills Rules:", rules.cvRules)
+    : formatRuleBlock("Cover Letter Skills Rules:", rules.coverRules);
+
   const userPrompt = [
     "Task:",
-    "Generate role-tailored CV summary and Cover Letter content using the imported skill pack.",
+    targetTaskLine,
     "",
     "Required JSON shape:",
-    "{",
-    '  "cvSummary": "string",',
-    '  "cover": {',
-    '    "paragraphOne": "string",',
-    '    "paragraphTwo": "string",',
-    '    "paragraphThree": "string"',
-    "  }",
-    "}",
+    ...requiredJsonShape,
     "",
-    formatRuleBlock("CV Skills Rules:", rules.cvRules),
-    "",
-    formatRuleBlock("Cover Letter Skills Rules:", rules.coverRules),
+    targetRulesBlock,
     "",
     "Job Input:",
     `- Job title: ${job.title}`,
     `- Company: ${job.company || "the company"}`,
     `- Job description: ${job.description || ""}`,
   ].join("\n");
+
+  const expectedJsonShape = isResumeTarget
+    ? { cvSummary: "string" }
+    : {
+        cover: {
+          paragraphOne: "string",
+          paragraphTwo: "string",
+          paragraphThree: "string",
+        },
+      };
 
   return NextResponse.json({
     requestId,
@@ -121,13 +142,6 @@ export async function POST(req: Request) {
       ruleSetId: rules.id,
       resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
     },
-    expectedJsonShape: {
-      cvSummary: "string",
-      cover: {
-        paragraphOne: "string",
-        paragraphTwo: "string",
-        paragraphThree: "string",
-      },
-    },
+    expectedJsonShape,
   });
 }

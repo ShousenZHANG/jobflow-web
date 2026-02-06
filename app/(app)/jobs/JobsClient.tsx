@@ -650,14 +650,14 @@ export function JobsClient({
     setPreviewOpen(true);
   }
 
-  async function loadTailorPrompt(job: JobItem): Promise<{
+  async function loadTailorPrompt(job: JobItem, target: "resume" | "cover"): Promise<{
     promptText: string;
     promptMeta: ExternalPromptMeta | null;
   }> {
     const res = await fetch("/api/applications/prompt", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jobId: job.id }),
+      body: JSON.stringify({ jobId: job.id, target }),
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -696,7 +696,7 @@ export function JobsClient({
     setError(null);
     setExternalPromptLoading(true);
     try {
-      const { promptText, promptMeta } = await loadTailorPrompt(job);
+      const { promptText, promptMeta } = await loadTailorPrompt(job, target);
       setExternalPromptText(promptText);
       setExternalPromptMeta(promptMeta);
       const fresh = isSkillPackFresh(promptMeta);
@@ -1162,7 +1162,11 @@ export function JobsClient({
                   <Textarea
                     value={externalModelOutput}
                     onChange={(e) => setExternalModelOutput(e.target.value)}
-                    placeholder='{"cvSummary":"...","cover":{"paragraphOne":"...","paragraphTwo":"...","paragraphThree":"..."}}'
+                    placeholder={
+                      externalTarget === "resume"
+                        ? '{"cvSummary":"..."}'
+                        : '{"cover":{"paragraphOne":"...","paragraphTwo":"...","paragraphThree":"..."}}'
+                    }
                     className="min-h-[220px] font-mono text-xs"
                   />
                   {!externalModelOutput.trim() ? null : parsedExternalOutput ? (

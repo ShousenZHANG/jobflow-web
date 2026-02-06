@@ -54,7 +54,7 @@ describe("applications prompt api", () => {
     const res = await POST(
       new Request("http://localhost/api/applications/prompt", {
         method: "POST",
-        body: JSON.stringify({ jobId: VALID_JOB_ID }),
+        body: JSON.stringify({ jobId: VALID_JOB_ID, target: "resume" }),
       }),
     );
     const json = await res.json();
@@ -63,7 +63,7 @@ describe("applications prompt api", () => {
     expect(json.error.code).toBe("JOB_NOT_FOUND");
   });
 
-  it("returns composed prompt payload", async () => {
+  it("returns resume-target prompt payload", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -80,7 +80,7 @@ describe("applications prompt api", () => {
     const res = await POST(
       new Request("http://localhost/api/applications/prompt", {
         method: "POST",
-        body: JSON.stringify({ jobId: VALID_JOB_ID }),
+        body: JSON.stringify({ jobId: VALID_JOB_ID, target: "resume" }),
       }),
     );
     const json = await res.json();
@@ -88,9 +88,37 @@ describe("applications prompt api", () => {
     expect(res.status).toBe(200);
     expect(typeof json.prompt.systemPrompt).toBe("string");
     expect(typeof json.prompt.userPrompt).toBe("string");
-    expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
+    expect(json.expectedJsonShape.cvSummary).toBe("string");
+    expect(json.expectedJsonShape.cover).toBeUndefined();
     expect(json.promptMeta.ruleSetId).toBe("rules-1");
     expect(json.promptMeta.resumeSnapshotUpdatedAt).toBe("2026-02-06T00:00:00.000Z");
     expect(json.prompt.userPrompt).not.toContain("Base summary");
+  });
+
+  it("returns cover-target prompt payload", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/prompt", {
+        method: "POST",
+        body: JSON.stringify({ jobId: VALID_JOB_ID, target: "cover" }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.expectedJsonShape.cvSummary).toBeUndefined();
+    expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
   });
 });
