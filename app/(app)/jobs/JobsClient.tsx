@@ -939,6 +939,15 @@ export function JobsClient({
   );
   const canOpenStep2 = externalSkillPackFresh;
   const canOpenStep3 = externalPromptText.trim().length > 0;
+  const externalSteps = useMemo(
+    () =>
+      [
+        { id: 1 as const, label: "Skill Pack", disabled: false },
+        { id: 2 as const, label: "Copy Prompt", disabled: !canOpenStep2 },
+        { id: 3 as const, label: "Paste JSON", disabled: !canOpenStep3 },
+      ] satisfies Array<{ id: 1 | 2 | 3; label: string; disabled: boolean }>,
+    [canOpenStep2, canOpenStep3],
+  );
   const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const listPadding = 12;
   const rowVirtualizer = useVirtualizer({
@@ -1042,36 +1051,41 @@ export function JobsClient({
           </DialogHeader>
 
           <div className="flex min-h-0 flex-1 flex-col gap-4">
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                type="button"
-                variant={externalStep === 1 ? "default" : "outline"}
-                size="sm"
-                onClick={() => setExternalStep(1)}
-                className="h-9 text-xs sm:text-sm"
-              >
-                1. Skill Pack
-              </Button>
-              <Button
-                type="button"
-                variant={externalStep === 2 ? "default" : "outline"}
-                size="sm"
-                disabled={!canOpenStep2}
-                onClick={() => setExternalStep(2)}
-                className="h-9 text-xs sm:text-sm"
-              >
-                2. Copy Prompt
-              </Button>
-              <Button
-                type="button"
-                variant={externalStep === 3 ? "default" : "outline"}
-                size="sm"
-                disabled={!canOpenStep3}
-                onClick={() => setExternalStep(3)}
-                className="h-9 text-xs sm:text-sm"
-              >
-                3. Paste JSON
-              </Button>
+            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+              <div className="relative flex items-center justify-between gap-2">
+                <div className="pointer-events-none absolute left-8 right-8 top-4 h-px bg-slate-200" />
+                {externalSteps.map((step) => {
+                  const isActive = externalStep === step.id;
+                  const isDone = externalStep > step.id;
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      onClick={() => !step.disabled && setExternalStep(step.id)}
+                      disabled={step.disabled}
+                      className={[
+                        "relative z-10 flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium transition-all duration-200 sm:text-sm",
+                        step.disabled ? "cursor-not-allowed text-slate-400" : "text-slate-700 hover:bg-slate-50",
+                        isActive ? "bg-emerald-50 text-emerald-800" : "",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "inline-flex h-5 w-5 items-center justify-center rounded-full border text-[11px] font-semibold",
+                          isDone
+                            ? "border-emerald-500 bg-emerald-500 text-white"
+                            : isActive
+                              ? "border-emerald-400 bg-emerald-100 text-emerald-800"
+                              : "border-slate-300 bg-white text-slate-500",
+                        ].join(" ")}
+                      >
+                        {step.id}
+                      </span>
+                      <span className="truncate">{step.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-900/10 bg-slate-50/40 p-4">
@@ -1094,7 +1108,7 @@ export function JobsClient({
                       size="sm"
                       disabled={!selectedJob || externalSkillPackLoading}
                       onClick={() => selectedJob && downloadSkillPack()}
-                      className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                      className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
                     >
                       {externalSkillPackLoading
                         ? "Downloading..."
@@ -1103,7 +1117,7 @@ export function JobsClient({
                           : "Download Skill Pack"}
                     </Button>
                     {externalSkillPackFresh ? (
-                      <Button type="button" size="sm" onClick={() => setExternalStep(2)} className="h-9">
+                      <Button type="button" size="sm" onClick={() => setExternalStep(2)} className="edu-cta edu-cta--press h-10 rounded-xl px-4 text-sm">
                         Continue
                       </Button>
                     ) : null}
@@ -1119,19 +1133,19 @@ export function JobsClient({
                   <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
                     Prompt length: {externalPromptText.length} chars
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       disabled={externalPromptLoading || !externalPromptText.trim()}
                       onClick={copyPromptText}
-                      className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                      className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
                     >
                       <Copy className="h-4 w-4" />
                       {externalPromptLoading ? "Building..." : "Copy Prompt"}
                     </Button>
-                    <Button type="button" size="sm" onClick={() => setExternalStep(3)} className="h-9">
+                    <Button type="button" size="sm" onClick={() => setExternalStep(3)} className="edu-cta edu-cta--press h-10 rounded-xl px-4 text-sm">
                       Continue
                     </Button>
                   </div>
@@ -1170,6 +1184,7 @@ export function JobsClient({
                 size="sm"
                 onClick={() => setExternalStep((prev) => (prev === 3 ? 2 : 1))}
                 disabled={externalGenerating}
+                className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
               >
                 Back
               </Button>
@@ -1180,12 +1195,13 @@ export function JobsClient({
               size="sm"
               onClick={() => setExternalDialogOpen(false)}
               disabled={externalGenerating}
+              className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 transition-all duration-200 hover:bg-slate-50 active:translate-y-[1px]"
             >
               Cancel
             </Button>
             <Button
               size="sm"
-              className="edu-cta edu-cta--press"
+              className="edu-cta edu-cta--press h-10 rounded-xl px-5 text-sm"
               disabled={
                 !selectedJob ||
                 externalGenerating ||
