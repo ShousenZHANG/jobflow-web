@@ -67,6 +67,16 @@ vi.mock("@/lib/server/latex/compilePdf", () => ({
   compileLatexToPdf: vi.fn(async () => Buffer.from([37, 80, 68, 70])),
 }));
 
+vi.mock("@/lib/server/promptRuleTemplates", () => ({
+  getActivePromptSkillRulesForUser: vi.fn(async () => ({
+    id: "rules-1",
+    locale: "en-AU",
+    cvRules: ["cv-rule"],
+    coverRules: ["cover-rule"],
+    hardConstraints: ["json-only"],
+  })),
+}));
+
 import { getServerSession } from "next-auth/next";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { POST } from "@/app/api/applications/manual-generate/route";
@@ -129,6 +139,7 @@ describe("applications manual generate api", () => {
     });
     (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
     });
     applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
 
@@ -139,6 +150,10 @@ describe("applications manual generate api", () => {
           jobId: VALID_JOB_ID,
           target: "resume",
           modelOutput: VALID_OUTPUT,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
         }),
       }),
     );
@@ -147,5 +162,38 @@ describe("applications manual generate api", () => {
     expect(res.headers.get("content-type")).toBe("application/pdf");
     expect(res.headers.get("x-tailor-cv-source")).toBe("manual_import");
   });
-});
 
+  it("returns 409 when prompt meta is stale", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-07T00:00:00.000Z"),
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "resume",
+          modelOutput: VALID_OUTPUT,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
+        }),
+      }),
+    );
+    const json = await res.json();
+    expect(res.status).toBe(409);
+    expect(json.error.code).toBe("PROMPT_META_MISMATCH");
+  });
+});

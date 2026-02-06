@@ -2,12 +2,8 @@ import { buildTailorPrompts } from "@/lib/server/ai/buildPrompt";
 import type { PromptSkillRuleSet } from "@/lib/server/ai/promptSkills";
 
 type SkillPackContext = {
-  jobId: string;
-  jobTitle: string;
-  company: string;
-  description: string;
-  baseSummary: string;
   resumeSnapshot: unknown;
+  resumeSnapshotUpdatedAt: string;
 };
 
 const OUTPUT_SCHEMA = {
@@ -25,7 +21,7 @@ function list(items: string[]) {
 
 function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext) {
   const placeholderPrompts = buildTailorPrompts(rules, {
-    baseSummary: "{{BASE_SUMMARY}}",
+    baseSummary: "[Read from jobflow-skill-pack/context/resume-snapshot.json.summary]",
     jobTitle: "{{JOB_TITLE}}",
     company: "{{COMPANY}}",
     description: "{{JOB_DESCRIPTION}}",
@@ -37,37 +33,14 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
 
   if (!context) return files;
 
-  const runtimePrompts = buildTailorPrompts(rules, {
-    baseSummary: context.baseSummary,
-    jobTitle: context.jobTitle,
-    company: context.company,
-    description: context.description,
+  files.push({
+    name: "jobflow-skill-pack/context/resume-snapshot.json",
+    content: JSON.stringify(context.resumeSnapshot ?? {}, null, 2),
   });
-
-  files.push(
-    { name: "jobflow-skill-pack/context/current-job-id.txt", content: context.jobId },
-    {
-      name: "jobflow-skill-pack/context/current-job.json",
-      content: JSON.stringify(
-        {
-          id: context.jobId,
-          title: context.jobTitle,
-          company: context.company,
-        },
-        null,
-        2,
-      ),
-    },
-    { name: "jobflow-skill-pack/context/current-jd.txt", content: context.description || "" },
-    {
-      name: "jobflow-skill-pack/context/resume-snapshot.json",
-      content: JSON.stringify(context.resumeSnapshot ?? {}, null, 2),
-    },
-    {
-      name: "jobflow-skill-pack/prompts/user-prompt-current-job.txt",
-      content: runtimePrompts.userPrompt,
-    },
-  );
+  files.push({
+    name: "jobflow-skill-pack/context/resume-snapshot-updated-at.txt",
+    content: context.resumeSnapshotUpdatedAt,
+  });
 
   return files;
 }
@@ -91,10 +64,8 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
 
 ## Notes
 - This is a global template pack, not bound to one specific job.
-- When downloaded from a job context, this pack also includes:
-  - latest resume snapshot from your account
-  - current job description
-  - a prefilled prompt for that job
+- This pack may include your latest resume snapshot and snapshot timestamp file.
+- Prompt generation for each job is done separately in Jobflow UI.
 - Rules version id: ${rules.id}
 - Locale: ${rules.locale}
 `;

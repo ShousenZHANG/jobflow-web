@@ -5,8 +5,6 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
-import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
-import { buildTailorPrompts } from "@/lib/server/ai/buildPrompt";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 
 export const runtime = "nodejs";
@@ -14,6 +12,10 @@ export const runtime = "nodejs";
 const PromptSchema = z.object({
   jobId: z.string().uuid(),
 });
+
+function formatRuleBlock(title: string, items: string[]) {
+  return `${title}\n${items.map((item, index) => `${index + 1}. ${item}`).join("\n")}`;
+}
 
 export async function POST(req: Request) {
   const requestId = randomUUID();
@@ -76,18 +78,49 @@ export async function POST(req: Request) {
     );
   }
 
-  const renderInput = mapResumeProfile(profile);
   const rules = await getActivePromptSkillRulesForUser(userId);
-  const prompts = buildTailorPrompts(rules, {
-    baseSummary: renderInput.summary,
-    jobTitle: job.title,
-    company: job.company || "the company",
-    description: job.description || "",
-  });
+  const systemPrompt = [
+    `You are Jobflow's external AI tailoring assistant (${rules.locale}).`,
+    "Use the imported skill package as the single source of truth.",
+    "Read base summary from jobflow-skill-pack/context/resume-snapshot.json.summary.",
+    "Output strict JSON only (no markdown, no code fences).",
+    "Ensure valid JSON strings: use \\n for line breaks and escape quotes.",
+    formatRuleBlock("Hard Constraints:", rules.hardConstraints),
+  ].join("\n\n");
+  const userPrompt = [
+    "Task:",
+    "Generate role-tailored CV summary and Cover Letter content using the imported skill pack.",
+    "",
+    "Required JSON shape:",
+    "{",
+    '  "cvSummary": "string",',
+    '  "cover": {',
+    '    "paragraphOne": "string",',
+    '    "paragraphTwo": "string",',
+    '    "paragraphThree": "string"',
+    "  }",
+    "}",
+    "",
+    formatRuleBlock("CV Skills Rules:", rules.cvRules),
+    "",
+    formatRuleBlock("Cover Letter Skills Rules:", rules.coverRules),
+    "",
+    "Job Input:",
+    `- Job title: ${job.title}`,
+    `- Company: ${job.company || "the company"}`,
+    `- Job description: ${job.description || ""}`,
+  ].join("\n");
 
   return NextResponse.json({
     requestId,
-    prompt: prompts,
+    prompt: {
+      systemPrompt,
+      userPrompt,
+    },
+    promptMeta: {
+      ruleSetId: rules.id,
+      resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
+    },
     expectedJsonShape: {
       cvSummary: "string",
       cover: {

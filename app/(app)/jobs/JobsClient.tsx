@@ -55,6 +55,11 @@ type TailorModelOutput = {
   };
 };
 
+type ExternalPromptMeta = {
+  ruleSetId: string;
+  resumeSnapshotUpdatedAt: string;
+};
+
 const HIGHLIGHT_KEYWORDS = [
   "HTML",
   "CSS",
@@ -230,6 +235,7 @@ export function JobsClient({
   const [externalModelOutput, setExternalModelOutput] = useState("");
   const [externalGenerating, setExternalGenerating] = useState(false);
   const [externalBaseSummary, setExternalBaseSummary] = useState("");
+  const [externalPromptMeta, setExternalPromptMeta] = useState<ExternalPromptMeta | null>(null);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
@@ -603,7 +609,10 @@ export function JobsClient({
     setPreviewOpen(true);
   }
 
-  async function loadTailorPrompt(job: JobItem) {
+  async function loadTailorPrompt(job: JobItem): Promise<{
+    promptText: string;
+    promptMeta: ExternalPromptMeta | null;
+  }> {
     const res = await fetch("/api/applications/prompt", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -613,7 +622,7 @@ export function JobsClient({
     if (!res.ok) {
       throw new Error(json?.error?.message || json?.error || "Failed to build prompt");
     }
-    return [
+    const promptText = [
       "SYSTEM PROMPT",
       json.prompt?.systemPrompt ?? "",
       "",
@@ -623,6 +632,16 @@ export function JobsClient({
       "REQUIRED JSON SHAPE",
       JSON.stringify(json.expectedJsonShape ?? {}, null, 2),
     ].join("\n");
+    const promptMeta: ExternalPromptMeta | null =
+      json?.promptMeta &&
+      typeof json.promptMeta.ruleSetId === "string" &&
+      typeof json.promptMeta.resumeSnapshotUpdatedAt === "string"
+        ? {
+            ruleSetId: json.promptMeta.ruleSetId,
+            resumeSnapshotUpdatedAt: json.promptMeta.resumeSnapshotUpdatedAt,
+          }
+        : null;
+    return { promptText, promptMeta };
   }
 
   async function openExternalGenerateDialog(job: JobItem, target: "resume" | "cover") {
@@ -630,14 +649,16 @@ export function JobsClient({
     setExternalTarget(target);
     setExternalModelOutput("");
     setExternalPromptText("");
+    setExternalPromptMeta(null);
     setError(null);
     setExternalPromptLoading(true);
     try {
-      const [promptText, profileRes] = await Promise.all([
+      const [{ promptText, promptMeta }, profileRes] = await Promise.all([
         loadTailorPrompt(job),
         fetch("/api/resume-profile", { cache: "no-store" }),
       ]);
       setExternalPromptText(promptText);
+      setExternalPromptMeta(promptMeta);
       const profileJson = await profileRes.json().catch(() => ({}));
       setExternalBaseSummary(
         typeof profileJson?.profile?.summary === "string" ? profileJson.profile.summary : "",
@@ -679,13 +700,11 @@ export function JobsClient({
     });
   }
 
-  async function downloadSkillPack(job: JobItem) {
+  async function downloadSkillPack() {
     setExternalSkillPackLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/prompt-rules/skill-pack?jobId=${encodeURIComponent(job.id)}`, {
-        cache: "no-store",
-      });
+      const res = await fetch("/api/prompt-rules/skill-pack", { cache: "no-store" });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
         throw new Error(json?.error?.message || json?.error || "Failed to download skill pack");
@@ -703,7 +722,7 @@ export function JobsClient({
       URL.revokeObjectURL(objectUrl);
       toast({
         title: "Skill pack downloaded",
-        description: "Includes your latest resume snapshot and current JD context.",
+        description: "Global skill pack downloaded with latest resume snapshot.",
         duration: 2200,
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
@@ -735,6 +754,7 @@ export function JobsClient({
           jobId: job.id,
           target,
           modelOutput,
+          promptMeta: externalPromptMeta,
         }),
       });
 
@@ -982,7 +1002,7 @@ export function JobsClient({
                 variant="outline"
                 size="sm"
                 disabled={!selectedJob || externalSkillPackLoading}
-                onClick={() => selectedJob && downloadSkillPack(selectedJob)}
+                onClick={() => selectedJob && downloadSkillPack()}
                 className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
               >
                 {externalSkillPackLoading ? "Downloading..." : "Download Skill Pack"}

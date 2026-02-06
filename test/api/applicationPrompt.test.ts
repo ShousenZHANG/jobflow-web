@@ -22,12 +22,6 @@ vi.mock("@/lib/server/resumeProfile", () => ({
   getResumeProfile: vi.fn(),
 }));
 
-vi.mock("@/lib/server/latex/mapResumeProfile", () => ({
-  mapResumeProfile: vi.fn(() => ({
-    summary: "Base summary",
-  })),
-}));
-
 vi.mock("@/lib/server/promptRuleTemplates", () => ({
   getActivePromptSkillRulesForUser: vi.fn(() => ({
     id: "rules-1",
@@ -80,6 +74,7 @@ describe("applications prompt api", () => {
     });
     (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
     });
 
     const res = await POST(
@@ -94,5 +89,8 @@ describe("applications prompt api", () => {
     expect(typeof json.prompt.systemPrompt).toBe("string");
     expect(typeof json.prompt.userPrompt).toBe("string");
     expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
+    expect(json.promptMeta.ruleSetId).toBe("rules-1");
+    expect(json.promptMeta.resumeSnapshotUpdatedAt).toBe("2026-02-06T00:00:00.000Z");
+    expect(json.prompt.userPrompt).not.toContain("Base summary");
   });
 });

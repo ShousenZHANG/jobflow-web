@@ -10,6 +10,7 @@ import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { parseTailorModelOutput } from "@/lib/server/ai/schema";
+import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 
 export const runtime = "nodejs";
 
@@ -17,6 +18,12 @@ const ManualGenerateSchema = z.object({
   jobId: z.string().uuid(),
   target: z.enum(["resume", "cover"]),
   modelOutput: z.string().min(20),
+  promptMeta: z
+    .object({
+      ruleSetId: z.string().min(1),
+      resumeSnapshotUpdatedAt: z.string().min(1),
+    })
+    .optional(),
 });
 
 function toSafeFileSegment(value: string) {
@@ -92,6 +99,33 @@ export async function POST(req: Request) {
       },
       { status: 404 },
     );
+  }
+
+  if (parsed.data.promptMeta) {
+    const activeRules = await getActivePromptSkillRulesForUser(userId);
+    const ruleSetMatches = parsed.data.promptMeta.ruleSetId === activeRules.id;
+    const snapshotMatches =
+      parsed.data.promptMeta.resumeSnapshotUpdatedAt === profile.updatedAt.toISOString();
+    if (!ruleSetMatches || !snapshotMatches) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "PROMPT_META_MISMATCH",
+            message:
+              "Prompt/skill pack is out of date. Re-download skill pack and copy a fresh prompt for this job.",
+            details: {
+              expected: {
+                ruleSetId: activeRules.id,
+                resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
+              },
+              received: parsed.data.promptMeta,
+            },
+          },
+          requestId,
+        },
+        { status: 409 },
+      );
+    }
   }
 
   const tailored = parseTailorModelOutput(parsed.data.modelOutput);

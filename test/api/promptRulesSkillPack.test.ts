@@ -58,7 +58,7 @@ describe("prompt rules skill pack api", () => {
     expect(res.headers.get("content-disposition")).toContain(".tar.gz");
   });
 
-  it("supports job-scoped skill pack download", async () => {
+  it("returns global skill pack even if jobId query is provided", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       user: { id: "user-1" },
     });
