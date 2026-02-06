@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -1596,13 +1596,13 @@ export function JobsClient({
                     {selectedJob.jobType ?? "Unknown"} · {selectedJob.jobLevel ?? "Unknown"}
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
                   <Select
                     value={selectedJob.status}
                     onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
                     disabled={updatingIds.has(selectedJob.id)}
                   >
-                    <SelectTrigger className="h-9 w-32">
+                    <SelectTrigger className="h-10 w-[132px] rounded-xl border-slate-200 bg-white shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1611,9 +1611,13 @@ export function JobsClient({
                       <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button asChild size="sm" className="edu-cta edu-cta--press edu-cta--compact h-9 gap-1 px-3">
+                  <Button
+                    asChild
+                    size="sm"
+                    className="h-10 rounded-xl border border-emerald-500 bg-emerald-500 px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px]"
+                  >
                     <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
-                      <ExternalLink className="h-4 w-4" />
+                      <ExternalLink className="mr-1 h-4 w-4" />
                       Open job
                     </a>
                   </Button>
@@ -1622,9 +1626,9 @@ export function JobsClient({
                     size="sm"
                     disabled={externalPromptLoading}
                     onClick={() => openExternalGenerateDialog(selectedJob, "resume")}
-                    className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                    className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                   >
-                    <FileText className="h-4 w-4" />
+                    <FileText className="mr-1 h-4 w-4" />
                     Generate CV
                   </Button>
                   <Button
@@ -1632,9 +1636,9 @@ export function JobsClient({
                     size="sm"
                     disabled={externalPromptLoading}
                     onClick={() => openExternalGenerateDialog(selectedJob, "cover")}
-                    className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                    className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                   >
-                    <FileText className="h-4 w-4" />
+                    <FileText className="mr-1 h-4 w-4" />
                     Generate Cover Letter
                   </Button>
                   {selectedJob.resumePdfUrl ? (
@@ -1642,13 +1646,13 @@ export function JobsClient({
                       variant="outline"
                       size="sm"
                       asChild
-                      className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
+                      className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
                     >
                       <a
                         href={selectedJob.resumePdfUrl}
                         download={selectedJob.resumePdfName ?? "resume.pdf"}
                       >
-                        <FileText className="h-4 w-4" />
+                        <FileText className="mr-1 h-4 w-4" />
                         Saved CV
                       </a>
                     </Button>
@@ -1658,9 +1662,9 @@ export function JobsClient({
                     size="sm"
                     disabled={deletingIds.has(selectedJob.id)}
                     onClick={() => scheduleDelete(selectedJob)}
-                    className="edu-cta--press edu-outline--compact gap-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                    className="ml-auto h-10 rounded-xl border-rose-200 bg-rose-50 px-4 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none lg:ml-0"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="mr-1 h-4 w-4" />
                     Remove
                   </Button>
                 </div>
@@ -1812,3 +1816,4 @@ export function JobsClient({
     </>
   );
 }
+
