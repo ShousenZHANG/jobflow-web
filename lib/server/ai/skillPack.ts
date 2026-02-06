@@ -119,20 +119,27 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
 - Locale: ${rules.locale}
 `;
 
-  const skillMd = `# jobflow-tailor-skill
+  const skillMd = `---
+name: jobflow-tailoring
+description: Generate recruiter-grade CV/Cover JSON from JD using strict contracts for Jobflow PDF rendering.
+version: ${rules.id}
+locale: ${rules.locale}
+---
 
-## Objective
-Generate role-tailored CV summary and cover letter JSON that is safe for downstream PDF generation.
+# Jobflow Tailoring Skill
 
-## When to Use
-- You have a base resume summary and a target JD.
-- You need recruiter-grade tailoring with strict JSON output.
+## Trigger Conditions
+Use this skill when:
+- A job description is provided and a tailored CV or Cover Letter is needed.
+- Output will be pasted back into Jobflow to render PDF.
+- Accuracy, ATS safety, and deterministic JSON format are required.
 
-## Inputs
-- Base summary
+## Required Inputs
 - Job title
 - Company
 - Job description
+- Resume snapshot context from \`context/resume-snapshot.json\`
+- Target: \`resume\` or \`cover\`
 
 ## Hard Constraints
 ${list(rules.hardConstraints)}
@@ -143,25 +150,33 @@ ${list(rules.cvRules)}
 ## Cover Rules
 ${list(rules.coverRules)}
 
-## Procedure
-1. Read JD responsibilities and required skills.
-2. Apply CV rules in order, preserving truthfulness and scope.
-3. Apply cover rules in order, keeping exactly three paragraphs.
-4. Validate output fields and JSON escaping.
-5. Return JSON only.
+## Execution Procedure
+1. Determine target first: \`resume\` or \`cover\`.
+2. Read JD responsibilities and required skills in order of importance.
+3. For \`resume\` target:
+   - Produce \`cvSummary\`.
+   - Produce complete \`latestExperience.bullets\` list (ordered final list).
+   - Produce \`skillsAdditions\` only (additions, no removals).
+4. For \`cover\` target:
+   - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\`.
+   - Optionally include \`subject/date/salutation/closing/signatureName\`.
+5. Validate JSON shape against schema before final output.
 
-## Quality Gates
-- No markdown/code fence.
-- No fabricated skills, employers, or metrics.
-- JSON schema compliance is mandatory.
+## Output Contracts
+- Resume output must match: \`schema/output-schema.resume.json\`
+- Cover output must match: \`schema/output-schema.cover.json\`
 
-## Failure Policy
-- If required context is missing, keep base summary unchanged.
-- Keep cover letter concise and factual; avoid invented company details.
+## Verification Checklist
+- Output is strict JSON only (no markdown/code fence).
+- No fabricated facts, skills, employers, or metrics.
+- Resume output keeps existing latest-experience bullets (reorder allowed; additions capped by rules).
+- Cover output is exactly three core paragraphs.
+- JSON parses without repair.
 
-## Output
-Resume target must follow \`schema/output-schema.resume.json\`.
-Cover target must follow \`schema/output-schema.cover.json\`.
+## Failure and Recovery
+- If JD/resume context is insufficient, keep summary conservative and avoid new claims.
+- If schema cannot be satisfied, return minimal valid JSON with conservative content.
+- Never switch target contract (resume must not include cover payload, cover must not include resume payload).
 `;
 
   const exampleJson = JSON.stringify(
