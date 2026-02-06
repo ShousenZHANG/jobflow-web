@@ -60,6 +60,46 @@ type ExternalPromptMeta = {
   resumeSnapshotUpdatedAt: string;
 };
 
+const SKILL_PACK_META_STORAGE_KEY = "jobflow.skill-pack-meta.v1";
+
+function isValidPromptMeta(value: unknown): value is ExternalPromptMeta {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.ruleSetId === "string" &&
+    record.ruleSetId.length > 0 &&
+    typeof record.resumeSnapshotUpdatedAt === "string" &&
+    record.resumeSnapshotUpdatedAt.length > 0
+  );
+}
+
+function readSavedSkillPackMeta(): ExternalPromptMeta | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(SKILL_PACK_META_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return isValidPromptMeta(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSavedSkillPackMeta(meta: ExternalPromptMeta) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SKILL_PACK_META_STORAGE_KEY, JSON.stringify(meta));
+}
+
+function isSkillPackFresh(required: ExternalPromptMeta | null): boolean {
+  if (!required) return false;
+  const saved = readSavedSkillPackMeta();
+  return (
+    !!saved &&
+    saved.ruleSetId === required.ruleSetId &&
+    saved.resumeSnapshotUpdatedAt === required.resumeSnapshotUpdatedAt
+  );
+}
+
 const HIGHLIGHT_KEYWORDS = [
   "HTML",
   "CSS",
@@ -236,6 +276,7 @@ export function JobsClient({
   const [externalGenerating, setExternalGenerating] = useState(false);
   const [externalBaseSummary, setExternalBaseSummary] = useState("");
   const [externalPromptMeta, setExternalPromptMeta] = useState<ExternalPromptMeta | null>(null);
+  const [externalSkillPackFresh, setExternalSkillPackFresh] = useState(false);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
@@ -650,6 +691,7 @@ export function JobsClient({
     setExternalModelOutput("");
     setExternalPromptText("");
     setExternalPromptMeta(null);
+    setExternalSkillPackFresh(false);
     setError(null);
     setExternalPromptLoading(true);
     try {
@@ -659,6 +701,7 @@ export function JobsClient({
       ]);
       setExternalPromptText(promptText);
       setExternalPromptMeta(promptMeta);
+      setExternalSkillPackFresh(isSkillPackFresh(promptMeta));
       const profileJson = await profileRes.json().catch(() => ({}));
       setExternalBaseSummary(
         typeof profileJson?.profile?.summary === "string" ? profileJson.profile.summary : "",
@@ -720,9 +763,13 @@ export function JobsClient({
       link.click();
       link.remove();
       URL.revokeObjectURL(objectUrl);
+      if (externalPromptMeta) {
+        writeSavedSkillPackMeta(externalPromptMeta);
+        setExternalSkillPackFresh(true);
+      }
       toast({
         title: "Skill pack downloaded",
-        description: "Global skill pack downloaded with latest resume snapshot.",
+        description: "Skill pack marked as up-to-date for current prompt.",
         duration: 2200,
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
@@ -988,14 +1035,21 @@ export function JobsClient({
               {externalTarget === "resume" ? "Generate CV with External AI" : "Generate Cover Letter with External AI"}
             </DialogTitle>
             <DialogDescription>
-              Download Skill Pack, run prompt in your AI chat, then paste JSON to generate PDF.
+              {externalSkillPackFresh
+                ? "Skill pack is up to date. Copy prompt, run in your AI chat, then paste JSON."
+                : "Download or refresh skill pack first, then run prompt in your AI chat and paste JSON."}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-3">
+              {!externalSkillPackFresh ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
+                  Skill pack refresh required for latest rules/resume snapshot.
+                </div>
+              ) : null}
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Step 1 · Download Skill Package
+                Step 1 · {externalSkillPackFresh ? "Skill Package (Optional)" : "Skill Package (Required)"}
               </div>
               <Button
                 type="button"
@@ -1005,7 +1059,11 @@ export function JobsClient({
                 onClick={() => selectedJob && downloadSkillPack()}
                 className="edu-cta--press edu-outline--compact h-9 gap-1 px-3"
               >
-                {externalSkillPackLoading ? "Downloading..." : "Download Skill Pack"}
+                {externalSkillPackLoading
+                  ? "Downloading..."
+                  : externalSkillPackFresh
+                    ? "Re-download Skill Pack"
+                    : "Download Skill Pack"}
               </Button>
 
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
