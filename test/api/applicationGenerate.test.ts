@@ -8,20 +8,10 @@ const applicationStore = vi.hoisted(() => ({
   upsert: vi.fn(),
 }));
 
-const aiPromptProfileStore = vi.hoisted(() => ({
-  findUnique: vi.fn(),
-}));
-
-const aiProviderStore = vi.hoisted(() => ({
-  findUnique: vi.fn(),
-}));
-
 vi.mock("@/lib/server/prisma", () => ({
   prisma: {
     job: jobStore,
     application: applicationStore,
-    aiPromptProfile: aiPromptProfileStore,
-    userAiProviderConfig: aiProviderStore,
     resumeProfile: {
       findFirst: vi.fn(),
     },
@@ -74,8 +64,6 @@ describe("applications generate api", () => {
     (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockReset();
     jobStore.findFirst.mockReset();
     applicationStore.upsert.mockReset();
-    aiPromptProfileStore.findUnique.mockReset();
-    aiProviderStore.findUnique.mockReset();
   });
 
   it("returns 404 when job does not exist", async () => {

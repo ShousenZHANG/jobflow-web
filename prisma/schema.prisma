@@ -28,12 +28,6 @@ enum FetchRunStatus {
   FAILED
 }
 
-enum AiProvider {
-  OPENAI
-  GEMINI
-  CLAUDE
-}
-
 model User {
   id        String   @id @default(uuid()) @db.Uuid
   email     String?  @unique
@@ -46,15 +40,12 @@ model User {
   accounts  Account[]
   sessions  Session[]
 
-  jobs          Job[]
-  savedSearches SavedSearch[]
-  fetchRuns     FetchRun[]
+  jobs           Job[]
+  fetchRuns      FetchRun[]
   deletedJobUrls DeletedJobUrl[]
-  dailyCheckins DailyCheckin[]
+  dailyCheckins  DailyCheckin[]
   resumeProfiles ResumeProfile[]
-  aiPromptProfile AiPromptProfile?
-  aiProviderConfig UserAiProviderConfig?
-  applications  Application[]
+  applications   Application[]
 }
 
 model Account {
@@ -143,21 +134,6 @@ model DailyCheckin {
   @@index([userId, localDate])
 }
 
-model SavedSearch {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  name      String
-  query     String
-  location  String?
-  hoursOld  Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId, createdAt])
-}
-
 model FetchRun {
   id        String         @id @default(uuid()) @db.Uuid
   userId    String         @db.Uuid
@@ -204,34 +180,6 @@ model ResumeProfile {
   applications Application[]
 
   @@index([userId, updatedAt])
-}
-
-model AiPromptProfile {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @unique @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  cvRules     Json
-  coverRules  Json
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model UserAiProviderConfig {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @unique @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  provider  AiProvider
-  model     String?
-
-  apiKeyCiphertext String
-  apiKeyIv         String
-  apiKeyTag        String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Application {
