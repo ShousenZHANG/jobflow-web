@@ -53,6 +53,76 @@ const CoverManualOutputSchema = z.object({
   cover: CoverContentSchema,
 });
 
+const JD_TECH_KEYWORDS = [
+  "java",
+  "spring",
+  "spring boot",
+  "kotlin",
+  "python",
+  "node.js",
+  "node",
+  "typescript",
+  "javascript",
+  "react",
+  "next.js",
+  "angular",
+  "vue",
+  "go",
+  "rust",
+  "sql",
+  "postgresql",
+  "mysql",
+  "mongodb",
+  "redis",
+  "docker",
+  "kubernetes",
+  "terraform",
+  "aws",
+  "azure",
+  "gcp",
+  "devops",
+  "ci/cd",
+  "linux",
+  "bash",
+  "graphql",
+  "rest",
+  "microservices",
+  "junit",
+] as const;
+
+const RESPONSIBILITY_STOPWORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "from",
+  "that",
+  "this",
+  "your",
+  "our",
+  "their",
+  "you",
+  "will",
+  "have",
+  "has",
+  "are",
+  "is",
+  "to",
+  "of",
+  "in",
+  "on",
+  "as",
+  "by",
+  "an",
+  "a",
+  "be",
+  "or",
+  "at",
+  "across",
+  "using",
+  "through",
+]);
+
 function parseJsonCandidate(raw: string): unknown | null {
   const text = raw.trim();
   if (!text) return null;
@@ -181,6 +251,84 @@ function mergeSkillAdditions(
 
 function normalizeBulletForCompare(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function normalizeTextForMatch(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s+/#.-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function extractTopResponsibilities(description: string | null | undefined) {
+  const text = (description ?? "").trim();
+  if (!text) return [] as string[];
+
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const bullets = lines
+    .filter((line) => /^(\d+[.)]|[-*•])\s+/.test(line) || line.length > 35)
+    .map((line) => line.replace(/^(\d+[.)]|[-*•])\s+/, "").trim())
+    .filter((line) => line.length >= 12);
+
+  return bullets.slice(0, 3);
+}
+
+function extractResponsibilityKeywords(line: string) {
+  return normalizeTextForMatch(line)
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 4 && !RESPONSIBILITY_STOPWORDS.has(token));
+}
+
+function bulletMatchesResponsibility(bullet: string, responsibility: string) {
+  const bulletNorm = normalizeTextForMatch(bullet);
+  const keywords = extractResponsibilityKeywords(responsibility);
+  if (keywords.length === 0) return false;
+
+  let hits = 0;
+  for (const kw of keywords) {
+    if (bulletNorm.includes(kw)) hits += 1;
+    if (hits >= 2) return true;
+  }
+  return false;
+}
+
+function extractJdSkills(title: string, description: string | null | undefined) {
+  const text = `${title}\n${description ?? ""}`;
+  const normalized = normalizeTextForMatch(text);
+  const found = new Set<string>();
+
+  for (const keyword of JD_TECH_KEYWORDS) {
+    const pattern = new RegExp(`\\b${escapeRegExp(keyword.toLowerCase())}\\b`, "i");
+    if (pattern.test(normalized)) found.add(keyword);
+  }
+
+  return [...found];
+}
+
+function applyBoldKeywords(summary: string, keywords: string[]) {
+  if (!summary.trim()) return summary;
+
+  let out = summary.replace(/\*\*([^*]+)\*\*/g, "$1");
+  const candidates = keywords
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+
+  for (const keyword of candidates) {
+    const pattern = new RegExp(`\\b(${escapeRegExp(keyword)})\\b`, "gi");
+    out = out.replace(pattern, "**$1**");
+  }
+  return out;
 }
 
 function toSafeFileSegment(value: string) {
@@ -357,7 +505,85 @@ export async function POST(req: Request) {
             { status: 400 },
           );
         }
+
+        const topResponsibilities = extractTopResponsibilities(job.description);
+        if (topResponsibilities.length > 0) {
+          const baseCoverageCount = topResponsibilities.filter((resp) =>
+            baseLatest.bullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
+          ).length;
+
+          const baseSet = new Set(baseLatest.bullets.map(normalizeBulletForCompare));
+          const addedBullets = incomingBullets.filter(
+            (bullet) => !baseSet.has(normalizeBulletForCompare(bullet)),
+          );
+
+          if (baseCoverageCount === 0) {
+            if (addedBullets.length < 2 || addedBullets.length > 3) {
+              return NextResponse.json(
+                {
+                  error: {
+                    code: "RESPONSIBILITY_TOP3_NEEDS_ADDITIONS",
+                    message:
+                      "Top 3 JD responsibilities are not covered by base bullets. Add 2-3 new bullets at the front aligned to those responsibilities.",
+                  },
+                  requestId,
+                },
+                { status: 400 },
+              );
+            }
+
+            const prefix = incomingBullets.slice(0, addedBullets.length);
+            const prefixSet = new Set(prefix.map(normalizeBulletForCompare));
+            const addedSet = new Set(addedBullets.map(normalizeBulletForCompare));
+            const allAddedAtFront = [...addedSet].every((item) => prefixSet.has(item));
+            if (!allAddedAtFront) {
+              return NextResponse.json(
+                {
+                  error: {
+                    code: "RESPONSIBILITY_ADDITIONS_ORDER_INVALID",
+                    message:
+                      "When top responsibilities are uncovered, new bullets must be placed at the start in responsibility order.",
+                  },
+                  requestId,
+                },
+                { status: 400 },
+              );
+            }
+          }
+        }
       }
+
+      const jdSkills = extractJdSkills(job.title, job.description);
+      const existingSkills = new Set(
+        renderInput.skills.flatMap((group) => group.items).map((item) => normalizeTextForMatch(item)),
+      );
+      const addedSkills = new Set(
+        (resumeOutput.skillsAdditions ?? [])
+          .flatMap((group) => group.items)
+          .map((item) => normalizeTextForMatch(item)),
+      );
+      const missingJdSkills = jdSkills.filter((skill) => {
+        const normalized = normalizeTextForMatch(skill);
+        return !existingSkills.has(normalized) && !addedSkills.has(normalized);
+      });
+      if (missingJdSkills.length > 0) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "MISSING_SKILLS_ADDITIONS",
+              message:
+                "skillsAdditions is missing important JD skills. Add missing skills under appropriate categories.",
+              details: {
+                missingSkills: missingJdSkills,
+              },
+            },
+            requestId,
+          },
+          { status: 400 },
+        );
+      }
+
+      const boldedSummary = applyBoldKeywords(cvSummary, jdSkills);
 
       const nextExperiences =
         baseLatest && incomingBullets && incomingBullets.length > 0
@@ -373,7 +599,7 @@ export async function POST(req: Request) {
 
       const tex = renderResumeTex({
         ...renderInput,
-        summary: cvSummary,
+        summary: boldedSummary,
         experiences: nextExperiences,
         skills: nextSkills,
       });
