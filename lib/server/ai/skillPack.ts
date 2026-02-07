@@ -57,6 +57,7 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- skillsFinal max 5 major categories, each as { label, items }.",
     "- Prefer existing categories from resume snapshot and merge related skills.",
     "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
+    "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
     "",
     "Job Input:",
     "- Job title: {{JOB_TITLE}}",
@@ -178,6 +179,7 @@ ${list(rules.coverRules)}
 ## Verification Checklist
 - Output is strict JSON only (no markdown/code fence).
 - No fabricated facts, skills, employers, or metrics.
+- Markdown bold markers are clean: **keyword** (no inner leading/trailing spaces).
 - Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions capped by rules).
 - When top-3 responsibility gaps are listed, add grounded bullets when evidence exists; avoid fabrication.
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.

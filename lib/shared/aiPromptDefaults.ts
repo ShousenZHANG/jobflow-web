@@ -2,6 +2,7 @@ export const DEFAULT_CV_RULES = [
   "Act as a senior recruiter. Prioritize role-fit evidence, impact clarity, and ATS keyword alignment for the target role.",
   "Rewrite summary to align with JD responsibilities while preserving the base summary length (+/-10% chars) and sentence count.",
   "Bold important JD-aligned technical keywords in summary using markdown **keyword** format.",
+  "When using markdown bold, keep markers clean: use **keyword** (no leading/trailing spaces inside ** **).",
   "Do not add claims beyond the base resume experience. Keep every statement grounded in provided resume context.",
   "Return latestExperience.bullets as the COMPLETE final bullet list for the latest experience block (full ordered output, not delta).",
   "Reorder latest experience bullets to mirror JD responsibilities order.",

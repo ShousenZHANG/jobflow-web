@@ -154,6 +154,7 @@ export async function POST(req: Request) {
         "1) Preserve every base latest-experience bullet text verbatim (no paraphrase).",
         "2) If responsibilities are uncovered and evidence exists in base resume context, add 2-3 new bullets and place them first.",
         "3) For every new bullet, bold 1-3 JD-critical keywords using **keyword**.",
+        "3a) Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
         "4) If evidence is insufficient, keep bullets conservative and avoid fabrication.",
         "5) Resume target output must NOT include cover payload.",
       ].join("\n")
@@ -166,6 +167,7 @@ export async function POST(req: Request) {
         "3) Prioritize JD-critical skills first while staying grounded in base resume context.",
         "4) Prefer existing categories from resume snapshot and merge related items into the closest category.",
         "5) Order skillsFinal by JD relevance priority (most important first).",
+        "6) Keep markdown bold markers clean: **keyword** (no inner spaces).",
       ].join("\n")
     : "";
 

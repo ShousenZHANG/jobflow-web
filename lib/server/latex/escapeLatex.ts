@@ -41,7 +41,18 @@ export function escapeLatexWithBold(value: string) {
   while ((match = pattern.exec(input)) !== null) {
     hasMatch = true;
     result += escapeLatex(input.slice(lastIndex, match.index));
-    result += `\\textbf{${escapeLatex(match[1])}}`;
+    const rawInner = match[1] ?? "";
+    const leading = rawInner.match(/^\s*/)?.[0] ?? "";
+    const trailing = rawInner.match(/\s*$/)?.[0] ?? "";
+    const core = rawInner.trim();
+
+    if (core.length === 0) {
+      // Graceful fallback for malformed markers such as "****" or whitespace-only content.
+      result += escapeLatex(rawInner);
+    } else {
+      // Keep surrounding whitespace outside the macro so TeX does not swallow it.
+      result += `${escapeLatex(leading)}\\textbf{${escapeLatex(core)}}${escapeLatex(trailing)}`;
+    }
     lastIndex = match.index + match[0].length;
   }
 
