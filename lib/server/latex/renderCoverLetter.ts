@@ -15,6 +15,7 @@ type RenderCoverLetterInput = {
   candidate: CoverCandidate;
   company: string;
   role: string;
+  candidateTitle?: string;
   subject?: string;
   date?: string;
   salutation?: string;
@@ -45,13 +46,41 @@ function normalizeLine(value: string, fallback = "-") {
   return text ? text : fallback;
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeCoverSubject(raw: string | undefined, role: string, candidateName: string) {
+  let text = (raw || "").trim();
+  if (!text) return `Application for ${role}`;
+
+  const escapedName = escapeRegExp(candidateName.trim());
+  if (escapedName) {
+    const trailingName = new RegExp(`\\s*[-|:]\\s*${escapedName}\\s*$`, "i");
+    text = text.replace(trailingName, "").trim();
+  }
+  return text || `Application for ${role}`;
+}
+
+function normalizeCoverSalutation(raw: string | undefined, company: string) {
+  let text = (raw || "").trim();
+  if (!text) return `Hiring Team at ${company}`;
+
+  // Template already prepends "Dear " and appends ",".
+  text = text.replace(/^dear\s+/i, "");
+  text = text.replace(/,+\s*$/g, "");
+  return text.trim() || `Hiring Team at ${company}`;
+}
+
 export function renderCoverLetterTex(input: RenderCoverLetterInput) {
   const main = readTemplate("resume.tex");
   const content = readTemplate("content.tex");
 
   const renderedContent = replaceAll(content, {
     CANDIDATE_NAME: normalizeLine(escapeLatex(input.candidate.name)),
-    CANDIDATE_TITLE: normalizeLine(escapeLatex(input.candidate.title)),
+    CANDIDATE_TITLE: normalizeLine(
+      escapeLatex(input.candidateTitle?.trim() || input.candidate.title),
+    ),
     CANDIDATE_PHONE: normalizeLine(escapeLatex(input.candidate.phone)),
     CANDIDATE_EMAIL: normalizeLine(escapeLatex(input.candidate.email)),
     CANDIDATE_LINKEDIN_URL: normalizeLine(escapeLatex(input.candidate.linkedinUrl || "#"), "#"),
@@ -62,12 +91,12 @@ export function renderCoverLetterTex(input: RenderCoverLetterInput) {
     COVER_COMPANY: normalizeLine(escapeLatex(input.company)),
     COVER_ROLE: normalizeLine(escapeLatex(input.role)),
     COVER_SUBJECT: normalizeLine(
-      escapeLatex(input.subject || `Application for ${input.role}`),
+      escapeLatex(normalizeCoverSubject(input.subject, input.role, input.candidate.name)),
       `Application for ${escapeLatex(input.role)}`,
     ),
     COVER_DATE: input.date?.trim() ? escapeLatex(input.date) : "\\today",
     COVER_SALUTATION: normalizeLine(
-      escapeLatex(input.salutation || `Hiring Team at ${input.company}`),
+      escapeLatex(normalizeCoverSalutation(input.salutation, input.company)),
       `Hiring Team at ${escapeLatex(input.company)}`,
     ),
     COVER_BODY: escapeLatexWithBold(input.paragraphOne),

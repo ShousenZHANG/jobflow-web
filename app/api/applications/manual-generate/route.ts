@@ -55,6 +55,7 @@ const ResumeManualOutputSchema = z.object({
 });
 
 const CoverContentSchema = z.object({
+  candidateTitle: z.string().trim().max(160).optional(),
   subject: z.string().trim().max(220).optional(),
   date: z.string().trim().max(80).optional(),
   salutation: z.string().trim().max(220).optional(),
@@ -155,6 +156,8 @@ function parseCoverManualOutput(raw: string): {
   const payload = {
     cover: {
       subject: typeof coverRecord.subject === "string" ? coverRecord.subject : undefined,
+      candidateTitle:
+        typeof coverRecord.candidateTitle === "string" ? coverRecord.candidateTitle : undefined,
       date: typeof coverRecord.date === "string" ? coverRecord.date : undefined,
       salutation: typeof coverRecord.salutation === "string" ? coverRecord.salutation : undefined,
       paragraphOne:
@@ -614,6 +617,7 @@ export async function POST(req: Request) {
         },
         company: job.company || "the company",
         role: job.title,
+        candidateTitle: coverOutput.cover.candidateTitle,
         subject: coverOutput.cover.subject,
         date: coverOutput.cover.date,
         salutation: coverOutput.cover.salutation,

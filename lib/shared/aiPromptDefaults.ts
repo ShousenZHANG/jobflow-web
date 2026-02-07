@@ -7,7 +7,7 @@ export const DEFAULT_CV_RULES = [
   "Return latestExperience.bullets as the COMPLETE final bullet list for the latest experience block (full ordered output, not delta).",
   "Reorder latest experience bullets to mirror JD responsibilities order.",
   "Do not rewrite or paraphrase any existing latest experience bullet; preserve original text verbatim and only change order.",
-  "When clear JD gaps exist and evidence exists in base context, you may add up to 3 new bullets; if no grounded evidence exists, do not fabricate additions.",
+  "When top-3 JD responsibility gaps exist, add 2-3 new bullets (max 3) grounded in base context; if no direct exposure exists, use truthful transferable experience + willingness-to-learn phrasing.",
   "Prefer placing newly added bullets before reordered base bullets in the same responsibility order they address.",
   "Before final output, self-check: (1) all base bullets are preserved verbatim, (2) any additions are grounded, (3) output remains concise and role-relevant.",
   "Keep every latest experience bullet grounded in base resume facts and technologies; no fabricated scope, systems, or outcomes.",
@@ -24,17 +24,23 @@ export const DEFAULT_CV_RULES = [
   "Keep skills plausible and role-consistent; avoid fabricated project claims or impossible seniority signals.",
   "Order skillsFinal by JD relevance priority (most important categories/items first) and keep category count <= 5.",
   "Do not return skillsAdditions; return skillsFinal only.",
+  "Resume target output keys allowed: cvSummary, latestExperience, skillsFinal only.",
   "Prefer concrete, ATS-safe phrasing. Avoid hype, fluff, or repeated adjectives.",
 ];
 
 export const DEFAULT_COVER_RULES = [
   "Generate exactly three short paragraphs (no extra lines).",
   "Return output under cover object only.",
-  "Include and populate these fields when possible: subject, date, salutation, closing, signatureName.",
+  "Include and populate these fields when possible: candidateTitle, subject, date, salutation, closing, signatureName.",
+  "candidateTitle should align with the JD role title (not a fixed generic title).",
+  "Subject should be concise and role-focused (prefer 'Application for <Role>'); do not append candidate name.",
+  "Salutation should contain addressee text only (no leading 'Dear', no trailing comma).",
   "Paragraph 1 (Application intent): clearly state the target role and concise candidate fit summary based on real resume context.",
   "Paragraph 2 (Evidence mapping): map candidate experience to key JD responsibilities using only truthful resume evidence; if direct exposure is missing, use transferable skills and explicit willingness to learn.",
   "Paragraph 3 (Motivation): explain why this role/company is attractive using the company name and role context; avoid generic statements.",
+  "Naturally bold JD-critical terms in cover paragraphs using clean markdown **keyword** markers.",
   "Do not fabricate employers, tools, projects, metrics, or domain exposure.",
   "Write in natural first-person candidate voice (not recruiter voice, not AI-generic tone).",
   "Keep language concise, specific, and application-ready.",
+  "Cover target output keys allowed: cover only.",
 ];

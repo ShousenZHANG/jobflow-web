@@ -20,6 +20,7 @@ const OUTPUT_SCHEMA_RESUME = {
 
 const OUTPUT_SCHEMA_COVER = {
   cover: {
+    candidateTitle: "string (optional)",
     subject: "string (optional)",
     date: "string (optional)",
     salutation: "string (optional)",
@@ -60,6 +61,7 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- If a JD must-have has no grounded evidence, use closest truthful transferable skill; do not fabricate direct ownership.",
     "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
     "- Do NOT return skillsAdditions. Return skillsFinal only.",
+    "- Resume target JSON keys allowed: cvSummary, latestExperience, skillsFinal.",
     "- For newly added bullets, bold at least one JD-critical keyword using clean markdown **keyword** format.",
     "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
     "",
@@ -82,14 +84,17 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     coverRules,
     "",
     "Cover structure checklist (must follow):",
-    "- subject: role-specific and concise.",
+    "- candidateTitle (optional): role-aligned title for letter header.",
+    "- subject: role-specific and concise (prefer 'Application for <Role>' only, no candidate name).",
     "- date: current/provided date string.",
-    "- salutation: hiring salutation with company context when available.",
+    "- salutation: addressee text only (no leading 'Dear', no trailing comma).",
     "- paragraphOne: application intent + concise fit summary from real resume facts.",
     "- paragraphTwo: map to JD responsibilities with concrete evidence; if direct exposure is missing, use transferable evidence + willingness to learn.",
     "- paragraphThree: motivation for this role/company in natural first-person candidate voice.",
+    "- Bold JD-critical terms naturally in paragraphs using clean markdown **keyword** markers.",
     "- closing + signatureName: include when possible.",
     "- Never fabricate facts, tools, metrics, or domain exposure.",
+    "- Cover target JSON keys allowed: cover only (no resume keys).",
     "",
     "Job Input:",
     "- Job title: {{JOB_TITLE}}",
@@ -179,7 +184,8 @@ ${list(rules.coverRules)}
    - Produce complete \`latestExperience.bullets\` list (ordered final list).
    - Produce \`skillsFinal\` as complete final skills list (not delta).
    - Keep \`skillsFinal\` within 5 major categories and prioritize existing categories.
-   - If responsibility gaps are found and evidence exists in base context, you may add up to 3 grounded bullets and put them first.
+   - If top-3 responsibility gaps are found, add 2-3 grounded bullets (max 3) and put them first.
+   - If direct exposure is missing, use truthful transferable evidence + willingness-to-learn phrasing.
    - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
    - For each newly added bullet, bold at least one JD-critical keyword with clean markdown markers: **keyword**.
@@ -188,8 +194,11 @@ ${list(rules.coverRules)}
      1) application intent + fit,
      2) JD mapping with real evidence (or transferable skills + willingness to learn),
      3) role/company motivation in natural first-person tone.
-   - Include \`subject/date/salutation/closing/signatureName\` whenever possible.
+   - Include \`candidateTitle/subject/date/salutation/closing/signatureName\` whenever possible.
+   - Subject should be role-focused only (no candidate name); salutation should not include leading "Dear" or trailing comma.
+   - Bold JD-critical terms naturally in paragraphs using clean markdown **keyword** markers.
 5. Validate JSON shape against schema before final output.
+6. Output only the target contract: resume target cannot include cover keys; cover target cannot include resume keys.
 
 ## Output Contracts
 - Resume output must match: \`schema/output-schema.resume.json\`
@@ -231,6 +240,7 @@ ${list(rules.coverRules)}
   const coverExampleJson = JSON.stringify(
     {
       cover: {
+        candidateTitle: "{{JOB_TITLE}}",
         subject: "Application for {{JOB_TITLE}}",
         date: "5 February 2026",
         salutation: "Hiring Team at {{COMPANY}}",

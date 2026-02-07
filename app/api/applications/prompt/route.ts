@@ -109,6 +109,7 @@ export async function POST(req: Request) {
     : [
         "{",
         '  "cover": {',
+        '    "candidateTitle": "string (optional)",',
         '    "subject": "string (optional)",',
         '    "date": "string (optional)",',
         '    "salutation": "string (optional)",',
@@ -124,7 +125,7 @@ export async function POST(req: Request) {
     ? "Generate role-tailored CV summary using the imported skill pack."
     : "Generate role-tailored Cover Letter content using the imported skill pack.";
   const strictResumeBulletLine = isResumeTarget
-    ? "Strict resume bullet rule: preserve every existing latest-experience bullet text verbatim; only reorder existing bullets and add new bullets when required by rules."
+    ? "Strict resume bullet rule: preserve every existing latest-experience bullet text verbatim; only reorder existing bullets and add new bullets per rules."
     : "";
   const targetRulesBlock = isResumeTarget
     ? formatRuleBlock("CV Skills Rules:", rules.cvRules)
@@ -147,12 +148,13 @@ export async function POST(req: Request) {
           : ["1. (none)"]),
         "",
         coverage.missingFromBase.length
-          ? `Suggested additions: you may add up to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities if evidence exists in base resume context.`
+          ? `Suggested additions: add 2 to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities using base resume evidence.`
           : "Suggested additions: no additions needed; reorder existing bullets only if helpful.",
         "",
         "Execution checklist:",
         "1) Preserve every base latest-experience bullet text verbatim (no paraphrase).",
-        "2) If responsibilities are uncovered and evidence exists in base resume context, optionally add grounded bullets (max 3) and place them first.",
+        "2) If top-3 responsibilities are uncovered, add 2-3 grounded bullets (max 3) and place them before base bullets.",
+        "2a) If direct exposure is missing, use truthful transferable experience and explicit willingness-to-learn phrasing (no fabrication).",
         "3) For every new bullet, bold 1-3 JD-critical keywords using **keyword**.",
         "3a) Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
         "4) For added bullets, avoid repeating the same primary tech stack already present in base bullets; use complementary JD-required skills where possible.",
@@ -171,20 +173,24 @@ export async function POST(req: Request) {
         "6) Order skillsFinal by JD relevance priority (most important first).",
         "7) Keep markdown bold markers clean: **keyword** (no inner spaces).",
         "8) Do NOT return skillsAdditions. Return skillsFinal only.",
+        "9) Resume target JSON keys allowed: cvSummary, latestExperience, skillsFinal.",
       ].join("\n")
     : "";
   const coverStructureBlock = isResumeTarget
     ? ""
     : [
         "Cover output structure (must follow):",
-        "1) cover.subject: concise role-specific subject line (prefer 'Application for <Role> - <Name>').",
-        "2) cover.date: current or provided date string.",
-        "3) cover.salutation: use hiring salutation with company context when available.",
-        "4) cover.paragraphOne: application intent + concise fit summary from real resume facts.",
-        "5) cover.paragraphTwo: map to JD responsibilities with concrete evidence; if direct exposure is missing, use transferable evidence and explicit willingness to learn.",
-        "6) cover.paragraphThree: why this role/company specifically, written in natural first-person candidate voice.",
-        "7) cover.closing + cover.signatureName: include when possible.",
-        "8) No fabrication, no recruiter voice, no generic filler.",
+        "1) cover.subject: concise role-specific subject line (prefer 'Application for <Role>' only; do NOT append candidate name).",
+        "2) cover.candidateTitle (optional): set to role-aligned candidate title for the letter header.",
+        "3) cover.date: current or provided date string.",
+        "4) cover.salutation: provide only addressee text (e.g., 'Hiring Team at <Company>'), no leading 'Dear' and no trailing comma.",
+        "5) cover.paragraphOne: application intent + concise fit summary from real resume facts.",
+        "6) cover.paragraphTwo: map to JD responsibilities with concrete evidence; if direct exposure is missing, use transferable evidence and explicit willingness to learn.",
+        "7) cover.paragraphThree: why this role/company specifically, written in natural first-person candidate voice.",
+        "8) Bold JD-critical keywords naturally in paragraphs using **keyword** (clean markers only).",
+        "9) cover.closing + cover.signatureName: include when possible.",
+        "10) No fabrication, no recruiter voice, no generic filler.",
+        "11) Cover target JSON keys allowed: cover only (no cvSummary/latestExperience/skillsFinal).",
       ].join("\n");
 
   const userPrompt = [
@@ -221,6 +227,7 @@ export async function POST(req: Request) {
       }
     : {
         cover: {
+          candidateTitle: "string (optional)",
           subject: "string (optional)",
           date: "string (optional)",
           salutation: "string (optional)",

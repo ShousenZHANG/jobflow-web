@@ -1205,7 +1205,7 @@ export function JobsClient({
                     placeholder={
                       externalTarget === "resume"
                         ? '{"cvSummary":"...","latestExperience":{"bullets":["..."]},"skillsFinal":[{"label":"...","items":["..."]}]}'
-                        : '{"cover":{"subject":"...","date":"...","salutation":"...","paragraphOne":"...","paragraphTwo":"...","paragraphThree":"...","closing":"...","signatureName":"..."}}'
+                        : '{"cover":{"candidateTitle":"...","subject":"Application for <Role>","date":"...","salutation":"Hiring Team at <Company>","paragraphOne":"...","paragraphTwo":"...","paragraphThree":"...","closing":"...","signatureName":"..."}}'
                     }
                     className="min-h-[220px] font-mono text-xs"
                   />
