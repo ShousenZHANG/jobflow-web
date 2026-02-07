@@ -323,7 +323,29 @@ function canonicalizeLatestBullets(baseBullets: string[], incomingBullets: strin
 }
 
 function normalizeMarkdownBold(value: string) {
-  return value.replace(/\*\*([^*]+?)\s+\*\*/g, "**$1**");
+  return value.replace(/\*\*\s*([^*]+?)\s*\*\*/g, (_match, inner: string) => {
+    const core = (inner ?? "").trim();
+    return core ? `**${core}**` : "";
+  });
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getLatestRawBullets(profile: unknown): string[] {
+  if (!profile || typeof profile !== "object") return [];
+  const record = profile as Record<string, unknown>;
+  const experiences = Array.isArray(record.experiences) ? record.experiences : [];
+  const latest =
+    experiences.length > 0 && experiences[0] && typeof experiences[0] === "object"
+      ? (experiences[0] as Record<string, unknown>)
+      : null;
+  return asStringArray(latest?.bullets);
 }
 
 function toSafeFileSegment(value: string) {
@@ -450,11 +472,16 @@ export async function POST(req: Request) {
       }
       const cvSummary = resumeOutput.cvSummary.trim();
       const baseLatest = renderInput.experiences[0];
+      const baseLatestRawBullets = getLatestRawBullets(profile);
+      const baseBulletsForMatch =
+        baseLatestRawBullets.length > 0
+          ? baseLatestRawBullets
+          : baseLatest?.bullets.map((item) => item.trim()).filter(Boolean) ?? [];
       const incomingBullets = resumeOutput.latestExperience?.bullets;
       let finalLatestBullets = incomingBullets ?? [];
       if (baseLatest && incomingBullets) {
-        const minAllowed = baseLatest.bullets.length;
-        const maxAllowed = Math.max(baseLatest.bullets.length + 3, 3);
+        const minAllowed = baseBulletsForMatch.length;
+        const maxAllowed = Math.max(baseBulletsForMatch.length + 3, 3);
         if (incomingBullets.length < minAllowed) {
           return NextResponse.json(
             {
@@ -481,13 +508,11 @@ export async function POST(req: Request) {
         }
 
         const { canonicalBullets, addedBullets } = canonicalizeLatestBullets(
-          baseLatest.bullets,
+          baseBulletsForMatch,
           incomingBullets,
         );
         finalLatestBullets = canonicalBullets.map((bullet) =>
-          baseLatest.bullets.includes(bullet)
-            ? bullet
-            : escapeLatexWithBold(normalizeMarkdownBold(bullet)),
+          escapeLatexWithBold(normalizeMarkdownBold(bullet)),
         );
 
         void addedBullets;
