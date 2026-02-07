@@ -78,6 +78,16 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "Cover Rules:",
     coverRules,
     "",
+    "Cover structure checklist (must follow):",
+    "- subject: role-specific and concise.",
+    "- date: current/provided date string.",
+    "- salutation: hiring salutation with company context when available.",
+    "- paragraphOne: application intent + concise fit summary from real resume facts.",
+    "- paragraphTwo: map to JD responsibilities with concrete evidence; if direct exposure is missing, use transferable evidence + willingness to learn.",
+    "- paragraphThree: motivation for this role/company in natural first-person candidate voice.",
+    "- closing + signatureName: include when possible.",
+    "- Never fabricate facts, tools, metrics, or domain exposure.",
+    "",
     "Job Input:",
     "- Job title: {{JOB_TITLE}}",
     "- Company: {{COMPANY}}",
@@ -170,8 +180,11 @@ ${list(rules.coverRules)}
    - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
 4. For \`cover\` target:
-   - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\`.
-   - Optionally include \`subject/date/salutation/closing/signatureName\`.
+   - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\` as three semantic sections:
+     1) application intent + fit,
+     2) JD mapping with real evidence (or transferable skills + willingness to learn),
+     3) role/company motivation in natural first-person tone.
+   - Include \`subject/date/salutation/closing/signatureName\` whenever possible.
 5. Validate JSON shape against schema before final output.
 
 ## Output Contracts
@@ -188,6 +201,7 @@ ${list(rules.coverRules)}
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.
 - Never output \`skillsAdditions\`.
 - Cover output is exactly three core paragraphs.
+- Cover text is candidate voice (not recruiter voice), factual, and role-specific.
 - JSON parses without repair.
 
 ## Failure and Recovery

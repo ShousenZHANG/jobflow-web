@@ -36,15 +36,26 @@ Required JSON shape:
 {
   "cvSummary": "string",
   "cover": {
+    "subject": "string (optional)",
+    "date": "string (optional)",
+    "salutation": "string (optional)",
     "paragraphOne": "string",
     "paragraphTwo": "string",
-    "paragraphThree": "string"
+    "paragraphThree": "string",
+    "closing": "string (optional)",
+    "signatureName": "string (optional)"
   }
 }
 
 ${formatRules("CV Skills Rules:", rules.cvRules)}
 
 ${formatRules("Cover Letter Skills Rules:", rules.coverRules)}
+
+Cover structure checklist:
+1) paragraphOne = role application intent + concise fit summary from real resume facts.
+2) paragraphTwo = JD mapping with concrete evidence; if missing direct exposure, use transferable skills and willingness to learn.
+3) paragraphThree = role/company motivation in natural first-person candidate voice.
+4) Avoid fabrication and generic filler.
 
 Input:
 - Base summary: ${truncate(input.baseSummary, 1200)}

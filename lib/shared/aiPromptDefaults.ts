@@ -28,11 +28,11 @@ export const DEFAULT_CV_RULES = [
 export const DEFAULT_COVER_RULES = [
   "Generate exactly three short paragraphs (no extra lines).",
   "Return output under cover object only.",
-  "Include optional fields when available: subject, date, salutation, closing, signatureName.",
-  "Paragraph 1: state the role being applied for.",
-  "Paragraph 2: map the candidate's experience to the top JD responsibilities with concrete evidence from the resume only.",
-  "Paragraph 3: explain why the candidate is interested in the company and role using the company name.",
-  "If company-specific context is missing, use role-and-mission motivation without inventing facts.",
-  "Avoid exaggerated tone, repetition, and generic filler.",
-  "Keep wording recruiter-friendly, specific, and application-ready.",
+  "Include and populate these fields when possible: subject, date, salutation, closing, signatureName.",
+  "Paragraph 1 (Application intent): clearly state the target role and concise candidate fit summary based on real resume context.",
+  "Paragraph 2 (Evidence mapping): map candidate experience to key JD responsibilities using only truthful resume evidence; if direct exposure is missing, use transferable skills and explicit willingness to learn.",
+  "Paragraph 3 (Motivation): explain why this role/company is attractive using the company name and role context; avoid generic statements.",
+  "Do not fabricate employers, tools, projects, metrics, or domain exposure.",
+  "Write in natural first-person candidate voice (not recruiter voice, not AI-generic tone).",
+  "Keep language concise, specific, and application-ready.",
 ];

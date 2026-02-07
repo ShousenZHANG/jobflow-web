@@ -172,6 +172,19 @@ export async function POST(req: Request) {
         "7) Do NOT return skillsAdditions. Return skillsFinal only.",
       ].join("\n")
     : "";
+  const coverStructureBlock = isResumeTarget
+    ? ""
+    : [
+        "Cover output structure (must follow):",
+        "1) cover.subject: concise role-specific subject line (prefer 'Application for <Role> - <Name>').",
+        "2) cover.date: current or provided date string.",
+        "3) cover.salutation: use hiring salutation with company context when available.",
+        "4) cover.paragraphOne: application intent + concise fit summary from real resume facts.",
+        "5) cover.paragraphTwo: map to JD responsibilities with concrete evidence; if direct exposure is missing, use transferable evidence and explicit willingness to learn.",
+        "6) cover.paragraphThree: why this role/company specifically, written in natural first-person candidate voice.",
+        "7) cover.closing + cover.signatureName: include when possible.",
+        "8) No fabrication, no recruiter voice, no generic filler.",
+      ].join("\n");
 
   const userPrompt = [
     "Task:",
@@ -183,6 +196,7 @@ export async function POST(req: Request) {
     "",
     ...(resumeCoverageBlock ? [resumeCoverageBlock, ""] : []),
     ...(resumeSkillsPolicyBlock ? [resumeSkillsPolicyBlock, ""] : []),
+    ...(coverStructureBlock ? [coverStructureBlock, ""] : []),
     targetRulesBlock,
     "",
     "Job Input:",
