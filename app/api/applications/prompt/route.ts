@@ -165,11 +165,12 @@ export async function POST(req: Request) {
         "Skills output policy (must follow):",
         "1) Return skillsFinal as the complete final skills list (not delta).",
         "2) skillsFinal must contain max 5 major categories, each as { label, items }.",
-        "3) Prioritize JD-critical skills first while staying grounded in base resume context.",
+        "3) Prioritize JD must-have skills first for ATS matching while staying grounded in base resume context.",
         "4) Prefer existing categories from resume snapshot and merge related items into the closest category.",
-        "5) Order skillsFinal by JD relevance priority (most important first).",
-        "6) Keep markdown bold markers clean: **keyword** (no inner spaces).",
-        "7) Do NOT return skillsAdditions. Return skillsFinal only.",
+        "5) If a JD must-have has no grounded evidence in base context, use the closest truthful transferable skill; do not fabricate direct ownership.",
+        "6) Order skillsFinal by JD relevance priority (most important first).",
+        "7) Keep markdown bold markers clean: **keyword** (no inner spaces).",
+        "8) Do NOT return skillsAdditions. Return skillsFinal only.",
       ].join("\n")
     : "";
   const coverStructureBlock = isResumeTarget

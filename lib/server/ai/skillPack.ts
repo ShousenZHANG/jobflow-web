@@ -56,8 +56,11 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- Return skillsFinal as complete final skills list (not delta).",
     "- skillsFinal max 5 major categories, each as { label, items }.",
     "- Prefer existing categories from resume snapshot and merge related skills.",
+    "- Prioritize JD must-have skills for ATS matching when grounded in base resume context.",
+    "- If a JD must-have has no grounded evidence, use closest truthful transferable skill; do not fabricate direct ownership.",
     "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
     "- Do NOT return skillsAdditions. Return skillsFinal only.",
+    "- For newly added bullets, bold at least one JD-critical keyword using clean markdown **keyword** format.",
     "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
     "",
     "Job Input:",
@@ -179,6 +182,7 @@ ${list(rules.coverRules)}
    - If responsibility gaps are found and evidence exists in base context, you may add up to 3 grounded bullets and put them first.
    - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
+   - For each newly added bullet, bold at least one JD-critical keyword with clean markdown markers: **keyword**.
 4. For \`cover\` target:
    - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\` as three semantic sections:
      1) application intent + fit,
@@ -198,6 +202,7 @@ ${list(rules.coverRules)}
 - Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions optional, max 3).
 - Add grounded bullets only when evidence exists in base resume context; avoid fabrication.
 - Added bullets should emphasize complementary JD-required tech rather than repeating already-covered primary stack.
+- Each newly added bullet includes at least one clean markdown bold keyword (**keyword**).
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.
 - Never output \`skillsAdditions\`.
 - Cover output is exactly three core paragraphs.
