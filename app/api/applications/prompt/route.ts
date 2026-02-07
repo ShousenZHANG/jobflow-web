@@ -6,6 +6,8 @@ import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
+import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
+import { computeTop3Coverage } from "@/lib/server/ai/responsibilityCoverage";
 
 export const runtime = "nodejs";
 
@@ -80,6 +82,9 @@ export async function POST(req: Request) {
   }
 
   const rules = await getActivePromptSkillRulesForUser(userId);
+  const mappedProfile = mapResumeProfile(profile);
+  const baseLatestBullets = mappedProfile.experiences[0]?.bullets ?? [];
+  const coverage = computeTop3Coverage(job.description, baseLatestBullets);
   const systemPrompt = [
     `You are Jobflow's external AI tailoring assistant (${rules.locale}).`,
     "Use the imported skill package as the single source of truth.",
@@ -124,6 +129,28 @@ export async function POST(req: Request) {
   const targetRulesBlock = isResumeTarget
     ? formatRuleBlock("CV Skills Rules:", rules.cvRules)
     : formatRuleBlock("Cover Letter Skills Rules:", rules.coverRules);
+  const resumeCoverageBlock = isResumeTarget
+    ? [
+        "Top-3 Responsibility Coverage (must follow):",
+        ...(coverage.topResponsibilities.length
+          ? coverage.topResponsibilities.map((item, index) => `${index + 1}. ${item}`)
+          : ["1. (none parsed from JD)"]),
+        "",
+        "Base latest experience bullets (verbatim, reorder only):",
+        ...(baseLatestBullets.length
+          ? baseLatestBullets.map((item, index) => `${index + 1}. ${item}`)
+          : ["1. (none found in base latest experience)"]),
+        "",
+        "Responsibilities missing from base latest bullets:",
+        ...(coverage.missingFromBase.length
+          ? coverage.missingFromBase.map((item, index) => `${index + 1}. ${item}`)
+          : ["1. (none)"]),
+        "",
+        coverage.missingFromBase.length
+          ? `Required additions: add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} new bullets and put them first in responsibility order.`
+          : "Required additions: add 0 new bullets (reorder existing bullets only).",
+      ].join("\n")
+    : "";
 
   const userPrompt = [
     "Task:",
@@ -133,6 +160,7 @@ export async function POST(req: Request) {
     "Required JSON shape:",
     ...requiredJsonShape,
     "",
+    ...(resumeCoverageBlock ? [resumeCoverageBlock, ""] : []),
     targetRulesBlock,
     "",
     "Job Input:",

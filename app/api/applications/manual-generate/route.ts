@@ -10,6 +10,7 @@ import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
+import { bulletMatchesResponsibility, computeTop3Coverage } from "@/lib/server/ai/responsibilityCoverage";
 
 export const runtime = "nodejs";
 
@@ -89,65 +90,6 @@ const JD_TECH_KEYWORDS = [
   "microservices",
   "junit",
 ] as const;
-
-const RESPONSIBILITY_STOPWORDS = new Set([
-  "the",
-  "and",
-  "for",
-  "with",
-  "from",
-  "that",
-  "this",
-  "your",
-  "our",
-  "their",
-  "you",
-  "will",
-  "have",
-  "has",
-  "are",
-  "is",
-  "to",
-  "of",
-  "in",
-  "on",
-  "as",
-  "by",
-  "an",
-  "a",
-  "be",
-  "or",
-  "at",
-  "across",
-  "using",
-  "through",
-  "experience",
-  "experienced",
-  "strong",
-  "ability",
-  "abilities",
-  "knowledge",
-  "understanding",
-  "familiarity",
-  "support",
-  "supporting",
-  "deliver",
-  "delivering",
-  "work",
-  "working",
-  "team",
-  "teams",
-  "stakeholders",
-  "candidate",
-  "role",
-  "responsibility",
-  "responsibilities",
-  "required",
-  "preferred",
-  "must",
-  "should",
-  "would",
-]);
 
 function parseJsonCandidate(raw: string): unknown | null {
   const text = raw.trim();
@@ -296,49 +238,6 @@ function normalizeTextForMatch(value: string) {
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function extractTopResponsibilities(description: string | null | undefined) {
-  const text = (description ?? "").trim();
-  if (!text) return [] as string[];
-
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  const bullets = lines
-    .filter((line) => /^(\d+[.)]|[-*•])\s+/.test(line) || line.length > 35)
-    .map((line) => line.replace(/^(\d+[.)]|[-*•])\s+/, "").trim())
-    .filter((line) => line.length >= 12);
-
-  return bullets.slice(0, 3);
-}
-
-function extractResponsibilityKeywords(line: string) {
-  return Array.from(
-    new Set(
-      normalizeTextForMatch(line)
-    .split(" ")
-    .map((token) => token.trim())
-        .filter((token) => token.length >= 4 && !RESPONSIBILITY_STOPWORDS.has(token)),
-    ),
-  );
-}
-
-function bulletMatchesResponsibility(bullet: string, responsibility: string) {
-  const bulletNorm = normalizeTextForMatch(bullet);
-  const keywords = extractResponsibilityKeywords(responsibility);
-  if (keywords.length === 0) return false;
-
-  let hits = 0;
-  for (const kw of keywords) {
-    const re = new RegExp(`\\b${escapeRegExp(kw)}\\b`, "i");
-    if (re.test(bulletNorm)) hits += 1;
-  }
-  const hitRatio = hits / keywords.length;
-  const minHits = keywords.length >= 6 ? 3 : 2;
-  return hits >= minHits && hitRatio >= 0.34;
 }
 
 function extractJdSkills(title: string, description: string | null | undefined) {
@@ -529,20 +428,20 @@ export async function POST(req: Request) {
           (bullet) => !baseSet.has(normalizeBulletForCompare(bullet)),
         );
 
-        const topResponsibilities = extractTopResponsibilities(job.description);
-        if (topResponsibilities.length > 0) {
-          const missingFromBase = topResponsibilities.filter(
-            (resp) => !baseLatest.bullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
-          );
+        const coverage = computeTop3Coverage(job.description, baseLatest.bullets);
+        if (coverage.topResponsibilities.length > 0) {
+          const missingFromBase = coverage.missingFromBase;
           if (missingFromBase.length > 0) {
-            const minRequiredAdditions = Math.min(Math.max(2, missingFromBase.length), 3);
-            if (addedBullets.length < minRequiredAdditions || addedBullets.length > 3) {
+            if (
+              addedBullets.length < coverage.requiredNewBulletsMin ||
+              addedBullets.length > coverage.requiredNewBulletsMax
+            ) {
               return NextResponse.json(
                 {
                   error: {
                     code: "RESPONSIBILITY_TOP3_NEEDS_ADDITIONS",
                     message:
-                      `Top 3 JD responsibilities are not fully covered by base bullets. Add ${minRequiredAdditions} to 3 new bullets aligned to missing responsibilities.`,
+                      `Top 3 JD responsibilities are not fully covered by base bullets. Add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} new bullets aligned to missing responsibilities.`,
                     details: {
                       missingResponsibilities: missingFromBase,
                     },
@@ -553,7 +452,7 @@ export async function POST(req: Request) {
               );
             }
 
-            const uncoveredInResult = topResponsibilities.filter(
+            const uncoveredInResult = coverage.topResponsibilities.filter(
               (resp) => !incomingBullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
             );
             if (uncoveredInResult.length > 0) {

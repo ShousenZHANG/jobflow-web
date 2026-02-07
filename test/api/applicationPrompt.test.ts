@@ -22,6 +22,16 @@ vi.mock("@/lib/server/resumeProfile", () => ({
   getResumeProfile: vi.fn(),
 }));
 
+vi.mock("@/lib/server/latex/mapResumeProfile", () => ({
+  mapResumeProfile: vi.fn(() => ({
+    experiences: [
+      {
+        bullets: ["Built backend services with Java and Spring Boot.", "Maintained CI/CD pipelines on Linux."],
+      },
+    ],
+  })),
+}));
+
 vi.mock("@/lib/server/promptRuleTemplates", () => ({
   getActivePromptSkillRulesForUser: vi.fn(() => ({
     id: "rules-1",
@@ -95,6 +105,9 @@ describe("applications prompt api", () => {
     expect(json.promptMeta.ruleSetId).toBe("rules-1");
     expect(json.promptMeta.resumeSnapshotUpdatedAt).toBe("2026-02-06T00:00:00.000Z");
     expect(json.prompt.userPrompt).not.toContain("Base summary");
+    expect(json.prompt.userPrompt).toContain("Top-3 Responsibility Coverage (must follow):");
+    expect(json.prompt.userPrompt).toContain("Base latest experience bullets (verbatim, reorder only):");
+    expect(json.prompt.userPrompt).toContain("Required additions:");
   });
 
   it("returns cover-target prompt payload", async () => {
@@ -124,5 +137,6 @@ describe("applications prompt api", () => {
     expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
     expect(json.expectedJsonShape.cover.salutation).toBe("string (optional)");
     expect(json.expectedJsonShape.cover.subject).toBe("string (optional)");
+    expect(json.prompt.userPrompt).not.toContain("Top-3 Responsibility Coverage (must follow):");
   });
 });
