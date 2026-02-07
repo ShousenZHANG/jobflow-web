@@ -2,6 +2,7 @@ import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { tailorApplicationContent } from "@/lib/server/ai/tailorApplication";
+import { escapeLatexWithBold } from "@/lib/server/latex/escapeLatex";
 
 type ResumeJobContext = {
   title: string;
@@ -22,23 +23,39 @@ export type ResumePdfResult = {
   renderInput: ReturnType<typeof mapResumeProfile>;
 };
 
+function normalizeMarkdownBold(value: string) {
+  return value.replace(/\*\*([^*]+)\*\*/g, (_match, inner: string) => {
+    const raw = inner ?? "";
+    const leading = raw.match(/^\s*/)?.[0] ?? "";
+    const trailing = raw.match(/\s*$/)?.[0] ?? "";
+    const core = raw.trim();
+    if (!core) return "";
+    return `${leading}**${core}**${trailing}`;
+  });
+}
+
 export async function buildResumePdfForJob(input: {
   userId: string;
   profile: ResumeProfileRecord;
   job: ResumeJobContext;
 }): Promise<ResumePdfResult> {
   const renderInput = mapResumeProfile(input.profile);
+  const baseSummaryRaw = typeof input.profile.summary === "string" ? input.profile.summary : "";
   const tailored = await tailorApplicationContent({
-    baseSummary: renderInput.summary,
+    baseSummary: baseSummaryRaw,
     jobTitle: input.job.title,
     company: input.job.company || "the company",
     description: input.job.description || "",
     userId: input.userId,
   });
 
+  const tailoredSummary = tailored.cvSummary?.trim()
+    ? escapeLatexWithBold(normalizeMarkdownBold(tailored.cvSummary))
+    : renderInput.summary;
+
   const cvInput = {
     ...renderInput,
-    summary: tailored.cvSummary || renderInput.summary,
+    summary: tailoredSummary,
   };
 
   const tex = renderResumeTex(cvInput);

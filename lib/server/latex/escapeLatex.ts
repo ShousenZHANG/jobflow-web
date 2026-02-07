@@ -31,8 +31,13 @@ export function escapeLatex(value: string) {
 }
 
 export function escapeLatexWithBold(value: string) {
-  const input = value ?? "";
-  const pattern = /\*\*([^*]+)\*\*/g;
+  const input = Buffer.from(value ?? "", "utf8")
+    .toString("utf8")
+    .normalize("NFKC")
+    // Handle model outputs like "\\*\\*keyword\\*\\*" (escaped markdown markers).
+    .replace(/\\\*/g, "*")
+    .replace(/\\_/g, "_");
+  const pattern = /(\*\*|__)([\s\S]+?)\1/g;
   let result = "";
   let lastIndex = 0;
   let hasMatch = false;
@@ -41,7 +46,7 @@ export function escapeLatexWithBold(value: string) {
   while ((match = pattern.exec(input)) !== null) {
     hasMatch = true;
     result += escapeLatex(input.slice(lastIndex, match.index));
-    const rawInner = match[1] ?? "";
+    const rawInner = match[2] ?? "";
     const leading = rawInner.match(/^\s*/)?.[0] ?? "";
     const trailing = rawInner.match(/\s*$/)?.[0] ?? "";
     const core = rawInner.trim();
