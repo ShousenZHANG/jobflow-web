@@ -476,6 +476,7 @@ export async function POST(req: Request) {
       const cvSummary = resumeOutput.cvSummary.trim();
       const baseLatest = renderInput.experiences[0];
       const incomingBullets = resumeOutput.latestExperience?.bullets;
+      const jdSkills = extractJdSkills(job.title, job.description);
       let finalLatestBullets = incomingBullets ?? [];
       if (baseLatest && incomingBullets) {
         const minAllowed = baseLatest.bullets.length;
@@ -510,13 +511,13 @@ export async function POST(req: Request) {
           incomingBullets,
         );
         finalLatestBullets = canonicalBullets.map((bullet) =>
-          baseLatest.bullets.includes(bullet) ? bullet : escapeLatexWithBold(bullet),
+          baseLatest.bullets.includes(bullet)
+            ? bullet
+            : escapeLatexWithBold(applyBoldKeywords(bullet, jdSkills)),
         );
 
         void addedBullets;
       }
-
-      const jdSkills = extractJdSkills(job.title, job.description);
 
       const boldedSummary = applyBoldKeywords(cvSummary, jdSkills);
       const latexSummary = escapeLatexWithBold(boldedSummary);

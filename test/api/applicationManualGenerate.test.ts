@@ -428,7 +428,7 @@ describe("applications manual generate api", () => {
     const patch = JSON.stringify({
       cvSummary: "Focused on **Java** delivery with reliable pipelines.",
       latestExperience: {
-        bullets: ["base bullet", "Built **Docker** deployment pipeline."],
+        bullets: ["base bullet", "Built Docker deployment pipeline."],
       },
     });
 
