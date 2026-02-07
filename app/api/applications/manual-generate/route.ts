@@ -323,9 +323,16 @@ function canonicalizeLatestBullets(baseBullets: string[], incomingBullets: strin
 }
 
 function normalizeMarkdownBold(value: string) {
-  return value.replace(/\*\*\s*([^*]+?)\s*\*\*/g, (_match, inner: string) => {
-    const core = (inner ?? "").trim();
-    return core ? `**${core}**` : "";
+  return value.replace(/\*\*([^*]+)\*\*/g, (_match, inner: string) => {
+    const raw = inner ?? "";
+    const leading = raw.match(/^\s*/)?.[0] ?? "";
+    const trailing = raw.match(/\s*$/)?.[0] ?? "";
+    const core = raw.trim();
+    if (!core) return "";
+    // Preserve separator spaces around malformed markers:
+    // "**Java **and" -> "**Java** and"
+    // "with** Java**" -> "with **Java**"
+    return `${leading}**${core}**${trailing}`;
   });
 }
 

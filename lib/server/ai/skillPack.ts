@@ -57,6 +57,7 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- skillsFinal max 5 major categories, each as { label, items }.",
     "- Prefer existing categories from resume snapshot and merge related skills.",
     "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
+    "- Do NOT return skillsAdditions. Return skillsFinal only.",
     "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
     "",
     "Job Input:",
@@ -165,7 +166,7 @@ ${list(rules.coverRules)}
    - Produce complete \`latestExperience.bullets\` list (ordered final list).
    - Produce \`skillsFinal\` as complete final skills list (not delta).
    - Keep \`skillsFinal\` within 5 major categories and prioritize existing categories.
-   - If top responsibilities are uncovered and evidence exists in base context, add 2-3 new bullets and put them first.
+   - If responsibility gaps are found and evidence exists in base context, you may add up to 3 grounded bullets and put them first.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
 4. For \`cover\` target:
    - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\`.
@@ -180,9 +181,10 @@ ${list(rules.coverRules)}
 - Output is strict JSON only (no markdown/code fence).
 - No fabricated facts, skills, employers, or metrics.
 - Markdown bold markers are clean: **keyword** (no inner leading/trailing spaces).
-- Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions capped by rules).
-- When top-3 responsibility gaps are listed, add grounded bullets when evidence exists; avoid fabrication.
+- Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions optional, max 3).
+- Add grounded bullets only when evidence exists in base resume context; avoid fabrication.
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.
+- Never output \`skillsAdditions\`.
 - Cover output is exactly three core paragraphs.
 - JSON parses without repair.
 

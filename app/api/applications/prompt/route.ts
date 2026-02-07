@@ -147,12 +147,12 @@ export async function POST(req: Request) {
           : ["1. (none)"]),
         "",
         coverage.missingFromBase.length
-          ? `Suggested additions: add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities, then place them first in responsibility order.`
-          : "Suggested additions: add 0 bullets (reorder existing bullets only).",
+          ? `Suggested additions: you may add up to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities if evidence exists in base resume context.`
+          : "Suggested additions: no additions needed; reorder existing bullets only if helpful.",
         "",
         "Execution checklist:",
         "1) Preserve every base latest-experience bullet text verbatim (no paraphrase).",
-        "2) If responsibilities are uncovered and evidence exists in base resume context, add 2-3 new bullets and place them first.",
+        "2) If responsibilities are uncovered and evidence exists in base resume context, optionally add grounded bullets (max 3) and place them first.",
         "3) For every new bullet, bold 1-3 JD-critical keywords using **keyword**.",
         "3a) Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
         "4) If evidence is insufficient, keep bullets conservative and avoid fabrication.",
@@ -168,6 +168,7 @@ export async function POST(req: Request) {
         "4) Prefer existing categories from resume snapshot and merge related items into the closest category.",
         "5) Order skillsFinal by JD relevance priority (most important first).",
         "6) Keep markdown bold markers clean: **keyword** (no inner spaces).",
+        "7) Do NOT return skillsAdditions. Return skillsFinal only.",
       ].join("\n")
     : "";
 

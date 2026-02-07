@@ -12,7 +12,7 @@ export const DEFAULT_HARD_CONSTRAINTS: string[] = [
   "Return JSON only, no markdown or code fences.",
   "Do not output LaTeX in model response.",
   "Never invent skills, tools, metrics, employers, or responsibilities not in provided context.",
-  "If JD responsibilities or required skills are unclear, keep base summary unchanged and do not add new bullets.",
+  "If JD responsibilities or required skills are unclear, keep edits conservative and only add content when grounded in provided context.",
 ];
 
 export const DEFAULT_RULES: PromptSkillRuleSet = {

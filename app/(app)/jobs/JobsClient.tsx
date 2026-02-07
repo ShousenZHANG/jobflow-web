@@ -1199,7 +1199,7 @@ export function JobsClient({
                     onChange={(e) => setExternalModelOutput(e.target.value)}
                     placeholder={
                       externalTarget === "resume"
-                        ? '{"cvSummary":"...","latestExperience":{"bullets":["..."]},"skillsAdditions":[{"category":"...","items":["..."]}]}'
+                        ? '{"cvSummary":"...","latestExperience":{"bullets":["..."]},"skillsFinal":[{"label":"...","items":["..."]}]}'
                         : '{"cover":{"subject":"...","date":"...","salutation":"...","paragraphOne":"...","paragraphTwo":"...","paragraphThree":"...","closing":"...","signatureName":"..."}}'
                     }
                     className="min-h-[220px] font-mono text-xs"
