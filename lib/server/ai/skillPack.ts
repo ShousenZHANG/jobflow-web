@@ -169,7 +169,7 @@ ${list(rules.coverRules)}
 ## Verification Checklist
 - Output is strict JSON only (no markdown/code fence).
 - No fabricated facts, skills, employers, or metrics.
-- Resume output keeps existing latest-experience bullets (reorder allowed; additions capped by rules).
+- Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions capped by rules).
 - Cover output is exactly three core paragraphs.
 - JSON parses without repair.
 

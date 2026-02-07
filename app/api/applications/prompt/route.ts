@@ -118,6 +118,9 @@ export async function POST(req: Request) {
   const targetTaskLine = isResumeTarget
     ? "Generate role-tailored CV summary using the imported skill pack."
     : "Generate role-tailored Cover Letter content using the imported skill pack.";
+  const strictResumeBulletLine = isResumeTarget
+    ? "Strict resume bullet rule: preserve every existing latest-experience bullet text verbatim; only reorder existing bullets and add new bullets when required by rules."
+    : "";
   const targetRulesBlock = isResumeTarget
     ? formatRuleBlock("CV Skills Rules:", rules.cvRules)
     : formatRuleBlock("Cover Letter Skills Rules:", rules.coverRules);
@@ -125,6 +128,7 @@ export async function POST(req: Request) {
   const userPrompt = [
     "Task:",
     targetTaskLine,
+    ...(strictResumeBulletLine ? ["", strictResumeBulletLine] : []),
     "",
     "Required JSON shape:",
     ...requiredJsonShape,
