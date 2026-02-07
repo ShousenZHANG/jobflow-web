@@ -8,7 +8,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import { Copy, ExternalLink, FileText, MapPin, Search, Trash2 } from "lucide-react";
+import { Copy, Download, ExternalLink, FileText, MapPin, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1283,14 +1283,25 @@ export function JobsClient({
               </div>
               <div className="flex items-center gap-2">
                 {pdfPreview ? (
-                  <Button asChild size="sm" className="edu-cta edu-cta--press h-8 px-3">
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="h-9 rounded-xl border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
+                  >
                     <a href={pdfPreview.url} download={pdfPreview.filename}>
+                      <Download className="mr-1.5 h-4 w-4" />
                       Download PDF
                     </a>
                   </Button>
                 ) : null}
                 <DialogClose asChild>
-                  <Button type="button" variant="ghost" size="sm">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-9 rounded-xl border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
+                  >
                     Close
                   </Button>
                 </DialogClose>
