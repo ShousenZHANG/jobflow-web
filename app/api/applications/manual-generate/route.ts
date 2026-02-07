@@ -10,7 +10,6 @@ import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
-import { bulletMatchesResponsibility, computeTop3Coverage } from "@/lib/server/ai/responsibilityCoverage";
 
 export const runtime = "nodejs";
 
@@ -507,58 +506,7 @@ export async function POST(req: Request) {
         );
         finalLatestBullets = canonicalBullets;
 
-        const coverage = computeTop3Coverage(job.description, baseLatest.bullets);
-        if (coverage.topResponsibilities.length > 0) {
-          const missingFromBase = coverage.missingFromBase;
-          if (missingFromBase.length > 0) {
-            if (
-              addedBullets.length < coverage.requiredNewBulletsMin ||
-              addedBullets.length > coverage.requiredNewBulletsMax
-            ) {
-              const repairInstruction = [
-                "Return strict JSON only.",
-                `Keep all existing base bullets verbatim, and add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} NEW bullets.`,
-                "Put new bullets first, ordered by missing responsibilities below.",
-                ...missingFromBase.map((item, index) => `${index + 1}. ${item}`),
-              ].join("\n");
-              return NextResponse.json(
-                {
-                  error: {
-                    code: "RESPONSIBILITY_TOP3_NEEDS_ADDITIONS",
-                    message:
-                      `Top 3 JD responsibilities are not fully covered by base bullets. Add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} new bullets aligned to missing responsibilities.`,
-                    details: {
-                      missingResponsibilities: missingFromBase,
-                      repairInstruction,
-                    },
-                  },
-                  requestId,
-                },
-                { status: 400 },
-              );
-            }
-
-            const uncoveredInResult = coverage.topResponsibilities.filter(
-              (resp) => !finalLatestBullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
-            );
-            if (uncoveredInResult.length > 0) {
-              return NextResponse.json(
-                {
-                  error: {
-                    code: "RESPONSIBILITY_TOP3_NOT_COVERED",
-                    message:
-                      "Final latestExperience.bullets must cover all top 3 JD responsibilities.",
-                    details: {
-                      uncoveredResponsibilities: uncoveredInResult,
-                    },
-                  },
-                  requestId,
-                },
-                { status: 400 },
-              );
-            }
-          }
-        }
+        void addedBullets;
       }
 
       const jdSkills = extractJdSkills(job.title, job.description);

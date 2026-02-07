@@ -260,7 +260,7 @@ describe("applications manual generate api", () => {
     ]);
   });
 
-  it("rejects resume output when top responsibilities stay uncovered", async () => {
+  it("allows resume import even when top responsibilities are not fully covered", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -297,7 +297,7 @@ describe("applications manual generate api", () => {
       education: [],
     });
 
-    const invalidPatch = JSON.stringify({
+    const importedPatch = JSON.stringify({
       cvSummary: "Tailored summary",
       latestExperience: {
         bullets: ["old-1 rewritten", "old-2"],
@@ -310,7 +310,7 @@ describe("applications manual generate api", () => {
         body: JSON.stringify({
           jobId: VALID_JOB_ID,
           target: "resume",
-          modelOutput: invalidPatch,
+          modelOutput: importedPatch,
           promptMeta: {
             ruleSetId: "rules-1",
             resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
@@ -318,10 +318,9 @@ describe("applications manual generate api", () => {
         }),
       }),
     );
-    const json = await res.json();
 
-    expect(res.status).toBe(400);
-    expect(json.error.code).toBe("RESPONSIBILITY_TOP3_NOT_COVERED");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/pdf");
   });
 
   it("accepts markdown-only formatting differences in existing bullets", async () => {
