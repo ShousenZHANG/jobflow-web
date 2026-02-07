@@ -12,6 +12,7 @@ export const DEFAULT_CV_RULES = [
   "Before final output, self-check: (1) all base bullets are preserved verbatim, (2) any additions are grounded, (3) output remains concise and role-relevant.",
   "Keep every latest experience bullet grounded in base resume facts and technologies; no fabricated scope, systems, or outcomes.",
   "Any new bullet must follow Google XYZ style: achieved X by doing Y, resulting in Z (or equivalent qualitative outcome).",
+  "For newly added bullets, avoid reusing the same primary tech stack already emphasized in existing latest-experience bullets; prioritize complementary JD-required skills not yet covered.",
   "Do not invent numeric metrics. If metrics are unavailable, use truthful qualitative outcomes (scope, speed, reliability, quality, or stakeholder impact).",
   "Keep any new bullet similar in length to nearby bullets (+/-20%) and consistent with the resume tone.",
   "For every newly added bullet, bold 1-3 JD-critical keywords using markdown **keyword** format.",

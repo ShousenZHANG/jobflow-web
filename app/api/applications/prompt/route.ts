@@ -155,8 +155,9 @@ export async function POST(req: Request) {
         "2) If responsibilities are uncovered and evidence exists in base resume context, optionally add grounded bullets (max 3) and place them first.",
         "3) For every new bullet, bold 1-3 JD-critical keywords using **keyword**.",
         "3a) Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
-        "4) If evidence is insufficient, keep bullets conservative and avoid fabrication.",
-        "5) Resume target output must NOT include cover payload.",
+        "4) For added bullets, avoid repeating the same primary tech stack already present in base bullets; use complementary JD-required skills where possible.",
+        "5) If evidence is insufficient, keep bullets conservative and avoid fabrication.",
+        "6) Resume target output must NOT include cover payload.",
       ].join("\n")
     : "";
   const resumeSkillsPolicyBlock = isResumeTarget

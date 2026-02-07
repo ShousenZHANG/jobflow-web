@@ -167,6 +167,7 @@ ${list(rules.coverRules)}
    - Produce \`skillsFinal\` as complete final skills list (not delta).
    - Keep \`skillsFinal\` within 5 major categories and prioritize existing categories.
    - If responsibility gaps are found and evidence exists in base context, you may add up to 3 grounded bullets and put them first.
+   - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
 4. For \`cover\` target:
    - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\`.
@@ -183,6 +184,7 @@ ${list(rules.coverRules)}
 - Markdown bold markers are clean: **keyword** (no inner leading/trailing spaces).
 - Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions optional, max 3).
 - Add grounded bullets only when evidence exists in base resume context; avoid fabrication.
+- Added bullets should emphasize complementary JD-required tech rather than repeating already-covered primary stack.
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.
 - Never output \`skillsAdditions\`.
 - Cover output is exactly three core paragraphs.
