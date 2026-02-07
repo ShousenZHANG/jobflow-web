@@ -457,8 +457,6 @@ export async function POST(req: Request) {
 
   let pdf: Buffer;
   let filename: string;
-  let warningMissingSkills: string[] = [];
-
   try {
     if (parsed.data.target === "resume") {
       const resumeOutput = parseResumeManualOutput(parsed.data.modelOutput);
@@ -519,19 +517,6 @@ export async function POST(req: Request) {
       }
 
       const jdSkills = extractJdSkills(job.title, job.description);
-      const existingSkills = new Set(
-        renderInput.skills.flatMap((group) => group.items).map((item) => normalizeTextForMatch(item)),
-      );
-      const addedSkills = new Set(
-        (resumeOutput.skillsAdditions ?? [])
-          .flatMap((group) => group.items)
-          .map((item) => normalizeTextForMatch(item)),
-      );
-      const missingJdSkills = jdSkills.filter((skill) => {
-        const normalized = normalizeTextForMatch(skill);
-        return !existingSkills.has(normalized) && !addedSkills.has(normalized);
-      });
-      warningMissingSkills = missingJdSkills;
 
       const boldedSummary = applyBoldKeywords(cvSummary, jdSkills);
       const latexSummary = escapeLatexWithBold(boldedSummary);
@@ -655,9 +640,6 @@ export async function POST(req: Request) {
       "x-tailor-cv-source": parsed.data.target === "resume" ? "manual_import" : "base",
       "x-tailor-cover-source": parsed.data.target === "cover" ? "manual_import" : "fallback",
       "x-tailor-reason": "manual_import_ok",
-      ...(warningMissingSkills.length > 0
-        ? { "x-tailor-warning-skills": warningMissingSkills.slice(0, 12).join(",") }
-        : {}),
     },
   });
 }

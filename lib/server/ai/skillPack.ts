@@ -52,6 +52,12 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "CV Rules:",
     cvRules,
     "",
+    "Skills output policy:",
+    "- Return skillsAdditions only (not full skills list).",
+    "- Prefer existing categories from resume snapshot.",
+    "- Keep additions concise and JD-priority only.",
+    "- Keep final skills structure within ~5 major categories by merging into existing groups when possible.",
+    "",
     "Job Input:",
     "- Job title: {{JOB_TITLE}}",
     "- Company: {{COMPANY}}",
@@ -157,6 +163,7 @@ ${list(rules.coverRules)}
    - Produce \`cvSummary\`.
    - Produce complete \`latestExperience.bullets\` list (ordered final list).
    - Produce \`skillsAdditions\` only (additions, no removals).
+   - For skills, prioritize existing categories and keep final structure within ~5 major categories.
    - If prompt says Required additions > 0, add new bullets within that range and put them first.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
 4. For \`cover\` target:
@@ -173,6 +180,7 @@ ${list(rules.coverRules)}
 - No fabricated facts, skills, employers, or metrics.
 - Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions capped by rules).
 - When top-3 responsibility gaps are listed, resume output includes required added bullets and covers those gaps.
+- Skills additions are JD-priority, concise, and mapped to existing categories whenever possible.
 - Cover output is exactly three core paragraphs.
 - JSON parses without repair.
 

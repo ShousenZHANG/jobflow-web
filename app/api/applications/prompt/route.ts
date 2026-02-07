@@ -157,6 +157,16 @@ export async function POST(req: Request) {
         "4) Resume target output must NOT include cover payload.",
       ].join("\n")
     : "";
+  const resumeSkillsPolicyBlock = isResumeTarget
+    ? [
+        "Skills output policy (must follow):",
+        "1) Return skillsAdditions only (do not return full skills list).",
+        "2) Prioritize JD-critical missing skills only.",
+        "3) Prefer existing categories from resume snapshot; avoid creating new categories unless necessary.",
+        "4) Keep final skills structure within ~5 major categories by merging into closest existing groups where possible.",
+        "5) Order skillsAdditions by JD relevance priority (most important first).",
+      ].join("\n")
+    : "";
 
   const userPrompt = [
     "Task:",
@@ -167,6 +177,7 @@ export async function POST(req: Request) {
     ...requiredJsonShape,
     "",
     ...(resumeCoverageBlock ? [resumeCoverageBlock, ""] : []),
+    ...(resumeSkillsPolicyBlock ? [resumeSkillsPolicyBlock, ""] : []),
     targetRulesBlock,
     "",
     "Job Input:",
