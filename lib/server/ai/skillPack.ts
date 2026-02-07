@@ -157,6 +157,8 @@ ${list(rules.coverRules)}
    - Produce \`cvSummary\`.
    - Produce complete \`latestExperience.bullets\` list (ordered final list).
    - Produce \`skillsAdditions\` only (additions, no removals).
+   - If prompt says Required additions > 0, add new bullets within that range and put them first.
+   - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
 4. For \`cover\` target:
    - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\`.
    - Optionally include \`subject/date/salutation/closing/signatureName\`.
@@ -170,6 +172,7 @@ ${list(rules.coverRules)}
 - Output is strict JSON only (no markdown/code fence).
 - No fabricated facts, skills, employers, or metrics.
 - Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions capped by rules).
+- When top-3 responsibility gaps are listed, resume output includes required added bullets and covers those gaps.
 - Cover output is exactly three core paragraphs.
 - JSON parses without repair.
 

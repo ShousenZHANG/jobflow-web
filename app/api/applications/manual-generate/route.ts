@@ -436,6 +436,12 @@ export async function POST(req: Request) {
               addedBullets.length < coverage.requiredNewBulletsMin ||
               addedBullets.length > coverage.requiredNewBulletsMax
             ) {
+              const repairInstruction = [
+                "Return strict JSON only.",
+                `Keep all existing base bullets verbatim, and add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} NEW bullets.`,
+                "Put new bullets first, ordered by missing responsibilities below.",
+                ...missingFromBase.map((item, index) => `${index + 1}. ${item}`),
+              ].join("\n");
               return NextResponse.json(
                 {
                   error: {
@@ -444,6 +450,7 @@ export async function POST(req: Request) {
                       `Top 3 JD responsibilities are not fully covered by base bullets. Add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} new bullets aligned to missing responsibilities.`,
                     details: {
                       missingResponsibilities: missingFromBase,
+                      repairInstruction,
                     },
                   },
                   requestId,

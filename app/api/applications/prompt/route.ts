@@ -149,6 +149,12 @@ export async function POST(req: Request) {
         coverage.missingFromBase.length
           ? `Required additions: add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} new bullets and put them first in responsibility order.`
           : "Required additions: add 0 new bullets (reorder existing bullets only).",
+        "",
+        "Execution checklist (must pass before you answer):",
+        "1) Preserve every base latest-experience bullet text verbatim (no paraphrase).",
+        "2) If Required additions > 0: add that many new bullets (within range), and place them first.",
+        "3) Ensure each missing responsibility is covered by at least one final bullet.",
+        "4) Resume target output must NOT include cover payload.",
       ].join("\n")
     : "";
 
