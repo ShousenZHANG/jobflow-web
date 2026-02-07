@@ -228,6 +228,83 @@ function normalizeBulletForCompare(value: string) {
     .trim();
 }
 
+function tokenizeBulletForSimilarity(value: string) {
+  return new Set(
+    normalizeBulletForCompare(value)
+      .split(" ")
+      .map((token) => token.trim())
+      .filter((token) => token.length >= 3),
+  );
+}
+
+function bulletSimilarityScore(a: string, b: string) {
+  const ta = tokenizeBulletForSimilarity(a);
+  const tb = tokenizeBulletForSimilarity(b);
+  if (ta.size === 0 || tb.size === 0) return 0;
+
+  let intersection = 0;
+  for (const token of ta) {
+    if (tb.has(token)) intersection += 1;
+  }
+  const union = new Set([...ta, ...tb]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+function canonicalizeLatestBullets(baseBullets: string[], incomingBullets: string[]) {
+  const normalizedBase = baseBullets.map(normalizeBulletForCompare);
+  const usedBaseIndexes = new Set<number>();
+  const canonicalBullets: string[] = [];
+  const addedBullets: string[] = [];
+
+  for (const incoming of incomingBullets) {
+    const normalizedIncoming = normalizeBulletForCompare(incoming);
+    let matchedIndex = -1;
+
+    for (let i = 0; i < normalizedBase.length; i += 1) {
+      if (usedBaseIndexes.has(i)) continue;
+      if (normalizedBase[i] === normalizedIncoming) {
+        matchedIndex = i;
+        break;
+      }
+    }
+
+    if (matchedIndex < 0) {
+      let bestIndex = -1;
+      let bestScore = 0;
+      for (let i = 0; i < baseBullets.length; i += 1) {
+        if (usedBaseIndexes.has(i)) continue;
+        const score = bulletSimilarityScore(incoming, baseBullets[i]);
+        if (score > bestScore) {
+          bestScore = score;
+          bestIndex = i;
+        }
+      }
+      // Accept high-confidence near-match as "same base bullet".
+      if (bestIndex >= 0 && bestScore >= 0.82) {
+        matchedIndex = bestIndex;
+      }
+    }
+
+    if (matchedIndex >= 0) {
+      usedBaseIndexes.add(matchedIndex);
+      canonicalBullets.push(baseBullets[matchedIndex]);
+    } else {
+      canonicalBullets.push(incoming);
+      addedBullets.push(incoming);
+    }
+  }
+
+  // Ensure every base bullet is present at least once in final output.
+  for (let i = 0; i < baseBullets.length; i += 1) {
+    if (!usedBaseIndexes.has(i)) canonicalBullets.push(baseBullets[i]);
+  }
+
+  return {
+    canonicalBullets,
+    addedBullets,
+  };
+}
+
 function normalizeTextForMatch(value: string) {
   return value
     .toLowerCase()
@@ -395,6 +472,7 @@ export async function POST(req: Request) {
       const cvSummary = resumeOutput.cvSummary.trim();
       const baseLatest = renderInput.experiences[0];
       const incomingBullets = resumeOutput.latestExperience?.bullets;
+      let finalLatestBullets = incomingBullets ?? [];
       if (baseLatest && incomingBullets) {
         const minAllowed = baseLatest.bullets.length;
         const maxAllowed = Math.max(baseLatest.bullets.length + 3, 3);
@@ -423,10 +501,11 @@ export async function POST(req: Request) {
           );
         }
 
-        const baseSet = new Set(baseLatest.bullets.map(normalizeBulletForCompare));
-        const addedBullets = incomingBullets.filter(
-          (bullet) => !baseSet.has(normalizeBulletForCompare(bullet)),
+        const { canonicalBullets, addedBullets } = canonicalizeLatestBullets(
+          baseLatest.bullets,
+          incomingBullets,
         );
+        finalLatestBullets = canonicalBullets;
 
         const coverage = computeTop3Coverage(job.description, baseLatest.bullets);
         if (coverage.topResponsibilities.length > 0) {
@@ -460,7 +539,7 @@ export async function POST(req: Request) {
             }
 
             const uncoveredInResult = coverage.topResponsibilities.filter(
-              (resp) => !incomingBullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
+              (resp) => !finalLatestBullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
             );
             if (uncoveredInResult.length > 0) {
               return NextResponse.json(
@@ -515,11 +594,11 @@ export async function POST(req: Request) {
       const boldedSummary = applyBoldKeywords(cvSummary, jdSkills);
 
       const nextExperiences =
-        baseLatest && incomingBullets && incomingBullets.length > 0
+        baseLatest && finalLatestBullets && finalLatestBullets.length > 0
           ? [
               {
                 ...baseLatest,
-                bullets: incomingBullets,
+                bullets: finalLatestBullets,
               },
               ...renderInput.experiences.slice(1),
             ]
