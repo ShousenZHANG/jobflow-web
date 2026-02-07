@@ -88,11 +88,13 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- subject: role-specific and concise (prefer 'Application for <Role>' only, no candidate name).",
     "- date: current/provided date string.",
     "- salutation: addressee text only (no leading 'Dear', no trailing comma).",
-    "- paragraphOne: application intent + concise fit summary from real resume facts.",
-    "- paragraphTwo: map to JD responsibilities with concrete evidence; if direct exposure is missing, use transferable evidence + willingness to learn.",
-    "- paragraphThree: motivation for this role/company in natural first-person candidate voice.",
+    "- paragraphOne: application intent + role-fit summary from real resume facts (can be multi-sentence).",
+    "- paragraphTwo: map to JD responsibilities in priority order with concrete evidence and delivery outcomes.",
+    "- If direct exposure is missing, use transferable evidence + explicit willingness to learn.",
+    "- paragraphThree: motivation for this role/company in natural first-person candidate voice (specific, non-generic).",
     "- Bold JD-critical terms naturally in paragraphs using clean markdown **keyword** markers.",
     "- closing + signatureName: include when possible.",
+    "- Use a strong candidate narrative; avoid recruiter boilerplate.",
     "- Never fabricate facts, tools, metrics, or domain exposure.",
     "- Cover target JSON keys allowed: cover only (no resume keys).",
     "",
@@ -190,9 +192,9 @@ ${list(rules.coverRules)}
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
    - For each newly added bullet, bold at least one JD-critical keyword with clean markdown markers: **keyword**.
 4. For \`cover\` target:
-   - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\` as three semantic sections:
+   - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\` as three semantic sections (not forced short):
      1) application intent + fit,
-     2) JD mapping with real evidence (or transferable skills + willingness to learn),
+     2) JD mapping in priority order with real evidence (or transferable skills + willingness to learn),
      3) role/company motivation in natural first-person tone.
    - Include \`candidateTitle/subject/date/salutation/closing/signatureName\` whenever possible.
    - Subject should be role-focused only (no candidate name); salutation should not include leading "Dear" or trailing comma.

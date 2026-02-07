@@ -29,18 +29,22 @@ export const DEFAULT_CV_RULES = [
 ];
 
 export const DEFAULT_COVER_RULES = [
-  "Generate exactly three short paragraphs (no extra lines).",
   "Return output under cover object only.",
+  "Use three semantic sections mapped to paragraphOne/paragraphTwo/paragraphThree (not necessarily short).",
+  "Each section should be substantial, natural, and specific; avoid one-line generic statements.",
   "Include and populate these fields when possible: candidateTitle, subject, date, salutation, closing, signatureName.",
   "candidateTitle should align with the JD role title (not a fixed generic title).",
   "Subject should be concise and role-focused (prefer 'Application for <Role>'); do not append candidate name.",
   "Salutation should contain addressee text only (no leading 'Dear', no trailing comma).",
-  "Paragraph 1 (Application intent): clearly state the target role and concise candidate fit summary based on real resume context.",
-  "Paragraph 2 (Evidence mapping): map candidate experience to key JD responsibilities using only truthful resume evidence; if direct exposure is missing, use transferable skills and explicit willingness to learn.",
-  "Paragraph 3 (Motivation): explain why this role/company is attractive using the company name and role context; avoid generic statements.",
+  "Paragraph 1 (Application intent): state target role and role-fit positioning based on real resume context.",
+  "Paragraph 2 (Evidence mapping): map experience to JD responsibilities in priority order, using concrete evidence and delivery outcomes.",
+  "Paragraph 2 must cover the top JD responsibilities first; if direct exposure is missing, use truthful transferable evidence + explicit willingness to learn.",
+  "Paragraph 3 (Motivation): explain why this role/company is attractive in a specific, non-generic way linked to JD context.",
   "Naturally bold JD-critical terms in cover paragraphs using clean markdown **keyword** markers.",
+  "Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
+  "Write as a strong candidate narrative (clear, confident, specific), not recruiter boilerplate.",
   "Do not fabricate employers, tools, projects, metrics, or domain exposure.",
   "Write in natural first-person candidate voice (not recruiter voice, not AI-generic tone).",
-  "Keep language concise, specific, and application-ready.",
+  "Keep language application-ready with concrete wording, not hype or filler.",
   "Cover target output keys allowed: cover only.",
 ];

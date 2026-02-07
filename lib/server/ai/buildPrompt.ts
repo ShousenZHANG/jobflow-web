@@ -56,12 +56,14 @@ Cover structure checklist:
 1) subject = role-focused only (prefer 'Application for <Role>'); do not append candidate name.
 2) salutation = addressee text only (no leading 'Dear', no trailing comma).
 2a) candidateTitle should align with the JD role title (not a fixed generic title).
-3) paragraphOne = role application intent + concise fit summary from real resume facts.
-4) paragraphTwo = JD mapping with concrete evidence; if missing direct exposure, use transferable skills and willingness to learn.
-5) paragraphThree = role/company motivation in natural first-person candidate voice.
+3) paragraphOne = role application intent + role-fit summary from real resume facts (can be multi-sentence).
+4) paragraphTwo = JD mapping in priority order with concrete evidence and delivery outcomes.
+4a) if direct exposure is missing, use truthful transferable skills + explicit willingness to learn.
+5) paragraphThree = role/company motivation in natural first-person candidate voice (specific, non-generic).
 6) Bold JD-critical terms naturally using clean markdown **keyword** markers.
 7) Keep markdown bold markers clean: **keyword** (no spaces inside markers).
-8) Avoid fabrication and generic filler.
+8) Use strong candidate narrative quality; avoid recruiter boilerplate.
+9) Avoid fabrication and generic filler.
 
 Input:
 - Base summary: ${truncate(input.baseSummary, 1200)}

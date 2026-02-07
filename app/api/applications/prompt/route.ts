@@ -184,12 +184,13 @@ export async function POST(req: Request) {
         "2) cover.candidateTitle (optional): set to role-aligned candidate title for the letter header.",
         "3) cover.date: current or provided date string.",
         "4) cover.salutation: provide only addressee text (e.g., 'Hiring Team at <Company>'), no leading 'Dear' and no trailing comma.",
-        "5) cover.paragraphOne: application intent + concise fit summary from real resume facts.",
-        "6) cover.paragraphTwo: map to JD responsibilities with concrete evidence; if direct exposure is missing, use transferable evidence and explicit willingness to learn.",
-        "7) cover.paragraphThree: why this role/company specifically, written in natural first-person candidate voice.",
+        "5) cover.paragraphOne: application intent + role-fit summary from real resume facts (can be multi-sentence).",
+        "6) cover.paragraphTwo: map to JD responsibilities in priority order with concrete evidence and outcomes.",
+        "6a) If direct exposure is missing, use truthful transferable evidence + explicit willingness to learn.",
+        "7) cover.paragraphThree: why this role/company specifically, written in natural first-person candidate voice (specific, not generic).",
         "8) Bold JD-critical keywords naturally in paragraphs using **keyword** (clean markers only).",
         "9) cover.closing + cover.signatureName: include when possible.",
-        "10) No fabrication, no recruiter voice, no generic filler.",
+        "10) No fabrication, no recruiter voice, no generic filler; keep a strong candidate narrative.",
         "11) Cover target JSON keys allowed: cover only (no cvSummary/latestExperience/skillsFinal).",
       ].join("\n");
 
