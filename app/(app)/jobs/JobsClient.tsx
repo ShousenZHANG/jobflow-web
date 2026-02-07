@@ -896,6 +896,7 @@ export function JobsClient({
         throw new Error(json?.error?.message || json?.error || "Failed to generate PDF");
       }
 
+      const warningSkills = res.headers.get("x-tailor-warning-skills");
       const blob = await res.blob();
       const filename =
         filenameFromDisposition(res.headers.get("content-disposition")) ||
@@ -925,6 +926,23 @@ export function JobsClient({
         className:
           "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
       });
+      if (warningSkills && target === "resume") {
+        const list = warningSkills
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .slice(0, 5);
+        toast({
+          title: "Generated with skill gaps",
+          description:
+            list.length > 0
+              ? `Missing JD skills not added: ${list.join(", ")}${list.length >= 5 ? "..." : ""}`
+              : "Some JD skills were not added in this output.",
+          duration: 3200,
+          className:
+            "border-amber-200 bg-amber-50 text-amber-900 animate-in fade-in zoom-in-95",
+        });
+      }
     } catch (e) {
       const message = getErrorMessage(e, "Failed to generate PDF");
       setError(message);

@@ -457,6 +457,7 @@ export async function POST(req: Request) {
 
   let pdf: Buffer;
   let filename: string;
+  let warningMissingSkills: string[] = [];
 
   try {
     if (parsed.data.target === "resume") {
@@ -530,22 +531,7 @@ export async function POST(req: Request) {
         const normalized = normalizeTextForMatch(skill);
         return !existingSkills.has(normalized) && !addedSkills.has(normalized);
       });
-      if (missingJdSkills.length > 0) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "MISSING_SKILLS_ADDITIONS",
-              message:
-                "skillsAdditions is missing important JD skills. Add missing skills under appropriate categories.",
-              details: {
-                missingSkills: missingJdSkills,
-              },
-            },
-            requestId,
-          },
-          { status: 400 },
-        );
-      }
+      warningMissingSkills = missingJdSkills;
 
       const boldedSummary = applyBoldKeywords(cvSummary, jdSkills);
       const latexSummary = escapeLatexWithBold(boldedSummary);
@@ -669,6 +655,9 @@ export async function POST(req: Request) {
       "x-tailor-cv-source": parsed.data.target === "resume" ? "manual_import" : "base",
       "x-tailor-cover-source": parsed.data.target === "cover" ? "manual_import" : "fallback",
       "x-tailor-reason": "manual_import_ok",
+      ...(warningMissingSkills.length > 0
+        ? { "x-tailor-warning-skills": warningMissingSkills.slice(0, 12).join(",") }
+        : {}),
     },
   });
 }
