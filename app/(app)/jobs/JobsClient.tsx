@@ -893,7 +893,12 @@ export function JobsClient({
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json?.error?.message || json?.error || "Failed to generate PDF");
+        const baseMessage = json?.error?.message || json?.error || "Failed to generate PDF";
+        const details = Array.isArray(json?.error?.details)
+          ? json.error.details.filter((item: unknown) => typeof item === "string")
+          : [];
+        const detailText = details.length ? ` (${details.slice(0, 2).join(" | ")})` : "";
+        throw new Error(`${baseMessage}${detailText}`);
       }
 
       const blob = await res.blob();

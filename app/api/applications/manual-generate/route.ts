@@ -27,15 +27,15 @@ const ManualGenerateSchema = z.object({
 });
 
 const ResumeSkillAdditionSchema = z.object({
-  category: z.string().trim().min(1).max(60),
-  items: z.array(z.string().trim().min(1).max(60)).min(1).max(30),
+  category: z.string().trim().min(1).max(100),
+  items: z.array(z.string().trim().min(1).max(120)).min(1).max(30),
 });
 
 const ResumeSkillGroupSchema = z
   .object({
-    label: z.string().trim().min(1).max(60).optional(),
-    category: z.string().trim().min(1).max(60).optional(),
-    items: z.array(z.string().trim().min(1).max(60)).min(1).max(40),
+    label: z.string().trim().min(1).max(100).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
+    items: z.array(z.string().trim().min(1).max(120)).min(1).max(40),
   })
   .transform((value) => ({
     label: (value.label ?? value.category ?? "").trim(),
@@ -48,7 +48,7 @@ const ResumeSkillGroupSchema = z
 const ResumeManualOutputSchema = z.object({
   cvSummary: z.string().trim().min(1).max(2000),
   latestExperience: z.object({
-    bullets: z.array(z.string().trim().min(1).max(220)).min(1).max(15),
+    bullets: z.array(z.string().trim().min(1).max(320)).min(1).max(15),
   }),
   skillsAdditions: z.array(ResumeSkillAdditionSchema).max(20).optional(),
   skillsFinal: z.array(ResumeSkillGroupSchema).min(1).max(5).optional(),
@@ -97,9 +97,14 @@ function parseJsonCandidate(raw: string): unknown | null {
   return null;
 }
 
-function parseResumeManualOutput(raw: string) {
+function parseResumeManualOutput(raw: string): {
+  data: z.infer<typeof ResumeManualOutputSchema> | null;
+  issues: string[];
+} {
   const candidate = parseJsonCandidate(raw);
-  if (!candidate || typeof candidate !== "object") return null;
+  if (!candidate || typeof candidate !== "object") {
+    return { data: null, issues: ["Payload is not valid JSON object."] };
+  }
 
   const record = candidate as Record<string, unknown>;
   const payload: Record<string, unknown> = {
@@ -124,12 +129,24 @@ function parseResumeManualOutput(raw: string) {
   };
 
   const parsed = ResumeManualOutputSchema.safeParse(payload);
-  return parsed.success ? parsed.data : null;
+  if (parsed.success) return { data: parsed.data, issues: [] };
+  return {
+    data: null,
+    issues: parsed.error.issues.map((issue) => {
+      const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+      return `${path}: ${issue.message}`;
+    }),
+  };
 }
 
-function parseCoverManualOutput(raw: string) {
+function parseCoverManualOutput(raw: string): {
+  data: z.infer<typeof CoverManualOutputSchema> | null;
+  issues: string[];
+} {
   const candidate = parseJsonCandidate(raw);
-  if (!candidate || typeof candidate !== "object") return null;
+  if (!candidate || typeof candidate !== "object") {
+    return { data: null, issues: ["Payload is not valid JSON object."] };
+  }
 
   const record = candidate as Record<string, unknown>;
   const coverRecord =
@@ -165,7 +182,14 @@ function parseCoverManualOutput(raw: string) {
   };
 
   const parsed = CoverManualOutputSchema.safeParse(payload);
-  return parsed.success ? parsed.data : null;
+  if (parsed.success) return { data: parsed.data, issues: [] };
+  return {
+    data: null,
+    issues: parsed.error.issues.map((issue) => {
+      const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+      return `${path}: ${issue.message}`;
+    }),
+  };
 }
 
 function mergeSkillAdditions(
@@ -463,20 +487,22 @@ export async function POST(req: Request) {
   let filename: string;
   try {
     if (parsed.data.target === "resume") {
-      const resumeOutput = parseResumeManualOutput(parsed.data.modelOutput);
-      if (!resumeOutput) {
+      const resumeParsed = parseResumeManualOutput(parsed.data.modelOutput);
+      if (!resumeParsed.data) {
         return NextResponse.json(
           {
             error: {
               code: "PARSE_FAILED",
               message:
                 "Unable to parse model output. Resume JSON must include cvSummary and latestExperience.bullets (skillsFinal preferred).",
+              details: resumeParsed.issues.slice(0, 8),
             },
             requestId,
           },
           { status: 400 },
         );
       }
+      const resumeOutput = resumeParsed.data;
       const cvSummary = resumeOutput.cvSummary.trim();
       const baseLatest = renderInput.experiences[0];
       const baseLatestRawBullets = getLatestRawBullets(profile);
@@ -558,20 +584,22 @@ export async function POST(req: Request) {
       pdf = await compileLatexToPdf(tex);
       filename = parseFilename("resume", renderInput.candidate.name, job.title);
     } else {
-      const coverOutput = parseCoverManualOutput(parsed.data.modelOutput);
-      if (!coverOutput) {
+      const coverParsed = parseCoverManualOutput(parsed.data.modelOutput);
+      if (!coverParsed.data) {
         return NextResponse.json(
           {
             error: {
               code: "PARSE_FAILED",
               message:
                 "Unable to parse model output. Cover JSON must include cover.paragraphOne/paragraphTwo/paragraphThree.",
+              details: coverParsed.issues.slice(0, 8),
             },
             requestId,
           },
           { status: 400 },
         );
       }
+      const coverOutput = coverParsed.data;
       const p1 = coverOutput.cover.paragraphOne.trim();
       const p2 = coverOutput.cover.paragraphTwo.trim();
       const p3 = coverOutput.cover.paragraphThree.trim();
