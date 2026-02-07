@@ -387,6 +387,72 @@ describe("applications manual generate api", () => {
     expect(res.headers.get("content-type")).toBe("application/pdf");
   });
 
+  it("preserves markdown bold in summary and new bullets for latex rendering", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build Java services with CI/CD and Docker",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    (mapResumeProfile as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      candidate: {
+        name: "Jane Doe",
+        title: "Software Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+      },
+      summary: "Base summary",
+      skills: [],
+      experiences: [
+        {
+          location: "Sydney, AU",
+          dates: "2022-2023",
+          title: "Engineer",
+          company: "Example",
+          bullets: ["base bullet"],
+        },
+      ],
+      projects: [],
+      education: [],
+    });
+
+    const patch = JSON.stringify({
+      cvSummary: "Focused on **Java** delivery with reliable pipelines.",
+      latestExperience: {
+        bullets: ["base bullet", "Built **Docker** deployment pipeline."],
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "resume",
+          modelOutput: patch,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    const renderCallArg = (renderResumeTex as unknown as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[0];
+    expect(renderCallArg.summary).toContain("\\textbf{Java}");
+    expect(renderCallArg.experiences[0].bullets[1]).toContain("\\textbf{Docker}");
+  });
+
   it("returns 409 when prompt meta is stale", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },

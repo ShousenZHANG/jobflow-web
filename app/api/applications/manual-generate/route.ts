@@ -6,6 +6,7 @@ import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
+import { escapeLatex, escapeLatexWithBold } from "@/lib/server/latex/escapeLatex";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
@@ -332,7 +333,12 @@ function extractJdSkills(title: string, description: string | null | undefined) 
 function applyBoldKeywords(summary: string, keywords: string[]) {
   if (!summary.trim()) return summary;
 
-  let out = summary.replace(/\*\*([^*]+)\*\*/g, "$1");
+  // Preserve explicit user/model markdown bold when it already exists.
+  if (/\*\*[^*]+\*\*/.test(summary)) {
+    return summary;
+  }
+
+  let out = summary;
   const candidates = keywords
     .map((item) => item.trim())
     .filter(Boolean)
@@ -504,7 +510,9 @@ export async function POST(req: Request) {
           baseLatest.bullets,
           incomingBullets,
         );
-        finalLatestBullets = canonicalBullets;
+        finalLatestBullets = canonicalBullets.map((bullet) =>
+          baseLatest.bullets.includes(bullet) ? bullet : escapeLatexWithBold(bullet),
+        );
 
         void addedBullets;
       }
@@ -540,6 +548,11 @@ export async function POST(req: Request) {
       }
 
       const boldedSummary = applyBoldKeywords(cvSummary, jdSkills);
+      const latexSummary = escapeLatexWithBold(boldedSummary);
+      const sanitizedSkillAdditions = resumeOutput.skillsAdditions?.map((group) => ({
+        category: escapeLatex(group.category),
+        items: group.items.map((item) => escapeLatex(item)),
+      }));
 
       const nextExperiences =
         baseLatest && finalLatestBullets && finalLatestBullets.length > 0
@@ -551,11 +564,11 @@ export async function POST(req: Request) {
               ...renderInput.experiences.slice(1),
             ]
           : renderInput.experiences;
-      const nextSkills = mergeSkillAdditions(renderInput.skills, resumeOutput.skillsAdditions);
+      const nextSkills = mergeSkillAdditions(renderInput.skills, sanitizedSkillAdditions);
 
       const tex = renderResumeTex({
         ...renderInput,
-        summary: boldedSummary,
+        summary: latexSummary,
         experiences: nextExperiences,
         skills: nextSkills,
       });
