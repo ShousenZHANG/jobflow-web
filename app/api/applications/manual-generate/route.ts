@@ -31,12 +31,27 @@ const ResumeSkillAdditionSchema = z.object({
   items: z.array(z.string().trim().min(1).max(60)).min(1).max(30),
 });
 
+const ResumeSkillGroupSchema = z
+  .object({
+    label: z.string().trim().min(1).max(60).optional(),
+    category: z.string().trim().min(1).max(60).optional(),
+    items: z.array(z.string().trim().min(1).max(60)).min(1).max(40),
+  })
+  .transform((value) => ({
+    label: (value.label ?? value.category ?? "").trim(),
+    items: value.items,
+  }))
+  .refine((value) => value.label.length > 0, {
+    message: "skillsFinal item must include label or category",
+  });
+
 const ResumeManualOutputSchema = z.object({
   cvSummary: z.string().trim().min(1).max(2000),
   latestExperience: z.object({
     bullets: z.array(z.string().trim().min(1).max(220)).min(1).max(15),
   }),
   skillsAdditions: z.array(ResumeSkillAdditionSchema).max(20).optional(),
+  skillsFinal: z.array(ResumeSkillGroupSchema).min(1).max(5).optional(),
 });
 
 const CoverContentSchema = z.object({
@@ -53,43 +68,6 @@ const CoverContentSchema = z.object({
 const CoverManualOutputSchema = z.object({
   cover: CoverContentSchema,
 });
-
-const JD_TECH_KEYWORDS = [
-  "java",
-  "spring",
-  "spring boot",
-  "kotlin",
-  "python",
-  "node.js",
-  "node",
-  "typescript",
-  "javascript",
-  "react",
-  "next.js",
-  "angular",
-  "vue",
-  "go",
-  "rust",
-  "sql",
-  "postgresql",
-  "mysql",
-  "mongodb",
-  "redis",
-  "docker",
-  "kubernetes",
-  "terraform",
-  "aws",
-  "azure",
-  "gcp",
-  "devops",
-  "ci/cd",
-  "linux",
-  "bash",
-  "graphql",
-  "rest",
-  "microservices",
-  "junit",
-] as const;
 
 function parseJsonCandidate(raw: string): unknown | null {
   const text = raw.trim();
@@ -138,6 +116,11 @@ function parseResumeManualOutput(raw: string) {
           ? { bullets: record.latestExperienceBullets }
           : undefined,
     skillsAdditions: Array.isArray(record.skillsAdditions) ? record.skillsAdditions : undefined,
+    skillsFinal: Array.isArray(record.skillsFinal)
+      ? record.skillsFinal
+      : Array.isArray(record.skills)
+        ? record.skills
+        : undefined,
   };
 
   const parsed = ResumeManualOutputSchema.safeParse(payload);
@@ -215,6 +198,40 @@ function mergeSkillAdditions(
   }
 
   return result;
+}
+
+function sanitizeSkillGroups(
+  groups: Array<{ label: string; items: string[] }>,
+): Array<{ label: string; items: string[] }> {
+  const out: Array<{ label: string; items: string[] }> = [];
+  const seenLabels = new Set<string>();
+
+  for (const group of groups) {
+    const rawLabel = group.label.trim();
+    if (!rawLabel) continue;
+    const labelKey = rawLabel.toLowerCase();
+    if (seenLabels.has(labelKey)) continue;
+    seenLabels.add(labelKey);
+
+    const seenItems = new Set<string>();
+    const items = group.items
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .filter((item) => {
+        const key = item.toLowerCase();
+        if (seenItems.has(key)) return false;
+        seenItems.add(key);
+        return true;
+      })
+      .slice(0, 20)
+      .map((item) => escapeLatex(item));
+
+    if (items.length === 0) continue;
+    out.push({ label: escapeLatex(rawLabel), items });
+    if (out.length >= 5) break;
+  }
+
+  return out;
 }
 
 function normalizeBulletForCompare(value: string) {
@@ -305,50 +322,8 @@ function canonicalizeLatestBullets(baseBullets: string[], incomingBullets: strin
   };
 }
 
-function normalizeTextForMatch(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s+/#.-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function extractJdSkills(title: string, description: string | null | undefined) {
-  const text = `${title}\n${description ?? ""}`;
-  const normalized = normalizeTextForMatch(text);
-  const found = new Set<string>();
-
-  for (const keyword of JD_TECH_KEYWORDS) {
-    const pattern = new RegExp(`\\b${escapeRegExp(keyword.toLowerCase())}\\b`, "i");
-    if (pattern.test(normalized)) found.add(keyword);
-  }
-
-  return [...found];
-}
-
-function applyBoldKeywords(summary: string, keywords: string[]) {
-  if (!summary.trim()) return summary;
-
-  // Preserve explicit user/model markdown bold when it already exists.
-  if (/\*\*[^*]+\*\*/.test(summary)) {
-    return summary;
-  }
-
-  let out = summary;
-  const candidates = keywords
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .sort((a, b) => b.length - a.length);
-
-  for (const keyword of candidates) {
-    const pattern = new RegExp(`\\b(${escapeRegExp(keyword)})\\b`, "gi");
-    out = out.replace(pattern, "**$1**");
-  }
-  return out;
+function normalizeMarkdownBold(value: string) {
+  return value.replace(/\*\*([^*]+?)\s+\*\*/g, "**$1**");
 }
 
 function toSafeFileSegment(value: string) {
@@ -466,7 +441,7 @@ export async function POST(req: Request) {
             error: {
               code: "PARSE_FAILED",
               message:
-                "Unable to parse model output. Resume JSON must include cvSummary and latestExperience.bullets (skillsAdditions optional).",
+                "Unable to parse model output. Resume JSON must include cvSummary and latestExperience.bullets (skillsFinal preferred).",
             },
             requestId,
           },
@@ -476,7 +451,6 @@ export async function POST(req: Request) {
       const cvSummary = resumeOutput.cvSummary.trim();
       const baseLatest = renderInput.experiences[0];
       const incomingBullets = resumeOutput.latestExperience?.bullets;
-      const jdSkills = extractJdSkills(job.title, job.description);
       let finalLatestBullets = incomingBullets ?? [];
       if (baseLatest && incomingBullets) {
         const minAllowed = baseLatest.bullets.length;
@@ -513,18 +487,20 @@ export async function POST(req: Request) {
         finalLatestBullets = canonicalBullets.map((bullet) =>
           baseLatest.bullets.includes(bullet)
             ? bullet
-            : escapeLatexWithBold(applyBoldKeywords(bullet, jdSkills)),
+            : escapeLatexWithBold(normalizeMarkdownBold(bullet)),
         );
 
         void addedBullets;
       }
 
-      const boldedSummary = applyBoldKeywords(cvSummary, jdSkills);
-      const latexSummary = escapeLatexWithBold(boldedSummary);
+      const latexSummary = escapeLatexWithBold(normalizeMarkdownBold(cvSummary));
       const sanitizedSkillAdditions = resumeOutput.skillsAdditions?.map((group) => ({
         category: escapeLatex(group.category),
         items: group.items.map((item) => escapeLatex(item)),
       }));
+      const sanitizedSkillsFinal = resumeOutput.skillsFinal
+        ? sanitizeSkillGroups(resumeOutput.skillsFinal)
+        : [];
 
       const nextExperiences =
         baseLatest && finalLatestBullets && finalLatestBullets.length > 0
@@ -536,7 +512,10 @@ export async function POST(req: Request) {
               ...renderInput.experiences.slice(1),
             ]
           : renderInput.experiences;
-      const nextSkills = mergeSkillAdditions(renderInput.skills, sanitizedSkillAdditions);
+      const nextSkills =
+        sanitizedSkillsFinal.length > 0
+          ? sanitizedSkillsFinal
+          : mergeSkillAdditions(renderInput.skills, sanitizedSkillAdditions);
 
       const tex = renderResumeTex({
         ...renderInput,

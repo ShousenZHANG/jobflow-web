@@ -101,8 +101,8 @@ export async function POST(req: Request) {
         '  "latestExperience": {',
         '    "bullets": ["string", "string"]',
         "  },",
-        '  "skillsAdditions": [',
-        '    { "category": "string", "items": ["string"] }',
+        '  "skillsFinal": [',
+        '    { "label": "string", "items": ["string"] }',
         "  ]",
         "}",
       ]
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     : formatRuleBlock("Cover Letter Skills Rules:", rules.coverRules);
   const resumeCoverageBlock = isResumeTarget
     ? [
-        "Top-3 Responsibility Coverage (must follow):",
+        "Top-3 Responsibility Alignment (guidance):",
         ...(coverage.topResponsibilities.length
           ? coverage.topResponsibilities.map((item, index) => `${index + 1}. ${item}`)
           : ["1. (none parsed from JD)"]),
@@ -147,24 +147,25 @@ export async function POST(req: Request) {
           : ["1. (none)"]),
         "",
         coverage.missingFromBase.length
-          ? `Required additions: add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} new bullets and put them first in responsibility order.`
-          : "Required additions: add 0 new bullets (reorder existing bullets only).",
+          ? `Suggested additions: add ${coverage.requiredNewBulletsMin} to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities, then place them first in responsibility order.`
+          : "Suggested additions: add 0 bullets (reorder existing bullets only).",
         "",
-        "Execution checklist (must pass before you answer):",
+        "Execution checklist:",
         "1) Preserve every base latest-experience bullet text verbatim (no paraphrase).",
-        "2) If Required additions > 0: add that many new bullets (within range), and place them first.",
-        "3) Ensure each missing responsibility is covered by at least one final bullet.",
-        "4) Resume target output must NOT include cover payload.",
+        "2) If responsibilities are uncovered and evidence exists in base resume context, add 2-3 new bullets and place them first.",
+        "3) For every new bullet, bold 1-3 JD-critical keywords using **keyword**.",
+        "4) If evidence is insufficient, keep bullets conservative and avoid fabrication.",
+        "5) Resume target output must NOT include cover payload.",
       ].join("\n")
     : "";
   const resumeSkillsPolicyBlock = isResumeTarget
     ? [
         "Skills output policy (must follow):",
-        "1) Return skillsAdditions only (do not return full skills list).",
-        "2) Prioritize JD-critical missing skills only.",
-        "3) Prefer existing categories from resume snapshot; avoid creating new categories unless necessary.",
-        "4) Keep final skills structure within ~5 major categories by merging into closest existing groups where possible.",
-        "5) Order skillsAdditions by JD relevance priority (most important first).",
+        "1) Return skillsFinal as the complete final skills list (not delta).",
+        "2) skillsFinal must contain max 5 major categories, each as { label, items }.",
+        "3) Prioritize JD-critical skills first while staying grounded in base resume context.",
+        "4) Prefer existing categories from resume snapshot and merge related items into the closest category.",
+        "5) Order skillsFinal by JD relevance priority (most important first).",
       ].join("\n")
     : "";
 
@@ -192,9 +193,9 @@ export async function POST(req: Request) {
         latestExperience: {
           bullets: ["string"],
         },
-        skillsAdditions: [
+        skillsFinal: [
           {
-            category: "string",
+            label: "string",
             items: ["string"],
           },
         ],

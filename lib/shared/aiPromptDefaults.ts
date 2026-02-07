@@ -15,11 +15,11 @@ export const DEFAULT_CV_RULES = [
   "Any new bullet must follow Google XYZ style: achieved X by doing Y, resulting in Z (or equivalent qualitative outcome).",
   "Do not invent numeric metrics. If metrics are unavailable, use truthful qualitative outcomes (scope, speed, reliability, quality, or stakeholder impact).",
   "Keep any new bullet similar in length to nearby bullets (+/-20%) and consistent with the resume tone.",
-  "Populate skillsAdditions with JD-critical missing skills only; additions only (no removals, no fabrication).",
-  "Do not return full skills list; return skillsAdditions only.",
-  "Prefer existing skill categories from the base resume snapshot; avoid creating new categories unless absolutely necessary.",
-  "Keep the final Skills section practically within 5 major categories by merging additions into closest existing categories when possible.",
-  "Order skillsAdditions by JD relevance priority (most important categories/items first).",
+  "For every newly added bullet, bold 1-3 JD-critical keywords using markdown **keyword** format.",
+  "Return skillsFinal as the COMPLETE final skills list (not delta), with max 5 major categories.",
+  "Prefer existing skill categories from the base resume snapshot and merge related items under closest existing categories.",
+  "Keep skills factual and grounded in existing resume context (no fabrication).",
+  "Order skillsFinal by JD relevance priority (most important categories/items first).",
   "Prefer concrete, ATS-safe phrasing. Avoid hype, fluff, or repeated adjectives.",
 ];
 

@@ -10,9 +10,9 @@ const OUTPUT_SCHEMA_RESUME = {
   latestExperience: {
     bullets: ["string"],
   },
-  skillsAdditions: [
+  skillsFinal: [
     {
-      category: "string",
+      label: "string",
       items: ["string"],
     },
   ],
@@ -53,10 +53,10 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     cvRules,
     "",
     "Skills output policy:",
-    "- Return skillsAdditions only (not full skills list).",
-    "- Prefer existing categories from resume snapshot.",
-    "- Keep additions concise and JD-priority only.",
-    "- Keep final skills structure within ~5 major categories by merging into existing groups when possible.",
+    "- Return skillsFinal as complete final skills list (not delta).",
+    "- skillsFinal max 5 major categories, each as { label, items }.",
+    "- Prefer existing categories from resume snapshot and merge related skills.",
+    "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
     "",
     "Job Input:",
     "- Job title: {{JOB_TITLE}}",
@@ -162,9 +162,9 @@ ${list(rules.coverRules)}
 3. For \`resume\` target:
    - Produce \`cvSummary\`.
    - Produce complete \`latestExperience.bullets\` list (ordered final list).
-   - Produce \`skillsAdditions\` only (additions, no removals).
-   - For skills, prioritize existing categories and keep final structure within ~5 major categories.
-   - If prompt says Required additions > 0, add new bullets within that range and put them first.
+   - Produce \`skillsFinal\` as complete final skills list (not delta).
+   - Keep \`skillsFinal\` within 5 major categories and prioritize existing categories.
+   - If top responsibilities are uncovered and evidence exists in base context, add 2-3 new bullets and put them first.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
 4. For \`cover\` target:
    - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\`.
@@ -179,8 +179,8 @@ ${list(rules.coverRules)}
 - Output is strict JSON only (no markdown/code fence).
 - No fabricated facts, skills, employers, or metrics.
 - Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions capped by rules).
-- When top-3 responsibility gaps are listed, resume output includes required added bullets and covers those gaps.
-- Skills additions are JD-priority, concise, and mapped to existing categories whenever possible.
+- When top-3 responsibility gaps are listed, add grounded bullets when evidence exists; avoid fabrication.
+- Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.
 - Cover output is exactly three core paragraphs.
 - JSON parses without repair.
 
@@ -197,7 +197,7 @@ ${list(rules.coverRules)}
       latestExperience: {
         bullets: ["...", "..."],
       },
-      skillsAdditions: [{ category: "Cloud", items: ["GCP"] }],
+      skillsFinal: [{ label: "Cloud", items: ["GCP"] }],
     },
     null,
     2,

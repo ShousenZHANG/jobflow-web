@@ -186,7 +186,7 @@ describe("applications manual generate api", () => {
     expect(res.headers.get("x-tailor-cv-source")).toBe("manual_import");
   });
 
-  it("applies latest experience bullets and skill additions for resume target", async () => {
+  it("applies latest experience bullets and full skillsFinal for resume target", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -229,9 +229,9 @@ describe("applications manual generate api", () => {
       latestExperience: {
         bullets: ["old-2", "old-1", "new-1"],
       },
-      skillsAdditions: [
-        { category: "Backend", items: ["Spring Boot"] },
-        { category: "Cloud", items: ["GCP"] },
+      skillsFinal: [
+        { label: "Backend", items: ["Java", "Spring Boot"] },
+        { label: "Cloud", items: ["GCP"] },
       ],
     });
 
@@ -387,7 +387,7 @@ describe("applications manual generate api", () => {
     expect(res.headers.get("content-type")).toBe("application/pdf");
   });
 
-  it("preserves markdown bold in summary and new bullets for latex rendering", async () => {
+  it("uses AI-provided markdown bold in summary and new bullets for latex rendering", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -428,7 +428,7 @@ describe("applications manual generate api", () => {
     const patch = JSON.stringify({
       cvSummary: "Focused on **Java** delivery with reliable pipelines.",
       latestExperience: {
-        bullets: ["base bullet", "Built Docker deployment pipeline."],
+        bullets: ["base bullet", "Built **Docker** deployment pipeline."],
       },
     });
 

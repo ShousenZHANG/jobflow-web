@@ -100,14 +100,14 @@ describe("applications prompt api", () => {
     expect(typeof json.prompt.userPrompt).toBe("string");
     expect(json.expectedJsonShape.cvSummary).toBe("string");
     expect(Array.isArray(json.expectedJsonShape.latestExperience.bullets)).toBe(true);
-    expect(Array.isArray(json.expectedJsonShape.skillsAdditions)).toBe(true);
+    expect(Array.isArray(json.expectedJsonShape.skillsFinal)).toBe(true);
     expect(json.expectedJsonShape.cover).toBeUndefined();
     expect(json.promptMeta.ruleSetId).toBe("rules-1");
     expect(json.promptMeta.resumeSnapshotUpdatedAt).toBe("2026-02-06T00:00:00.000Z");
     expect(json.prompt.userPrompt).not.toContain("Base summary");
-    expect(json.prompt.userPrompt).toContain("Top-3 Responsibility Coverage (must follow):");
+    expect(json.prompt.userPrompt).toContain("Top-3 Responsibility Alignment (guidance):");
     expect(json.prompt.userPrompt).toContain("Base latest experience bullets (verbatim, reorder only):");
-    expect(json.prompt.userPrompt).toContain("Required additions:");
+    expect(json.prompt.userPrompt).toContain("Suggested additions:");
   });
 
   it("returns cover-target prompt payload", async () => {
