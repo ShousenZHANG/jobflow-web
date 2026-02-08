@@ -49,6 +49,12 @@ beforeEach(() => {
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
+    if (url.startsWith("/api/jobs/") && init?.method === "DELETE") {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
       return new Response(
         JSON.stringify({ id: baseJob.id, description: "Job description" }),
@@ -136,12 +142,14 @@ describe("JobsClient", () => {
     expect(hasDesignerQuery()).toBe(true);
   });
 
-  it("removes a job immediately and offers undo", async () => {
+  it("removes a job after delete confirmation", async () => {
     const user = userEvent.setup();
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
-    const removeButton = (await screen.findAllByRole("button", { name: /remove/i }))[0];
+    const removeButton = (await screen.findAllByTestId("job-remove-button"))[0];
     await user.click(removeButton);
+    const dialog = await screen.findByRole("alertdialog", { name: /delete this job/i });
+    await user.click(within(dialog).getByRole("button", { name: /^delete$/i }));
 
     const resultsPane = screen.getAllByTestId("jobs-results-scroll")[0];
     await waitFor(() => {
@@ -149,8 +157,6 @@ describe("JobsClient", () => {
         within(resultsPane).queryByRole("button", { name: /Frontend Engineer/i }),
       ).not.toBeInTheDocument();
     });
-    const undoButtons = screen.getAllByRole("button", { name: /undo/i });
-    expect(undoButtons.length).toBeGreaterThan(0);
   });
 
   it("renders markdown with SaaS-style headings and lists", async () => {
@@ -202,5 +208,32 @@ describe("JobsClient", () => {
     expect(quote.closest("blockquote")).toHaveClass("border-l-2");
   });
 
-  
+  it("keeps Saved CV in the primary actions row, removes its icon, and pins Remove to top-right", async () => {
+    const jobWithSavedCv = {
+      ...baseJob,
+      id: "22222222-2222-2222-2222-222222222222",
+      resumePdfUrl: "https://example.com/resume.pdf",
+      resumePdfName: "resume.pdf",
+    };
+
+    renderWithClient(<JobsClient initialItems={[jobWithSavedCv]} initialCursor={null} />);
+
+    const primaryActionsList = await screen.findAllByTestId("job-primary-actions");
+    const primaryActionsWithSavedCv =
+      primaryActionsList.find((node) =>
+        within(node).queryByRole("link", { name: /saved cv/i }),
+      ) ?? null;
+    expect(primaryActionsWithSavedCv).toBeTruthy();
+    if (!primaryActionsWithSavedCv) return;
+
+    expect(
+      within(primaryActionsWithSavedCv).getByRole("link", { name: /open job/i }),
+    ).toBeInTheDocument();
+    const savedCvLink = within(primaryActionsWithSavedCv).getByRole("link", { name: /saved cv/i });
+    expect(savedCvLink.querySelector("svg")).toBeNull();
+
+    const removeButton = screen.getAllByTestId("job-remove-button")[0];
+    expect(removeButton).toHaveClass("sm:absolute", "sm:right-0", "sm:top-0");
+  });
+
 });

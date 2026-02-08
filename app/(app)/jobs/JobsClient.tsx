@@ -1644,7 +1644,7 @@ export function JobsClient({
           {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
           <div className="border-b px-4 py-3">
             {selectedJob ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="relative flex flex-wrap items-start justify-between gap-3 sm:pr-[148px]">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold">{selectedJob.title}</h2>
@@ -1657,8 +1657,8 @@ export function JobsClient({
                     {selectedJob.jobType ?? "Unknown"} · {selectedJob.jobLevel ?? "Unknown"}
                   </div>
                 </div>
-                <div className="w-full space-y-2 lg:w-auto">
-                  <div className="flex flex-wrap items-center gap-2">
+                <div className="w-full lg:w-auto">
+                  <div data-testid="job-primary-actions" className="flex flex-wrap items-center gap-2">
                     <Select
                       value={selectedJob.status}
                       onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
@@ -1727,27 +1727,25 @@ export function JobsClient({
                           target="_blank"
                           rel="noreferrer"
                         >
-                          <FileText className="mr-1 h-4 w-4" />
                           Saved CV
                         </a>
                       </Button>
                     ) : null}
                   </div>
-                  <div className="flex justify-start sm:justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={deletingIds.has(selectedJob.id)}
-                      onClick={() => scheduleDelete(selectedJob)}
-                      className={`min-w-[132px] justify-center rounded-xl border-rose-200 bg-rose-50 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
-                        isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                      }`}
-                    >
-                      <Trash2 className="mr-1 h-4 w-4" />
-                      Remove
-                    </Button>
-                  </div>
                 </div>
+                <Button
+                  data-testid="job-remove-button"
+                  variant="outline"
+                  size="sm"
+                  disabled={deletingIds.has(selectedJob.id)}
+                  onClick={() => scheduleDelete(selectedJob)}
+                  className={`w-full justify-center rounded-xl border-rose-200 bg-rose-50 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none sm:absolute sm:right-0 sm:top-0 sm:w-auto sm:min-w-[124px] ${
+                    isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                  }`}
+                >
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Remove
+                </Button>
                 {selectedTailorSource ? (
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                     {selectedTailorSource.cv ? (
