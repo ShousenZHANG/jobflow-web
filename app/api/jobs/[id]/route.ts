@@ -79,6 +79,24 @@ export async function PATCH(
   let saveError: { code: string; message: string } | null = null;
 
   if (parsedBody.data.status === "APPLIED") {
+    const existingApplication = await prisma.application.findUnique({
+      where: { userId_jobId: { userId, jobId: job.id } },
+      select: { resumePdfUrl: true, resumePdfName: true },
+    });
+
+    if (existingApplication?.resumePdfUrl && existingApplication?.resumePdfName) {
+      resumeSaved = true;
+      resumePdfUrl = existingApplication.resumePdfUrl;
+      resumePdfName = existingApplication.resumePdfName;
+      return NextResponse.json({
+        ok: true,
+        resumeSaved,
+        resumePdfUrl,
+        resumePdfName,
+        saveError,
+      });
+    }
+
     const profile = await getResumeProfile(userId);
     if (!profile) {
       saveError = {

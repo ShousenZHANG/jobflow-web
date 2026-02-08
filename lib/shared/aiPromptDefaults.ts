@@ -7,7 +7,7 @@ export const DEFAULT_CV_RULES = [
   "Return latestExperience.bullets as the COMPLETE final bullet list for the latest experience block (full ordered output, not delta).",
   "Reorder latest experience bullets to mirror JD responsibilities order.",
   "Do not rewrite or paraphrase any existing latest experience bullet; preserve original text verbatim and only change order.",
-  "When top-3 JD responsibility gaps exist, add 2-3 new bullets (max 3) grounded in base context; if no direct exposure exists, use truthful transferable experience + willingness-to-learn phrasing.",
+  "When JD responsibilities are clearly under-covered, you may add up to 3 new bullets grounded in base context; if direct exposure is missing, use truthful transferable experience + willingness-to-learn phrasing.",
   "Prefer placing newly added bullets before reordered base bullets in the same responsibility order they address.",
   "Before final output, self-check: (1) all base bullets are preserved verbatim, (2) any additions are grounded, (3) output remains concise and role-relevant.",
   "Keep every latest experience bullet grounded in base resume facts and technologies; no fabricated scope, systems, or outcomes.",

@@ -186,8 +186,9 @@ ${list(rules.coverRules)}
    - Produce complete \`latestExperience.bullets\` list (ordered final list).
    - Produce \`skillsFinal\` as complete final skills list (not delta).
    - Keep \`skillsFinal\` within 5 major categories and prioritize existing categories.
-   - If top-3 responsibility gaps are found, add 2-3 grounded bullets (max 3) and put them first.
+   - If responsibility gaps are found and evidence exists, you may add up to 3 grounded bullets and put them first.
    - If direct exposure is missing, use truthful transferable evidence + willingness-to-learn phrasing.
+   - If evidence is insufficient, do not force additions; keep reordered base bullets only.
    - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
    - For each newly added bullet, bold at least one JD-critical keyword with clean markdown markers: **keyword**.

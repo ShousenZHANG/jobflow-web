@@ -11,6 +11,7 @@ import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
+import { put } from "@vercel/blob";
 
 export const runtime = "nodejs";
 
@@ -51,7 +52,8 @@ const ResumeManualOutputSchema = z.object({
     bullets: z.array(z.string().trim().min(1).max(320)).min(1).max(15),
   }),
   skillsAdditions: z.array(ResumeSkillAdditionSchema).max(20).optional(),
-  skillsFinal: z.array(ResumeSkillGroupSchema).min(1).max(5).optional(),
+  // Accept a wider incoming range, then normalize down to <= 5 groups in sanitizeSkillGroups.
+  skillsFinal: z.array(ResumeSkillGroupSchema).min(1).max(20).optional(),
 });
 
 const CoverContentSchema = z.object({
@@ -85,7 +87,17 @@ function parseJsonCandidate(raw: string): unknown | null {
   const direct = parse(text);
   if (direct) return direct;
 
-  const noFence = text.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+  // Common LLM copy/paste issues: smart quotes, NBSP and trailing commas.
+  const repaired = text
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/\u00A0/g, " ")
+    .replace(/,\s*([}\]])/g, "$1");
+
+  const repairedDirect = parse(repaired);
+  if (repairedDirect) return repairedDirect;
+
+  const noFence = repaired.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
   const fromFence = parse(noFence);
   if (fromFence) return fromFence;
 
@@ -108,22 +120,33 @@ function parseResumeManualOutput(raw: string): {
   }
 
   const record = candidate as Record<string, unknown>;
+  const latestExperienceCandidate =
+    (record.latestExperience as unknown) ??
+    (record.latest_experience as unknown) ??
+    (record.latestExperienceBlock as unknown);
+
   const payload: Record<string, unknown> = {
     cvSummary:
       typeof record.cvSummary === "string"
         ? record.cvSummary
+        : typeof record.cv_summary === "string"
+          ? record.cv_summary
         : typeof record.summary === "string"
           ? record.summary
           : "",
     latestExperience:
-      record.latestExperience && typeof record.latestExperience === "object"
-        ? record.latestExperience
+      latestExperienceCandidate && typeof latestExperienceCandidate === "object"
+        ? latestExperienceCandidate
         : Array.isArray(record.latestExperienceBullets)
           ? { bullets: record.latestExperienceBullets }
+          : Array.isArray(record.latest_experience_bullets)
+            ? { bullets: record.latest_experience_bullets }
           : undefined,
     skillsAdditions: Array.isArray(record.skillsAdditions) ? record.skillsAdditions : undefined,
     skillsFinal: Array.isArray(record.skillsFinal)
       ? record.skillsFinal
+      : Array.isArray(record.skills_final)
+        ? record.skills_final
       : Array.isArray(record.skills)
         ? record.skills
         : undefined,
@@ -163,18 +186,24 @@ function parseCoverManualOutput(raw: string): {
       paragraphOne:
         typeof coverRecord.paragraphOne === "string"
           ? coverRecord.paragraphOne
+          : typeof coverRecord.paragraph_1 === "string"
+            ? coverRecord.paragraph_1
           : typeof coverRecord.p1 === "string"
             ? coverRecord.p1
             : "",
       paragraphTwo:
         typeof coverRecord.paragraphTwo === "string"
           ? coverRecord.paragraphTwo
+          : typeof coverRecord.paragraph_2 === "string"
+            ? coverRecord.paragraph_2
           : typeof coverRecord.p2 === "string"
             ? coverRecord.p2
             : "",
       paragraphThree:
         typeof coverRecord.paragraphThree === "string"
           ? coverRecord.paragraphThree
+          : typeof coverRecord.paragraph_3 === "string"
+            ? coverRecord.paragraph_3
           : typeof coverRecord.p3 === "string"
             ? coverRecord.p3
             : "",
@@ -516,20 +545,7 @@ export async function POST(req: Request) {
       const incomingBullets = resumeOutput.latestExperience?.bullets;
       let finalLatestBullets = incomingBullets ?? [];
       if (baseLatest && incomingBullets) {
-        const minAllowed = baseBulletsForMatch.length;
         const maxAllowed = Math.max(baseBulletsForMatch.length + 3, 3);
-        if (incomingBullets.length < minAllowed) {
-          return NextResponse.json(
-            {
-              error: {
-                code: "INVALID_LATEST_EXPERIENCE_BULLETS",
-                message: `latestExperience.bullets must include all existing bullets (${minAllowed} required).`,
-              },
-              requestId,
-            },
-            { status: 400 },
-          );
-        }
         if (incomingBullets.length > maxAllowed) {
           return NextResponse.json(
             {
@@ -650,6 +666,21 @@ export async function POST(req: Request) {
     );
   }
 
+  let persistedResumePdfUrl: string | null = null;
+  if (parsed.data.target === "resume" && process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      const blob = await put(`applications/${userId}/${job.id}/${filename}`, pdf, {
+        access: "public",
+        contentType: "application/pdf",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      persistedResumePdfUrl = blob.url;
+    } catch {
+      // Keep generation successful even if persistence fails.
+      persistedResumePdfUrl = null;
+    }
+  }
+
   const application = await prisma.application.upsert({
     where: {
       userId_jobId: {
@@ -663,11 +694,23 @@ export async function POST(req: Request) {
       resumeProfileId: profile.id,
       company: job.company,
       role: job.title,
+      ...(parsed.data.target === "resume" && persistedResumePdfUrl
+        ? {
+            resumePdfUrl: persistedResumePdfUrl,
+            resumePdfName: filename,
+          }
+        : {}),
     },
     update: {
       resumeProfileId: profile.id,
       company: job.company,
       role: job.title,
+      ...(parsed.data.target === "resume" && persistedResumePdfUrl
+        ? {
+            resumePdfUrl: persistedResumePdfUrl,
+            resumePdfName: filename,
+          }
+        : {}),
     },
     select: {
       id: true,

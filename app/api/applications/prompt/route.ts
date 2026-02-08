@@ -148,13 +148,14 @@ export async function POST(req: Request) {
           : ["1. (none)"]),
         "",
         coverage.missingFromBase.length
-          ? `Suggested additions: add 2 to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities using base resume evidence.`
-          : "Suggested additions: no additions needed; reorder existing bullets only if helpful.",
+          ? `Suggested additions: optionally add up to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities when supported by base resume evidence.`
+          : "Suggested additions: no additions required; reorder existing bullets only if helpful.",
         "",
         "Execution checklist:",
         "1) Preserve every base latest-experience bullet text verbatim (no paraphrase).",
-        "2) If top-3 responsibilities are uncovered, add 2-3 grounded bullets (max 3) and place them before base bullets.",
+        "2) If responsibilities are under-covered and evidence exists, you may add up to 3 grounded bullets and place them before base bullets.",
         "2a) If direct exposure is missing, use truthful transferable experience and explicit willingness-to-learn phrasing (no fabrication).",
+        "2b) If evidence is insufficient, do not force additions; keep reordered base bullets only.",
         "3) For every new bullet, bold 1-3 JD-critical keywords using **keyword**.",
         "3a) Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
         "4) For added bullets, avoid repeating the same primary tech stack already present in base bullets; use complementary JD-required skills where possible.",
