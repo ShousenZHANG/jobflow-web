@@ -1724,7 +1724,8 @@ export function JobsClient({
                       >
                         <a
                           href={selectedJob.resumePdfUrl}
-                          download={selectedJob.resumePdfName ?? "resume.pdf"}
+                          target="_blank"
+                          rel="noreferrer"
                         >
                           <FileText className="mr-1 h-4 w-4" />
                           Saved CV
