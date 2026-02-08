@@ -7,6 +7,8 @@ import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { buildResumePdfForJob } from "@/lib/server/applications/buildResumePdf";
 import { LatexRenderError } from "@/lib/server/latex/compilePdf";
 import { put } from "@vercel/blob";
+import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
+import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 
 export const runtime = "nodejs";
 
@@ -17,14 +19,6 @@ const ParamsSchema = z.object({
 const PatchSchema = z.object({
   status: z.enum(["NEW", "APPLIED", "REJECTED"]).optional(),
 });
-
-function toSafeFileSegment(value: string) {
-  const cleaned = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return cleaned || "resume";
-}
 
 export async function PATCH(
   _req: Request,
@@ -111,10 +105,8 @@ export async function PATCH(
     } else {
       try {
         const pdfResult = await buildResumePdfForJob({ userId, profile, job });
-        const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-        const title = toSafeFileSegment(job.title);
-        const company = toSafeFileSegment(job.company ?? "company");
-        const filename = `${title}__${company}__${today}.pdf`;
+        const mapped = mapResumeProfile(profile);
+        const filename = buildPdfFilename(mapped.candidate.name, job.title);
         const blob = await put(
           `applications/${userId}/${job.id}/${filename}`,
           pdfResult.pdf,

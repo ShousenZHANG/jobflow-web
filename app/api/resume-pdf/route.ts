@@ -7,6 +7,7 @@ import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
+import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 
 export const runtime = "nodejs";
 
@@ -130,9 +131,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  const safeName = input.candidate.name.replace(/\s+/g, "-").toLowerCase() || "resume";
-  const filename = `resume-${safeName}-${today}.pdf`;
+  const filename = buildPdfFilename(input.candidate.name, input.candidate.title);
 
   const body = new Uint8Array(pdf);
   return new NextResponse(body, {

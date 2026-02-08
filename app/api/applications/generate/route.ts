@@ -7,20 +7,13 @@ import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { LatexRenderError } from "@/lib/server/latex/compilePdf";
 import { buildResumePdfForJob } from "@/lib/server/applications/buildResumePdf";
+import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 
 export const runtime = "nodejs";
 
 const GenerateSchema = z.object({
   jobId: z.string().uuid(),
 });
-
-function toSafeFileSegment(value: string) {
-  const cleaned = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return cleaned || "resume";
-}
 
 export async function POST(req: Request) {
   const requestId = randomUUID();
@@ -131,10 +124,7 @@ export async function POST(req: Request) {
     },
   });
 
-  const today = new Date().toISOString().slice(0, 10);
-  const candidate = toSafeFileSegment(pdfResult.renderInput.candidate.name);
-  const role = toSafeFileSegment(job.title);
-  const filename = `resume-${candidate}-${role}-${today}.pdf`;
+  const filename = buildPdfFilename(pdfResult.renderInput.candidate.name, job.title);
 
   return new NextResponse(new Uint8Array(pdfResult.pdf), {
     status: 200,

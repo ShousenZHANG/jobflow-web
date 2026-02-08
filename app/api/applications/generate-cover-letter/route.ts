@@ -9,20 +9,13 @@ import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { tailorApplicationContent } from "@/lib/server/ai/tailorApplication";
+import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 
 export const runtime = "nodejs";
 
 const GenerateSchema = z.object({
   jobId: z.string().uuid(),
 });
-
-function toSafeFileSegment(value: string) {
-  const cleaned = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return cleaned || "cover-letter";
-}
 
 export async function POST(req: Request) {
   const requestId = randomUUID();
@@ -158,10 +151,7 @@ export async function POST(req: Request) {
     },
   });
 
-  const today = new Date().toISOString().slice(0, 10);
-  const candidate = toSafeFileSegment(renderInput.candidate.name);
-  const role = toSafeFileSegment(job.title);
-  const filename = `cover-letter-${candidate}-${role}-${today}.pdf`;
+  const filename = buildPdfFilename(renderInput.candidate.name, job.title);
 
   return new NextResponse(new Uint8Array(pdf), {
     status: 200,

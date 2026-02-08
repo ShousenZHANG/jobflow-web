@@ -12,6 +12,7 @@ import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 import { put } from "@vercel/blob";
+import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 
 export const runtime = "nodejs";
 
@@ -411,17 +412,8 @@ function getLatestRawBullets(profile: unknown): string[] {
   return asStringArray(latest?.bullets);
 }
 
-function toSafeFileSegment(value: string) {
-  const cleaned = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return cleaned || "document";
-}
-
-function parseFilename(res: "resume" | "cover" | "cover-letter", candidate: string, role: string) {
-  const today = new Date().toISOString().slice(0, 10);
-  return `${res}-${toSafeFileSegment(candidate)}-${toSafeFileSegment(role)}-${today}.pdf`;
+function parseFilename(candidate: string, role: string) {
+  return buildPdfFilename(candidate, role);
 }
 
 export async function POST(req: Request) {
@@ -601,7 +593,7 @@ export async function POST(req: Request) {
         skills: nextSkills,
       });
       pdf = await compileLatexToPdf(tex);
-      filename = parseFilename("resume", renderInput.candidate.name, job.title);
+      filename = parseFilename(renderInput.candidate.name, job.title);
     } else {
       const coverParsed = parseCoverManualOutput(parsed.data.modelOutput);
       if (!coverParsed.data) {
@@ -644,7 +636,7 @@ export async function POST(req: Request) {
         signatureName: coverOutput.cover.signatureName,
       });
       pdf = await compileLatexToPdf(coverTex);
-      filename = parseFilename("cover-letter", renderInput.candidate.name, job.title);
+      filename = parseFilename(renderInput.candidate.name, job.title);
     }
   } catch (err) {
     if (err instanceof LatexRenderError) {
