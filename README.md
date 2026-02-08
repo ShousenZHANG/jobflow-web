@@ -28,6 +28,10 @@ A practical job search command center: fetch roles, review fast, tailor CV/Cover
 - [English](#english)
 - [Chinese 中文](#chinese-中文)
 
+## Quick Navigation
+
+[Live Demo](#live-demo) · [Architecture](#architecture) · [Tech Stack](#key-technology-stack) · [Quick Start](#quick-start) · [Chinese](#chinese-中文)
+
 ## English
 
 ### What Jobflow Does
@@ -114,6 +118,11 @@ flowchart LR
   PDF --> BLOB[Vercel Blob Optional]
   PDF --> DL[PDF Download]
 ```
+
+### Live Demo
+
+- Local demo: `http://localhost:3000`
+- Cloud deployment: Vercel (set env vars, then deploy)
 
 ### Project Structure
 
