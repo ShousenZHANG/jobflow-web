@@ -1657,95 +1657,95 @@ export function JobsClient({
                     {selectedJob.jobType ?? "Unknown"} · {selectedJob.jobLevel ?? "Unknown"}
                   </div>
                 </div>
-                <div
-                  className={`flex w-full items-center overflow-x-auto pb-1 whitespace-nowrap lg:w-auto lg:justify-end ${
-                    isAppliedSelected ? "gap-1.5" : "gap-2"
-                  }`}
-                >
-                  <Select
-                    value={selectedJob.status}
-                    onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
-                    disabled={updatingIds.has(selectedJob.id)}
-                  >
-                    <SelectTrigger
-                      className={`shrink-0 rounded-xl border-slate-200 bg-white shadow-sm ${
-                        isAppliedSelected ? "h-9 w-[118px] px-3 text-sm" : "h-10 w-[132px]"
-                      }`}
+                <div className="w-full space-y-2 lg:w-auto">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Select
+                      value={selectedJob.status}
+                      onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
+                      disabled={updatingIds.has(selectedJob.id)}
                     >
-                      <span className="truncate">{statusLabel[selectedJob.status]}</span>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="NEW">New</SelectItem>
-                      <SelectItem value="APPLIED">Applied</SelectItem>
-                      <SelectItem value="REJECTED">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    asChild
-                    size="sm"
-                    className={`shrink-0 rounded-xl border border-emerald-500 bg-emerald-500 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px] ${
-                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                    }`}
-                  >
-                    <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
-                      <ExternalLink className="mr-1 h-4 w-4" />
-                      Open job
-                    </a>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={externalPromptLoading}
-                    onClick={() => openExternalGenerateDialog(selectedJob, "resume")}
-                    className={`shrink-0 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
-                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                    }`}
-                  >
-                    <FileText className="mr-1 h-4 w-4" />
-                    Generate CV
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={externalPromptLoading}
-                    onClick={() => openExternalGenerateDialog(selectedJob, "cover")}
-                    className={`shrink-0 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
-                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                    }`}
-                  >
-                    <FileText className="mr-1 h-4 w-4" />
-                    Generate CL
-                  </Button>
-                  {selectedJob.resumePdfUrl ? (
+                      <SelectTrigger
+                        className={`shrink-0 rounded-xl border-slate-200 bg-white shadow-sm ${
+                          isAppliedSelected ? "h-9 w-[118px] px-3 text-sm" : "h-10 w-[132px]"
+                        }`}
+                      >
+                        <span className="truncate">{statusLabel[selectedJob.status]}</span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NEW">New</SelectItem>
+                        <SelectItem value="APPLIED">Applied</SelectItem>
+                        <SelectItem value="REJECTED">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <Button
-                      variant="outline"
-                      size="sm"
                       asChild
-                      className={`shrink-0 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
+                      size="sm"
+                      className={`min-w-[132px] justify-center rounded-xl border border-emerald-500 bg-emerald-500 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px] ${
                         isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
                       }`}
                     >
-                      <a
-                        href={selectedJob.resumePdfUrl}
-                        download={selectedJob.resumePdfName ?? "resume.pdf"}
-                      >
-                        <FileText className="mr-1 h-4 w-4" />
-                        Saved CV
+                      <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
+                        <ExternalLink className="mr-1 h-4 w-4" />
+                        Open job
                       </a>
                     </Button>
-                  ) : null}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={deletingIds.has(selectedJob.id)}
-                    onClick={() => scheduleDelete(selectedJob)}
-                    className={`shrink-0 rounded-xl border-rose-200 bg-rose-50 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
-                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                    }`}
-                  >
-                    <Trash2 className="mr-1 h-4 w-4" />
-                    Remove
-                  </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={externalPromptLoading}
+                      onClick={() => openExternalGenerateDialog(selectedJob, "resume")}
+                      className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                        isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                      }`}
+                    >
+                      <FileText className="mr-1 h-4 w-4" />
+                      Generate CV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={externalPromptLoading}
+                      onClick={() => openExternalGenerateDialog(selectedJob, "cover")}
+                      className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                        isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                      }`}
+                    >
+                      <FileText className="mr-1 h-4 w-4" />
+                      Generate CL
+                    </Button>
+                    {selectedJob.resumePdfUrl ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
+                          isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                        }`}
+                      >
+                        <a
+                          href={selectedJob.resumePdfUrl}
+                          download={selectedJob.resumePdfName ?? "resume.pdf"}
+                        >
+                          <FileText className="mr-1 h-4 w-4" />
+                          Saved CV
+                        </a>
+                      </Button>
+                    ) : null}
+                  </div>
+                  <div className="flex justify-start sm:justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={deletingIds.has(selectedJob.id)}
+                      onClick={() => scheduleDelete(selectedJob)}
+                      className={`min-w-[132px] justify-center rounded-xl border-rose-200 bg-rose-50 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                        isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                      }`}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Remove
+                    </Button>
+                  </div>
                 </div>
                 {selectedTailorSource ? (
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
