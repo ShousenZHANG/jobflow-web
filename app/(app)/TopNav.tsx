@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { Search } from "lucide-react";
+import { CircleHelp, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useGuide } from "../GuideContext";
 
 export function TopNav() {
   const { data } = useSession();
   const pathname = usePathname();
+  const { openGuide, state } = useGuide();
 
   const links = [
     { href: "/jobs", label: "Jobs" },
@@ -56,6 +58,20 @@ export function TopNav() {
                 {email}
               </a>
             ) : null}
+            <Button
+              variant="outline"
+              size="sm"
+              className="edu-outline edu-cta--press edu-outline--compact h-9 px-3 text-xs"
+              onClick={openGuide}
+            >
+              <CircleHelp className="mr-1 h-3.5 w-3.5" />
+              Guide
+              {state ? (
+                <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                  {state.completedCount}/{state.totalCount}
+                </span>
+              ) : null}
+            </Button>
             <Button
               variant="outline"
               size="sm"

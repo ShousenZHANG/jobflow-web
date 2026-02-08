@@ -30,6 +30,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useGuide } from "@/app/GuideContext";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -274,6 +275,7 @@ export function JobsClient({
   initialCursor?: string | null;
 }) {
   const { toast } = useToast();
+  const { markTaskComplete } = useGuide();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
@@ -597,6 +599,7 @@ export function JobsClient({
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      markTaskComplete("triage_first_job");
       toast({
         title: "Status updated",
         description: `${variables.status}`,

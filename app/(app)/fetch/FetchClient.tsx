@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { useFetchStatus } from "@/app/FetchStatusContext";
+import { useGuide } from "@/app/GuideContext";
 
 type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
@@ -90,6 +91,7 @@ export function FetchClient() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { startRun, markRunning, status: globalStatus, runId: globalRunId } = useFetchStatus();
+  const { markTaskComplete } = useGuide();
   const prevUserIdRef = useRef<string | null>(null);
 
   const queries = useMemo(() => {
@@ -193,6 +195,7 @@ export function FetchClient() {
       startRun(id);
       await triggerRun(id);
       markRunning();
+      markTaskComplete("first_fetch");
     } catch (e: unknown) {
       setError(getErrorMessage(e));
     } finally {

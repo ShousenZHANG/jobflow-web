@@ -28,6 +28,12 @@ enum FetchRunStatus {
   FAILED
 }
 
+enum OnboardingStage {
+  NEW_USER
+  ACTIVATED_USER
+  RETURNING_USER
+}
+
 model User {
   id            String    @id @default(uuid()) @db.Uuid
   email         String?   @unique
@@ -47,6 +53,7 @@ model User {
   resumeProfiles      ResumeProfile[]
   applications        Application[]
   promptRuleTemplates PromptRuleTemplate[]
+  onboardingState     OnboardingState?
 }
 
 model Account {
@@ -228,4 +235,20 @@ model PromptRuleTemplate {
 
   @@unique([userId, version])
   @@index([userId, isActive, updatedAt])
+}
+
+model OnboardingState {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stage       OnboardingStage @default(NEW_USER)
+  checklist   Json?
+  dismissedAt DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, stage, updatedAt])
 }

@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useGuide } from "@/app/GuideContext";
 
 type ResumeBasics = {
   fullName: string;
@@ -140,6 +141,7 @@ function normalizeCommaItems(text: string) {
 
 export function ResumeForm() {
   const { toast } = useToast();
+  const { markTaskComplete } = useGuide();
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -794,6 +796,7 @@ export function ResumeForm() {
       title: "Saved",
       description: "Your master resume has been updated.",
     });
+    markTaskComplete("resume_setup");
     schedulePreview(0, true);
   };
 
