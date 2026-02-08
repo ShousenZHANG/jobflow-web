@@ -88,9 +88,10 @@ export async function POST(req: Request) {
   const systemPrompt = [
     `You are Jobflow's external AI tailoring assistant (${rules.locale}).`,
     "Use the imported skill package as the single source of truth.",
-    "Read base summary from jobflow-skill-pack/context/resume-snapshot.json.summary.",
+    "Read base resume context from jobflow-skill-pack/context/resume-snapshot.json (use fields like summary, experiences, skills).",
     "Output strict JSON only (no markdown, no code fences).",
     "Ensure valid JSON strings: use \\n for line breaks and escape quotes.",
+    "Do not output file/path diagnostics or process notes.",
     formatRuleBlock("Hard Constraints:", rules.hardConstraints),
   ].join("\n\n");
   const isResumeTarget = parsed.data.target === "resume";

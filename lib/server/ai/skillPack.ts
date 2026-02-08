@@ -64,6 +64,8 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- Resume target JSON keys allowed: cvSummary, latestExperience, skillsFinal.",
     "- For newly added bullets, bold at least one JD-critical keyword using clean markdown **keyword** format.",
     "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
+    "- Read base context from jobflow-skill-pack/context/resume-snapshot.json (summary, experiences, skills).",
+    "- Do not output file/path diagnostics or process notes in JSON.",
     "",
     "Job Input:",
     "- Job title: {{JOB_TITLE}}",
@@ -97,6 +99,8 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- Use a strong candidate narrative; avoid recruiter boilerplate.",
     "- Never fabricate facts, tools, metrics, or domain exposure.",
     "- Cover target JSON keys allowed: cover only (no resume keys).",
+    "- Read base context from jobflow-skill-pack/context/resume-snapshot.json (summary, experiences, skills).",
+    "- Do not output file/path diagnostics or process notes in JSON.",
     "",
     "Job Input:",
     "- Job title: {{JOB_TITLE}}",
@@ -217,7 +221,7 @@ ${list(rules.coverRules)}
 - Each newly added bullet includes at least one clean markdown bold keyword (**keyword**).
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.
 - Never output \`skillsAdditions\`.
-- Cover output is exactly three core paragraphs.
+- Cover output includes three semantic sections mapped to \`paragraphOne/paragraphTwo/paragraphThree\`.
 - Cover text is candidate voice (not recruiter voice), factual, and role-specific.
 - JSON parses without repair.
 
