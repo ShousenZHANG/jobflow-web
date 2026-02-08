@@ -829,6 +829,9 @@ export function JobsClient({
   }
 
   async function downloadSkillPack() {
+    if (externalPromptLoading || !externalPromptMeta) {
+      return;
+    }
     setExternalSkillPackLoading(true);
     setError(null);
     try {
@@ -1156,12 +1159,19 @@ export function JobsClient({
                       type="button"
                       variant="outline"
                       size="sm"
-                      disabled={!selectedJob || externalSkillPackLoading}
+                      disabled={
+                        !selectedJob ||
+                        externalSkillPackLoading ||
+                        externalPromptLoading ||
+                        !externalPromptMeta
+                      }
                       onClick={() => selectedJob && downloadSkillPack()}
                       className={externalBtnSecondary}
                     >
                       {externalSkillPackLoading
                         ? "Downloading..."
+                        : externalPromptLoading
+                          ? "Preparing..."
                         : externalSkillPackFresh
                           ? "Re-download Skill Pack"
                           : "Download Skill Pack"}

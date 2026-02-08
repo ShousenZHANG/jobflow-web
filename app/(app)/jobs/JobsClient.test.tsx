@@ -236,4 +236,87 @@ describe("JobsClient", () => {
     expect(removeButton).toHaveClass("sm:absolute", "sm:right-0", "sm:top-0");
   });
 
+  it("disables skill pack download until prompt meta is ready, then advances to Copy Prompt with one click", async () => {
+    const user = userEvent.setup();
+    let resolvePrompt!: (value: Response) => void;
+    const promptResponse = new Promise<Response>((resolve) => {
+      resolvePrompt = resolve;
+    });
+
+    const createObjectUrlSpy = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:skill-pack");
+    const revokeObjectUrlSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?limit=50")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs?")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: "Job description" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/applications/prompt")) {
+        return promptResponse;
+      }
+      if (url.startsWith("/api/prompt-rules/skill-pack")) {
+        return new Response(new Blob(["skill-pack"]), {
+          status: 200,
+          headers: {
+            "content-disposition": 'attachment; filename="jobflow-skill-pack.tar.gz"',
+          },
+        });
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const generateCvButton = (await screen.findAllByRole("button", { name: /generate cv/i }))[0];
+    await user.click(generateCvButton);
+
+    const downloadButton = await screen.findByRole("button", {
+      name: /preparing|download skill pack/i,
+    });
+    expect(downloadButton).toBeDisabled();
+
+    resolvePrompt(
+      new Response(
+        JSON.stringify({
+          prompt: {
+            systemPrompt: "system",
+            userPrompt: "user",
+          },
+          expectedJsonShape: { cvSummary: "string" },
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-08T00:00:00.000Z",
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+
+    await waitFor(() => {
+      expect(downloadButton).toBeEnabled();
+    });
+
+    await user.click(downloadButton);
+
+    expect(await screen.findByText(/copy prompt and paste it/i)).toBeInTheDocument();
+    expect(createObjectUrlSpy).toHaveBeenCalled();
+    expect(revokeObjectUrlSpy).toHaveBeenCalled();
+  });
+
 });
