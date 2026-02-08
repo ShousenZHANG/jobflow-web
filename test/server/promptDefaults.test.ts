@@ -29,4 +29,16 @@ describe("default prompt rules", () => {
     });
     expect(prompts.systemPrompt.toLowerCase()).toContain("senior recruiter-level");
   });
+
+  it("allows markdown bold markers inside JSON string values for cv summary keyword emphasis", () => {
+    const prompts = buildTailorPrompts(DEFAULT_RULES, {
+      baseSummary: "Base summary",
+      jobTitle: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features.",
+    });
+    const text = `${prompts.systemPrompt}\n${prompts.userPrompt}`;
+    expect(text).toContain("Markdown bold markers inside JSON string values are allowed when requested.");
+    expect(text).toContain("In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.");
+  });
 });

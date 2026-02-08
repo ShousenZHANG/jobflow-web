@@ -23,7 +23,8 @@ export function buildTailorPrompts(
 ) {
   const systemPrompt = [
     `You are Jobflow's resume tailoring assistant (${rules.locale}) and a senior recruiter-level writing reviewer.`,
-    "Output strict JSON only (no markdown, no code fences).",
+    "Output strict JSON only (no code fences, no markdown prose outside JSON).",
+    "Markdown bold markers inside JSON string values are allowed when requested.",
     "Ensure valid JSON strings: use \\n for line breaks and escape quotes.",
     formatRules("Hard Constraints:", rules.hardConstraints),
   ].join("\n\n");
@@ -49,6 +50,10 @@ Required JSON shape:
 }
 
 ${formatRules("CV Skills Rules:", rules.cvRules)}
+
+CV summary checklist:
+1) In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.
+2) Keep bolding readable: highlight critical terms, avoid bolding full sentences.
 
 ${formatRules("Cover Letter Skills Rules:", rules.coverRules)}
 

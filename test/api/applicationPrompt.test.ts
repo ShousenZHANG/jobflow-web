@@ -98,6 +98,9 @@ describe("applications prompt api", () => {
     expect(res.status).toBe(200);
     expect(typeof json.prompt.systemPrompt).toBe("string");
     expect(typeof json.prompt.userPrompt).toBe("string");
+    expect(json.prompt.systemPrompt).toContain(
+      "Markdown bold markers inside JSON strings are allowed when explicitly requested.",
+    );
     expect(json.expectedJsonShape.cvSummary).toBe("string");
     expect(Array.isArray(json.expectedJsonShape.latestExperience.bullets)).toBe(true);
     expect(Array.isArray(json.expectedJsonShape.skillsFinal)).toBe(true);
@@ -110,6 +113,9 @@ describe("applications prompt api", () => {
     expect(json.prompt.userPrompt).toContain("Suggested additions:");
     expect(json.prompt.userPrompt).toContain("Target additions count:");
     expect(json.prompt.userPrompt).toContain("Fallback responsibility pool");
+    expect(json.prompt.userPrompt).toContain(
+      "In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.",
+    );
   });
 
   it("returns cover-target prompt payload", async () => {

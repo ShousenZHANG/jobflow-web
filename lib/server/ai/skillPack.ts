@@ -53,7 +53,12 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "CV Rules:",
     cvRules,
     "",
+    "CV summary checklist:",
+    "- In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.",
+    "- Keep bolding readable: emphasize key terms, avoid bolding full sentences.",
+    "",
     "Skills output policy:",
+    "- JSON-only requirement applies to outer output structure; markdown bold markers are allowed inside JSON string values when requested.",
     "- Return skillsFinal as complete final skills list (not delta).",
     "- skillsFinal max 5 major categories, each as { label, items }.",
     "- Prefer existing categories from resume snapshot and merge related skills.",
@@ -90,6 +95,7 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     coverRules,
     "",
     "Cover structure checklist (must follow):",
+    "- JSON-only requirement applies to outer output structure; markdown bold markers are allowed inside JSON string values when requested.",
     "- candidateTitle (optional): role-aligned title for letter header.",
     "- subject: role-specific and concise (prefer 'Application for <Role>' only, no candidate name).",
     "- date: current/provided date string.",
@@ -204,6 +210,7 @@ ${list(rules.coverRules)}
    - If evidence is insufficient for any grounded addition, keep reordered base bullets only.
    - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
+   - In \`cvSummary\`, bold JD-critical keywords with clean markdown markers: **keyword**.
    - For each newly added bullet, bold at least one JD-critical keyword with clean markdown markers: **keyword**.
 4. For \`cover\` target:
    - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\` as three semantic sections (not forced short):
@@ -223,10 +230,12 @@ ${list(rules.coverRules)}
 - Cover output must match: \`schema/output-schema.cover.json\`
 
 ## Verification Checklist
-- Output is strict JSON only (no markdown/code fence).
+- Output is strict JSON only (no code fence and no markdown prose outside JSON).
 - No fabricated facts, skills, employers, or metrics.
 - Markdown bold markers are clean: **keyword** (no inner leading/trailing spaces).
+- JSON-only requirement applies to outer structure; markdown bold markers are allowed inside JSON string values when requested.
 - Resume output keeps every existing latest-experience bullet verbatim (reorder allowed).
+- Resume \`cvSummary\` bolds JD-critical keywords with clean markdown while preserving readability.
 - When top-3 is under-covered and grounded evidence exists, resume output targets 2-3 new bullets (never more than 3).
 - Add grounded bullets only when evidence exists in base resume context; avoid fabrication.
 - If top-3 needs unsupported tech, use fallback responsibilities or adjacent proven technologies before giving up additions.
