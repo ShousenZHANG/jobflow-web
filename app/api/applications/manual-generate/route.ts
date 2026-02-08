@@ -324,6 +324,86 @@ function bulletSimilarityScore(a: string, b: string) {
   return union === 0 ? 0 : intersection / union;
 }
 
+function isGroundedAddedBullet(addedBullet: string, baseBullets: string[]) {
+  if (!addedBullet.trim()) return false;
+  if (baseBullets.length === 0) return false;
+
+  let bestScore = 0;
+  let bestSharedTokens = 0;
+
+  const groundingStopwords = new Set([
+    "built",
+    "build",
+    "design",
+    "designed",
+    "develop",
+    "developed",
+    "deliver",
+    "delivered",
+    "lead",
+    "led",
+    "manage",
+    "managed",
+    "maintain",
+    "maintained",
+    "improve",
+    "improved",
+    "optimize",
+    "optimized",
+    "collaborate",
+    "collaborated",
+    "support",
+    "supported",
+    "work",
+    "worked",
+    "own",
+    "owned",
+    "drive",
+    "drove",
+    "using",
+    "with",
+    "for",
+    "and",
+    "the",
+    "a",
+    "an",
+    "to",
+    "of",
+    "in",
+    "on",
+    "by",
+  ]);
+
+  const addedTokens = new Set(
+    Array.from(tokenizeBulletForSimilarity(addedBullet)).filter(
+      (token) => !groundingStopwords.has(token),
+    ),
+  );
+  if (addedTokens.size === 0) return false;
+
+  for (const baseBullet of baseBullets) {
+    bestScore = Math.max(bestScore, bulletSimilarityScore(addedBullet, baseBullet));
+    const baseTokens = new Set(
+      Array.from(tokenizeBulletForSimilarity(baseBullet)).filter(
+        (token) => !groundingStopwords.has(token),
+      ),
+    );
+    let shared = 0;
+    for (const token of addedTokens) {
+      if (baseTokens.has(token)) shared += 1;
+    }
+    bestSharedTokens = Math.max(bestSharedTokens, shared);
+  }
+
+  // Only allow added bullets that have at least some evidence overlap with the user's
+  // existing latest-experience bullets. If there's no overlap, treat it as likely fabrication
+  // and drop it to keep the resume consistent with the user's real experience.
+  // We only need lightweight evidence that the new bullet is consistent with the
+  // user's latest experience. If there's zero meaningful overlap, treat it as likely
+  // fabrication and drop it.
+  return bestSharedTokens >= 1 || bestScore >= 0.18;
+}
+
 function canonicalizeLatestBullets(baseBullets: string[], incomingBullets: string[]) {
   const normalizedBase = baseBullets.map(normalizeBulletForCompare);
   const usedBaseIndexes = new Set<number>();
@@ -557,11 +637,20 @@ export async function POST(req: Request) {
           baseBulletsForMatch,
           incomingBullets,
         );
-        finalLatestBullets = canonicalBullets.map((bullet) =>
+        const disallowed = addedBullets.filter(
+          (bullet) => !isGroundedAddedBullet(bullet, baseBulletsForMatch),
+        );
+        const disallowedKeys = new Set(disallowed.map(normalizeBulletForCompare));
+        const filteredCanonical =
+          disallowedKeys.size > 0
+            ? canonicalBullets.filter(
+                (bullet) => !disallowedKeys.has(normalizeBulletForCompare(bullet)),
+              )
+            : canonicalBullets;
+
+        finalLatestBullets = filteredCanonical.map((bullet) =>
           escapeLatexWithBold(normalizeMarkdownBold(bullet)),
         );
-
-        void addedBullets;
       }
 
       const latexSummary = escapeLatexWithBold(normalizeMarkdownBold(cvSummary));
