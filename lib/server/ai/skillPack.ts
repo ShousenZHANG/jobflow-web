@@ -58,12 +58,13 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- skillsFinal max 5 major categories, each as { label, items }.",
     "- Prefer existing categories from resume snapshot and merge related skills.",
     "- Prioritize JD must-have skills for ATS matching when grounded in base resume context.",
-    "- If a JD must-have has no grounded evidence, use closest truthful transferable skill; do not fabricate direct ownership.",
+    "- If a JD must-have has no grounded evidence, do not claim direct ownership; use only factually supportable adjacent skills.",
     "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
     "- Do NOT return skillsAdditions. Return skillsFinal only.",
     "- Resume target JSON keys allowed: cvSummary, latestExperience, skillsFinal.",
     "- For newly added bullets, bold at least one JD-critical keyword using clean markdown **keyword** format.",
     "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
+    "- New bullets must stay consistent with latest-experience timeframe and realistic scope.",
     "- Read base context from jobflow-skill-pack/context/resume-snapshot.json (summary, experiences, skills).",
     "- Do not output file/path diagnostics or process notes in JSON.",
     "",
@@ -92,7 +93,7 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- salutation: addressee text only (no leading 'Dear', no trailing comma).",
     "- paragraphOne: application intent + role-fit summary from real resume facts (can be multi-sentence).",
     "- paragraphTwo: map to JD responsibilities in priority order with concrete evidence and delivery outcomes.",
-    "- If direct exposure is missing, use transferable evidence + explicit willingness to learn.",
+    "- If direct evidence is missing for a JD point, do not claim it; use only adjacent proven evidence that is factually supportable.",
     "- paragraphThree: motivation for this role/company in natural first-person candidate voice (specific, non-generic).",
     "- Bold JD-critical terms naturally in paragraphs using clean markdown **keyword** markers.",
     "- closing + signatureName: include when possible.",
@@ -191,7 +192,7 @@ ${list(rules.coverRules)}
    - Produce \`skillsFinal\` as complete final skills list (not delta).
    - Keep \`skillsFinal\` within 5 major categories and prioritize existing categories.
    - If responsibility gaps are found and evidence exists, you may add up to 3 grounded bullets and put them first.
-   - If direct exposure is missing, use truthful transferable evidence + willingness-to-learn phrasing.
+   - If direct evidence is missing for a JD point, do not claim it; use only factually supportable adjacent evidence.
    - If evidence is insufficient, do not force additions; keep reordered base bullets only.
    - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
@@ -199,7 +200,7 @@ ${list(rules.coverRules)}
 4. For \`cover\` target:
    - Produce \`cover.paragraphOne/paragraphTwo/paragraphThree\` as three semantic sections (not forced short):
      1) application intent + fit,
-     2) JD mapping in priority order with real evidence (or transferable skills + willingness to learn),
+     2) JD mapping in priority order with real evidence only (no unsupported claim),
      3) role/company motivation in natural first-person tone.
    - Include \`candidateTitle/subject/date/salutation/closing/signatureName\` whenever possible.
    - Subject should be role-focused only (no candidate name); salutation should not include leading "Dear" or trailing comma.
