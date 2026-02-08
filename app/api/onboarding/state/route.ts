@@ -14,7 +14,13 @@ import {
 
 export const runtime = "nodejs";
 
-const OnboardingTaskIdSchema = z.enum(["resume_setup", "first_fetch", "triage_first_job"]);
+const OnboardingTaskIdSchema = z.enum([
+  "resume_setup",
+  "first_fetch",
+  "triage_first_job",
+  "generate_first_pdf",
+  "download_first_pdf",
+]);
 
 const PatchSchema = z.discriminatedUnion("type", [
   z.object({

@@ -275,7 +275,9 @@ export function JobsClient({
   initialCursor?: string | null;
 }) {
   const { toast } = useToast();
-  const { markTaskComplete } = useGuide();
+  const { isTaskHighlighted, markTaskComplete } = useGuide();
+  const guideHighlightClass =
+    "ring-2 ring-emerald-400 ring-offset-2 ring-offset-white shadow-[0_0_0_4px_rgba(16,185,129,0.18)]";
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
@@ -600,6 +602,9 @@ export function JobsClient({
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       markTaskComplete("triage_first_job");
+      if (data?.resumeSaved || data?.resumePdfUrl) {
+        markTaskComplete("generate_first_pdf");
+      }
       toast({
         title: "Status updated",
         description: `${variables.status}`,
@@ -912,6 +917,7 @@ export function JobsClient({
         filenameFromDisposition(res.headers.get("content-disposition")) ||
         (target === "resume" ? "resume.pdf" : "cover-letter.pdf");
       openPdfPreview(blob, filename, target === "resume" ? "Resume preview" : "Cover letter preview");
+      markTaskComplete("generate_first_pdf");
 
       if (target === "resume") {
         setTailorSourceByJob((prev) => ({
@@ -985,6 +991,9 @@ export function JobsClient({
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const selectedTailorSource = selectedJob ? tailorSourceByJob[selectedJob.id] : undefined;
   const isAppliedSelected = selectedJob?.status === "APPLIED";
+  const highlightTriage = isTaskHighlighted("triage_first_job");
+  const highlightGenerate = isTaskHighlighted("generate_first_pdf");
+  const highlightDownload = isTaskHighlighted("download_first_pdf");
   const parsedExternalOutput = useMemo(
     () => parseTailorOutput(externalModelOutput, externalTarget),
     [externalModelOutput, externalTarget],
@@ -1311,9 +1320,15 @@ export function JobsClient({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-9 rounded-xl border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
+                    className={`h-9 rounded-xl border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
+                      highlightDownload ? guideHighlightClass : ""
+                    }`}
                   >
-                    <a href={pdfPreview.url} download={pdfPreview.filename}>
+                    <a
+                      href={pdfPreview.url}
+                      download={pdfPreview.filename}
+                      onClick={() => markTaskComplete("download_first_pdf")}
+                    >
                       <Download className="mr-1.5 h-4 w-4" />
                       Download PDF
                     </a>
@@ -1680,7 +1695,8 @@ export function JobsClient({
                       <SelectTrigger
                         className={`shrink-0 rounded-xl border-slate-200 bg-white shadow-sm ${
                           isAppliedSelected ? "h-9 w-[118px] px-3 text-sm" : "h-10 w-[132px]"
-                        }`}
+                        } ${highlightTriage ? guideHighlightClass : ""}`}
+                        data-guide-highlight={highlightTriage ? "true" : "false"}
                       >
                         <span className="truncate">{statusLabel[selectedJob.status]}</span>
                       </SelectTrigger>
@@ -1709,7 +1725,8 @@ export function JobsClient({
                       onClick={() => openExternalGenerateDialog(selectedJob, "resume")}
                       className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
                         isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                      }`}
+                      } ${highlightGenerate ? guideHighlightClass : ""}`}
+                      data-guide-highlight={highlightGenerate ? "true" : "false"}
                     >
                       <FileText className="mr-1 h-4 w-4" />
                       Generate CV
@@ -1721,7 +1738,8 @@ export function JobsClient({
                       onClick={() => openExternalGenerateDialog(selectedJob, "cover")}
                       className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
                         isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                      }`}
+                      } ${highlightGenerate ? guideHighlightClass : ""}`}
+                      data-guide-highlight={highlightGenerate ? "true" : "false"}
                     >
                       <FileText className="mr-1 h-4 w-4" />
                       Generate CL
@@ -1733,12 +1751,13 @@ export function JobsClient({
                         asChild
                         className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
                           isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                        }`}
+                        } ${highlightDownload ? guideHighlightClass : ""}`}
                       >
                         <a
                           href={selectedJob.resumePdfUrl}
                           target="_blank"
                           rel="noreferrer"
+                          onClick={() => markTaskComplete("download_first_pdf")}
                         >
                           Saved CV
                         </a>

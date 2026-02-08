@@ -91,7 +91,9 @@ export function FetchClient() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { startRun, markRunning, status: globalStatus, runId: globalRunId } = useFetchStatus();
-  const { markTaskComplete } = useGuide();
+  const { isTaskHighlighted, markTaskComplete } = useGuide();
+  const guideHighlightClass =
+    "ring-2 ring-emerald-400 ring-offset-2 ring-offset-white shadow-[0_0_0_4px_rgba(16,185,129,0.18)]";
   const prevUserIdRef = useRef<string | null>(null);
 
   const queries = useMemo(() => {
@@ -414,7 +416,10 @@ export function FetchClient() {
         <Button
           onClick={onSubmit}
           disabled={isSubmitting || isRunning}
-          className="edu-cta edu-cta--press edu-cta--compact h-9 px-4"
+          className={`edu-cta edu-cta--press edu-cta--compact h-9 px-4 ${
+            isTaskHighlighted("first_fetch") ? guideHighlightClass : ""
+          }`}
+          data-guide-highlight={isTaskHighlighted("first_fetch") ? "true" : "false"}
         >
           {isSubmitting ? "Starting..." : "Start fetch"}
         </Button>

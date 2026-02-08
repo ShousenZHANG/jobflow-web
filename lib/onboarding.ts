@@ -1,4 +1,9 @@
-export type OnboardingTaskId = "resume_setup" | "first_fetch" | "triage_first_job";
+export type OnboardingTaskId =
+  | "resume_setup"
+  | "first_fetch"
+  | "triage_first_job"
+  | "generate_first_pdf"
+  | "download_first_pdf";
 
 export type OnboardingTask = {
   id: OnboardingTaskId;
@@ -26,6 +31,18 @@ export const ONBOARDING_TASKS: OnboardingTask[] = [
     description: "Update one job status to begin your tracking workflow.",
     href: "/jobs",
   },
+  {
+    id: "generate_first_pdf",
+    title: "Generate first PDF",
+    description: "Generate one CV or cover-letter PDF from a real job.",
+    href: "/jobs",
+  },
+  {
+    id: "download_first_pdf",
+    title: "Download first PDF",
+    description: "Download one generated PDF to complete your first end-to-end loop.",
+    href: "/jobs",
+  },
 ];
 
 export type OnboardingChecklist = Record<OnboardingTaskId, boolean>;
@@ -35,6 +52,8 @@ export function defaultOnboardingChecklist(): OnboardingChecklist {
     resume_setup: false,
     first_fetch: false,
     triage_first_job: false,
+    generate_first_pdf: false,
+    download_first_pdf: false,
   };
 }
 
@@ -51,6 +70,14 @@ export function normalizeOnboardingChecklist(value: unknown): OnboardingChecklis
       typeof record.triage_first_job === "boolean"
         ? record.triage_first_job
         : fallback.triage_first_job,
+    generate_first_pdf:
+      typeof record.generate_first_pdf === "boolean"
+        ? record.generate_first_pdf
+        : fallback.generate_first_pdf,
+    download_first_pdf:
+      typeof record.download_first_pdf === "boolean"
+        ? record.download_first_pdf
+        : fallback.download_first_pdf,
   };
 }
 

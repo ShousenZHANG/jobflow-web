@@ -32,11 +32,13 @@ type GuideContextValue = {
   loading: boolean;
   open: boolean;
   state: GuideState | null;
+  activeTaskId: OnboardingTaskId | null;
   openGuide: () => void;
   closeGuide: () => void;
   skipGuide: () => void;
   resetGuide: () => void;
   markTaskComplete: (taskId: OnboardingTaskId) => void;
+  isTaskHighlighted: (taskId: OnboardingTaskId) => boolean;
 };
 
 const GuideContext = createContext<GuideContextValue | null>(null);
@@ -74,7 +76,7 @@ function currentPageTips(pathname: string) {
       title: "Jobs page",
       points: [
         "Open JD details and update status for your first role.",
-        "Use Generate CV/CL only after your master resume is saved.",
+        "Generate CV/CL after your master resume is saved, then download one PDF.",
       ],
     };
   }
@@ -142,6 +144,22 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     [userId],
   );
 
+  const activeTaskId = useMemo<OnboardingTaskId | null>(() => {
+    if (!state || state.isComplete || state.dismissed) return null;
+    const nextTask = ONBOARDING_TASKS.find((task) => !state.checklist[task.id]);
+    return nextTask?.id ?? null;
+  }, [state]);
+
+  const isTaskHighlighted = useCallback(
+    (taskId: OnboardingTaskId) => {
+      if (!open || !activeTaskId || activeTaskId !== taskId) return false;
+      const task = ONBOARDING_TASKS.find((item) => item.id === taskId);
+      if (!task) return false;
+      return pathname === task.href || pathname.startsWith(`${task.href}/`);
+    },
+    [activeTaskId, open, pathname],
+  );
+
   const markTaskComplete = useCallback(
     (taskId: OnboardingTaskId) => {
       setState((prev) => {
@@ -188,13 +206,26 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       loading,
       open,
       state,
+      activeTaskId,
       openGuide,
       closeGuide,
       skipGuide,
       resetGuide,
       markTaskComplete,
+      isTaskHighlighted,
     }),
-    [loading, open, state, openGuide, closeGuide, skipGuide, resetGuide, markTaskComplete],
+    [
+      loading,
+      open,
+      state,
+      activeTaskId,
+      openGuide,
+      closeGuide,
+      skipGuide,
+      resetGuide,
+      markTaskComplete,
+      isTaskHighlighted,
+    ],
   );
 
   return (
@@ -230,11 +261,17 @@ export function GuideProvider({ children }: { children: ReactNode }) {
               <div className="space-y-2">
                 {ONBOARDING_TASKS.map((task) => {
                   const done = Boolean(state?.checklist?.[task.id]);
+                  const active = activeTaskId === task.id;
                   return (
                     <Link
                       key={task.id}
                       href={task.href}
-                      className="block rounded-xl border border-slate-900/10 bg-slate-50/70 p-2 transition hover:border-slate-300 hover:bg-slate-50"
+                      className={[
+                        "block rounded-xl border bg-slate-50/70 p-2 transition hover:bg-slate-50",
+                        active
+                          ? "border-emerald-300 ring-2 ring-emerald-200"
+                          : "border-slate-900/10 hover:border-slate-300",
+                      ].join(" ")}
                     >
                       <div className="flex items-start gap-2">
                         {done ? (
@@ -311,10 +348,12 @@ export function useGuide() {
     loading: false,
     open: false,
     state: null,
+    activeTaskId: null,
     openGuide: () => {},
     closeGuide: () => {},
     skipGuide: () => {},
     resetGuide: () => {},
     markTaskComplete: () => {},
+    isTaskHighlighted: () => false,
   };
 }

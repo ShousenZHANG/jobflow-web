@@ -141,7 +141,9 @@ function normalizeCommaItems(text: string) {
 
 export function ResumeForm() {
   const { toast } = useToast();
-  const { markTaskComplete } = useGuide();
+  const { isTaskHighlighted, markTaskComplete } = useGuide();
+  const guideHighlightClass =
+    "ring-2 ring-emerald-400 ring-offset-2 ring-offset-white shadow-[0_0_0_4px_rgba(16,185,129,0.18)]";
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -1498,7 +1500,14 @@ export function ResumeForm() {
             Next
           </Button>
         ) : (
-          <Button onClick={handleSave} disabled={!canContinue || saving} className="edu-cta edu-cta--press">
+          <Button
+            onClick={handleSave}
+            disabled={!canContinue || saving}
+            className={`edu-cta edu-cta--press ${
+              isTaskHighlighted("resume_setup") ? guideHighlightClass : ""
+            }`}
+            data-guide-highlight={isTaskHighlighted("resume_setup") ? "true" : "false"}
+          >
             {saving ? "Saving..." : "Save master resume"}
           </Button>
         )}
