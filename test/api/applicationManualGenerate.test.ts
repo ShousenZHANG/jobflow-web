@@ -486,4 +486,44 @@ describe("applications manual generate api", () => {
     expect(res.status).toBe(409);
     expect(json.error.code).toBe("PROMPT_META_MISMATCH");
   });
+
+  it("generates cover pdf with cover letter suffix for cover target", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    const coverOnlyOutput = JSON.stringify({
+      cover: {
+        paragraphOne: "One",
+        paragraphTwo: "Two",
+        paragraphThree: "Three",
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "cover",
+          modelOutput: coverOnlyOutput,
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/pdf");
+    expect(res.headers.get("content-disposition")).toContain("Cover_Letter.pdf");
+  });
 });

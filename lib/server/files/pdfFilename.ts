@@ -21,9 +21,10 @@ function normalizePart(value: string, fallback: string) {
   return tokens.length > 0 ? tokens.join("_") : fallback;
 }
 
-export function buildPdfFilename(fullName: string, role: string) {
+export function buildPdfFilename(fullName: string, role: string, suffix?: string) {
   const safeName = normalizePart(fullName, "Candidate");
   const safeRole = normalizePart(role, "Role");
-  return `${safeName}_${safeRole}.pdf`;
+  const safeSuffix = suffix ? normalizePart(suffix, "").trim() : "";
+  const base = safeSuffix ? `${safeName}_${safeRole}_${safeSuffix}` : `${safeName}_${safeRole}`;
+  return `${base}.pdf`;
 }
-

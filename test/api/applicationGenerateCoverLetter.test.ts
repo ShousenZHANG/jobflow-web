@@ -136,6 +136,7 @@ describe("applications generate cover letter api", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("application/pdf");
+    expect(res.headers.get("content-disposition")).toContain("Cover_Letter.pdf");
     expect(res.headers.get("x-application-id")).toBe("app-1");
     expect(applicationStore.upsert).toHaveBeenCalled();
   });

@@ -151,7 +151,7 @@ export async function POST(req: Request) {
     },
   });
 
-  const filename = buildPdfFilename(renderInput.candidate.name, job.title);
+  const filename = buildPdfFilename(renderInput.candidate.name, job.title, "Cover Letter");
 
   return new NextResponse(new Uint8Array(pdf), {
     status: 200,

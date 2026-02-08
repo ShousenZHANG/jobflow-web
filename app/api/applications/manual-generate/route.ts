@@ -412,8 +412,10 @@ function getLatestRawBullets(profile: unknown): string[] {
   return asStringArray(latest?.bullets);
 }
 
-function parseFilename(candidate: string, role: string) {
-  return buildPdfFilename(candidate, role);
+function parseFilename(candidate: string, role: string, target: "resume" | "cover") {
+  return target === "cover"
+    ? buildPdfFilename(candidate, role, "Cover Letter")
+    : buildPdfFilename(candidate, role);
 }
 
 export async function POST(req: Request) {
@@ -593,7 +595,7 @@ export async function POST(req: Request) {
         skills: nextSkills,
       });
       pdf = await compileLatexToPdf(tex);
-      filename = parseFilename(renderInput.candidate.name, job.title);
+      filename = parseFilename(renderInput.candidate.name, job.title, "resume");
     } else {
       const coverParsed = parseCoverManualOutput(parsed.data.modelOutput);
       if (!coverParsed.data) {
@@ -636,7 +638,7 @@ export async function POST(req: Request) {
         signatureName: coverOutput.cover.signatureName,
       });
       pdf = await compileLatexToPdf(coverTex);
-      filename = parseFilename(renderInput.candidate.name, job.title);
+      filename = parseFilename(renderInput.candidate.name, job.title, "cover");
     }
   } catch (err) {
     if (err instanceof LatexRenderError) {
