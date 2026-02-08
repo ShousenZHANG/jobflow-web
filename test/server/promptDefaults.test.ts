@@ -11,12 +11,13 @@ describe("default prompt rules", () => {
     expect(cvText).toContain("google xyz");
   });
 
-  it("keeps strict three-paragraph cover structure", () => {
+  it("enforces recruiter-preferred cover alignment, bold strategy, and natural professional tone", () => {
     const coverText = DEFAULT_COVER_RULES.join("\n").toLowerCase();
-    expect(coverText).toContain("exactly three short paragraphs");
-    expect(coverText).toContain("paragraph 1");
-    expect(coverText).toContain("paragraph 2");
-    expect(coverText).toContain("paragraph 3");
+    expect(coverText).toContain("top jd responsibilities first");
+    expect(coverText).toContain("bold all jd-critical keywords");
+    expect(coverText).toContain("professional");
+    expect(coverText).toContain("natural");
+    expect(coverText).toContain("subtle personality");
   });
 
   it("uses recruiter role in system prompt", () => {
@@ -29,4 +30,3 @@ describe("default prompt rules", () => {
     expect(prompts.systemPrompt.toLowerCase()).toContain("senior recruiter-level");
   });
 });
-

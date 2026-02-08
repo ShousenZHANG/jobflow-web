@@ -140,5 +140,8 @@ describe("applications prompt api", () => {
     expect(json.expectedJsonShape.cover.salutation).toBe("string (optional)");
     expect(json.expectedJsonShape.cover.subject).toBe("string (optional)");
     expect(json.prompt.userPrompt).not.toContain("Top-3 Responsibility Coverage (must follow):");
+    expect(json.prompt.userPrompt).toContain("Top-3 JD responsibilities");
+    expect(json.prompt.userPrompt).toContain("Bold all JD-critical keywords");
+    expect(json.prompt.userPrompt).toContain("professional but natural");
   });
 });

@@ -201,11 +201,14 @@ export async function POST(req: Request) {
         "4) cover.salutation: provide only addressee text (e.g., 'Hiring Team at <Company>'), no leading 'Dear' and no trailing comma.",
         "5) cover.paragraphOne: application intent + role-fit summary from real resume facts (can be multi-sentence).",
         "6) cover.paragraphTwo: map to JD responsibilities in priority order with concrete evidence and outcomes.",
+        "6b) Top-3 JD responsibilities must be covered first with explicit, grounded evidence points.",
         "6a) If direct evidence is missing, do not claim it; use only adjacent proven evidence that is factually supportable.",
         "7) cover.paragraphThree: why this role/company specifically, written in natural first-person candidate voice (specific, not generic).",
-        "8) Bold JD-critical keywords naturally in paragraphs using **keyword** (clean markers only).",
+        "8) Bold all JD-critical keywords that appear in the cover output using **keyword** (clean markers only).",
+        "8a) Keep bolding readable: emphasize critical terms without turning full sentences into bold text.",
         "9) cover.closing + cover.signatureName: include when possible.",
         "10) No fabrication, no recruiter voice, no generic filler; keep a strong candidate narrative.",
+        "10a) Keep voice professional but natural, with subtle personality (lightly engaging but still formal).",
         "11) Cover target JSON keys allowed: cover only (no cvSummary/latestExperience/skillsFinal).",
       ].join("\n");
 

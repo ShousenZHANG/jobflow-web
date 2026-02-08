@@ -96,10 +96,13 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- salutation: addressee text only (no leading 'Dear', no trailing comma).",
     "- paragraphOne: application intent + role-fit summary from real resume facts (can be multi-sentence).",
     "- paragraphTwo: map to JD responsibilities in priority order with concrete evidence and delivery outcomes.",
+    "- Top-3 JD responsibilities must be covered first with explicit, grounded evidence points.",
     "- If direct evidence is missing for a JD point, do not claim it; use only adjacent proven evidence that is factually supportable.",
     "- paragraphThree: motivation for this role/company in natural first-person candidate voice (specific, non-generic).",
-    "- Bold JD-critical terms naturally in paragraphs using clean markdown **keyword** markers.",
+    "- Bold all JD-critical keywords that appear in the cover output using clean markdown **keyword** markers.",
+    "- Keep bolding readable: emphasize critical terms without turning full sentences into bold text.",
     "- closing + signatureName: include when possible.",
+    "- Keep voice professional but natural, with subtle personality (lightly engaging but still formal).",
     "- Use a strong candidate narrative; avoid recruiter boilerplate.",
     "- Never fabricate facts, tools, metrics, or domain exposure.",
     "- Cover target JSON keys allowed: cover only (no resume keys).",
@@ -207,9 +210,11 @@ ${list(rules.coverRules)}
      1) application intent + fit,
      2) JD mapping in priority order with real evidence only (no unsupported claim),
      3) role/company motivation in natural first-person tone.
+   - Cover Top-3 JD responsibilities first in paragraphTwo with explicit evidence mapping.
    - Include \`candidateTitle/subject/date/salutation/closing/signatureName\` whenever possible.
    - Subject should be role-focused only (no candidate name); salutation should not include leading "Dear" or trailing comma.
-   - Bold JD-critical terms naturally in paragraphs using clean markdown **keyword** markers.
+   - Bold all JD-critical keywords that appear in output using clean markdown **keyword** markers while preserving readability.
+   - Keep voice professional but natural, with subtle personality (lightly engaging, still formal).
 5. Validate JSON shape against schema before final output.
 6. Output only the target contract: resume target cannot include cover keys; cover target cannot include resume keys.
 
@@ -230,6 +235,8 @@ ${list(rules.coverRules)}
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.
 - Never output \`skillsAdditions\`.
 - Cover output includes three semantic sections mapped to \`paragraphOne/paragraphTwo/paragraphThree\`.
+- Cover output maps Top-3 JD responsibilities first before secondary points.
+- Cover output bolds all JD-critical keywords in output with clean markdown while keeping text readable.
 - Cover text is candidate voice (not recruiter voice), factual, and role-specific.
 - JSON parses without repair.
 
