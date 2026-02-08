@@ -48,6 +48,27 @@ type GuideContextValue = {
 
 const GuideContext = createContext<GuideContextValue | null>(null);
 
+function resolveGuideState(
+  previousState: GuideState | null,
+  nextState: GuideState,
+  preserveCompleted: boolean,
+): GuideState {
+  if (!previousState || !preserveCompleted) {
+    return nextState;
+  }
+  const checklist = mergeOnboardingChecklists(previousState.checklist, nextState.checklist);
+  const completedCount = ONBOARDING_TASKS.reduce(
+    (count, task) => (checklist[task.id] ? count + 1 : count),
+    0,
+  );
+  return {
+    ...nextState,
+    checklist,
+    completedCount,
+    isComplete: completedCount >= nextState.totalCount,
+  };
+}
+
 function currentPageTips(pathname: string) {
   if (pathname.startsWith("/resume/rules")) {
     return {
@@ -109,7 +130,8 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       const res = await fetch("/api/onboarding/state", { cache: "no-store" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to load onboarding state");
-      setState(json.state as GuideState);
+      const nextState = json.state as GuideState;
+      setState((prev) => resolveGuideState(prev, nextState, true));
     } catch {
       setState(null);
     } finally {
@@ -148,24 +170,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         const json = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(json?.error || "Failed to update onboarding state");
         const nextState = json.state as GuideState;
-        if (payload.type !== "complete_task") {
-          setState(nextState);
-          return;
-        }
-        setState((prev) => {
-          if (!prev) return nextState;
-          const checklist = mergeOnboardingChecklists(prev.checklist, nextState.checklist);
-          const completedCount = ONBOARDING_TASKS.reduce(
-            (count, task) => (checklist[task.id] ? count + 1 : count),
-            0,
-          );
-          return {
-            ...nextState,
-            checklist,
-            completedCount,
-            isComplete: completedCount >= nextState.totalCount,
-          };
-        });
+        setState((prev) =>
+          resolveGuideState(prev, nextState, payload.type !== "reset"),
+        );
       } catch {
         // Keep UI resilient even if persistence is temporarily unavailable.
       }
@@ -269,91 +276,100 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       {userId ? (
         <>
           {open ? (
-            <section className="fixed bottom-24 left-6 z-50 w-[360px] rounded-3xl border-2 border-slate-900/10 bg-white/95 p-4 shadow-[0_24px_50px_-32px_rgba(15,23,42,0.36)] backdrop-blur">
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-                    <Sparkles className="h-3 w-3" />
-                    Getting started
+            <>
+              <button
+                type="button"
+                aria-label="Close guide"
+                data-testid="guide-backdrop"
+                onClick={closeGuide}
+                className="fixed inset-0 z-40 bg-transparent"
+              />
+              <section className="fixed bottom-24 left-6 z-50 w-[360px] rounded-3xl border-2 border-slate-900/10 bg-white/95 p-4 shadow-[0_24px_50px_-32px_rgba(15,23,42,0.36)] backdrop-blur">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div>
+                    <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                      <Sparkles className="h-3 w-3" />
+                      Getting started
+                    </div>
+                    <h3 className="mt-1 text-sm font-semibold text-slate-900">
+                      Guide checklist ({state?.completedCount ?? 0}/{state?.totalCount ?? ONBOARDING_TASKS.length})
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Complete these steps once, then use Guide anytime from the top bar.
+                    </p>
                   </div>
-                  <h3 className="mt-1 text-sm font-semibold text-slate-900">
-                    Guide checklist ({state?.completedCount ?? 0}/{state?.totalCount ?? ONBOARDING_TASKS.length})
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Complete these steps once, then use Guide anytime from the top bar.
-                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={closeGuide}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Close
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={closeGuide}
-                  className="h-7 px-2 text-xs"
-                >
-                  Close
-                </Button>
-              </div>
 
-              <div className="space-y-2">
-                {ONBOARDING_TASKS.map((task) => {
-                  const done = Boolean(state?.checklist?.[task.id]);
-                  const active = activeTaskId === task.id;
-                  return (
-                    <Link
-                      key={task.id}
-                      href={task.href}
-                      className={[
-                        "block rounded-xl border bg-slate-50/70 p-2 transition hover:bg-slate-50",
-                        active
-                          ? "border-emerald-300 ring-2 ring-emerald-200"
-                          : "border-slate-900/10 hover:border-slate-300",
-                      ].join(" ")}
-                    >
-                      <div className="flex items-start gap-2">
-                        {done ? (
-                          <CircleCheckBig className="mt-0.5 h-4 w-4 text-emerald-600" />
-                        ) : (
-                          <Circle className="mt-0.5 h-4 w-4 text-slate-400" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold text-slate-900">{task.title}</div>
-                          <div className="line-clamp-2 text-[11px] text-muted-foreground">{task.description}</div>
+                <div className="space-y-2">
+                  {ONBOARDING_TASKS.map((task) => {
+                    const done = Boolean(state?.checklist?.[task.id]);
+                    const active = activeTaskId === task.id;
+                    return (
+                      <Link
+                        key={task.id}
+                        href={task.href}
+                        className={[
+                          "block rounded-xl border bg-slate-50/70 p-2 transition hover:bg-slate-50",
+                          active
+                            ? "border-emerald-300 ring-2 ring-emerald-200"
+                            : "border-slate-900/10 hover:border-slate-300",
+                        ].join(" ")}
+                      >
+                        <div className="flex items-start gap-2">
+                          {done ? (
+                            <CircleCheckBig className="mt-0.5 h-4 w-4 text-emerald-600" />
+                          ) : (
+                            <Circle className="mt-0.5 h-4 w-4 text-slate-400" />
+                          )}
+                          <div className="min-w-0">
+                            <div className="text-xs font-semibold text-slate-900">{task.title}</div>
+                            <div className="line-clamp-2 text-[11px] text-muted-foreground">{task.description}</div>
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+                      </Link>
+                    );
+                  })}
+                </div>
 
-              <div className="mt-3 rounded-xl border border-slate-900/10 bg-white p-2">
-                <div className="mb-1 text-xs font-semibold text-slate-900">{tips.title}</div>
-                <ul className="space-y-1 text-[11px] text-muted-foreground">
-                  {tips.points.map((point) => (
-                    <li key={point} className="leading-5">
-                      - {point}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <div className="mt-3 rounded-xl border border-slate-900/10 bg-white p-2">
+                  <div className="mb-1 text-xs font-semibold text-slate-900">{tips.title}</div>
+                  <ul className="space-y-1 text-[11px] text-muted-foreground">
+                    {tips.points.map((point) => (
+                      <li key={point} className="leading-5">
+                        - {point}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-              <div className="mt-3 flex items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={skipGuide}
-                  className="h-8 rounded-xl text-xs"
-                >
-                  Skip for now
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetGuide}
-                  className="h-8 rounded-xl text-xs text-muted-foreground"
-                >
-                  Reset checklist
-                </Button>
-              </div>
-            </section>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={skipGuide}
+                    className="h-8 rounded-xl text-xs"
+                  >
+                    Skip for now
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetGuide}
+                    className="h-8 rounded-xl text-xs text-muted-foreground"
+                  >
+                    Reset checklist
+                  </Button>
+                </div>
+              </section>
+            </>
           ) : null}
 
           <button
