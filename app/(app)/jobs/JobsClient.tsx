@@ -964,6 +964,11 @@ export function JobsClient({
     APPLIED: "bg-sky-100 text-sky-700",
     REJECTED: "bg-slate-200 text-slate-600",
   };
+  const statusLabel: Record<JobStatus, string> = {
+    NEW: "New",
+    APPLIED: "Applied",
+    REJECTED: "Rejected",
+  };
 
   const effectiveSelectedId = useMemo(() => {
     if (!items.length) return null;
@@ -973,6 +978,7 @@ export function JobsClient({
 
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const selectedTailorSource = selectedJob ? tailorSourceByJob[selectedJob.id] : undefined;
+  const isAppliedSelected = selectedJob?.status === "APPLIED";
   const parsedExternalOutput = useMemo(
     () => parseTailorOutput(externalModelOutput, externalTarget),
     [externalModelOutput, externalTarget],
@@ -1651,14 +1657,22 @@ export function JobsClient({
                     {selectedJob.jobType ?? "Unknown"} · {selectedJob.jobLevel ?? "Unknown"}
                   </div>
                 </div>
-                <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 whitespace-nowrap lg:w-auto lg:justify-end">
+                <div
+                  className={`flex w-full items-center overflow-x-auto pb-1 whitespace-nowrap lg:w-auto lg:justify-end ${
+                    isAppliedSelected ? "gap-1.5" : "gap-2"
+                  }`}
+                >
                   <Select
                     value={selectedJob.status}
                     onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
                     disabled={updatingIds.has(selectedJob.id)}
                   >
-                    <SelectTrigger className="h-10 w-[132px] shrink-0 rounded-xl border-slate-200 bg-white shadow-sm">
-                      <SelectValue />
+                    <SelectTrigger
+                      className={`shrink-0 rounded-xl border-slate-200 bg-white shadow-sm ${
+                        isAppliedSelected ? "h-9 w-[118px] px-3 text-sm" : "h-10 w-[132px]"
+                      }`}
+                    >
+                      <span className="truncate">{statusLabel[selectedJob.status]}</span>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="NEW">New</SelectItem>
@@ -1669,7 +1683,9 @@ export function JobsClient({
                   <Button
                     asChild
                     size="sm"
-                    className="h-10 shrink-0 rounded-xl border border-emerald-500 bg-emerald-500 px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px]"
+                    className={`shrink-0 rounded-xl border border-emerald-500 bg-emerald-500 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px] ${
+                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                    }`}
                   >
                     <a href={selectedJob.jobUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="mr-1 h-4 w-4" />
@@ -1681,7 +1697,9 @@ export function JobsClient({
                     size="sm"
                     disabled={externalPromptLoading}
                     onClick={() => openExternalGenerateDialog(selectedJob, "resume")}
-                    className="h-10 shrink-0 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                    className={`shrink-0 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                    }`}
                   >
                     <FileText className="mr-1 h-4 w-4" />
                     Generate CV
@@ -1691,7 +1709,9 @@ export function JobsClient({
                     size="sm"
                     disabled={externalPromptLoading}
                     onClick={() => openExternalGenerateDialog(selectedJob, "cover")}
-                    className="h-10 shrink-0 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                    className={`shrink-0 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                    }`}
                   >
                     <FileText className="mr-1 h-4 w-4" />
                     Generate CL
@@ -1701,7 +1721,9 @@ export function JobsClient({
                       variant="outline"
                       size="sm"
                       asChild
-                      className="h-10 shrink-0 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
+                      className={`shrink-0 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
+                        isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                      }`}
                     >
                       <a
                         href={selectedJob.resumePdfUrl}
@@ -1717,7 +1739,9 @@ export function JobsClient({
                     size="sm"
                     disabled={deletingIds.has(selectedJob.id)}
                     onClick={() => scheduleDelete(selectedJob)}
-                    className="h-10 shrink-0 rounded-xl border-rose-200 bg-rose-50 px-4 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                    className={`shrink-0 rounded-xl border-rose-200 bg-rose-50 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                      isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                    }`}
                   >
                     <Trash2 className="mr-1 h-4 w-4" />
                     Remove
