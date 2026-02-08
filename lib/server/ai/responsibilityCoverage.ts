@@ -57,6 +57,14 @@ const RESPONSIBILITY_STOPWORDS = new Set([
   "would",
 ]);
 
+const RESPONSIBILITY_HEADER_RE =
+  /(responsibilit(?:y|ies)|what you'll do|what you will do|in this role|key duties|you will)/i;
+const NON_RESPONSIBILITY_HEADER_RE =
+  /(qualifications|requirements|benefits|about us|about the company|nice to have)/i;
+const BULLET_PREFIX_RE = /^(\d+[.)]|[-*?])\s+/;
+const ACTION_VERB_RE =
+  /\b(build|design|develop|deliver|own|lead|collaborat|improv|optimi[sz]e|maintain|mentor|automate|ship|drive|manage|architect|implement|support)\b/i;
+
 function normalizeTextForMatch(value: string) {
   return value
     .toLowerCase()
@@ -69,7 +77,31 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function extractTopResponsibilities(description: string | null | undefined) {
+function dedupeKeepOrder(items: string[]) {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const item of items) {
+    const key = normalizeTextForMatch(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
+function looksLikeResponsibility(line: string) {
+  const cleaned = line.replace(BULLET_PREFIX_RE, "").trim();
+  if (cleaned.length < 12) return false;
+  if (NON_RESPONSIBILITY_HEADER_RE.test(cleaned)) return false;
+  if (ACTION_VERB_RE.test(cleaned)) return true;
+  if (/responsibilit/.test(cleaned.toLowerCase())) return true;
+  return cleaned.length > 45;
+}
+
+export function extractResponsibilities(
+  description: string | null | undefined,
+  limit = 8,
+) {
   const text = (description ?? "").trim();
   if (!text) return [] as string[];
 
@@ -78,12 +110,48 @@ export function extractTopResponsibilities(description: string | null | undefine
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const bullets = lines
-    .filter((line) => /^(\d+[.)]|[-*•])\s+/.test(line) || line.length > 35)
-    .map((line) => line.replace(/^(\d+[.)]|[-*•])\s+/, "").trim())
-    .filter((line) => line.length >= 12);
+  const candidates: string[] = [];
+  let inResponsibilityBlock = false;
 
-  return bullets.slice(0, 3);
+  for (const line of lines) {
+    if (RESPONSIBILITY_HEADER_RE.test(line)) {
+      inResponsibilityBlock = true;
+      continue;
+    }
+    if (NON_RESPONSIBILITY_HEADER_RE.test(line) && line.endsWith(":")) {
+      inResponsibilityBlock = false;
+      continue;
+    }
+
+    if (BULLET_PREFIX_RE.test(line)) {
+      const cleaned = line.replace(BULLET_PREFIX_RE, "").trim();
+      if (looksLikeResponsibility(cleaned)) candidates.push(cleaned);
+      continue;
+    }
+
+    if (inResponsibilityBlock && looksLikeResponsibility(line)) {
+      candidates.push(line);
+      continue;
+    }
+
+    if (looksLikeResponsibility(line) && line.length > 35) {
+      candidates.push(line);
+    }
+  }
+
+  if (candidates.length === 0) {
+    const sentenceCandidates = text
+      .split(/[.!?]\s+/)
+      .map((line) => line.trim())
+      .filter((line) => looksLikeResponsibility(line));
+    return dedupeKeepOrder(sentenceCandidates).slice(0, limit);
+  }
+
+  return dedupeKeepOrder(candidates).slice(0, limit);
+}
+
+export function extractTopResponsibilities(description: string | null | undefined) {
+  return extractResponsibilities(description, 3);
 }
 
 function extractResponsibilityKeywords(line: string) {
@@ -113,15 +181,23 @@ export function bulletMatchesResponsibility(bullet: string, responsibility: stri
 }
 
 export function computeTop3Coverage(description: string | null | undefined, baseBullets: string[]) {
-  const topResponsibilities = extractTopResponsibilities(description);
+  const allResponsibilities = extractResponsibilities(description, 10);
+  const topResponsibilities = allResponsibilities.slice(0, 3);
   const missingFromBase = topResponsibilities.filter(
     (resp) => !baseBullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)),
   );
+  const fallbackResponsibilities =
+    missingFromBase.length > 0
+      ? allResponsibilities
+          .slice(3)
+          .filter((resp) => !baseBullets.some((bullet) => bulletMatchesResponsibility(bullet, resp)))
+      : [];
 
   if (missingFromBase.length === 0) {
     return {
       topResponsibilities,
       missingFromBase,
+      fallbackResponsibilities: [],
       requiredNewBulletsMin: 0,
       requiredNewBulletsMax: 0,
     };
@@ -130,8 +206,8 @@ export function computeTop3Coverage(description: string | null | undefined, base
   return {
     topResponsibilities,
     missingFromBase,
+    fallbackResponsibilities,
     requiredNewBulletsMin: Math.min(Math.max(2, missingFromBase.length), 3),
     requiredNewBulletsMax: 3,
   };
 }
-

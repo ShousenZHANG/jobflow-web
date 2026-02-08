@@ -148,15 +148,27 @@ export async function POST(req: Request) {
           ? coverage.missingFromBase.map((item, index) => `${index + 1}. ${item}`)
           : ["1. (none)"]),
         "",
+        "Fallback responsibility pool (use when top-3 items require unsupported tech):",
+        ...(coverage.fallbackResponsibilities.length
+          ? coverage.fallbackResponsibilities.map((item, index) => `${index + 1}. ${item}`)
+          : ["1. (none parsed or already covered)"]),
+        "",
         coverage.missingFromBase.length
-          ? `Suggested additions: optionally add up to ${coverage.requiredNewBulletsMax} grounded bullets for uncovered responsibilities when supported by base resume evidence.`
+          ? `Suggested additions: target ${coverage.requiredNewBulletsMin}-${coverage.requiredNewBulletsMax} grounded new bullets for uncovered responsibilities when supported by base resume evidence.`
           : "Suggested additions: no additions required; reorder existing bullets only if helpful.",
         "",
         "Execution checklist:",
         "1) Preserve every base latest-experience bullet text verbatim (no paraphrase).",
-        "2) If responsibilities are under-covered and evidence exists, you may add up to 3 grounded bullets and place them before base bullets.",
-        "2a) New bullets are allowed only when supported by explicit base resume evidence (latest experience / projects / skills).",
-        "2b) If evidence is insufficient, do not add speculative bullets; keep reordered base bullets only.",
+        "2) Target additions count:",
+        ...(coverage.missingFromBase.length
+          ? [
+              `2a) Add at least ${coverage.requiredNewBulletsMin} and at most ${coverage.requiredNewBulletsMax} new bullets when grounded evidence exists.`,
+            ]
+          : ["2a) No additions required when top-3 responsibilities are already covered."]),
+        "2b) New bullets are allowed only when supported by explicit base resume evidence (latest experience / projects / skills).",
+        "2c) First priority: align additions to uncovered top-3 responsibilities.",
+        "2d) If top-3 needs tech you have not used, do not fabricate; use fallback responsibilities or adjacent proven technologies to complete the first 2 additions when possible.",
+        "2e) Only when no grounded additions are possible at all, return reordered base bullets with zero additions.",
         "3) For every new bullet, bold 1-3 JD-critical keywords using **keyword**.",
         "3a) Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
         "4) For added bullets, avoid repeating the same primary tech stack already present in base bullets; use complementary JD-required skills where possible.",

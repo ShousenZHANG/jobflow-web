@@ -62,6 +62,9 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
     "- Do NOT return skillsAdditions. Return skillsFinal only.",
     "- Resume target JSON keys allowed: cvSummary, latestExperience, skillsFinal.",
+    "- When top-3 JD responsibilities are under-covered and evidence exists, target 2-3 new bullets.",
+    "- Prioritize uncovered top-3 responsibilities first for new bullets.",
+    "- If top-3 needs unsupported tech, do not fabricate; use fallback JD responsibilities or adjacent proven technologies to complete the first 2 additions when possible.",
     "- For newly added bullets, bold at least one JD-critical keyword using clean markdown **keyword** format.",
     "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
     "- New bullets must stay consistent with latest-experience timeframe and realistic scope.",
@@ -191,9 +194,11 @@ ${list(rules.coverRules)}
    - Produce complete \`latestExperience.bullets\` list (ordered final list).
    - Produce \`skillsFinal\` as complete final skills list (not delta).
    - Keep \`skillsFinal\` within 5 major categories and prioritize existing categories.
-   - If responsibility gaps are found and evidence exists, you may add up to 3 grounded bullets and put them first.
+   - If top-3 responsibility gaps are found and grounded evidence exists, add 2-3 grounded bullets and put them first.
+   - Prioritize uncovered top-3 responsibilities first for those additions.
+   - If top-3 needs unsupported tech, do not claim it; use fallback JD responsibilities or adjacent proven technologies to complete the first 2 additions when possible.
    - If direct evidence is missing for a JD point, do not claim it; use only factually supportable adjacent evidence.
-   - If evidence is insufficient, do not force additions; keep reordered base bullets only.
+   - If evidence is insufficient for any grounded addition, keep reordered base bullets only.
    - For added bullets, avoid duplicating the same primary tech stack already used by base latest-experience bullets; prioritize complementary JD-required technologies.
    - Preserve every base latest-experience bullet verbatim (order change is allowed, text rewrite is not).
    - For each newly added bullet, bold at least one JD-critical keyword with clean markdown markers: **keyword**.
@@ -216,8 +221,10 @@ ${list(rules.coverRules)}
 - Output is strict JSON only (no markdown/code fence).
 - No fabricated facts, skills, employers, or metrics.
 - Markdown bold markers are clean: **keyword** (no inner leading/trailing spaces).
-- Resume output keeps every existing latest-experience bullet verbatim (reorder allowed; additions optional, max 3).
+- Resume output keeps every existing latest-experience bullet verbatim (reorder allowed).
+- When top-3 is under-covered and grounded evidence exists, resume output targets 2-3 new bullets (never more than 3).
 - Add grounded bullets only when evidence exists in base resume context; avoid fabrication.
+- If top-3 needs unsupported tech, use fallback responsibilities or adjacent proven technologies before giving up additions.
 - Added bullets should emphasize complementary JD-required tech rather than repeating already-covered primary stack.
 - Each newly added bullet includes at least one clean markdown bold keyword (**keyword**).
 - Skills output is \`skillsFinal\` (complete final list), JD-priority, and mapped to existing categories whenever possible.

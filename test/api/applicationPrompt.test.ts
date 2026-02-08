@@ -108,6 +108,8 @@ describe("applications prompt api", () => {
     expect(json.prompt.userPrompt).toContain("Top-3 Responsibility Alignment (guidance):");
     expect(json.prompt.userPrompt).toContain("Base latest experience bullets (verbatim, reorder only):");
     expect(json.prompt.userPrompt).toContain("Suggested additions:");
+    expect(json.prompt.userPrompt).toContain("Target additions count:");
+    expect(json.prompt.userPrompt).toContain("Fallback responsibility pool");
   });
 
   it("returns cover-target prompt payload", async () => {
