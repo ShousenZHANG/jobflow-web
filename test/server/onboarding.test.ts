@@ -4,6 +4,7 @@ import {
   ONBOARDING_TASKS,
   defaultOnboardingChecklist,
   isOnboardingComplete,
+  mergeOnboardingChecklists,
   normalizeOnboardingChecklist,
 } from "@/lib/onboarding";
 
@@ -59,5 +60,26 @@ describe("onboarding task model", () => {
 
     expect(isOnboardingComplete(incomplete)).toBe(false);
     expect(isOnboardingComplete(complete)).toBe(true);
+  });
+
+  it("merges task updates without regressing completed items", () => {
+    const afterFirstTask = {
+      ...defaultOnboardingChecklist(),
+      resume_setup: true,
+    };
+    const staleSecondPayload = {
+      resume_setup: false,
+      first_fetch: true,
+    };
+
+    expect(
+      mergeOnboardingChecklists(afterFirstTask, staleSecondPayload),
+    ).toEqual({
+      resume_setup: true,
+      first_fetch: true,
+      triage_first_job: false,
+      generate_first_pdf: false,
+      download_first_pdf: false,
+    });
   });
 });

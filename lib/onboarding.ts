@@ -81,6 +81,20 @@ export function normalizeOnboardingChecklist(value: unknown): OnboardingChecklis
   };
 }
 
+export function mergeOnboardingChecklists(
+  base: OnboardingChecklist,
+  incoming: Partial<OnboardingChecklist> | null | undefined,
+): OnboardingChecklist {
+  const normalizedIncoming = normalizeOnboardingChecklist(incoming ?? {});
+  return {
+    resume_setup: base.resume_setup || normalizedIncoming.resume_setup,
+    first_fetch: base.first_fetch || normalizedIncoming.first_fetch,
+    triage_first_job: base.triage_first_job || normalizedIncoming.triage_first_job,
+    generate_first_pdf: base.generate_first_pdf || normalizedIncoming.generate_first_pdf,
+    download_first_pdf: base.download_first_pdf || normalizedIncoming.download_first_pdf,
+  };
+}
+
 export function completedOnboardingTasks(checklist: OnboardingChecklist): number {
   return ONBOARDING_TASKS.reduce(
     (count, task) => (checklist[task.id] ? count + 1 : count),

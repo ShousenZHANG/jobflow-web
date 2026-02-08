@@ -8,6 +8,7 @@ import {
   completedOnboardingTasks,
   defaultOnboardingChecklist,
   isOnboardingComplete,
+  mergeOnboardingChecklists,
   normalizeOnboardingChecklist,
   type OnboardingTaskId,
 } from "@/lib/onboarding";
@@ -22,10 +23,19 @@ const OnboardingTaskIdSchema = z.enum([
   "download_first_pdf",
 ]);
 
+const ChecklistPatchSchema = z.object({
+  resume_setup: z.boolean(),
+  first_fetch: z.boolean(),
+  triage_first_job: z.boolean(),
+  generate_first_pdf: z.boolean(),
+  download_first_pdf: z.boolean(),
+}).partial();
+
 const PatchSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("complete_task"),
     taskId: OnboardingTaskIdSchema,
+    checklist: ChecklistPatchSchema.optional(),
   }),
   z.object({
     type: z.literal("reopen"),
@@ -184,6 +194,7 @@ export async function PATCH(req: Request) {
 
     if (parsed.data.type === "complete_task") {
       const taskId = parsed.data.taskId as OnboardingTaskId;
+      nextChecklist = mergeOnboardingChecklists(nextChecklist, parsed.data.checklist);
       nextChecklist[taskId] = true;
       nextDismissedAt = null;
     } else if (parsed.data.type === "skip") {
@@ -237,6 +248,8 @@ export async function PATCH(req: Request) {
     if (isMissingTableError(error)) {
       const fallbackChecklist = defaultOnboardingChecklist();
       if (parsed.data.type === "complete_task") {
+        const mergedChecklist = mergeOnboardingChecklists(fallbackChecklist, parsed.data.checklist);
+        Object.assign(fallbackChecklist, mergedChecklist);
         fallbackChecklist[parsed.data.taskId] = true;
       }
       return NextResponse.json({

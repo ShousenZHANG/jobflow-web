@@ -14,7 +14,12 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CircleHelp, Circle, CircleCheckBig, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ONBOARDING_TASKS, type OnboardingChecklist, type OnboardingTaskId } from "@/lib/onboarding";
+import {
+  ONBOARDING_TASKS,
+  mergeOnboardingChecklists,
+  type OnboardingChecklist,
+  type OnboardingTaskId,
+} from "@/lib/onboarding";
 
 type GuideState = {
   stage: "NEW_USER" | "ACTIVATED_USER" | "RETURNING_USER";
@@ -126,7 +131,13 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   }, [state, userId]);
 
   const patchState = useCallback(
-    async (payload: { type: "complete_task"; taskId: OnboardingTaskId } | { type: "reopen" } | { type: "skip" } | { type: "reset" }) => {
+    async (
+      payload:
+        | { type: "complete_task"; taskId: OnboardingTaskId; checklist?: OnboardingChecklist }
+        | { type: "reopen" }
+        | { type: "skip" }
+        | { type: "reset" },
+    ) => {
       if (!userId) return;
       try {
         const res = await fetch("/api/onboarding/state", {
@@ -136,7 +147,25 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         });
         const json = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(json?.error || "Failed to update onboarding state");
-        setState(json.state as GuideState);
+        const nextState = json.state as GuideState;
+        if (payload.type !== "complete_task") {
+          setState(nextState);
+          return;
+        }
+        setState((prev) => {
+          if (!prev) return nextState;
+          const checklist = mergeOnboardingChecklists(prev.checklist, nextState.checklist);
+          const completedCount = ONBOARDING_TASKS.reduce(
+            (count, task) => (checklist[task.id] ? count + 1 : count),
+            0,
+          );
+          return {
+            ...nextState,
+            checklist,
+            completedCount,
+            isComplete: completedCount >= nextState.totalCount,
+          };
+        });
       } catch {
         // Keep UI resilient even if persistence is temporarily unavailable.
       }
@@ -162,9 +191,11 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
   const markTaskComplete = useCallback(
     (taskId: OnboardingTaskId) => {
+      let checklistForPatch: OnboardingChecklist | null = null;
       setState((prev) => {
         if (!prev || prev.checklist[taskId]) return prev;
         const checklist = { ...prev.checklist, [taskId]: true };
+        checklistForPatch = checklist;
         const completedCount = ONBOARDING_TASKS.reduce(
           (count, task) => (checklist[task.id] ? count + 1 : count),
           0,
@@ -176,7 +207,11 @@ export function GuideProvider({ children }: { children: ReactNode }) {
           isComplete: completedCount >= prev.totalCount,
         };
       });
-      void patchState({ type: "complete_task", taskId });
+      void patchState(
+        checklistForPatch
+          ? { type: "complete_task", taskId, checklist: checklistForPatch }
+          : { type: "complete_task", taskId },
+      );
     },
     [patchState],
   );
