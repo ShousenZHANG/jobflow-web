@@ -8,6 +8,19 @@ const applicationStore = vi.hoisted(() => ({
   upsert: vi.fn(),
 }));
 
+const tailorApplicationContent = vi.hoisted(() =>
+  vi.fn(async () => ({
+    cvSummary: "Tailored summary",
+    cover: {
+      paragraphOne: "One",
+      paragraphTwo: "Two",
+      paragraphThree: "Three",
+    },
+    source: { cv: "ai", cover: "ai" },
+    reason: "ai_ok",
+  })),
+);
+
 vi.mock("@/lib/server/prisma", () => ({
   prisma: {
     job: jobStore,
@@ -64,6 +77,10 @@ vi.mock("@/lib/server/latex/compilePdf", () => ({
     }
   },
   compileLatexToPdf: vi.fn(async () => Buffer.from([37, 80, 68, 70])),
+}));
+
+vi.mock("@/lib/server/ai/tailorApplication", () => ({
+  tailorApplicationContent,
 }));
 
 import { getServerSession } from "next-auth/next";
@@ -139,5 +156,13 @@ describe("applications generate cover letter api", () => {
     expect(res.headers.get("content-disposition")).toContain("Cover_Letter.pdf");
     expect(res.headers.get("x-application-id")).toBe("app-1");
     expect(applicationStore.upsert).toHaveBeenCalled();
+    expect(tailorApplicationContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resumeSnapshot: expect.objectContaining({
+          id: "rp-1",
+          summary: "Summary",
+        }),
+      }),
+    );
   });
 });

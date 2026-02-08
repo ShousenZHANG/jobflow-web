@@ -41,4 +41,22 @@ describe("default prompt rules", () => {
     expect(text).toContain("Markdown bold markers inside JSON string values are allowed when requested.");
     expect(text).toContain("In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.");
   });
+
+  it("includes cover evidence pack sections when resume context is provided", () => {
+    const prompts = buildTailorPrompts(DEFAULT_RULES, {
+      baseSummary: "Built backend services for fintech platforms.",
+      jobTitle: "Software Engineer",
+      company: "Example Co",
+      description: "Design APIs and maintain cloud deployment pipelines.",
+      coverContext: {
+        topResponsibilities: ["Design APIs", "Maintain cloud deployment pipelines"],
+        matchedEvidence: ["Experience (Backend Engineer @ Acme): Built Java APIs and CI/CD pipelines."],
+        resumeHighlights: ["Cloud: AWS", "Cloud: Docker"],
+      },
+    });
+    expect(prompts.userPrompt).toContain("Top JD responsibilities (priority order):");
+    expect(prompts.userPrompt).toContain("Matched resume evidence (highest relevance):");
+    expect(prompts.userPrompt).toContain("Additional resume highlights:");
+    expect(prompts.userPrompt).toContain("Experience (Backend Engineer @ Acme):");
+  });
 });

@@ -5,6 +5,11 @@ export type TailorPromptInput = {
   jobTitle: string;
   company: string;
   description: string;
+  coverContext?: {
+    topResponsibilities: string[];
+    matchedEvidence: string[];
+    resumeHighlights: string[];
+  };
 };
 
 function truncate(text: string, max = 1600) {
@@ -15,6 +20,11 @@ function truncate(text: string, max = 1600) {
 function formatRules(title: string, rules: string[]) {
   const body = rules.map((rule, idx) => `${idx + 1}. ${rule}`).join("\n");
   return `${title}\n${body}`;
+}
+
+function formatList(title: string, items: string[]) {
+  if (!items.length) return `${title}\n1. (none)`;
+  return `${title}\n${items.map((item, idx) => `${idx + 1}. ${item}`).join("\n")}`;
 }
 
 export function buildTailorPrompts(
@@ -28,6 +38,25 @@ export function buildTailorPrompts(
     "Ensure valid JSON strings: use \\n for line breaks and escape quotes.",
     formatRules("Hard Constraints:", rules.hardConstraints),
   ].join("\n\n");
+
+  const coverEvidenceBlock = input.coverContext
+    ? `
+${formatList(
+  "Top JD responsibilities (priority order):",
+  input.coverContext.topResponsibilities,
+)}
+
+${formatList(
+  "Matched resume evidence (highest relevance):",
+  input.coverContext.matchedEvidence,
+)}
+
+${formatList(
+  "Additional resume highlights:",
+  input.coverContext.resumeHighlights,
+)}
+`
+    : "";
 
   const userPrompt = `
 Task:
@@ -69,6 +98,9 @@ Cover structure checklist:
 7) Keep markdown bold markers clean: **keyword** (no spaces inside markers).
 8) Use strong candidate narrative quality; avoid recruiter boilerplate.
 9) Avoid fabrication and generic filler.
+10) Ground cover claims in provided resume evidence pack; do not claim tools/experience outside evidence.
+
+${coverEvidenceBlock}
 
 Input:
 - Base summary: ${truncate(input.baseSummary, 1200)}

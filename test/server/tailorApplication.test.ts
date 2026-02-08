@@ -84,6 +84,55 @@ describe("tailorApplicationContent", () => {
     expect(passedRules.coverRules.length).toBeGreaterThan(0);
   });
 
+  it("builds cover evidence from resume snapshot and passes it to prompt builder", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    vi.spyOn(providers, "callProvider").mockResolvedValueOnce(
+      JSON.stringify({
+        cvSummary: "AI Summary",
+        cover: {
+          paragraphOne: "One",
+          paragraphTwo: "Two",
+          paragraphThree: "Three",
+        },
+      }),
+    );
+
+    await tailorApplicationContent({
+      ...INPUT,
+      userId: "user-1",
+      description:
+        "Design backend APIs and improve CI/CD deployment reliability on AWS cloud platforms.",
+      resumeSnapshot: {
+        summary: "Backend engineer focused on API delivery and platform reliability.",
+        experiences: [
+          {
+            title: "Software Engineer",
+            company: "Acme",
+            bullets: ["Built Java APIs and automated CI/CD deployment pipelines on AWS."],
+          },
+        ],
+        projects: [
+          {
+            name: "Payments Platform",
+            stack: "Java, AWS",
+            bullets: ["Improved deployment reliability and API response consistency."],
+          },
+        ],
+        skills: [{ category: "Cloud", items: ["AWS", "Docker"] }],
+      },
+    });
+
+    const passedInput = buildTailorPrompts.mock.calls[0][1] as {
+      coverContext?: {
+        topResponsibilities: string[];
+        matchedEvidence: string[];
+      };
+    };
+    expect(passedInput.coverContext?.topResponsibilities.length).toBeGreaterThan(0);
+    expect(passedInput.coverContext?.matchedEvidence.join(" ")).toContain("AWS");
+    expect(passedInput.coverContext?.matchedEvidence.join(" ")).toContain("API");
+  });
+
   it("retries with provider default model when custom model fails", async () => {
     process.env.GEMINI_API_KEY = "test-key";
     process.env.GEMINI_MODEL = "gemini-2.5-pro";
