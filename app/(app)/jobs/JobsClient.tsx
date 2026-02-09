@@ -474,7 +474,7 @@ export function JobsClient({
     queryFn: async ({ signal }): Promise<JobsResponse> => {
       const sp = new URLSearchParams(queryString);
       if (cursor) sp.set("cursor", cursor);
-      const res = await fetch(`/api/jobs?${sp.toString()}`, { cache: "no-store", signal });
+      const res = await fetch(`/api/jobs?${sp.toString()}`, { signal });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to load jobs");
       return { items: json.items ?? [], nextCursor: json.nextCursor ?? null };
@@ -511,7 +511,7 @@ export function JobsClient({
   const jobLevelsQuery = useQuery<string[]>({
     queryKey: ["job-levels"],
     queryFn: async () => {
-      const res = await fetch("/api/jobs?limit=50", { cache: "no-store" });
+      const res = await fetch("/api/jobs?limit=50");
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to load job levels");
       const levels = (json.items ?? [])
@@ -1028,7 +1028,7 @@ export function JobsClient({
   const detailQuery = useQuery({
     queryKey: ["job-details", effectiveSelectedId],
     queryFn: async () => {
-      const res = await fetch(`/api/jobs/${effectiveSelectedId}`, { cache: "no-store" });
+      const res = await fetch(`/api/jobs/${effectiveSelectedId}`);
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Failed to load details");
       return json as { id: string; description: string | null };

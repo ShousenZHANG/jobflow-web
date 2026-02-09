@@ -26,8 +26,6 @@ import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { useFetchStatus } from "@/app/FetchStatusContext";
 import { useGuide } from "@/app/GuideContext";
 
-type FetchRunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
-
 const COMMON_TITLES = [
   "Software Engineer",
   "Software Developer",
@@ -87,10 +85,15 @@ export function FetchClient() {
     "exp_7",
   ]);
 
-  const [runId, setRunId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { startRun, markRunning, status: globalStatus, runId: globalRunId } = useFetchStatus();
+  const {
+    startRun,
+    markRunning,
+    status: globalStatus,
+    runId: globalRunId,
+    error: globalError,
+  } = useFetchStatus();
   const { isTaskHighlighted, markTaskComplete } = useGuide();
   const guideHighlightClass =
     "ring-2 ring-emerald-400 ring-offset-2 ring-offset-white shadow-[0_0_0_4px_rgba(16,185,129,0.18)]";
@@ -114,8 +117,7 @@ export function FetchClient() {
   useEffect(() => {
     const prev = prevUserIdRef.current;
     if (prev && prev !== userId) {
-      setRunId(null);
-      setError(null);
+      setLocalError(null);
       setIsSubmitting(false);
     }
     prevUserIdRef.current = userId;
@@ -153,58 +155,26 @@ export function FetchClient() {
     if (!res.ok) throw new Error(json?.error || "Failed to trigger run");
   }
 
-  async function fetchRun(id: string) {
-    const res = await fetch(`/api/fetch-runs/${id}`, { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.error || "Failed to fetch run");
-    return json.run as { status: FetchRunStatus; importedCount: number; error: string | null };
-  }
-
-  useEffect(() => {
-    if (!runId) return;
-    let alive = true;
-    const t = setInterval(async () => {
-      try {
-        const r = await fetchRun(runId);
-        if (!alive) return;
-        setError(r.error ?? null);
-        if (r.status === "SUCCEEDED") {
-          clearInterval(t);
-        }
-        if (r.status === "FAILED") {
-          clearInterval(t);
-        }
-      } catch (e: unknown) {
-        if (!alive) return;
-        setError(getErrorMessage(e, "Polling failed"));
-      }
-    }, 3000);
-    return () => {
-      alive = false;
-      clearInterval(t);
-    };
-  }, [runId]);
-
   async function onSubmit() {
     setIsSubmitting(true);
-    setError(null);
+    setLocalError(null);
     try {
       if (!jobTitle.trim()) {
         throw new Error("Please enter one job title to search.");
       }
       const id = await createRun();
-      setRunId(id);
       startRun(id);
       await triggerRun(id);
       markRunning();
       markTaskComplete("first_fetch");
     } catch (e: unknown) {
-      setError(getErrorMessage(e));
+      setLocalError(getErrorMessage(e));
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  const activeError = localError ?? globalError;
   const isRunning =
     globalRunId !== null &&
     (globalStatus === "RUNNING" || globalStatus === "QUEUED" || globalStatus === null);
@@ -215,9 +185,9 @@ export function FetchClient() {
         <h1 className="text-2xl font-semibold text-foreground">Search roles</h1>
       </div>
 
-      {error ? (
+      {activeError ? (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
+          {activeError}
         </div>
       ) : null}
 

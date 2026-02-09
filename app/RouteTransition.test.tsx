@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("RouteTransition", () => {
-  it("uses the fade-scale transition marker", () => {
+  it("uses the fade transition marker", () => {
     if (!window.matchMedia) {
       Object.defineProperty(window, "matchMedia", {
         writable: true,
@@ -31,6 +31,6 @@ describe("RouteTransition", () => {
     );
 
     const main = screen.getAllByRole("main")[0];
-    expect(main).toHaveAttribute("data-route-transition", "fade-scale");
+    expect(main).toHaveAttribute("data-route-transition", "fade");
   });
 });

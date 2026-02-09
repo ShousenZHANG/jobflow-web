@@ -120,6 +120,19 @@ describe("JobsClient", () => {
     expect(resultsPane).toHaveAttribute("data-loading", "false");
   });
 
+  it("does not force no-store cache for jobs requests", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    await screen.findAllByText("Frontend Engineer");
+
+    const jobsCall = (global.fetch as unknown as { mock: { calls: Array<[RequestInfo, RequestInit | undefined]> } }).mock.calls.find(
+      ([input]) => typeof input === "string" && input.startsWith("/api/jobs?"),
+    );
+
+    expect(jobsCall).toBeTruthy();
+    expect(jobsCall?.[1]?.cache).not.toBe("no-store");
+  });
+
   it("debounces keyword changes before fetching", async () => {
     const user = userEvent.setup();
 
