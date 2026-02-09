@@ -8,7 +8,7 @@ export default async function FetchPage() {
   if (!session?.user) redirect("/login?callbackUrl=/fetch");
 
   return (
-    <main className="flex flex-col gap-6">
+    <main className="flex h-full min-h-0 flex-1 flex-col gap-6">
       <FetchClient />
     </main>
   );
