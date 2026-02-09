@@ -735,8 +735,8 @@ body {
 .app-shell {
   height: calc(100vh - 104px);
   min-height: 0;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
+  overflow-y: scroll;
+  scrollbar-gutter: stable both-edges;
 }
 
 @media (max-width: 640px) {

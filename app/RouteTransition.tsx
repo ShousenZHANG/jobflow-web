@@ -12,7 +12,7 @@ export function RouteTransition({ children }: { children: React.ReactNode }) {
   const transition = reduce ? { duration: 0 } : { duration: 0.14, ease };
 
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence initial={false} mode="wait">
       <motion.main
         key={pathname}
         initial={reduce ? false : { opacity: 0 }}
@@ -20,7 +20,7 @@ export function RouteTransition({ children }: { children: React.ReactNode }) {
         exit={reduce ? {} : { opacity: 0 }}
         transition={transition}
         data-route-transition="fade"
-        className="flex min-h-0 flex-1 flex-col"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
         {children}
       </motion.main>
