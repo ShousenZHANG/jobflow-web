@@ -474,6 +474,63 @@ body {
   }
 }
 
+@keyframes edu-route-progress-sweep {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
+.edu-route-progress {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.1);
+  opacity: 0;
+  transform: translate3d(0, 2px, 0);
+  transition: opacity 160ms ease, transform 160ms ease;
+  pointer-events: none;
+}
+
+.edu-route-progress::after {
+  content: "";
+  position: absolute;
+  left: -38%;
+  top: 0;
+  height: 100%;
+  width: 38%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(16, 185, 129, 0.92), rgba(16, 185, 129, 0));
+  animation: edu-route-progress-sweep 0.95s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.edu-route-progress--active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes route-loading-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.route-loading-enter {
+  opacity: 0;
+  animation: route-loading-enter 180ms ease-out 120ms forwards;
+}
+
 .jobflow-list-item {
   content-visibility: auto;
   contain-intrinsic-size: 120px 160px;
@@ -617,6 +674,20 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .edu-page-enter {
     animation: none;
+  }
+
+  .edu-route-progress {
+    transition: none;
+  }
+
+  .edu-route-progress::after {
+    animation: none;
+  }
+
+  .route-loading-enter {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 
