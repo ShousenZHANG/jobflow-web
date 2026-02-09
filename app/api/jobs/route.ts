@@ -137,8 +137,16 @@ export async function GET(req: Request) {
   });
 
   const { items: jobs, nextCursor } = getCursorPage(normalized, limit);
+  const jobLevels = Array.from(
+    new Set(
+      jobs
+        .map((job) => job.jobLevel)
+        .filter((level): level is string => Boolean(level)),
+    ),
+  );
   const lastUpdated = jobs.length ? jobs[0].updatedAt?.toISOString?.() : "empty";
-  const etag = `W/"jobs:${userId}:${cursor ?? "start"}:${jobs.length}:${lastUpdated}"`;
+  const levelsHash = jobLevels.join("|");
+  const etag = `W/"jobs:${userId}:${cursor ?? "start"}:${jobs.length}:${lastUpdated}:${levelsHash}"`;
   if (ifNoneMatch && ifNoneMatch === etag) {
     return new NextResponse(null, { status: 304 });
   }
@@ -147,6 +155,9 @@ export async function GET(req: Request) {
     JSON.stringify({
       items: jobs,
       nextCursor,
+      facets: {
+        jobLevels,
+      },
     }),
     {
       status: 200,

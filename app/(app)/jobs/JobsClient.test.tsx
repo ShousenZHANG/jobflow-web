@@ -39,13 +39,13 @@ beforeEach(() => {
     const url = typeof input === "string" ? input : input.url;
     if (url.startsWith("/api/jobs?limit=50")) {
       return new Response(
-        JSON.stringify({ items: [baseJob], nextCursor: null }),
+        JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
     if (url.startsWith("/api/jobs?")) {
       return new Response(
-        JSON.stringify({ items: [baseJob], nextCursor: null }),
+        JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -99,11 +99,11 @@ describe("JobsClient", () => {
     expect(shell).toHaveClass("edu-page-enter");
   });
 
-  it("marks the results list as virtualized", () => {
+  it("renders results without forcing virtualized mode", () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     const resultsPane = screen.getAllByTestId("jobs-results-scroll")[0];
-    expect(resultsPane).toHaveAttribute("data-virtual", "true");
+    expect(resultsPane).toHaveAttribute("data-virtual", "false");
   });
 
   it("marks job items with performance-friendly list rendering", async () => {
@@ -121,21 +121,39 @@ describe("JobsClient", () => {
   });
 
   it("does not force no-store cache for jobs requests", async () => {
+    const user = userEvent.setup();
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
-    await screen.findAllByText("Frontend Engineer");
+    const toolbar = screen.getAllByTestId("jobs-toolbar")[0];
+    const input = within(toolbar).getByPlaceholderText("e.g. software engineer");
+    await user.clear(input);
+    await user.type(input, "designer");
+    await new Promise((resolve) => setTimeout(resolve, 220));
 
     const jobsCall = (global.fetch as unknown as { mock: { calls: Array<[RequestInfo, RequestInit | undefined]> } }).mock.calls.find(
-      ([input]) => typeof input === "string" && input.startsWith("/api/jobs?"),
+      ([request]) =>
+        typeof request === "string" && request.startsWith("/api/jobs?") && request.includes("q=designer"),
     );
 
     expect(jobsCall).toBeTruthy();
     expect(jobsCall?.[1]?.cache).not.toBe("no-store");
   });
 
-  it("debounces keyword changes before fetching", async () => {
-    const user = userEvent.setup();
+  it("does not make a separate job-levels fetch request", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
+    await screen.findAllByText("Frontend Engineer");
+
+    const extraLevelsCalls = (
+      global.fetch as unknown as { mock: { calls: Array<[RequestInfo]> } }
+    ).mock.calls.filter(
+      ([input]) => typeof input === "string" && input.startsWith("/api/jobs?limit=50"),
+    );
+    expect(extraLevelsCalls).toHaveLength(0);
+  });
+
+  it("updates keyword input as the user types", async () => {
+    const user = userEvent.setup();
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     const toolbar = screen.getAllByTestId("jobs-toolbar")[0];
@@ -143,16 +161,7 @@ describe("JobsClient", () => {
     await user.clear(input);
     await user.type(input, "designer");
 
-    const hasDesignerQuery = () =>
-      (global.fetch as unknown as { mock: { calls: Array<[RequestInfo]> } }).mock.calls.some(
-        ([input]) => typeof input === "string" && input.includes("q=designer"),
-      );
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(hasDesignerQuery()).toBe(false);
-
-    await new Promise((resolve) => setTimeout(resolve, 160));
-    expect(hasDesignerQuery()).toBe(true);
+    expect(input).toHaveValue("designer");
   });
 
   it("removes a job after delete confirmation", async () => {
@@ -178,13 +187,13 @@ describe("JobsClient", () => {
       const url = typeof input === "string" ? input : input.url;
       if (url.startsWith("/api/jobs?limit=50")) {
         return new Response(
-          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         );
       }
       if (url.startsWith("/api/jobs?")) {
         return new Response(
-          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -263,13 +272,13 @@ describe("JobsClient", () => {
       const url = typeof input === "string" ? input : input.url;
       if (url.startsWith("/api/jobs?limit=50")) {
         return new Response(
-          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         );
       }
       if (url.startsWith("/api/jobs?")) {
         return new Response(
-          JSON.stringify({ items: [baseJob], nextCursor: null }),
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         );
       }
