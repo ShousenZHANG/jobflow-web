@@ -20,7 +20,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 describe("RouteTransition", () => {
-  it("uses fade-only motion without vertical shift", () => {
+  it("uses cute fade-scale motion without vertical shift", () => {
     capturedMainProps.length = 0;
 
     render(
@@ -33,8 +33,8 @@ describe("RouteTransition", () => {
     expect(main).toHaveAttribute("data-route-transition", "fade");
 
     const mainProps = capturedMainProps[0] ?? {};
-    expect(mainProps.initial).toEqual({ opacity: 0 });
-    expect(mainProps.animate).toEqual({ opacity: 1 });
-    expect(mainProps.exit).toEqual({ opacity: 0 });
+    expect(mainProps.initial).toEqual({ opacity: 0, scale: 0.985 });
+    expect(mainProps.animate).toEqual({ opacity: 1, scale: 1 });
+    expect(mainProps.exit).toEqual({ opacity: 0, scale: 1.005 });
   });
 });

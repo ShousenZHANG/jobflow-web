@@ -12,19 +12,6 @@ export function TopNav() {
   const pathname = usePathname();
   const { openGuide, state } = useGuide();
 
-  const resetAppShellScroll = () => {
-    const appShell = document.querySelector<HTMLElement>(".app-shell");
-    if (appShell) {
-      appShell.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    }
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  };
-
-  const beginRouteFeedback = (href: string) => {
-    resetAppShellScroll();
-    if (href === pathname) return;
-  };
-
   const links = [
     { href: "/jobs", label: "Jobs" },
     { href: "/fetch", label: "Fetch" },
@@ -44,7 +31,6 @@ export function TopNav() {
               <Link
                 className="text-lg font-semibold text-slate-900"
                 href="/"
-                onClick={() => beginRouteFeedback("/")}
               >
                 Jobflow
               </Link>
@@ -56,7 +42,6 @@ export function TopNav() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    onClick={() => beginRouteFeedback(link.href)}
                     className={`edu-nav-link edu-nav-pill ${
                       active ? "edu-nav-pill--active" : ""
                     }`}
