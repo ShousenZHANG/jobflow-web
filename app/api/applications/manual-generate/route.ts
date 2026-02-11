@@ -13,6 +13,8 @@ import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compileP
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 import { put } from "@vercel/blob";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
+import { buildCoverEvidenceContext } from "@/lib/server/ai/coverContext";
+import { evaluateCoverQuality } from "@/lib/server/ai/coverQuality";
 
 export const runtime = "nodejs";
 
@@ -705,6 +707,46 @@ export async function POST(req: Request) {
       const p1 = coverOutput.cover.paragraphOne.trim();
       const p2 = coverOutput.cover.paragraphTwo.trim();
       const p3 = coverOutput.cover.paragraphThree.trim();
+      const profileRecord = profile as Record<string, unknown>;
+      const profileSummary =
+        typeof profileRecord.summary === "string" && profileRecord.summary.trim().length > 0
+          ? profileRecord.summary
+          : renderInput.summary;
+      const coverContext = buildCoverEvidenceContext({
+        baseSummary: profileSummary,
+        description: job.description || "",
+        resumeSnapshot: profile,
+      });
+      const qualityReport = evaluateCoverQuality({
+        draft: {
+          candidateTitle: coverOutput.cover.candidateTitle,
+          subject: coverOutput.cover.subject,
+          date: coverOutput.cover.date,
+          salutation: coverOutput.cover.salutation,
+          paragraphOne: p1,
+          paragraphTwo: p2,
+          paragraphThree: p3,
+          closing: coverOutput.cover.closing,
+          signatureName: coverOutput.cover.signatureName,
+        },
+        context: coverContext,
+        company: job.company || "the company",
+        targetWordRange: { min: 280, max: 360 },
+      });
+      if (!qualityReport.passed) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "COVER_QUALITY_GATE_FAILED",
+              message:
+                "Cover letter quality gate failed. Please regenerate with stronger evidence mapping and cleaner structure.",
+              details: qualityReport.issues,
+            },
+            requestId,
+          },
+          { status: 422 },
+        );
+      }
       const coverTex = renderCoverLetterTex({
         candidate: {
           name: renderInput.candidate.name,

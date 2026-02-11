@@ -81,6 +81,7 @@ import { getServerSession } from "next-auth/next";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
+import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { POST } from "@/app/api/applications/manual-generate/route";
 
 const VALID_JOB_ID = "550e8400-e29b-41d4-a716-446655440000";
@@ -575,7 +576,7 @@ describe("applications manual generate api", () => {
     expect(json.error.code).toBe("PROMPT_META_MISMATCH");
   });
 
-  it("generates cover pdf with cover letter suffix for cover target", async () => {
+  it("returns 422 when manual cover output fails quality gate", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -591,7 +592,7 @@ describe("applications manual generate api", () => {
     });
     applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
 
-    const coverOnlyOutput = JSON.stringify({
+    const weakCoverOutput = JSON.stringify({
       cover: {
         paragraphOne: "One",
         paragraphTwo: "Two",
@@ -605,7 +606,63 @@ describe("applications manual generate api", () => {
         body: JSON.stringify({
           jobId: VALID_JOB_ID,
           target: "cover",
-          modelOutput: coverOnlyOutput,
+          modelOutput: weakCoverOutput,
+        }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(422);
+    expect(json.error.code).toBe("COVER_QUALITY_GATE_FAILED");
+    expect(renderCoverLetterTex).not.toHaveBeenCalled();
+  });
+
+  it("generates cover pdf with cover letter suffix for high-quality cover target", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+      summary:
+        "Delivered TypeScript and React product features with reliable CI/CD pipelines in production.",
+      experiences: [
+        {
+          title: "Software Engineer",
+          company: "Acme",
+          bullets: [
+            "Built TypeScript and React product features for customer workflows.",
+            "Improved CI/CD reliability and reduced release risk.",
+          ],
+        },
+      ],
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    const highQualityCoverOutput = JSON.stringify({
+      cover: {
+        paragraphOne:
+          "I am applying for the Software Engineer role at Example Co because the role aligns strongly with my recent delivery experience across **TypeScript**, **React**, and production quality. Over the past few years, I have shipped customer-facing web features in fast product cycles, translating vague requirements into clear milestones, implementing maintainable front-end and API changes, and partnering with design and QA to keep quality standards high. I bring a calm execution style, clear communication, and a bias for measurable outcomes in each release, including measurable adoption and reliability improvements after rollout.",
+        paragraphTwo:
+          "Your core expectation to build product features maps directly to my day-to-day work. I have built product features end to end, from scoping and technical breakdown through implementation, review, rollout, and monitoring. In my recent role, I delivered **TypeScript** and **React** improvements that simplified user journeys, reduced avoidable errors, and improved perceived responsiveness. I also strengthened **CI/CD** workflows by tightening checks before merge, improving release confidence, and making deployment behavior more predictable for the team. This combination of product focus and engineering discipline lets me deliver quickly without trading away maintainability, while still documenting decisions and supporting long-term team ownership.",
+        paragraphThree:
+          "What motivates me most about Example Co is the opportunity to contribute where product impact and engineering quality are both treated as first-class outcomes. I want to join a team where I can keep building useful product features, raise implementation standards, and support reliable delivery habits that scale as the roadmap grows. I am confident my background in practical delivery, cross-functional collaboration, and steady ownership would let me contribute early, and I would value the opportunity to discuss how I can support Example Co in this role with immediate, practical impact.",
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "cover",
+          modelOutput: highQualityCoverOutput,
         }),
       }),
     );
