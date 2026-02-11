@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -162,6 +163,8 @@ export function ResumeForm() {
   const [projects, setProjects] = useState<ResumeProject[]>([emptyProject()]);
   const [education, setEducation] = useState<ResumeEducation[]>([emptyEducation()]);
   const [skills, setSkills] = useState<ResumeSkillGroup[]>([emptySkillGroup()]);
+  const [expandedExperienceIndex, setExpandedExperienceIndex] = useState(0);
+  const [expandedProjectIndex, setExpandedProjectIndex] = useState(0);
   const markdownRefs = useRef<
     Record<string, HTMLInputElement | HTMLTextAreaElement | null>
   >({});
@@ -378,6 +381,22 @@ export function ResumeForm() {
   }, [isStepValid]);
 
   const canContinue = isStepValid(currentStep);
+  const currentStepLabel = steps[currentStep];
+  const progressPercent = ((currentStep + 1) / steps.length) * 100;
+
+  const stepMeta = useMemo(
+    () =>
+      steps.map((label, index) => {
+        const status = index === currentStep ? "current" : index < maxStep ? "complete" : "upcoming";
+        return {
+          label,
+          index,
+          status,
+          available: index <= maxStep,
+        };
+      }),
+    [currentStep, maxStep],
+  );
 
   const updateBasics = (field: keyof ResumeBasics, value: string) => {
     setBasics((prev) => ({ ...prev, [field]: value }));
@@ -406,11 +425,24 @@ export function ResumeForm() {
   };
 
   const addExperience = () => {
-    setExperiences((prev) => [...prev, emptyExperience()]);
+    setExperiences((prev) => {
+      const next = [...prev, emptyExperience()];
+      setExpandedExperienceIndex(next.length - 1);
+      return next;
+    });
   };
 
   const removeExperience = (index: number) => {
-    setExperiences((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== index) : prev));
+    setExperiences((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((_, idx) => idx !== index);
+      setExpandedExperienceIndex((current) => {
+        if (current === index) return Math.max(0, index - 1);
+        if (current > index) return current - 1;
+        return current;
+      });
+      return next;
+    });
   };
 
   const updateExperienceBullet = (expIndex: number, bulletIndex: number, value: string) => {
@@ -483,11 +515,24 @@ export function ResumeForm() {
   };
 
   const addProject = () => {
-    setProjects((prev) => [...prev, emptyProject()]);
+    setProjects((prev) => {
+      const next = [...prev, emptyProject()];
+      setExpandedProjectIndex(next.length - 1);
+      return next;
+    });
   };
 
   const removeProject = (index: number) => {
-    setProjects((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== index) : prev));
+    setProjects((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((_, idx) => idx !== index);
+      setExpandedProjectIndex((current) => {
+        if (current === index) return Math.max(0, index - 1);
+        if (current > index) return current - 1;
+        return current;
+      });
+      return next;
+    });
   };
 
   const updateProjectBullet = (projIndex: number, bulletIndex: number, value: string) => {
@@ -868,7 +913,7 @@ export function ResumeForm() {
         <div className="space-y-5">
           <div>
             <h2 className="text-base font-semibold text-slate-900">Personal info</h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Add the core details used across all applications.
             </p>
           </div>
@@ -914,7 +959,7 @@ export function ResumeForm() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">Links</h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Add LinkedIn, GitHub, or portfolio URLs.
                 </p>
               </div>
@@ -968,7 +1013,7 @@ export function ResumeForm() {
         <div className="space-y-3">
           <div>
             <h2 className="text-base font-semibold text-slate-900">Summary</h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Share a concise summary of your strengths.
             </p>
           </div>
@@ -1003,7 +1048,7 @@ export function ResumeForm() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900">Professional experience</h2>
-              <p className="text-xs text-muted-foreground">Add your most recent roles.</p>
+              <p className="text-sm text-muted-foreground">Add your most recent roles.</p>
             </div>
             <Button type="button" variant="secondary" onClick={addExperience}>
               Add experience
@@ -1011,114 +1056,138 @@ export function ResumeForm() {
           </div>
           <div className="space-y-5">
             {experiences.map((entry, index) => (
-              <div
+              <details
                 key={`exp-${index}`}
-                className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+                open={expandedExperienceIndex === index}
+                onToggle={(event) => {
+                  if ((event.currentTarget as HTMLDetailsElement).open) {
+                    setExpandedExperienceIndex(index);
+                  }
+                }}
+                className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-slate-800">Experience {index + 1}</p>
-                  {experiences.length > 1 ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-xs text-red-600 hover:text-red-600"
-                      onClick={() => removeExperience(index)}
-                    >
-                      Remove
-                    </Button>
-                  ) : null}
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor={`experience-title-${index}`}>Experience title</Label>
-                    <Input
-                      id={`experience-title-${index}`}
-                      value={entry.title}
-                      onChange={(event) => updateExperience(index, "title", event.target.value)}
-                      placeholder="Software Engineer"
-                    />
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">Experience {index + 1}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {entry.title || entry.company ? `${entry.title || "Untitled"} · ${entry.company || "Company"}` : "Draft"}
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`experience-company-${index}`}>Experience company</Label>
-                    <Input
-                      id={`experience-company-${index}`}
-                      value={entry.company}
-                      onChange={(event) => updateExperience(index, "company", event.target.value)}
-                      placeholder="Example Co"
-                    />
+                  <div className="flex items-center gap-1">
+                    {experiences.length > 1 ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-xs text-red-600 hover:text-red-600"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          removeExperience(index);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    ) : null}
+                    {expandedExperienceIndex === index ? (
+                      <ChevronDown className="h-4 w-4 text-slate-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-slate-500" />
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`experience-location-${index}`}>Experience location</Label>
-                    <Input
-                      id={`experience-location-${index}`}
-                      value={entry.location}
-                      onChange={(event) => updateExperience(index, "location", event.target.value)}
-                      placeholder="Sydney, Australia"
-                    />
+                </summary>
+                <div className="space-y-3 pt-3">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`experience-title-${index}`}>Experience title</Label>
+                      <Input
+                        id={`experience-title-${index}`}
+                        value={entry.title}
+                        onChange={(event) => updateExperience(index, "title", event.target.value)}
+                        placeholder="Software Engineer"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`experience-company-${index}`}>Experience company</Label>
+                      <Input
+                        id={`experience-company-${index}`}
+                        value={entry.company}
+                        onChange={(event) => updateExperience(index, "company", event.target.value)}
+                        placeholder="Example Co"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`experience-location-${index}`}>Experience location</Label>
+                      <Input
+                        id={`experience-location-${index}`}
+                        value={entry.location}
+                        onChange={(event) => updateExperience(index, "location", event.target.value)}
+                        placeholder="Sydney, Australia"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`experience-dates-${index}`}>Experience dates</Label>
+                      <Input
+                        id={`experience-dates-${index}`}
+                        value={entry.dates}
+                        onChange={(event) => updateExperience(index, "dates", event.target.value)}
+                        placeholder="2023 - 2025"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`experience-dates-${index}`}>Experience dates</Label>
-                    <Input
-                      id={`experience-dates-${index}`}
-                      value={entry.dates}
-                      onChange={(event) => updateExperience(index, "dates", event.target.value)}
-                      placeholder="2023 - 2025"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label>Experience bullets</Label>
-                    <Button type="button" variant="secondary" onClick={() => addExperienceBullet(index)}>
-                      Add bullet
-                    </Button>
-                  </div>
-                  <div className="space-y-2">
-                    {entry.bullets.map((bullet, bulletIndex) => (
-                      <div key={`exp-${index}-bullet-${bulletIndex}`} className="flex gap-2">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor={`experience-bullet-${index}-${bulletIndex}`}>Experience bullet</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Experience bullets</Label>
+                      <Button type="button" variant="secondary" onClick={() => addExperienceBullet(index)}>
+                        Add bullet
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {entry.bullets.map((bullet, bulletIndex) => (
+                        <div key={`exp-${index}-bullet-${bulletIndex}`} className="flex gap-2">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor={`experience-bullet-${index}-${bulletIndex}`}>Experience bullet</Label>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  applyBoldMarkdown(
+                                    `exp-bullet-${index}-${bulletIndex}`,
+                                    bullet,
+                                    (next) => updateExperienceBullet(index, bulletIndex, next),
+                                  )
+                                }
+                              >
+                                Bold selected
+                              </Button>
+                            </div>
+                            <Input
+                              id={`experience-bullet-${index}-${bulletIndex}`}
+                              ref={registerMarkdownRef(`exp-bullet-${index}-${bulletIndex}`)}
+                              value={bullet}
+                              onChange={(event) =>
+                                updateExperienceBullet(index, bulletIndex, event.target.value)
+                              }
+                              placeholder="Improved API latency by 35%"
+                            />
+                          </div>
+                          <div className="flex items-end">
                             <Button
                               type="button"
                               variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                applyBoldMarkdown(
-                                  `exp-bullet-${index}-${bulletIndex}`,
-                                  bullet,
-                                  (next) => updateExperienceBullet(index, bulletIndex, next),
-                                )
-                              }
+                              className="text-xs text-slate-500 hover:text-slate-900"
+                              onClick={() => removeExperienceBullet(index, bulletIndex)}
                             >
-                              Bold selected
+                              Remove
                             </Button>
                           </div>
-                          <Input
-                            id={`experience-bullet-${index}-${bulletIndex}`}
-                            ref={registerMarkdownRef(`exp-bullet-${index}-${bulletIndex}`)}
-                            value={bullet}
-                            onChange={(event) =>
-                              updateExperienceBullet(index, bulletIndex, event.target.value)
-                            }
-                            placeholder="Improved API latency by 35%"
-                          />
                         </div>
-                        <div className="flex items-end">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            className="text-xs text-slate-500 hover:text-slate-900"
-                            onClick={() => removeExperienceBullet(index, bulletIndex)}
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </details>
             ))}
           </div>
         </div>
@@ -1131,7 +1200,7 @@ export function ResumeForm() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900">Projects</h2>
-              <p className="text-xs text-muted-foreground">Highlight the most relevant projects.</p>
+              <p className="text-sm text-muted-foreground">Highlight the most relevant projects.</p>
             </div>
             <Button type="button" variant="secondary" onClick={addProject}>
               Add project
@@ -1139,150 +1208,177 @@ export function ResumeForm() {
           </div>
           <div className="space-y-5">
             {projects.map((entry, index) => (
-              <div
+              <details
                 key={`project-${index}`}
-                className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+                open={expandedProjectIndex === index}
+                onToggle={(event) => {
+                  if ((event.currentTarget as HTMLDetailsElement).open) {
+                    setExpandedProjectIndex(index);
+                  }
+                }}
+                className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-slate-800">Project {index + 1}</p>
-                  {projects.length > 1 ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-xs text-red-600 hover:text-red-600"
-                      onClick={() => removeProject(index)}
-                    >
-                      Remove
-                    </Button>
-                  ) : null}
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor={`project-name-${index}`}>Project name</Label>
-                    <Input
-                      id={`project-name-${index}`}
-                      value={entry.name}
-                      onChange={(event) => updateProject(index, "name", event.target.value)}
-                      placeholder="Jobflow"
-                    />
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">Project {index + 1}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {entry.name ? `${entry.name}${entry.stack ? ` · ${entry.stack}` : ""}` : "Draft"}
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`project-location-${index}`}>Project location</Label>
-                    <Input
-                      id={`project-location-${index}`}
-                      value={entry.location}
-                      onChange={(event) => updateProject(index, "location", event.target.value)}
-                      placeholder="Sydney, Australia"
-                    />
+                  <div className="flex items-center gap-1">
+                    {projects.length > 1 ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-xs text-red-600 hover:text-red-600"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          removeProject(index);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    ) : null}
+                    {expandedProjectIndex === index ? (
+                      <ChevronDown className="h-4 w-4 text-slate-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-slate-500" />
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`project-dates-${index}`}>Project dates</Label>
-                    <Input
-                      id={`project-dates-${index}`}
-                      value={entry.dates}
-                      onChange={(event) => updateProject(index, "dates", event.target.value)}
-                      placeholder="2024"
-                    />
+                </summary>
+                <div className="space-y-3 pt-3">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`project-name-${index}`}>Project name</Label>
+                      <Input
+                        id={`project-name-${index}`}
+                        value={entry.name}
+                        onChange={(event) => updateProject(index, "name", event.target.value)}
+                        placeholder="Jobflow"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`project-location-${index}`}>Project location</Label>
+                      <Input
+                        id={`project-location-${index}`}
+                        value={entry.location}
+                        onChange={(event) => updateProject(index, "location", event.target.value)}
+                        placeholder="Sydney, Australia"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`project-dates-${index}`}>Project dates</Label>
+                      <Input
+                        id={`project-dates-${index}`}
+                        value={entry.dates}
+                        onChange={(event) => updateProject(index, "dates", event.target.value)}
+                        placeholder="2024"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`project-stack-${index}`}>Tech stack</Label>
+                      <Input
+                        id={`project-stack-${index}`}
+                        value={entry.stack}
+                        onChange={(event) => updateProject(index, "stack", event.target.value)}
+                        placeholder="Next.js, TypeScript, Prisma, PostgreSQL"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`project-stack-${index}`}>Tech stack</Label>
-                    <Input
-                      id={`project-stack-${index}`}
-                      value={entry.stack}
-                      onChange={(event) => updateProject(index, "stack", event.target.value)}
-                      placeholder="Next.js, TypeScript, Prisma, PostgreSQL"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label>Project links (optional)</Label>
-                    <Button type="button" variant="secondary" onClick={() => addProjectLink(index)}>
-                      Add link
-                    </Button>
-                  </div>
-                  <div className="space-y-2">
-                    {entry.links.map((link, linkIndex) => (
-                      <div key={`project-${index}-link-${linkIndex}`} className="grid gap-2 md:grid-cols-[1fr_2fr_auto]">
-                        <Input
-                          value={link.label}
-                          onChange={(event) =>
-                            updateProjectLink(index, linkIndex, "label", event.target.value)
-                          }
-                          placeholder="GitHub / Live Demo / Case Study"
-                        />
-                        <Input
-                          value={link.url}
-                          onChange={(event) =>
-                            updateProjectLink(index, linkIndex, "url", event.target.value)
-                          }
-                          placeholder="https://"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="text-xs text-slate-500 hover:text-slate-900"
-                          onClick={() => removeProjectLink(index, linkIndex)}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Project links (optional)</Label>
+                      <Button type="button" variant="secondary" onClick={() => addProjectLink(index)}>
+                        Add link
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {entry.links.map((link, linkIndex) => (
+                        <div
+                          key={`project-${index}-link-${linkIndex}`}
+                          className="grid gap-2 md:grid-cols-[1fr_2fr_auto]"
                         >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label>Project bullets</Label>
-                    <Button type="button" variant="secondary" onClick={() => addProjectBullet(index)}>
-                      Add bullet
-                    </Button>
-                  </div>
-                  <div className="space-y-2">
-                    {entry.bullets.map((bullet, bulletIndex) => (
-                      <div key={`project-${index}-bullet-${bulletIndex}`} className="flex gap-2">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor={`project-bullet-${index}-${bulletIndex}`}>Project bullet</Label>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                applyBoldMarkdown(
-                                  `project-bullet-${index}-${bulletIndex}`,
-                                  bullet,
-                                  (next) => updateProjectBullet(index, bulletIndex, next),
-                                )
-                              }
-                            >
-                              Bold selected
-                            </Button>
-                          </div>
                           <Input
-                            id={`project-bullet-${index}-${bulletIndex}`}
-                            ref={registerMarkdownRef(`project-bullet-${index}-${bulletIndex}`)}
-                            value={bullet}
+                            value={link.label}
                             onChange={(event) =>
-                              updateProjectBullet(index, bulletIndex, event.target.value)
+                              updateProjectLink(index, linkIndex, "label", event.target.value)
                             }
-                            placeholder="Launched a new workflow"
+                            placeholder="GitHub / Live Demo / Case Study"
                           />
-                        </div>
-                        <div className="flex items-end">
+                          <Input
+                            value={link.url}
+                            onChange={(event) =>
+                              updateProjectLink(index, linkIndex, "url", event.target.value)
+                            }
+                            placeholder="https://"
+                          />
                           <Button
                             type="button"
                             variant="ghost"
                             className="text-xs text-slate-500 hover:text-slate-900"
-                            onClick={() => removeProjectBullet(index, bulletIndex)}
+                            onClick={() => removeProjectLink(index, linkIndex)}
                           >
                             Remove
                           </Button>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Project bullets</Label>
+                      <Button type="button" variant="secondary" onClick={() => addProjectBullet(index)}>
+                        Add bullet
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {entry.bullets.map((bullet, bulletIndex) => (
+                        <div key={`project-${index}-bullet-${bulletIndex}`} className="flex gap-2">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor={`project-bullet-${index}-${bulletIndex}`}>Project bullet</Label>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  applyBoldMarkdown(
+                                    `project-bullet-${index}-${bulletIndex}`,
+                                    bullet,
+                                    (next) => updateProjectBullet(index, bulletIndex, next),
+                                  )
+                                }
+                              >
+                                Bold selected
+                              </Button>
+                            </div>
+                            <Input
+                              id={`project-bullet-${index}-${bulletIndex}`}
+                              ref={registerMarkdownRef(`project-bullet-${index}-${bulletIndex}`)}
+                              value={bullet}
+                              onChange={(event) =>
+                                updateProjectBullet(index, bulletIndex, event.target.value)
+                              }
+                              placeholder="Launched a new workflow"
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="text-xs text-slate-500 hover:text-slate-900"
+                              onClick={() => removeProjectBullet(index, bulletIndex)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </details>
             ))}
           </div>
         </div>
@@ -1295,7 +1391,7 @@ export function ResumeForm() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900">Education</h2>
-              <p className="text-xs text-muted-foreground">List your most relevant education.</p>
+              <p className="text-sm text-muted-foreground">List your most relevant education.</p>
             </div>
             <Button type="button" variant="secondary" onClick={addEducation}>
               Add education
@@ -1379,7 +1475,7 @@ export function ResumeForm() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-slate-900">Skills</h2>
-            <p className="text-xs text-muted-foreground">Group skills by category.</p>
+            <p className="text-sm text-muted-foreground">Group skills by category.</p>
           </div>
           <Button type="button" variant="secondary" onClick={addSkillGroup}>
             Add group
@@ -1455,62 +1551,122 @@ export function ResumeForm() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex flex-wrap gap-2">
-        {steps.map((step, index) => {
-          const isActive = index === currentStep;
-          const isAvailable = index <= maxStep;
-          return (
-            <button
-              key={step}
-              type="button"
-              onClick={() => (isAvailable ? setCurrentStep(index) : null)}
-              disabled={!isAvailable}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
-                isActive
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                  : "border-slate-200 bg-white text-slate-600"
-              } ${!isAvailable ? "opacity-50" : "hover:border-emerald-300"}`}
-            >
-              {step}
-            </button>
-          );
-        })}
-      </div>
+      <div className="space-y-6 lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start lg:gap-6 lg:space-y-0">
+        <aside className="hidden lg:block lg:sticky lg:top-20">
+          <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Resume setup</p>
+            <p className="mt-1 text-sm text-slate-700">
+              Step {currentStep + 1} of {steps.length}
+            </p>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <nav className="mt-4 space-y-2">
+              {stepMeta.map((step) => (
+                <button
+                  key={step.label}
+                  type="button"
+                  onClick={() => (step.available ? setCurrentStep(step.index) : null)}
+                  disabled={!step.available}
+                  aria-current={step.status === "current" ? "step" : undefined}
+                  className={`flex min-h-11 w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm transition ${
+                    step.status === "current"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : step.status === "complete"
+                        ? "border-emerald-200 bg-emerald-50/50 text-slate-700"
+                        : "border-slate-200 bg-white text-slate-500"
+                  } ${!step.available ? "opacity-50" : "hover:border-emerald-300"}`}
+                >
+                  <span>{step.label}</span>
+                  <span className="text-xs">
+                    {step.status === "complete" ? "Done" : step.status === "current" ? "Now" : ""}
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </aside>
 
-      <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-6">
-        {renderStep()}
-      </div>
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2 lg:hidden">
+            {steps.map((step, index) => {
+              const isActive = index === currentStep;
+              const isAvailable = index <= maxStep;
+              return (
+                <button
+                  key={step}
+                  type="button"
+                  onClick={() => (isAvailable ? setCurrentStep(index) : null)}
+                  disabled={!isAvailable}
+                  className={`min-h-11 rounded-full border px-4 py-2 text-sm transition ${
+                    isActive
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-600"
+                  } ${!isAvailable ? "opacity-50" : "hover:border-emerald-300"}`}
+                >
+                  {step}
+                </button>
+              );
+            })}
+          </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" onClick={handleBack} disabled={currentStep === 0}>
-            Back
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleOpenPreview}
-            disabled={!hasAnyContent}
-          >
-            Preview
-          </Button>
+          <div className="rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Current step</p>
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="text-base font-semibold text-slate-900">{currentStepLabel}</p>
+              <p className="text-xs text-slate-500">
+                {currentStep + 1}/{steps.length}
+              </p>
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="min-h-[540px] rounded-2xl border border-slate-900/10 bg-white/70 p-6">
+            {renderStep()}
+          </div>
+
+          <div className="sticky bottom-3 z-20 rounded-2xl border border-slate-900/10 bg-white/95 p-3 shadow-sm backdrop-blur">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="ghost" onClick={handleBack} disabled={currentStep === 0}>
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleOpenPreview}
+                  disabled={!hasAnyContent}
+                >
+                  Preview
+                </Button>
+              </div>
+              {currentStep < steps.length - 1 ? (
+                <Button type="button" onClick={handleNext} disabled={!canContinue}>
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSave}
+                  disabled={!canContinue || saving}
+                  className={`edu-cta edu-cta--press ${
+                    isTaskHighlighted("resume_setup") ? guideHighlightClass : ""
+                  }`}
+                  data-guide-highlight={isTaskHighlighted("resume_setup") ? "true" : "false"}
+                >
+                  {saving ? "Saving..." : "Save master resume"}
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
-        {currentStep < steps.length - 1 ? (
-          <Button type="button" onClick={handleNext} disabled={!canContinue}>
-            Next
-          </Button>
-        ) : (
-          <Button
-            onClick={handleSave}
-            disabled={!canContinue || saving}
-            className={`edu-cta edu-cta--press ${
-              isTaskHighlighted("resume_setup") ? guideHighlightClass : ""
-            }`}
-            data-guide-highlight={isTaskHighlighted("resume_setup") ? "true" : "false"}
-          >
-            {saving ? "Saving..." : "Save master resume"}
-          </Button>
-        )}
       </div>
     </div>
   );
