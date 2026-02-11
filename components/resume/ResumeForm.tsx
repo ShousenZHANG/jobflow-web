@@ -1668,6 +1668,7 @@ export function ResumeForm() {
                     isTaskHighlighted("resume_setup") ? guideHighlightClass : ""
                   }`}
                   data-guide-highlight={isTaskHighlighted("resume_setup") ? "true" : "false"}
+                  data-guide-anchor="resume_setup"
                 >
                   {saving ? "Saving..." : "Save master resume"}
                 </Button>

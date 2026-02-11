@@ -4,6 +4,9 @@ import { GuideProvider, useGuide } from "./GuideContext";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/resume",
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
 }));
 
 vi.mock("next-auth/react", () => ({

@@ -390,6 +390,7 @@ export function FetchClient() {
             isTaskHighlighted("first_fetch") ? guideHighlightClass : ""
           }`}
           data-guide-highlight={isTaskHighlighted("first_fetch") ? "true" : "false"}
+          data-guide-anchor="first_fetch"
         >
           {isSubmitting ? "Starting..." : "Start fetch"}
         </Button>

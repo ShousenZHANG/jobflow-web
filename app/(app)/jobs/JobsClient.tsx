@@ -1267,6 +1267,7 @@ export function JobsClient({
                 !parsedExternalOutput ||
                 externalModelOutput.trim().length < 20
               }
+              data-guide-anchor={externalTarget === "resume" ? "generate_first_pdf" : undefined}
               onClick={() =>
                 selectedJob &&
                 generateFromImportedJson(selectedJob, externalTarget, externalModelOutput)
@@ -1305,6 +1306,7 @@ export function JobsClient({
                     className={`h-9 rounded-xl border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
                       highlightDownload ? guideHighlightClass : ""
                     }`}
+                    data-guide-anchor="download_first_pdf"
                   >
                     <a
                       href={pdfPreview.url}
@@ -1625,6 +1627,7 @@ export function JobsClient({
                           isAppliedSelected ? "h-9 w-[118px] px-3 text-sm" : "h-10 w-[132px]"
                         } ${highlightTriage ? guideHighlightClass : ""}`}
                         data-guide-highlight={highlightTriage ? "true" : "false"}
+                        data-guide-anchor="triage_first_job"
                       >
                         <span className="truncate">{statusLabel[selectedJob.status]}</span>
                       </SelectTrigger>
@@ -1655,6 +1658,7 @@ export function JobsClient({
                         isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
                       } ${highlightGenerate ? guideHighlightClass : ""}`}
                       data-guide-highlight={highlightGenerate ? "true" : "false"}
+                      data-guide-anchor="generate_first_pdf"
                     >
                       <FileText className="mr-1 h-4 w-4" />
                       Generate CV
@@ -1680,6 +1684,7 @@ export function JobsClient({
                         className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
                           isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
                         } ${highlightDownload ? guideHighlightClass : ""}`}
+                        data-guide-anchor="download_first_pdf"
                       >
                         <a
                           href={selectedJob.resumePdfUrl}
