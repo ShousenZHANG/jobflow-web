@@ -845,6 +845,13 @@ body {
   letter-spacing: -0.01em;
 }
 
+.app-frame {
+  width: 100%;
+  max-width: 1360px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 1.4vw, 2rem);
+}
+
 .app-shell {
   height: calc(100vh - 104px);
   height: calc(100dvh - 104px);
