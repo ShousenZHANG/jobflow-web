@@ -211,7 +211,10 @@ export async function POST(req: Request) {
         "9) cover.closing + cover.signatureName: include when possible.",
         "10) No fabrication, no recruiter voice, no generic filler; keep a strong candidate narrative.",
         "10a) Keep voice professional but natural, with subtle personality (lightly engaging but still formal).",
-        "11) Cover target JSON keys allowed: cover only (no cvSummary/latestExperience/skillsFinal).",
+        "11) Run an internal 2-stage process before final output: (a) responsibility-evidence plan, (b) final cover drafting.",
+        "12) After drafting, do exactly one internal rewrite pass to fix weak coverage, weak grounding, or generic motivation.",
+        "13) Locale style: en-AU (concise, grounded, professional) and target 280-360 words across three paragraphs.",
+        "14) Cover target JSON keys allowed: cover only (no cvSummary/latestExperience/skillsFinal).",
       ].join("\n");
 
   const userPrompt = [

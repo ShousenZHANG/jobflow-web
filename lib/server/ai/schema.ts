@@ -4,15 +4,27 @@ export const TailorModelOutputSchema = z.object({
   cvSummary: z.string().trim().max(1400).optional().default(""),
   cover: z
     .object({
+      candidateTitle: z.string().trim().max(200).optional().default(""),
+      subject: z.string().trim().max(240).optional().default(""),
+      date: z.string().trim().max(120).optional().default(""),
+      salutation: z.string().trim().max(200).optional().default(""),
       paragraphOne: z.string().trim().max(1400).optional().default(""),
       paragraphTwo: z.string().trim().max(1400).optional().default(""),
       paragraphThree: z.string().trim().max(1400).optional().default(""),
+      closing: z.string().trim().max(200).optional().default(""),
+      signatureName: z.string().trim().max(200).optional().default(""),
     })
     .optional()
     .default({
+      candidateTitle: "",
+      subject: "",
+      date: "",
+      salutation: "",
       paragraphOne: "",
       paragraphTwo: "",
       paragraphThree: "",
+      closing: "",
+      signatureName: "",
     }),
 });
 
@@ -32,7 +44,17 @@ function pickFirstText(obj: Record<string, unknown>, keys: string[]) {
 
 function normalizeCover(value: unknown) {
   if (!value) {
-    return { paragraphOne: "", paragraphTwo: "", paragraphThree: "" };
+    return {
+      candidateTitle: "",
+      subject: "",
+      date: "",
+      salutation: "",
+      paragraphOne: "",
+      paragraphTwo: "",
+      paragraphThree: "",
+      closing: "",
+      signatureName: "",
+    };
   }
   if (typeof value === "string") {
     const parts = value
@@ -40,22 +62,38 @@ function normalizeCover(value: unknown) {
       .map((part) => part.trim())
       .filter(Boolean);
     return {
+      candidateTitle: "",
+      subject: "",
+      date: "",
+      salutation: "",
       paragraphOne: parts[0] ?? "",
       paragraphTwo: parts[1] ?? "",
       paragraphThree: parts[2] ?? "",
+      closing: "",
+      signatureName: "",
     };
   }
   if (Array.isArray(value)) {
     const parts = value.map((item) => toStringValue(item).trim()).filter(Boolean);
     return {
+      candidateTitle: "",
+      subject: "",
+      date: "",
+      salutation: "",
       paragraphOne: parts[0] ?? "",
       paragraphTwo: parts[1] ?? "",
       paragraphThree: parts[2] ?? "",
+      closing: "",
+      signatureName: "",
     };
   }
   if (typeof value === "object") {
     const record = value as Record<string, unknown>;
     return {
+      candidateTitle: pickFirstText(record, ["candidateTitle", "title"]),
+      subject: pickFirstText(record, ["subject"]),
+      date: pickFirstText(record, ["date"]),
+      salutation: pickFirstText(record, ["salutation", "greeting"]),
       paragraphOne: pickFirstText(record, [
         "paragraphOne",
         "paragraph1",
@@ -77,9 +115,21 @@ function normalizeCover(value: unknown) {
         "closing",
         "interest",
       ]),
+      closing: pickFirstText(record, ["closing", "signoff"]),
+      signatureName: pickFirstText(record, ["signatureName", "name", "signature"]),
     };
   }
-  return { paragraphOne: "", paragraphTwo: "", paragraphThree: "" };
+  return {
+    candidateTitle: "",
+    subject: "",
+    date: "",
+    salutation: "",
+    paragraphOne: "",
+    paragraphTwo: "",
+    paragraphThree: "",
+    closing: "",
+    signatureName: "",
+  };
 }
 
 function normalizeTailorPayload(raw: unknown): TailorModelOutput {

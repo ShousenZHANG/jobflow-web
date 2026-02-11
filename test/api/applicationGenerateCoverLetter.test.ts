@@ -163,6 +163,68 @@ describe("applications generate cover letter api", () => {
           summary: "Summary",
         }),
       }),
+      expect.objectContaining({
+        strictCoverQuality: true,
+        maxCoverRewritePasses: 1,
+      }),
     );
+  });
+
+  it("returns 422 when strict cover quality gate fails after rewrite", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      userId: "user-1",
+      basics: {
+        fullName: "Jane Doe",
+        title: "Software Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+      },
+      summary: "Summary",
+      skills: [],
+      experiences: [],
+      projects: [],
+      education: [],
+    });
+    tailorApplicationContent.mockResolvedValueOnce({
+      cvSummary: "Summary",
+      cover: {
+        paragraphOne: "One",
+        paragraphTwo: "Two",
+        paragraphThree: "Three",
+      },
+      source: { cv: "base", cover: "fallback" },
+      reason: "quality_gate_failed",
+      qualityReport: {
+        passed: false,
+        issues: [
+          {
+            code: "TOP_RESPONSIBILITY_COVERAGE",
+            message: "Paragraph two does not cover top JD responsibilities with grounded evidence.",
+          },
+        ],
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/generate-cover-letter", {
+        method: "POST",
+        body: JSON.stringify({ jobId: VALID_JOB_ID }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(422);
+    expect(json.error.code).toBe("COVER_QUALITY_GATE_FAILED");
+    expect(applicationStore.upsert).not.toHaveBeenCalled();
   });
 });

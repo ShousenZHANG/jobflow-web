@@ -87,7 +87,27 @@ export async function POST(req: Request) {
     description: job.description || "",
     resumeSnapshot: profile,
     userId,
+  }, {
+    strictCoverQuality: true,
+    maxCoverRewritePasses: 1,
+    localeProfile: "en-AU",
+    targetWordRange: { min: 280, max: 360 },
   });
+
+  if (tailored.reason === "quality_gate_failed") {
+    return NextResponse.json(
+      {
+        error: {
+          code: "COVER_QUALITY_GATE_FAILED",
+          message:
+            "Cover letter quality gate failed after one rewrite pass. Please refine resume evidence or use manual generate.",
+          details: tailored.qualityReport?.issues ?? [],
+        },
+        requestId,
+      },
+      { status: 422 },
+    );
+  }
 
   const coverTex = renderCoverLetterTex({
     candidate: {
@@ -100,9 +120,15 @@ export async function POST(req: Request) {
     },
     company: job.company || "the company",
     role: job.title,
+    candidateTitle: tailored.cover.candidateTitle,
+    subject: tailored.cover.subject,
+    date: tailored.cover.date,
+    salutation: tailored.cover.salutation,
     paragraphOne: tailored.cover.paragraphOne,
     paragraphTwo: tailored.cover.paragraphTwo,
     paragraphThree: tailored.cover.paragraphThree,
+    closing: tailored.cover.closing,
+    signatureName: tailored.cover.signatureName,
   });
 
   let pdf: Buffer;

@@ -1,8 +1,14 @@
 import { buildTailorPrompts } from "./buildPrompt";
 import { getPromptSkillRules } from "./promptSkills";
-import { extractTopResponsibilities } from "./responsibilityCoverage";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 import { parseTailorModelOutput } from "./schema";
+import { buildCoverEvidenceContext, type CoverEvidenceContext } from "./coverContext";
+import {
+  buildCoverQualityRewriteBrief,
+  evaluateCoverQuality,
+  type CoverDraft,
+  type CoverQualityReport,
+} from "./coverQuality";
 import {
   callProvider,
   getDefaultModel,
@@ -22,9 +28,15 @@ type TailorInput = {
 type TailorResult = {
   cvSummary: string;
   cover: {
+    candidateTitle?: string;
+    subject?: string;
+    date?: string;
+    salutation?: string;
     paragraphOne: string;
     paragraphTwo: string;
     paragraphThree: string;
+    closing?: string;
+    signatureName?: string;
   };
   source: {
     cv: "ai" | "base";
@@ -35,60 +47,34 @@ type TailorResult = {
     | "missing_api_key"
     | "provider_error"
     | "parse_failed"
+    | "quality_gate_failed"
     | "exception";
+  qualityReport?: CoverQualityReport;
 };
 
 type ParsedModelPayload = {
   cvSummary: string;
   cover: {
+    candidateTitle?: string;
+    subject?: string;
+    date?: string;
+    salutation?: string;
     paragraphOne: string;
     paragraphTwo: string;
     paragraphThree: string;
+    closing?: string;
+    signatureName?: string;
   };
 };
 
+type TailorOptions = {
+  strictCoverQuality?: boolean;
+  maxCoverRewritePasses?: number;
+  localeProfile?: "en-AU" | "en-US" | "global";
+  targetWordRange?: { min: number; max: number };
+};
+
 const DEFAULT_PROVIDER: AiProviderName = "gemini";
-const COVER_EVIDENCE_STOPWORDS = new Set([
-  "the",
-  "and",
-  "for",
-  "with",
-  "from",
-  "that",
-  "this",
-  "your",
-  "our",
-  "their",
-  "you",
-  "will",
-  "have",
-  "has",
-  "are",
-  "is",
-  "to",
-  "of",
-  "in",
-  "on",
-  "as",
-  "by",
-  "an",
-  "a",
-  "be",
-  "or",
-  "at",
-  "using",
-  "through",
-  "across",
-  "experience",
-  "experienced",
-  "responsibility",
-  "responsibilities",
-  "required",
-  "preferred",
-  "role",
-  "team",
-  "teams",
-]);
 
 function truncate(text: string, max = 1600) {
   if (text.length <= max) return text;
@@ -126,118 +112,102 @@ function normalizeText(value: unknown, fallback = "") {
   return text || fallback;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object") return {};
-  return value as Record<string, unknown>;
-}
-
-function asArray(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : [];
-}
-
-function toText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function tokenize(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s+/#.-]/g, " ")
-    .split(/\s+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 4 && !COVER_EVIDENCE_STOPWORDS.has(token));
-}
-
-function dedupe(items: string[]) {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const item of items) {
-    const key = item.toLowerCase().replace(/\s+/g, " ").trim();
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    out.push(item.trim());
-  }
-  return out;
-}
-
-function buildCoverEvidence(input: TailorInput) {
-  const topResponsibilities = extractTopResponsibilities(input.description);
-  const jdTokens = new Set(tokenize(`${topResponsibilities.join(" ")} ${input.description}`));
-  const record = asRecord(input.resumeSnapshot);
-
-  const evidencePool: string[] = [];
-  const baseSummary = input.baseSummary.trim();
-  if (baseSummary) {
-    evidencePool.push(`Summary: ${baseSummary}`);
-  }
-
-  const experiences = asArray(record.experiences);
-  for (const entry of experiences) {
-    const exp = asRecord(entry);
-    const title = toText(exp.title);
-    const company = toText(exp.company);
-    const prefix = [title, company].filter(Boolean).join(" @ ");
-    const bullets = asArray(exp.bullets).map(toText).filter(Boolean);
-    for (const bullet of bullets) {
-      evidencePool.push(prefix ? `Experience (${prefix}): ${bullet}` : `Experience: ${bullet}`);
-    }
-  }
-
-  const projects = asArray(record.projects);
-  for (const entry of projects) {
-    const proj = asRecord(entry);
-    const name = toText(proj.name);
-    const stack = toText(proj.stack);
-    const prefix = [name, stack].filter(Boolean).join(" | ");
-    const bullets = asArray(proj.bullets).map(toText).filter(Boolean);
-    for (const bullet of bullets) {
-      evidencePool.push(prefix ? `Project (${prefix}): ${bullet}` : `Project: ${bullet}`);
-    }
-  }
-
-  const skills = asArray(record.skills);
-  for (const entry of skills) {
-    const skill = asRecord(entry);
-    const label = toText(skill.category) || toText(skill.label) || "Skills";
-    const items = asArray(skill.items).map(toText).filter(Boolean).slice(0, 12);
-    for (const item of items) {
-      evidencePool.push(`${label}: ${item}`);
-    }
-  }
-
-  const dedupedEvidence = dedupe(evidencePool);
-  const scored = dedupedEvidence
-    .map((line) => {
-      const tokens = tokenize(line);
-      let hits = 0;
-      for (const token of tokens) {
-        if (jdTokens.has(token)) hits += 1;
-      }
-      return { line, hits };
-    })
-    .sort((a, b) => b.hits - a.hits || a.line.length - b.line.length);
-
-  const matchedEvidence = scored
-    .filter((item) => item.hits > 0)
-    .slice(0, 10)
-    .map((item) => item.line);
-
-  const resumeHighlights = scored
-    .filter((item) => !matchedEvidence.includes(item.line))
-    .slice(0, 8)
-    .map((item) => item.line);
-
+function normalizeCoverDraft(cover: ParsedModelPayload["cover"], fallback: TailorResult["cover"]): CoverDraft {
   return {
-    topResponsibilities,
-    matchedEvidence: matchedEvidence.length > 0 ? matchedEvidence : dedupedEvidence.slice(0, 8),
-    resumeHighlights,
+    candidateTitle: normalizeText(cover.candidateTitle, fallback.candidateTitle || ""),
+    subject: normalizeText(cover.subject, fallback.subject || ""),
+    date: normalizeText(cover.date, fallback.date || ""),
+    salutation: normalizeText(cover.salutation, fallback.salutation || ""),
+    paragraphOne: normalizeText(cover.paragraphOne, fallback.paragraphOne),
+    paragraphTwo: normalizeText(cover.paragraphTwo, fallback.paragraphTwo),
+    paragraphThree: normalizeText(cover.paragraphThree, fallback.paragraphThree),
+    closing: normalizeText(cover.closing, fallback.closing || ""),
+    signatureName: normalizeText(cover.signatureName, fallback.signatureName || ""),
   };
+}
+
+async function callProviderWithFallback(params: {
+  provider: AiProviderName;
+  apiKey: string;
+  normalizedModel: string;
+  defaultModel: string;
+  systemPrompt: string;
+  userPrompt: string;
+  timeoutMs?: number;
+}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), params.timeoutMs ?? 12000);
+  try {
+    try {
+      return await callProvider(params.provider, {
+        apiKey: params.apiKey,
+        model: params.normalizedModel,
+        systemPrompt: params.systemPrompt,
+        userPrompt: params.userPrompt,
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (params.normalizedModel !== params.defaultModel) {
+        return await callProvider(params.provider, {
+          apiKey: params.apiKey,
+          model: params.defaultModel,
+          systemPrompt: params.systemPrompt,
+          userPrompt: params.userPrompt,
+          signal: controller.signal,
+        });
+      }
+      throw error;
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function buildCoverRewritePrompt(input: {
+  originalPrompt: string;
+  draft: CoverDraft;
+  qualityReport: CoverQualityReport;
+  context?: CoverEvidenceContext;
+  localeProfile: "en-AU" | "en-US" | "global";
+  targetWordRange: { min: number; max: number };
+}) {
+  const localeLine =
+    input.localeProfile === "en-AU"
+      ? "Locale profile: en-AU (Australian market tone: concise, grounded, professional)."
+      : input.localeProfile === "en-US"
+        ? "Locale profile: en-US (direct, impact-focused, concise)."
+        : "Locale profile: global neutral business English.";
+  return [
+    input.originalPrompt,
+    "",
+    "Rewrite pass instructions (run exactly once):",
+    localeLine,
+    `Target total words for paragraphOne+paragraphTwo+paragraphThree: ${input.targetWordRange.min}-${input.targetWordRange.max}.`,
+    buildCoverQualityRewriteBrief(input.qualityReport),
+    "",
+    "Current draft JSON (rewrite and improve, return final strict JSON only):",
+    JSON.stringify({ cover: input.draft }, null, 2),
+    "",
+    ...(input.context
+      ? [
+          "Grounding context reminder:",
+          `Top responsibilities: ${input.context.topResponsibilities.join(" | ") || "(none)"}`,
+          `Matched evidence: ${input.context.matchedEvidence.join(" | ") || "(none)"}`,
+        ]
+      : []),
+  ].join("\n");
 }
 
 export async function tailorApplicationContent(
   input: TailorInput,
+  options?: TailorOptions,
 ): Promise<TailorResult> {
   try {
+    const strictCoverQuality = options?.strictCoverQuality ?? false;
+    const maxCoverRewritePasses = options?.maxCoverRewritePasses ?? 0;
+    const localeProfile = options?.localeProfile ?? "global";
+    const targetWordRange = options?.targetWordRange ?? { min: 280, max: 360 };
+
     const skillRules = input.userId
       ? await getActivePromptSkillRulesForUser(input.userId)
       : getPromptSkillRules();
@@ -252,7 +222,11 @@ export async function tailorApplicationContent(
       return buildFallback(input, "missing_api_key");
     }
 
-    const coverContext = input.resumeSnapshot ? buildCoverEvidence(input) : undefined;
+    const coverContext = buildCoverEvidenceContext({
+      baseSummary: input.baseSummary,
+      description: input.description,
+      resumeSnapshot: input.resumeSnapshot,
+    });
     const { systemPrompt, userPrompt } = buildTailorPrompts(skillRules, {
       ...input,
       coverContext,
@@ -263,44 +237,29 @@ export async function tailorApplicationContent(
     );
     const defaultModel = getDefaultModel(providerConfig.provider);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-    let content = "";
-    try {
-      try {
-        content = await callProvider(providerConfig.provider, {
-          apiKey: providerConfig.apiKey,
-          model: normalizedModel,
-          systemPrompt,
-          userPrompt,
-          signal: controller.signal,
-        });
-      } catch (error) {
-        // Retry once on provider/model errors with provider default model.
-        if (normalizedModel !== defaultModel) {
-          content = await callProvider(providerConfig.provider, {
-            apiKey: providerConfig.apiKey,
-            model: defaultModel,
-            systemPrompt,
-            userPrompt,
-            signal: controller.signal,
-          });
-        } else {
-          throw error;
-        }
-      }
-    } finally {
-      clearTimeout(timeout);
-    }
+    let content = await callProviderWithFallback({
+      provider: providerConfig.provider,
+      apiKey: providerConfig.apiKey,
+      normalizedModel,
+      defaultModel,
+      systemPrompt,
+      userPrompt,
+    });
 
     const parsedRaw = parseTailorModelOutput(content);
     const parsed: ParsedModelPayload | null = parsedRaw
       ? {
           cvSummary: normalizeText(parsedRaw.cvSummary),
           cover: {
+            candidateTitle: normalizeText(parsedRaw.cover.candidateTitle),
+            subject: normalizeText(parsedRaw.cover.subject),
+            date: normalizeText(parsedRaw.cover.date),
+            salutation: normalizeText(parsedRaw.cover.salutation),
             paragraphOne: normalizeText(parsedRaw.cover.paragraphOne),
             paragraphTwo: normalizeText(parsedRaw.cover.paragraphTwo),
             paragraphThree: normalizeText(parsedRaw.cover.paragraphThree),
+            closing: normalizeText(parsedRaw.cover.closing),
+            signatureName: normalizeText(parsedRaw.cover.signatureName),
           },
         }
       : null;
@@ -309,21 +268,81 @@ export async function tailorApplicationContent(
     }
 
     const fallback = buildFallback(input, "ai_ok");
+    let finalCover = normalizeCoverDraft(parsed.cover, fallback.cover);
+    let qualityReport: CoverQualityReport | undefined;
+
+    if (strictCoverQuality && coverContext) {
+      qualityReport = evaluateCoverQuality({
+        draft: finalCover,
+        context: coverContext,
+        company: input.company,
+        targetWordRange,
+      });
+
+      if (!qualityReport.passed && maxCoverRewritePasses > 0) {
+        const rewritePrompt = buildCoverRewritePrompt({
+          originalPrompt: userPrompt,
+          draft: finalCover,
+          qualityReport,
+          context: coverContext,
+          localeProfile,
+          targetWordRange,
+        });
+        content = await callProviderWithFallback({
+          provider: providerConfig.provider,
+          apiKey: providerConfig.apiKey,
+          normalizedModel,
+          defaultModel,
+          systemPrompt,
+          userPrompt: rewritePrompt,
+        });
+
+        const rewrittenRaw = parseTailorModelOutput(content);
+        if (rewrittenRaw) {
+          const rewrittenCover: ParsedModelPayload["cover"] = {
+            candidateTitle: normalizeText(rewrittenRaw.cover.candidateTitle),
+            subject: normalizeText(rewrittenRaw.cover.subject),
+            date: normalizeText(rewrittenRaw.cover.date),
+            salutation: normalizeText(rewrittenRaw.cover.salutation),
+            paragraphOne: normalizeText(rewrittenRaw.cover.paragraphOne),
+            paragraphTwo: normalizeText(rewrittenRaw.cover.paragraphTwo),
+            paragraphThree: normalizeText(rewrittenRaw.cover.paragraphThree),
+            closing: normalizeText(rewrittenRaw.cover.closing),
+            signatureName: normalizeText(rewrittenRaw.cover.signatureName),
+          };
+          finalCover = normalizeCoverDraft(rewrittenCover, fallback.cover);
+          qualityReport = evaluateCoverQuality({
+            draft: finalCover,
+            context: coverContext,
+            company: input.company,
+            targetWordRange,
+          });
+        }
+      }
+
+      if (!qualityReport.passed) {
+        return {
+          cvSummary: parsed.cvSummary || fallback.cvSummary,
+          cover: finalCover,
+          source: {
+            cv: parsed.cvSummary ? "ai" : "base",
+            cover: "fallback",
+          },
+          reason: "quality_gate_failed",
+          qualityReport,
+        };
+      }
+    }
+
     return {
       cvSummary: parsed.cvSummary || fallback.cvSummary,
-      cover: {
-        paragraphOne: parsed.cover.paragraphOne || fallback.cover.paragraphOne,
-        paragraphTwo: parsed.cover.paragraphTwo || fallback.cover.paragraphTwo,
-        paragraphThree: parsed.cover.paragraphThree || fallback.cover.paragraphThree,
-      },
+      cover: finalCover,
       source: {
         cv: parsed.cvSummary ? "ai" : "base",
-        cover:
-          parsed.cover.paragraphOne || parsed.cover.paragraphTwo || parsed.cover.paragraphThree
-            ? "ai"
-            : "fallback",
+        cover: finalCover.paragraphOne || finalCover.paragraphTwo || finalCover.paragraphThree ? "ai" : "fallback",
       },
       reason: "ai_ok",
+      qualityReport,
     };
   } catch {
     return buildFallback(input, "provider_error");

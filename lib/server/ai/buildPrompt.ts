@@ -99,6 +99,10 @@ Cover structure checklist:
 8) Use strong candidate narrative quality; avoid recruiter boilerplate.
 9) Avoid fabrication and generic filler.
 10) Ground cover claims in provided resume evidence pack; do not claim tools/experience outside evidence.
+11) Before final output, run an internal 2-stage process: (a) create a responsibility-evidence plan, (b) draft cover text from that plan.
+12) After drafting, perform exactly one internal rewrite pass to fix any weak responsibility mapping, weak evidence grounding, or generic motivation.
+13) en-AU tone target: concise, grounded, professional; avoid US-style exaggeration and avoid generic recruiter phrasing.
+14) Target total words for paragraphOne+paragraphTwo+paragraphThree: 280-360 words.
 
 ${coverEvidenceBlock}
 

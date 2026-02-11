@@ -165,4 +165,48 @@ describe("tailorApplicationContent", () => {
       expect.objectContaining({ model: "gemini-2.5-flash" }),
     );
   });
+
+  it("runs one rewrite pass when strict cover quality is enabled", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+
+    const callProviderSpy = vi
+      .spyOn(providers, "callProvider")
+      .mockResolvedValueOnce(
+        JSON.stringify({
+          cvSummary: "AI Summary",
+          cover: {
+            paragraphOne:
+              "I am writing to express interest in this role and believe my background is a strong fit.",
+            paragraphTwo:
+              "I have worked on various projects and can contribute quickly across different areas.",
+            paragraphThree:
+              "I am excited by this opportunity and would value a chance to discuss further.",
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        JSON.stringify({
+          cvSummary: "AI Summary",
+          cover: {
+            paragraphOne:
+              "I am applying for the **Software Engineer** role at Example Co and bring delivery-focused experience in **TypeScript** and **React** for customer-facing products.",
+            paragraphTwo:
+              "Against your top responsibilities, I have shipped **TypeScript** features end-to-end, improved frontend performance in **React**, and coordinated reliable production releases with measurable quality improvements.",
+            paragraphThree:
+              "This role appeals to me because **Example Co** is building customer-facing products where my strengths in product engineering, cross-functional execution, and sustainable delivery quality can add immediate value.",
+          },
+        }),
+      );
+
+    const result = await tailorApplicationContent(INPUT, {
+      strictCoverQuality: true,
+      maxCoverRewritePasses: 1,
+      localeProfile: "en-AU",
+      targetWordRange: { min: 60, max: 360 },
+    });
+
+    expect(callProviderSpy).toHaveBeenCalledTimes(2);
+    expect(result.cover.paragraphTwo).toContain("TypeScript");
+    expect(["ai_ok", "quality_gate_failed"]).toContain(result.reason);
+  });
 });
