@@ -720,9 +720,9 @@ export function ResumeForm() {
   }, [basics, links, summary, experiences, projects, education, skills]);
 
   const schedulePreview = useCallback(
-    (delayMs = 800, openDialog = false) => {
+    (delayMs = 800, showEmptyToast = false) => {
       if (!hasAnyContent) {
-        if (openDialog) {
+        if (showEmptyToast) {
           toast({
             title: "Add details first",
             description: "Fill in at least one section before previewing.",
@@ -737,11 +737,13 @@ export function ResumeForm() {
       previewAbortRef.current?.abort();
 
       const payload = buildPayload("preview");
-      setPreviewStatus("loading");
-      setPreviewError(null);
-      if (openDialog) {
-        setPreviewOpen(true);
+      const hasExistingPreview = Boolean(pdfUrl);
+      if (!hasExistingPreview) {
+        setPreviewStatus("loading");
+      } else {
+        setPreviewStatus("ready");
       }
+      setPreviewError(null);
 
       const runPreview = async (attempt: number) => {
         const controller = new AbortController();
@@ -778,8 +780,10 @@ export function ResumeForm() {
               return runPreview(1);
             }
 
-            setPreviewError(message);
-            setPreviewStatus("error");
+            if (!hasExistingPreview) {
+              setPreviewError(message);
+              setPreviewStatus("error");
+            }
             return;
           }
 
@@ -792,8 +796,10 @@ export function ResumeForm() {
           setPreviewStatus("ready");
         } catch (err) {
           if ((err as Error).name === "AbortError") return;
-          setPreviewError("Preview failed. Try again.");
-          setPreviewStatus("error");
+          if (!hasExistingPreview) {
+            setPreviewError("Preview failed. Try again.");
+            setPreviewStatus("error");
+          }
         } finally {
           previewAbortRef.current = null;
         }
@@ -803,13 +809,13 @@ export function ResumeForm() {
         runPreview(0);
       }, delayMs);
     },
-    [buildPayload, hasAnyContent, toast],
+    [buildPayload, hasAnyContent, pdfUrl, toast],
   );
 
   const handleNext = () => {
     if (!canContinue) return;
     setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
-    schedulePreview(0, true);
+    schedulePreview(250);
   };
 
   const handleBack = () => {
@@ -844,14 +850,16 @@ export function ResumeForm() {
       description: "Your master resume has been updated.",
     });
     markTaskComplete("resume_setup");
-    schedulePreview(0, true);
+    schedulePreview(150);
   };
 
   const handleOpenPreview = () => {
-    schedulePreview(0, true);
-    if (hasAnyContent) {
-      setPreviewOpen(true);
+    if (!hasAnyContent) {
+      schedulePreview(0, true);
+      return;
     }
+    setPreviewOpen(true);
+    schedulePreview(0);
   };
 
   const previewUrl = useMemo(() => pdfUrl, [pdfUrl]);
@@ -876,7 +884,7 @@ export function ResumeForm() {
         />
       ) : (
         <div className={`flex ${heightClass} items-center justify-center text-xs text-muted-foreground`}>
-          Click Next or Save to generate a preview.
+          Click Preview to generate your PDF.
         </div>
       )}
       {previewStatus === "loading" ? (
@@ -899,7 +907,7 @@ export function ResumeForm() {
           }
         >
           <span>{previewError ?? "Preview failed. Try again."}</span>
-          <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0, true)}>
+          <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0)}>
             Retry
           </Button>
         </div>

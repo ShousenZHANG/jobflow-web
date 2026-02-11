@@ -8,9 +8,11 @@ afterEach(() => {
 });
 
 describe("ResumeForm", () => {
-  const closePreviewIfOpen = async () => {
-    const closeButton = await screen.findByRole("button", { name: "Close" });
-    fireEvent.click(closeButton);
+  const closePreviewIfOpen = () => {
+    const closeButton = screen.queryByRole("button", { name: "Close" });
+    if (closeButton) {
+      fireEvent.click(closeButton);
+    }
   };
 
   it("renders personal info step with required fields", async () => {
@@ -61,7 +63,7 @@ describe("ResumeForm", () => {
     expect(nextButton).toBeTruthy();
     fireEvent.click(nextButton!);
 
-    await closePreviewIfOpen();
+    closePreviewIfOpen();
     expect(await screen.findByRole("heading", { name: "Summary" })).toBeInTheDocument();
     expect(screen.getByLabelText("Summary")).toBeInTheDocument();
   });
@@ -92,7 +94,7 @@ describe("ResumeForm", () => {
       .find((button) => !button.hasAttribute("disabled"));
     expect(firstNextButton).toBeTruthy();
     fireEvent.click(firstNextButton!);
-    await closePreviewIfOpen();
+    closePreviewIfOpen();
     fireEvent.change(await screen.findByLabelText("Summary"), {
       target: { value: "Focused engineer." },
     });
@@ -101,7 +103,7 @@ describe("ResumeForm", () => {
       .find((button) => !button.hasAttribute("disabled"));
     expect(secondNextButton).toBeTruthy();
     fireEvent.click(secondNextButton!);
-    await closePreviewIfOpen();
+    closePreviewIfOpen();
 
     const addBulletButtons = screen.getAllByRole("button", { name: "Add bullet" });
     fireEvent.click(addBulletButtons[0]);
