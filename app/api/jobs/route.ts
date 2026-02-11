@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { buildJobsListEtag } from "@/lib/server/jobsListEtag";
 
 export const runtime = "nodejs";
 
@@ -144,9 +145,28 @@ export async function GET(req: Request) {
         .filter((level): level is string => Boolean(level)),
     ),
   );
-  const lastUpdated = jobs.length ? jobs[0].updatedAt?.toISOString?.() : "empty";
-  const levelsHash = jobLevels.join("|");
-  const etag = `W/"jobs:${userId}:${cursor ?? "start"}:${jobs.length}:${lastUpdated}:${levelsHash}"`;
+  const filtersSignature = [
+    `limit=${limit}`,
+    `status=${status ?? "ALL"}`,
+    `q=${q ?? ""}`,
+    `location=${location ?? ""}`,
+    `jobLevel=${jobLevel ?? ""}`,
+    `sort=${sort}`,
+  ].join("|");
+  const etag = buildJobsListEtag({
+    userId,
+    cursor: cursor ?? null,
+    nextCursor,
+    filtersSignature,
+    jobLevels,
+    items: jobs.map((job) => ({
+      id: job.id,
+      status: job.status,
+      updatedAt: job.updatedAt,
+      resumePdfUrl: job.resumePdfUrl ?? null,
+      resumePdfName: job.resumePdfName ?? null,
+    })),
+  });
   if (ifNoneMatch && ifNoneMatch === etag) {
     return new NextResponse(null, { status: 304 });
   }

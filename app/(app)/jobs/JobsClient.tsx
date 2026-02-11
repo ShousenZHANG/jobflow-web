@@ -310,7 +310,6 @@ export function JobsClient({
   const [cursor, setCursor] = useState<string | null>(null);
 
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
-  const statusFilterRef = useRef<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
   const pageSize = 10;
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
@@ -434,10 +433,6 @@ export function JobsClient({
   const debouncedFilters = useDebouncedValue(filters, 200);
 
   useEffect(() => {
-    statusFilterRef.current = statusFilter;
-  }, [statusFilter]);
-
-  useEffect(() => {
     return () => {
       if (pdfPreview?.url) {
         URL.revokeObjectURL(pdfPreview.url);
@@ -544,6 +539,15 @@ export function JobsClient({
     [],
   );
 
+  function getStatusFilterFromJobsQueryKey(queryKey: readonly unknown[]): JobStatus | "ALL" {
+    const serializedQuery = typeof queryKey[1] === "string" ? queryKey[1] : "";
+    const statusParam = new URLSearchParams(serializedQuery).get("status");
+    if (statusParam === "NEW" || statusParam === "APPLIED" || statusParam === "REJECTED") {
+      return statusParam;
+    }
+    return "ALL";
+  }
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: JobStatus }) => {
       const res = await fetch(`/api/jobs/${id}`, {
@@ -563,24 +567,31 @@ export function JobsClient({
     onMutate: async ({ id, status }) => {
       setError(null);
       setUpdatingIds((prev) => new Set(prev).add(id));
-      await queryClient.cancelQueries({ queryKey: ["jobs", queryString, cursor] });
-      const previous = queryClient.getQueryData<JobsResponse>(["jobs", queryString, cursor]);
-      queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
-        if (!old) return old;
-        const currentFilter = statusFilterRef.current;
+      await queryClient.cancelQueries({ queryKey: ["jobs"] });
+      const previousEntries = queryClient.getQueriesData<JobsResponse>({ queryKey: ["jobs"] });
+
+      for (const [entryKey] of previousEntries) {
+        const key = Array.isArray(entryKey) ? entryKey : [];
+        const currentFilter = getStatusFilterFromJobsQueryKey(key);
         const shouldKeep = currentFilter === "ALL" || currentFilter === status;
-        return {
-          ...old,
-          items: shouldKeep
-            ? old.items.map((it) => (it.id === id ? { ...it, status } : it))
-            : old.items.filter((it) => it.id !== id),
-        };
-      });
-      return { previous };
+        queryClient.setQueryData<JobsResponse>(entryKey, (old) => {
+          if (!old || !Array.isArray(old.items)) return old;
+          return {
+            ...old,
+            items: shouldKeep
+              ? old.items.map((it) => (it.id === id ? { ...it, status } : it))
+              : old.items.filter((it) => it.id !== id),
+          };
+        });
+      }
+
+      return { previousEntries };
     },
     onError: (e, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["jobs", queryString, cursor], context.previous);
+      if (context?.previousEntries?.length) {
+        for (const [entryKey, entryData] of context.previousEntries) {
+          queryClient.setQueryData(entryKey, entryData);
+        }
       }
       setError(getErrorMessage(e, "Failed to update status"));
       toast({
@@ -593,7 +604,7 @@ export function JobsClient({
       });
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
       markTaskComplete("triage_first_job");
       if (data?.resumeSaved || data?.resumePdfUrl) {
         markTaskComplete("generate_first_pdf");
@@ -607,17 +618,20 @@ export function JobsClient({
       });
 
       if (data?.resumePdfUrl) {
-        queryClient.setQueryData<JobsResponse>(["jobs", queryString, cursor], (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            items: old.items.map((it) =>
-              it.id === variables.id
-                ? { ...it, resumePdfUrl: data.resumePdfUrl, resumePdfName: data.resumePdfName }
-                : it,
-            ),
-          };
-        });
+        const cachedEntries = queryClient.getQueriesData<JobsResponse>({ queryKey: ["jobs"] });
+        for (const [entryKey] of cachedEntries) {
+          queryClient.setQueryData<JobsResponse>(entryKey, (old) => {
+            if (!old || !Array.isArray(old.items)) return old;
+            return {
+              ...old,
+              items: old.items.map((it) =>
+                it.id === variables.id
+                  ? { ...it, resumePdfUrl: data.resumePdfUrl, resumePdfName: data.resumePdfName }
+                  : it,
+              ),
+            };
+          });
+        }
       }
 
       if (data?.saveError) {
