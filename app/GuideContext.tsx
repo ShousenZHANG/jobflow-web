@@ -187,6 +187,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [targetMissing, setTargetMissing] = useState(false);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   const scrolledTargetKeyRef = useRef<string | null>(null);
 
@@ -222,6 +223,20 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener("resize", syncViewport);
     };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPrefersReducedMotion(mediaQuery.matches);
+    update();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", update);
+      return () => mediaQuery.removeEventListener("change", update);
+    }
+
+    mediaQuery.addListener(update);
+    return () => mediaQuery.removeListener(update);
   }, []);
 
   useEffect(() => {
@@ -356,9 +371,13 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
     const key = `${tourTaskId}:${pathname}`;
     if (scrolledTargetKeyRef.current === key) return;
-    target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    target.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "center",
+      inline: "nearest",
+    });
     scrolledTargetKeyRef.current = key;
-  }, [isTourTaskOnCurrentPage, pathname, tourRunning, tourTaskId]);
+  }, [isTourTaskOnCurrentPage, pathname, prefersReducedMotion, tourRunning, tourTaskId]);
 
   const markTaskComplete = useCallback(
     (taskId: OnboardingTaskId) => {
@@ -480,6 +499,10 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     } as const;
   }, [spotlightBox, viewport.height, viewport.width]);
 
+  const shouldHideCoachUntilAnchored = useMemo(() => {
+    return isTourTaskOnCurrentPage && !targetMissing && !coachLayout;
+  }, [coachLayout, isTourTaskOnCurrentPage, targetMissing]);
+
   const tourPrimaryLabel = useMemo(() => {
     if (!activeTourTask) return "Continue";
     if (!isTourTaskOnCurrentPage) {
@@ -487,6 +510,46 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     }
     return "I completed this";
   }, [activeTourTask, isTourTaskOnCurrentPage]);
+
+  const tourStepNumber = useMemo(() => {
+    if (!tourTaskId) return 0;
+    const index = ONBOARDING_TASKS.findIndex((task) => task.id === tourTaskId);
+    return index >= 0 ? index + 1 : 0;
+  }, [tourTaskId]);
+
+  const tourProgressPercent = useMemo(() => {
+    if (tourStepNumber <= 0) return 0;
+    return (tourStepNumber / ONBOARDING_TASKS.length) * 100;
+  }, [tourStepNumber]);
+
+  useEffect(() => {
+    if (!tourRunning) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        stopTour();
+        return;
+      }
+
+      if (event.key !== "Enter" || event.repeat) return;
+
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      const interactiveTag =
+        tag === "input" || tag === "textarea" || tag === "select" || tag === "button" || tag === "a";
+      const hasInteractiveRole = Boolean(target?.closest('[role="button"], [role="link"], [role="combobox"]'));
+      if (target?.isContentEditable || interactiveTag || hasInteractiveRole) {
+        return;
+      }
+
+      event.preventDefault();
+      handleTourPrimaryAction();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleTourPrimaryAction, stopTour, tourRunning]);
 
   const value = useMemo<GuideContextValue>(
     () => ({
@@ -533,7 +596,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
               <div className="pointer-events-none fixed inset-0 z-[60]">
                 {spotlightBox ? (
                   <div
-                    className="absolute rounded-2xl border-2 border-emerald-400/95 bg-transparent shadow-[0_0_0_9999px_rgba(15,23,42,0.5)] transition-all duration-150 ease-out"
+                    className={`absolute rounded-2xl border-2 border-emerald-400/95 bg-transparent shadow-[0_0_0_9999px_rgba(15,23,42,0.5)] ${
+                      prefersReducedMotion ? "" : "transition-all duration-150 ease-out"
+                    }`}
                     style={{
                       top: spotlightBox.top,
                       left: spotlightBox.left,
@@ -547,7 +612,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
               </div>
 
               <section
-                className="fixed z-[70] rounded-2xl border border-slate-900/10 bg-white/95 p-4 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.45)] backdrop-blur"
+                className={`fixed z-[70] rounded-2xl border border-slate-900/10 bg-white/95 p-4 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.45)] backdrop-blur ${
+                  prefersReducedMotion ? "" : "transition-[top,left] duration-150 ease-out"
+                } ${shouldHideCoachUntilAnchored ? "pointer-events-none opacity-0" : ""}`}
                 style={
                   coachLayout
                     ? {
@@ -556,8 +623,8 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                         width: coachLayout.width,
                       }
                     : {
+                        top: GUIDE_EDGE + 72,
                         right: GUIDE_EDGE,
-                        bottom: GUIDE_EDGE,
                         width: Math.min(GUIDE_CARD_WIDTH, viewport.width - GUIDE_EDGE * 2),
                       }
                 }
@@ -584,6 +651,23 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                   >
                     Exit
                   </button>
+                </div>
+
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <span>
+                      Step {tourStepNumber}/{ONBOARDING_TASKS.length}
+                    </span>
+                    <span>{Math.round(tourProgressPercent)}%</span>
+                  </div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className={`h-full rounded-full bg-emerald-500 ${
+                        prefersReducedMotion ? "" : "transition-[width] duration-200 ease-out"
+                      }`}
+                      style={{ width: `${tourProgressPercent}%` }}
+                    />
+                  </div>
                 </div>
 
                 <h3 className="text-sm font-semibold text-slate-900">{activeTourTask.title}</h3>
@@ -622,6 +706,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                     {tourPrimaryLabel}
                   </Button>
                 </div>
+                <p className="mt-2 text-[11px] text-slate-500">Shortcuts: Enter continue | Esc exit</p>
               </section>
             </>
           ) : null}
