@@ -181,7 +181,17 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!runId) return;
     let alive = true;
-    const t = setInterval(async () => {
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleNextPoll = (delayMs = 3000) => {
+      if (!alive) return;
+      pollTimer = setTimeout(() => {
+        void poll();
+      }, delayMs);
+    };
+
+    const poll = async () => {
+      let shouldContinue = true;
       try {
         const r = await fetchRun(runId);
         if (!alive) return;
@@ -202,7 +212,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
           autoCloseTimer.current = setTimeout(() => {
             setOpen(false);
           }, 3000);
-          clearInterval(t);
+          shouldContinue = false;
         }
       } catch (e: unknown) {
         if (!alive) return;
@@ -211,11 +221,20 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
         } else {
           setError("Polling failed");
         }
+      } finally {
+        if (shouldContinue) {
+          scheduleNextPoll();
+        }
       }
-    }, 3000);
+    };
+
+    scheduleNextPoll(0);
+
     return () => {
       alive = false;
-      clearInterval(t);
+      if (pollTimer) {
+        clearTimeout(pollTimer);
+      }
       if (autoCloseTimer.current) {
         clearTimeout(autoCloseTimer.current);
       }

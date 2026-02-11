@@ -528,7 +528,7 @@ body {
 
 .route-loading-enter {
   opacity: 0;
-  animation: route-loading-enter 180ms ease-out 120ms forwards;
+  animation: route-loading-enter 180ms ease-out forwards;
 }
 
 .jobflow-list-item {

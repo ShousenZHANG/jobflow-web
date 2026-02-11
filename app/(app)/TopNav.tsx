@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -12,8 +11,6 @@ export function TopNav() {
   const { data } = useSession();
   const pathname = usePathname();
   const { openGuide, state } = useGuide();
-  const [showRouteProgress, setShowRouteProgress] = useState(false);
-  const progressDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const resetAppShellScroll = () => {
     const appShell = document.querySelector<HTMLElement>(".app-shell");
@@ -26,32 +23,7 @@ export function TopNav() {
   const beginRouteFeedback = (href: string) => {
     resetAppShellScroll();
     if (href === pathname) return;
-    if (progressDelayRef.current) {
-      clearTimeout(progressDelayRef.current);
-    }
-    setShowRouteProgress(false);
-    progressDelayRef.current = setTimeout(() => {
-      setShowRouteProgress(true);
-      progressDelayRef.current = null;
-    }, 120);
   };
-
-  useEffect(() => {
-    if (progressDelayRef.current) {
-      clearTimeout(progressDelayRef.current);
-      progressDelayRef.current = null;
-    }
-    setShowRouteProgress(false);
-  }, [pathname]);
-
-  useEffect(
-    () => () => {
-      if (progressDelayRef.current) {
-        clearTimeout(progressDelayRef.current);
-      }
-    },
-    [],
-  );
 
   const links = [
     { href: "/jobs", label: "Jobs" },
@@ -128,10 +100,6 @@ export function TopNav() {
             </Button>
           </div>
         </div>
-        <div
-          aria-hidden="true"
-          className={`edu-route-progress ${showRouteProgress ? "edu-route-progress--active" : ""}`}
-        />
       </div>
     </div>
   );
