@@ -12,6 +12,14 @@ export function TopNav() {
   const pathname = usePathname();
   const { openGuide, state } = useGuide();
 
+  const prepareRouteChange = () => {
+    const appShell = document.querySelector<HTMLElement>(".app-shell");
+    if (appShell) {
+      appShell.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  };
+
   const links = [
     { href: "/jobs", label: "Jobs" },
     { href: "/fetch", label: "Fetch" },
@@ -42,6 +50,7 @@ export function TopNav() {
                   <Link
                     key={link.href}
                     href={link.href}
+                    onClick={prepareRouteChange}
                     className={`edu-nav-link edu-nav-pill ${
                       active ? "edu-nav-pill--active" : ""
                     }`}

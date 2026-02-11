@@ -518,18 +518,53 @@ body {
 @keyframes route-loading-enter {
   from {
     opacity: 0;
-    transform: scale(0.992);
+    filter: saturate(0.9);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    filter: saturate(1);
   }
 }
 
 .route-loading-enter {
   opacity: 0;
-  transform-origin: top center;
-  animation: route-loading-enter 180ms ease-out forwards;
+  animation: route-loading-enter 140ms ease-out forwards;
+}
+
+.edu-loading-bubbles {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.edu-loading-bubbles__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #10b981;
+  opacity: 0.35;
+  transform: scale(0.72);
+  animation: edu-dot-pop 900ms ease-in-out infinite;
+}
+
+.edu-loading-bubbles__dot:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.edu-loading-bubbles__dot:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+@keyframes edu-dot-pop {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .jobflow-list-item {
@@ -686,6 +721,12 @@ body {
   }
 
   .route-loading-enter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .edu-loading-bubbles__dot {
     animation: none;
     opacity: 1;
     transform: none;

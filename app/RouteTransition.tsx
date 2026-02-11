@@ -21,7 +21,7 @@ export function RouteTransition({ children }: { children: React.ReactNode }) {
   const transition = reduce ? { duration: 0 } : { duration: 0.22, ease };
 
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence initial={false} mode="wait">
       <motion.main
         key={pathname}
         initial={reduce ? false : { opacity: 0, scale: 0.985 }}
