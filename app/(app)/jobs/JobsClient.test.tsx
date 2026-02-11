@@ -230,7 +230,7 @@ describe("JobsClient", () => {
     expect(quote.closest("blockquote")).toHaveClass("border-l-2");
   });
 
-  it("keeps Saved CV in the primary actions row, removes its icon, and pins Remove to top-right", async () => {
+  it("keeps Saved CV in the primary actions row and keeps Remove as a trailing secondary action", async () => {
     const jobWithSavedCv = {
       ...baseJob,
       id: "22222222-2222-2222-2222-222222222222",
@@ -255,7 +255,8 @@ describe("JobsClient", () => {
     expect(savedCvLink.querySelector("svg")).toBeNull();
 
     const removeButton = screen.getAllByTestId("job-remove-button")[0];
-    expect(removeButton).toHaveClass("sm:absolute", "sm:right-0", "sm:top-0");
+    expect(removeButton).toHaveClass("sm:ml-auto", "sm:w-auto");
+    expect(removeButton).not.toHaveClass("sm:absolute");
   });
 
   it("disables skill pack download until prompt meta is ready, then advances to Copy Prompt with one click", async () => {

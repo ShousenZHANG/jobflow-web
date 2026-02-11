@@ -1600,7 +1600,7 @@ export function JobsClient({
         <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
-              <div className="relative flex flex-wrap items-start justify-between gap-3 sm:pr-[148px]">
+              <div className="relative flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold">{selectedJob.title}</h2>
@@ -1691,21 +1691,21 @@ export function JobsClient({
                         </a>
                       </Button>
                     ) : null}
+                    <Button
+                      data-testid="job-remove-button"
+                      variant="outline"
+                      size="sm"
+                      disabled={deletingIds.has(selectedJob.id)}
+                      onClick={() => scheduleDelete(selectedJob)}
+                      className={`w-full justify-center rounded-xl border-rose-200 bg-rose-50 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none sm:ml-auto sm:w-auto ${
+                        isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                      }`}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Remove
+                    </Button>
                   </div>
                 </div>
-                <Button
-                  data-testid="job-remove-button"
-                  variant="outline"
-                  size="sm"
-                  disabled={deletingIds.has(selectedJob.id)}
-                  onClick={() => scheduleDelete(selectedJob)}
-                  className={`w-full justify-center rounded-xl border-rose-200 bg-rose-50 text-sm font-medium text-rose-700 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none sm:absolute sm:right-0 sm:top-0 sm:w-auto sm:min-w-[124px] ${
-                    isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                  }`}
-                >
-                  <Trash2 className="mr-1 h-4 w-4" />
-                  Remove
-                </Button>
                 {selectedTailorSource ? (
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                     {selectedTailorSource.cv ? (
