@@ -576,7 +576,7 @@ describe("applications manual generate api", () => {
     expect(json.error.code).toBe("PROMPT_META_MISMATCH");
   });
 
-  it("returns 422 when manual cover output fails quality gate", async () => {
+  it("soft-fails quality gate but still generates manual cover pdf", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -610,11 +610,11 @@ describe("applications manual generate api", () => {
         }),
       }),
     );
-    const json = await res.json();
 
-    expect(res.status).toBe(422);
-    expect(json.error.code).toBe("COVER_QUALITY_GATE_FAILED");
-    expect(renderCoverLetterTex).not.toHaveBeenCalled();
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/pdf");
+    expect(res.headers.get("x-cover-quality-gate")).toBe("soft-fail");
+    expect(renderCoverLetterTex).toHaveBeenCalled();
   });
 
   it("generates cover pdf with cover letter suffix for high-quality cover target", async () => {

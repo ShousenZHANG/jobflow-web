@@ -593,6 +593,8 @@ export async function POST(req: Request) {
 
   let pdf: Buffer;
   let filename: string;
+  let coverQualityGate = "pass";
+  let coverQualityIssueCount = 0;
   try {
     if (parsed.data.target === "resume") {
       const resumeParsed = parseResumeManualOutput(parsed.data.modelOutput);
@@ -733,20 +735,8 @@ export async function POST(req: Request) {
         company: job.company || "the company",
         targetWordRange: { min: 280, max: 360 },
       });
-      if (!qualityReport.passed) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "COVER_QUALITY_GATE_FAILED",
-              message:
-                "Cover letter quality gate failed. Please regenerate with stronger evidence mapping and cleaner structure.",
-              details: qualityReport.issues,
-            },
-            requestId,
-          },
-          { status: 422 },
-        );
-      }
+      coverQualityGate = qualityReport.passed ? "pass" : "soft-fail";
+      coverQualityIssueCount = qualityReport.issues.length;
       const coverTex = renderCoverLetterTex({
         candidate: {
           name: renderInput.candidate.name,
@@ -852,6 +842,8 @@ export async function POST(req: Request) {
       "x-tailor-cv-source": parsed.data.target === "resume" ? "manual_import" : "base",
       "x-tailor-cover-source": parsed.data.target === "cover" ? "manual_import" : "fallback",
       "x-tailor-reason": "manual_import_ok",
+      "x-cover-quality-gate": coverQualityGate,
+      "x-cover-quality-issue-count": String(coverQualityIssueCount),
     },
   });
 }

@@ -89,25 +89,11 @@ export async function POST(req: Request) {
     userId,
   }, {
     strictCoverQuality: true,
-    maxCoverRewritePasses: 1,
+    maxCoverRewritePasses: 2,
     localeProfile: "en-AU",
     targetWordRange: { min: 280, max: 360 },
   });
-
-  if (tailored.reason === "quality_gate_failed") {
-    return NextResponse.json(
-      {
-        error: {
-          code: "COVER_QUALITY_GATE_FAILED",
-          message:
-            "Cover letter quality gate failed after one rewrite pass. Please refine resume evidence or use manual generate.",
-          details: tailored.qualityReport?.issues ?? [],
-        },
-        requestId,
-      },
-      { status: 422 },
-    );
-  }
+  const coverQualityGatePassed = tailored.qualityReport?.passed ?? true;
 
   const coverTex = renderCoverLetterTex({
     candidate: {
@@ -190,6 +176,7 @@ export async function POST(req: Request) {
       "x-tailor-cv-source": tailored.source.cv,
       "x-tailor-cover-source": tailored.source.cover,
       "x-tailor-reason": tailored.reason,
+      "x-cover-quality-gate": coverQualityGatePassed ? "pass" : "soft-fail",
     },
   });
 }

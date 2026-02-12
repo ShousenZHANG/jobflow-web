@@ -165,12 +165,12 @@ describe("applications generate cover letter api", () => {
       }),
       expect.objectContaining({
         strictCoverQuality: true,
-        maxCoverRewritePasses: 1,
+        maxCoverRewritePasses: 2,
       }),
     );
   });
 
-  it("returns 422 when strict cover quality gate fails after rewrite", async () => {
+  it("still generates pdf when cover quality gate soft-fails", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -214,6 +214,9 @@ describe("applications generate cover letter api", () => {
         ],
       },
     });
+    applicationStore.upsert.mockResolvedValueOnce({
+      id: "app-2",
+    });
 
     const res = await POST(
       new Request("http://localhost/api/applications/generate-cover-letter", {
@@ -221,10 +224,10 @@ describe("applications generate cover letter api", () => {
         body: JSON.stringify({ jobId: VALID_JOB_ID }),
       }),
     );
-    const json = await res.json();
 
-    expect(res.status).toBe(422);
-    expect(json.error.code).toBe("COVER_QUALITY_GATE_FAILED");
-    expect(applicationStore.upsert).not.toHaveBeenCalled();
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/pdf");
+    expect(res.headers.get("x-cover-quality-gate")).toBe("soft-fail");
+    expect(applicationStore.upsert).toHaveBeenCalled();
   });
 });
