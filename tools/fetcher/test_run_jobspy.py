@@ -2,6 +2,8 @@ import unittest
 
 import os
 import sys
+import threading
+import time
 
 import pandas as pd
 
@@ -41,6 +43,30 @@ class RunJobspyDedupeTests(unittest.TestCase):
     def test_results_per_query_splits_budget_across_terms(self):
         self.assertEqual(rj._results_per_query(100, 8), 13)
         self.assertEqual(rj._results_per_query(100, 1), 100)
+
+    def test_fetch_terms_uses_multiple_threads_when_workers_gt1(self):
+        queries = ["q1", "q2", "q3", "q4"]
+        thread_names = set()
+        lock = threading.Lock()
+
+        def fake_fetch(term: str):
+            time.sleep(0.02)
+            with lock:
+                thread_names.add(threading.current_thread().name)
+            return pd.DataFrame(
+                [
+                    {
+                        "job_url": f"https://example.com/{term}",
+                        "title": term,
+                        "company": "Acme",
+                        "location": "Sydney",
+                    }
+                ]
+            )
+
+        pairs = rj._fetch_terms(queries, fake_fetch, max_workers=4)
+        self.assertEqual(len(pairs), 4)
+        self.assertGreater(len(thread_names), 1)
 
     def test_filter_title_includes_description_match_when_enforced(self):
         df = pd.DataFrame(

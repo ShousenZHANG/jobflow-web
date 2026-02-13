@@ -4,6 +4,7 @@ import json
 import time
 import math
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -16,6 +17,8 @@ logger = logging.getLogger("jobspy_runner")
 SCRAPE_RETRIES = 2
 SCRAPE_BACKOFF_SEC = 2
 IMPORT_RETRIES = 2
+DEFAULT_FETCH_QUERY_CONCURRENCY = 3
+MAX_FETCH_QUERY_CONCURRENCY = 6
 
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
@@ -124,6 +127,33 @@ def _results_per_query(total_results: int, query_count: int) -> int:
         return max(1, int(total_results or 1))
     base = max(1, int(total_results or 1))
     return max(1, math.ceil(base / query_count))
+
+
+def _resolve_fetch_query_workers(query_count: int) -> int:
+    if query_count <= 1:
+        return 1
+    raw = os.environ.get("FETCH_QUERY_CONCURRENCY", "").strip()
+    try:
+        configured = int(raw) if raw else DEFAULT_FETCH_QUERY_CONCURRENCY
+    except ValueError:
+        configured = DEFAULT_FETCH_QUERY_CONCURRENCY
+    configured = max(1, min(MAX_FETCH_QUERY_CONCURRENCY, configured))
+    return min(query_count, configured)
+
+
+def _fetch_terms(
+    queries: List[str],
+    fetch_fn,
+    max_workers: int,
+):
+    if not queries:
+        return []
+    workers = max(1, min(max_workers, len(queries)))
+    if workers == 1:
+        return [(term, fetch_fn(term)) for term in queries]
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        frames = list(pool.map(fetch_fn, queries))
+    return list(zip(queries, frames))
 
 
 def _normalize_text(text: str) -> str:
@@ -372,30 +402,42 @@ def clean_description(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _fetch_single_linkedin_term(
+    term: str,
+    location: str,
+    hours_old: int,
+    results_wanted: int,
+) -> Optional[pd.DataFrame]:
+    for attempt in range(SCRAPE_RETRIES + 1):
+        try:
+            df = scrape_jobs(
+                site_name=["linkedin"],
+                search_term=term,
+                location=location,
+                hours_old=hours_old,
+                results_wanted=results_wanted,
+                verbose=0,
+                linkedin_fetch_description=True,
+            )
+            return df
+        except Exception as e:
+            if attempt >= SCRAPE_RETRIES:
+                logger.error("scrape_jobs failed term=%s error=%s", term, e)
+                return None
+            time.sleep(SCRAPE_BACKOFF_SEC * (attempt + 1))
+    return None
+
+
 def fetch_linkedin(queries: List[str], location: str, hours_old: int, results_wanted: int) -> pd.DataFrame:
     dfs: List[pd.DataFrame] = []
-    for term in queries:
-        df = None
-        for attempt in range(SCRAPE_RETRIES + 1):
-            try:
-                df = scrape_jobs(
-                    site_name=["linkedin"],
-                    search_term=term,
-                    location=location,
-                    hours_old=hours_old,
-                    results_wanted=results_wanted,
-                    verbose=0,
-                    linkedin_fetch_description=True,
-                )
-                break
-            except Exception as e:
-                if attempt >= SCRAPE_RETRIES:
-                    logger.error("scrape_jobs failed term=%s error=%s", term, e)
-                    df = None
-                else:
-                    time.sleep(SCRAPE_BACKOFF_SEC * (attempt + 1))
-        if df is None:
-            continue
+    workers = _resolve_fetch_query_workers(len(queries))
+    logger.info("Fetch mode: queries=%s workers=%s", len(queries), workers)
+    pairs = _fetch_terms(
+        queries,
+        lambda term: _fetch_single_linkedin_term(term, location, hours_old, results_wanted),
+        max_workers=workers,
+    )
+    for term, df in pairs:
         if df is None or df.empty:
             continue
         df = df.loc[:, df.notna().any(axis=0)]
