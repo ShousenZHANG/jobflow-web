@@ -18,7 +18,7 @@ const TitleExcludeEnum = z.enum([
   "architect",
 ]);
 
-const DescExcludeEnum = z.enum(["identity_requirement", "exp_3", "exp_4", "exp_5", "exp_7"]);
+const DESC_EXCLUDE_ALLOWED = new Set(["identity_requirement"]);
 
 const CreateSchema = z
   .object({
@@ -44,7 +44,11 @@ const CreateSchema = z
     smartExpand: z.coerce.boolean().optional().default(true),
     applyExcludes: z.coerce.boolean().optional().default(true),
     excludeTitleTerms: z.array(TitleExcludeEnum).optional().default([]),
-    excludeDescriptionRules: z.array(DescExcludeEnum).optional().default([]),
+    excludeDescriptionRules: z
+      .array(z.string())
+      .optional()
+      .default([])
+      .transform((rules) => rules.filter((rule) => DESC_EXCLUDE_ALLOWED.has(rule))),
   })
   .refine((data) => (data.title ?? data.queries?.[0])?.trim(), {
     message: "title is required",

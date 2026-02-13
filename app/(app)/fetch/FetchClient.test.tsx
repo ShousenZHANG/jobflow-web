@@ -134,5 +134,6 @@ describe("FetchClient", () => {
       "Backend Engineer",
     ]);
     expect(body.smartExpand).toBe(true);
+    expect(body.excludeDescriptionRules).toEqual(["identity_requirement"]);
   });
 });

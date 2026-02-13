@@ -117,65 +117,6 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Software Engineer")
 
-    def test_filter_description_only_drops_hard_required_years(self):
-        df = pd.DataFrame(
-            [
-                {
-                    "title": "Software Engineer",
-                    "description": "Minimum of 5 years of experience is required.",
-                    "company": "Acme",
-                    "location": "Sydney",
-                },
-                {
-                    "title": "Frontend Engineer",
-                    "description": "5+ years experience preferred.",
-                    "company": "Beta",
-                    "location": "Sydney",
-                },
-            ]
-        )
-
-        out = rj.filter_description(
-            df,
-            exclude_rights=False,
-            exclude_clearance=False,
-            exclude_sponsorship=False,
-            exclude_years=[5],
-        )
-        self.assertEqual(len(out), 1)
-        self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
-
-    def test_filter_description_drops_years_under_requirements_section(self):
-        df = pd.DataFrame(
-            [
-                {
-                    "title": "Web Developer",
-                    "description": (
-                        "What we're looking for\n\n"
-                        "5-10 years experience as a Web Developer working on customer-facing websites."
-                    ),
-                    "company": "Acme",
-                    "location": "Sydney",
-                },
-                {
-                    "title": "Frontend Engineer",
-                    "description": "Nice to have: 5+ years experience.",
-                    "company": "Beta",
-                    "location": "Sydney",
-                },
-            ]
-        )
-
-        out = rj.filter_description(
-            df,
-            exclude_rights=False,
-            exclude_clearance=False,
-            exclude_sponsorship=False,
-            exclude_years=[5],
-        )
-        self.assertEqual(len(out), 1)
-        self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
-
     def test_filter_description_only_drops_hard_rights_requirement(self):
         df = pd.DataFrame(
             [
@@ -208,7 +149,6 @@ class RunJobspyDedupeTests(unittest.TestCase):
             exclude_rights=True,
             exclude_clearance=False,
             exclude_sponsorship=False,
-            exclude_years=None,
         )
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
@@ -236,7 +176,6 @@ class RunJobspyDedupeTests(unittest.TestCase):
             exclude_rights=False,
             exclude_clearance=True,
             exclude_sponsorship=False,
-            exclude_years=None,
         )
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
@@ -264,7 +203,6 @@ class RunJobspyDedupeTests(unittest.TestCase):
             exclude_rights=False,
             exclude_clearance=False,
             exclude_sponsorship=True,
-            exclude_years=None,
         )
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")

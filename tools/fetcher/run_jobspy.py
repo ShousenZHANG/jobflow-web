@@ -28,22 +28,6 @@ DEFAULT_RATE_LIMIT_COOLDOWN_SEC = 20.0
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
 
-EXCLUDE_EXP_YEARS_RE = re.compile(
-    r'''(?ix)
-    (?:\b|[^a-z])
-    (?:
-        (?:[4-9]|[1-9]\d)
-        (?:\s*[\+\-–—]\s*\d+)?
-    )
-    \s*
-    (?:years?|yrs?|y[.]?)
-    (?:\s*(?:of|in))?
-    (?:\s+\w{0,3}){0,2}?
-    \s*(?:experience|exp|work\s+experience)\b
-    ''',
-    re.UNICODE
-)
-
 EXCLUDE_RIGHTS_RE = re.compile(
     r'(?i)\b(?:'
     r'permanent\s+resident|permanent\s+residency|PR\s*(?:only|required)?|'
@@ -241,129 +225,15 @@ def filter_title(
     return out
 
 
-def _build_exp_years_re(years: List[int]) -> Optional[re.Pattern]:
-    if not years:
-        return None
-    nums = "|".join(str(y) for y in sorted(set(years)))
-    pattern = rf'''(?ix)
-    (?:\b|[^a-z])
-    (?:minimum\s+of|at\s+least|minimum)?
-    \s*
-    (?:
-        (?:{nums})
-        (?:\s*[\+\-–—]\s*\d+)? 
-    )
-    \s*
-    (?:years?|yrs?|y[.]?)[’']?
-    (?:\s*(?:of))?
-    (?:\s+\w{{0,3}}){{0,2}}?
-    \s*(?:
-        experience|exp|work\s+experience|industry\s+experience|professional\s+experience|
-        relevant\s+experience|commercial\s+experience|hands[-\s]?on\s+experience
-    )\b
-    |
-    (?:\b|[^a-z])
-    (?:minimum\s+of|at\s+least|minimum)?
-    \s*
-    (?:
-        (?:{nums})
-        (?:\s*[\+\-–—]\s*\d+)? 
-    )
-    \s*
-    (?:years?|yrs?|y[.]?)[’']?
-    \s*(?:in|within|as|on)
-    (?:\s+\w{{0,4}}){{0,6}}?
-    \s*(?:role|roles|position|industry|field|capacity|function|environment)\b
-    '''
-    return re.compile(pattern, re.UNICODE)
-
-
-def _extract_min_years_from_text(text: str) -> Optional[int]:
-    if not text:
-        return None
-    s = str(text).lower()
-    s = s.replace("–", "-").replace("—", "-")
-    s = s.replace("＋", "+").replace("﹢", "+")
-    s = re.sub(r"\s+", " ", s)
-
-    candidates: List[int] = []
-
-    # at least / minimum of X years
-    for m in re.finditer(r"\b(?:at\s+least|minimum(?:\s+of)?)\s+(\d{1,2})\s*(?:years?|yrs?)\b", s):
-        candidates.append(int(m.group(1)))
-
-    # X+ years / X yrs+
-    for m in re.finditer(r"\b(\d{1,2})\s*\+\s*(?:years?|yrs?)\b", s):
-        candidates.append(int(m.group(1)))
-    for m in re.finditer(r"\b(\d{1,2})\s*(?:years?|yrs?)\s*\+\b", s):
-        candidates.append(int(m.group(1)))
-
-    # X-Y years / X to Y years
-    for m in re.finditer(r"\b(\d{1,2})\s*(?:-|\sto\s)\s*(\d{1,2})\s*(?:years?|yrs?)\b", s):
-        candidates.append(int(m.group(1)))
-
-    # X years of experience / X years experience
-    for m in re.finditer(r"\b(\d{1,2})\s*(?:years?|yrs?)\s*(?:of\s+)?(?:experience|exp)\b", s):
-        candidates.append(int(m.group(1)))
-
-    if not candidates:
-        return None
-    return min(candidates)
-
-
-def _extract_required_min_years_from_text(text: str) -> Optional[int]:
-    if not text:
-        return None
-    s = str(text).lower()
-    s = s.replace("\u2013", "-").replace("\u2014", "-")
-    s = s.replace("\uff0b", "+")
-    s = re.sub(r"\s+", " ", s)
-
-    # Skip soft qualifiers
-    if re.search(r"\b(preferred|nice to have|nice-to-have|bonus|plus|desired|a plus)\b", s):
-        return None
-
-    hard_markers = r"(required|must have|must-have|mandatory|minimum of|at least)"
-    section_markers = r"(what we'?re looking for|requirements|qualifications|must haves|must-haves)"
-
-    candidates: List[int] = []
-    for m in re.finditer(rf"\b{hard_markers}\s+(\d{{1,2}})\s*(?:years?|yrs?)\b", s):
-        candidates.append(int(m.group(2)))
-
-    for m in re.finditer(rf"\b(\d{{1,2}})\s*\+\s*(?:years?|yrs?)\b.*\b{hard_markers}\b", s):
-        candidates.append(int(m.group(1)))
-
-    for m in re.finditer(rf"\b{hard_markers}\b.*\b(\d{{1,2}})\s*(?:years?|yrs?)\b", s):
-        candidates.append(int(m.group(2)))
-
-    if not candidates and re.search(rf"\b{section_markers}\b", s):
-        fallback = _extract_min_years_from_text(s)
-        if fallback is not None:
-            candidates.append(fallback)
-
-    if not candidates:
-        return None
-    return min(candidates)
-
-
 def filter_description(
     df: pd.DataFrame,
     exclude_rights: bool,
     exclude_clearance: bool,
     exclude_sponsorship: bool,
-    exclude_years: Optional[List[int]] = None,
 ) -> pd.DataFrame:
     if df.empty or "description" not in df.columns:
         return df
     desc = df["description"].fillna("")
-    if exclude_years:
-        thresholds = sorted(set(int(y) for y in exclude_years))
-        min_years = desc.apply(_extract_required_min_years_from_text)
-        years = min_years.apply(lambda v: v is not None and any(v >= y for y in thresholds))
-        matched_years_count = int(years.sum())
-    else:
-        years = pd.Series(False, index=desc.index)
-        matched_years_count = 0
     if exclude_rights:
         hard_rights = desc.str.contains(HARD_RIGHTS_RE, na=False)
         soft_rights = desc.str.contains(SOFT_RIGHTS_RE, na=False)
@@ -381,10 +251,7 @@ def filter_description(
         if exclude_sponsorship
         else pd.Series(False, index=desc.index)
     )
-    filtered = df[~(years | rights | clearance | sponsorship)].copy()
-    if exclude_years:
-        logger.info("Description filter: years matched=%s thresholds=%s", matched_years_count, thresholds)
-    return filtered
+    return df[~(rights | clearance | sponsorship)].copy()
 
 
 def keep_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -583,19 +450,8 @@ def main():
     exclude_rights = apply_excludes and "identity_requirement" in exclude_desc_rules
     exclude_clearance = False
     exclude_sponsorship = False
-    exclude_years: List[int] = []
-    if apply_excludes:
-        if "exp_3" in exclude_desc_rules:
-            exclude_years.append(3)
-        if "exp_4" in exclude_desc_rules:
-            exclude_years.append(4)
-        if "exp_5" in exclude_desc_rules:
-            exclude_years.append(5)
-        if "exp_7" in exclude_desc_rules:
-            exclude_years.append(7)
-
     filter_desc = apply_excludes and bool(
-        exclude_rights or exclude_clearance or exclude_sponsorship or exclude_years
+        exclude_rights or exclude_clearance or exclude_sponsorship
     )
 
     # Mark running
@@ -630,7 +486,6 @@ def main():
                 exclude_rights=exclude_rights,
                 exclude_clearance=exclude_clearance,
                 exclude_sponsorship=exclude_sponsorship,
-                exclude_years=exclude_years,
             )
             logger.info("Rows after description filter: %s", len(df))
         df = keep_columns(df)

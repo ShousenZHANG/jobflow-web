@@ -80,10 +80,6 @@ export function FetchClient() {
   ]);
   const [excludeDescriptionRules, setExcludeDescriptionRules] = useState<string[]>([
     "identity_requirement",
-    "exp_3",
-    "exp_4",
-    "exp_5",
-    "exp_7",
   ]);
 
   const [localError, setLocalError] = useState<string | null>(null);
@@ -342,7 +338,7 @@ export function FetchClient() {
             <div>
               <div className="text-sm font-medium">Apply exclusions</div>
               <div className="text-xs text-muted-foreground">
-                Remove seniority and experience-heavy roles.
+                Remove seniority and work-rights restricted roles.
               </div>
             </div>
             <Switch checked={applyExcludes} onCheckedChange={setApplyExcludes} />
@@ -411,10 +407,6 @@ export function FetchClient() {
                 <DropdownMenuContent align="start" className="w-72">
                   {[
                     { value: "identity_requirement", label: "PR/Citizen requirement" },
-                    { value: "exp_3", label: "Experience 3+ years" },
-                    { value: "exp_4", label: "Experience 4+ years" },
-                    { value: "exp_5", label: "Experience 5+ years" },
-                    { value: "exp_7", label: "Experience 7+ years" },
                   ].map((opt) => {
                     const checked = excludeDescriptionRules.includes(opt.value);
                     return (

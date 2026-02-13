@@ -69,5 +69,23 @@ describe("fetch runs create api", () => {
     expect(payload.queries).toEqual(["Software Engineer"]);
     expect(payload.smartExpand).toBe(false);
   });
-});
 
+  it("drops experience-based description exclusions from payload", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    await POST(
+      new Request("http://localhost/api/fetch-runs", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Software Engineer",
+          excludeDescriptionRules: ["identity_requirement", "exp_5"],
+        }),
+      }),
+    );
+
+    const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data?.queries;
+    expect(payload.excludeDescriptionRules).toEqual(["identity_requirement"]);
+  });
+});
