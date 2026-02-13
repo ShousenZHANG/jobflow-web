@@ -434,6 +434,54 @@ export function JobsClient({
     const source = raw.trim();
     if (!source) return null;
 
+    const extractFirstJsonObject = (value: string): string | null => {
+      let inString = false;
+      let escaped = false;
+      let depth = 0;
+      let start = -1;
+      for (let index = 0; index < value.length; index += 1) {
+        const char = value[index];
+        if (start < 0) {
+          if (char === "{") {
+            start = index;
+            depth = 1;
+            inString = false;
+            escaped = false;
+          }
+          continue;
+        }
+        if (inString) {
+          if (escaped) {
+            escaped = false;
+            continue;
+          }
+          if (char === "\\") {
+            escaped = true;
+            continue;
+          }
+          if (char === '"') {
+            inString = false;
+          }
+          continue;
+        }
+        if (char === '"') {
+          inString = true;
+          continue;
+        }
+        if (char === "{") {
+          depth += 1;
+          continue;
+        }
+        if (char === "}") {
+          depth -= 1;
+          if (depth === 0) {
+            return value.slice(start, index + 1);
+          }
+        }
+      }
+      return null;
+    };
+
     const parseCandidate = (candidate: string) => {
       try {
         return JSON.parse(candidate) as unknown;
@@ -444,8 +492,20 @@ export function JobsClient({
 
     let parsed = parseCandidate(source);
     if (!parsed) {
-      const firstObject = source.match(/\{[\s\S]*\}/)?.[0];
-      if (firstObject) parsed = parseCandidate(firstObject);
+      const repaired = source
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/\u00A0/g, " ")
+        .replace(/,\s*([}\]])/g, "$1");
+      parsed = parseCandidate(repaired);
+      if (!parsed) {
+        const fenced = repaired.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)?.[1];
+        if (fenced) parsed = parseCandidate(fenced.trim());
+      }
+      if (!parsed) {
+        const firstObject = extractFirstJsonObject(repaired);
+        if (firstObject) parsed = parseCandidate(firstObject);
+      }
     }
     if (!parsed || typeof parsed !== "object") return null;
 
@@ -860,14 +920,22 @@ export function JobsClient({
       throw new Error(json?.error?.message || json?.error || "Failed to build prompt");
     }
     const promptText = [
-      "SYSTEM PROMPT",
+      "You are given SYSTEM and USER instructions below.",
+      "Follow them strictly.",
+      "Output MUST be exactly one valid JSON object.",
+      "Do not add any markdown, code fences, notes, or extra text before/after JSON.",
+      "",
+      "=== SYSTEM INSTRUCTIONS START ===",
       json.prompt?.systemPrompt ?? "",
+      "=== SYSTEM INSTRUCTIONS END ===",
       "",
-      "USER PROMPT",
+      "=== USER INSTRUCTIONS START ===",
       json.prompt?.userPrompt ?? "",
+      "=== USER INSTRUCTIONS END ===",
       "",
-      "REQUIRED JSON SHAPE",
+      "=== JSON OUTPUT CONTRACT ===",
       JSON.stringify(json.expectedJsonShape ?? {}, null, 2),
+      "=== END CONTRACT ===",
     ].join("\n");
     const promptMeta: ExternalPromptMeta | null =
       json?.promptMeta &&

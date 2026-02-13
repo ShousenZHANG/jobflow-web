@@ -187,6 +187,52 @@ describe("applications manual generate api", () => {
     expect(res.headers.get("x-tailor-cv-source")).toBe("manual_import");
   });
 
+  it("accepts resume JSON when model output includes commentary and trailing brace text", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    const noisyOutput = [
+      "Sure - generated output below:",
+      "```json",
+      "{",
+      '  "cvSummary": "Tailored summary",',
+      '  "latestExperience": { "bullets": ["base bullet one"] }',
+      "}",
+      "```",
+      "Validation note: {format: ok}",
+    ].join("\n");
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "resume",
+          modelOutput: noisyOutput,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/pdf");
+  });
+
   it("applies latest experience bullets and full skillsFinal for resume target", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },

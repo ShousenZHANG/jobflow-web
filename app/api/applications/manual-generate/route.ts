@@ -87,6 +87,54 @@ function parseJsonCandidate(raw: string): unknown | null {
     }
   };
 
+  const extractFirstJsonObject = (value: string): string | null => {
+    let inString = false;
+    let escaped = false;
+    let depth = 0;
+    let start = -1;
+    for (let index = 0; index < value.length; index += 1) {
+      const char = value[index];
+      if (start < 0) {
+        if (char === "{") {
+          start = index;
+          depth = 1;
+          inString = false;
+          escaped = false;
+        }
+        continue;
+      }
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === "\\") {
+          escaped = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = false;
+        }
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+      if (char === "{") {
+        depth += 1;
+        continue;
+      }
+      if (char === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          return value.slice(start, index + 1);
+        }
+      }
+    }
+    return null;
+  };
+
   const direct = parse(text);
   if (direct) return direct;
 
@@ -100,14 +148,16 @@ function parseJsonCandidate(raw: string): unknown | null {
   const repairedDirect = parse(repaired);
   if (repairedDirect) return repairedDirect;
 
-  const noFence = repaired.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
-  const fromFence = parse(noFence);
-  if (fromFence) return fromFence;
+  const fencedBlock = repaired.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)?.[1];
+  if (fencedBlock) {
+    const fromFence = parse(fencedBlock.trim());
+    if (fromFence) return fromFence;
+  }
 
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start >= 0 && end > start) {
-    return parse(text.slice(start, end + 1));
+  const firstJsonObject = extractFirstJsonObject(repaired);
+  if (firstJsonObject) {
+    const parsedObject = parse(firstJsonObject);
+    if (parsedObject) return parsedObject;
   }
 
   return null;
