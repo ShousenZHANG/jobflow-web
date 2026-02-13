@@ -22,9 +22,27 @@ describe("fetch role packs", () => {
     expect(new Set(out).size).toBe(out.length);
   });
 
+  it("resolves config aliases like swe", () => {
+    const out = expandRoleQueries(["SWE"]);
+    expect(out).toContain("Software Engineer");
+    expect(out).toContain("Backend Engineer");
+  });
+
   it("falls back to original role when no pack is defined", () => {
     const out = expandRoleQueries(["Bioinformatics Engineer"]);
     expect(out).toEqual(["Bioinformatics Engineer"]);
   });
-});
 
+  it("expands when query partially matches an alias phrase", () => {
+    const out = expandRoleQueries(["Software Engineer Java"]);
+    expect(out).toContain("Software Engineer Java");
+    expect(out).toContain("Backend Engineer");
+    expect(out).toContain("Software Engineer");
+  });
+
+  it("expands long-tail variants via token overlap", () => {
+    const out = expandRoleQueries(["React TypeScript Engineer"]);
+    expect(out).toContain("React TypeScript Engineer");
+    expect(out).toContain("Frontend Engineer");
+  });
+});
