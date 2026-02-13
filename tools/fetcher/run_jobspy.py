@@ -5,6 +5,7 @@ import time
 import math
 import random
 import logging
+from urllib.parse import urlsplit, urlunsplit
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional
 
@@ -194,19 +195,61 @@ def _fingerprint_value(value: Any) -> str:
     return _normalize_text(value or "")
 
 
+def _canonicalize_job_url(url: str) -> str:
+    raw = (url or "").strip()
+    if not raw:
+        return ""
+    try:
+        parts = urlsplit(raw)
+    except Exception:
+        return raw
+    if not parts.scheme or not parts.netloc:
+        return raw
+
+    scheme = parts.scheme.lower()
+    hostname = (parts.hostname or "").lower()
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+    port = parts.port
+    if not hostname:
+        return raw
+    if port and not ((scheme == "https" and port == 443) or (scheme == "http" and port == 80)):
+        netloc = f"{hostname}:{port}"
+    else:
+        netloc = hostname
+
+    path = parts.path or "/"
+    if path != "/":
+        path = path.rstrip("/")
+        if not path:
+            path = "/"
+
+    # Drop query and fragment to remove tracking variants.
+    return urlunsplit((scheme, netloc, path, "", ""))
+
+
 def dedupe_jobs(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
     out = df.copy()
-    out["fingerprint"] = (
-        out.get("title", "").apply(_fingerprint_value)
-        + "|"
-        + out.get("company", "").apply(_fingerprint_value)
-        + "|"
-        + out.get("location", "").apply(_fingerprint_value)
-    )
-    out = out.drop_duplicates(subset=["fingerprint"], keep="first")
-    return out.drop(columns=["fingerprint"], errors="ignore")
+    out["_canonical_job_url"] = out.get("job_url", "").fillna("").apply(_canonicalize_job_url)
+
+    has_url = out["_canonical_job_url"].astype(bool)
+    by_url = out[has_url].drop_duplicates(subset=["_canonical_job_url"], keep="first")
+    no_url = out[~has_url].copy()
+    if not no_url.empty:
+        no_url["_fallback_fingerprint"] = (
+            no_url.get("title", "").apply(_fingerprint_value)
+            + "|"
+            + no_url.get("company", "").apply(_fingerprint_value)
+            + "|"
+            + no_url.get("location", "").apply(_fingerprint_value)
+        )
+        no_url = no_url.drop_duplicates(subset=["_fallback_fingerprint"], keep="first")
+        no_url = no_url.drop(columns=["_fallback_fingerprint"], errors="ignore")
+
+    out = pd.concat([by_url, no_url], ignore_index=True)
+    return out.drop(columns=["_canonical_job_url"], errors="ignore")
 
 
 def _build_exclude_title_re(terms: List[str]) -> Optional[re.Pattern]:

@@ -19,7 +19,7 @@ class RunJobspyDedupeTests(unittest.TestCase):
         )
         self.assertEqual(terms, ["Frontend Engineer", "Software Engineer", "Backend Engineer"])
 
-    def test_dedupe_jobs_collapses_title_company_location(self):
+    def test_dedupe_jobs_collapses_tracking_variants_of_same_url(self):
         df = pd.DataFrame(
             [
                 {
@@ -39,6 +39,39 @@ class RunJobspyDedupeTests(unittest.TestCase):
 
         deduped = rj.dedupe_jobs(df)
         self.assertEqual(len(deduped), 1)
+
+    def test_dedupe_jobs_keeps_distinct_urls_with_same_title_company_location(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "job_url": "https://example.com/jobs/100?tracking=abc",
+                    "title": "Frontend Engineer",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "job_url": "https://example.com/jobs/200?tracking=def",
+                    "title": "Frontend Engineer",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        deduped = rj.dedupe_jobs(df)
+        self.assertEqual(len(deduped), 2)
+
+    def test_canonicalize_job_url_removes_query_and_fragment(self):
+        self.assertEqual(
+            rj._canonicalize_job_url("HTTPS://Example.com/jobs/view/123/?utm_source=x#top"),
+            "https://example.com/jobs/view/123",
+        )
+
+    def test_canonicalize_job_url_normalizes_www_hostname(self):
+        self.assertEqual(
+            rj._canonicalize_job_url("https://www.linkedin.com/jobs/view/123?trk=abc"),
+            "https://linkedin.com/jobs/view/123",
+        )
 
     def test_results_per_query_splits_budget_across_terms(self):
         self.assertEqual(rj._results_per_query(100, 8), 13)

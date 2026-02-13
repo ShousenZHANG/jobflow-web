@@ -36,6 +36,25 @@ function requireImportSecret(req: Request) {
   return got === expected;
 }
 
+function canonicalizeJobUrl(raw: string) {
+  const input = raw.trim();
+  if (!input) return "";
+  try {
+    const parsed = new URL(input);
+    const protocol = parsed.protocol.toLowerCase();
+    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    const isDefaultPort =
+      (protocol === "https:" && parsed.port === "443") ||
+      (protocol === "http:" && parsed.port === "80");
+    const host = parsed.port && !isDefaultPort ? `${hostname}:${parsed.port}` : hostname;
+    let pathname = parsed.pathname || "/";
+    if (pathname !== "/") pathname = pathname.replace(/\/+$/, "") || "/";
+    return `${protocol}//${host}${pathname}`;
+  } catch {
+    return input;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     if (!requireImportSecret(req)) {
@@ -65,7 +84,7 @@ export async function POST(req: Request) {
     const invalid: Array<{ reason: string }> = [];
     const normalizedRaw = parsed.data.items
       .map((it) => {
-        const jobUrl = (it.jobUrl ?? it.job_url ?? "").trim();
+        const jobUrl = canonicalizeJobUrl(it.jobUrl ?? it.job_url ?? "");
         const title = it.title?.trim();
         if (!jobUrl) {
           invalid.push({ reason: "missing_job_url" });
@@ -99,7 +118,7 @@ export async function POST(req: Request) {
       where: { userId },
       select: { jobUrl: true },
     });
-    const deletedSet = new Set(deletedUrls.map((it) => it.jobUrl));
+    const deletedSet = new Set(deletedUrls.map((it) => canonicalizeJobUrl(it.jobUrl)));
 
     const seen = new Set<string>();
     const normalized = normalizedRaw.filter((it) => {
