@@ -118,6 +118,16 @@ def _results_per_query(total_results: int, query_count: int) -> int:
     return max(1, math.ceil(base / query_count))
 
 
+def _build_results_budget_by_term(search_terms: List[str], total_results: int) -> Dict[str, int]:
+    cleaned = [term.strip() for term in search_terms if term and term.strip()]
+    if not cleaned:
+        return {}
+
+    total = max(1, int(total_results or 1))
+    # "All results" mode: each query gets full results_wanted budget.
+    return {term: total for term in cleaned}
+
+
 def _resolve_fetch_query_workers(query_count: int) -> int:
     if query_count <= 1:
         return 1
@@ -342,13 +352,25 @@ def _fetch_single_linkedin_term(
     return None
 
 
-def fetch_linkedin(queries: List[str], location: str, hours_old: int, results_wanted: int) -> pd.DataFrame:
+def fetch_linkedin(
+    queries: List[str],
+    location: str,
+    hours_old: int,
+    results_wanted: int,
+    results_budget_by_term: Optional[Dict[str, int]] = None,
+) -> pd.DataFrame:
     dfs: List[pd.DataFrame] = []
     workers = _resolve_fetch_query_workers(len(queries))
+    term_budget = results_budget_by_term or {}
     logger.info("Fetch mode: queries=%s workers=%s", len(queries), workers)
     pairs = _fetch_terms(
         queries,
-        lambda term: _fetch_single_linkedin_term(term, location, hours_old, results_wanted),
+        lambda term: _fetch_single_linkedin_term(
+            term,
+            location,
+            hours_old,
+            int(term_budget.get(term, results_wanted)),
+        ),
         max_workers=workers,
     )
     failed_terms: List[str] = []
@@ -378,7 +400,12 @@ def fetch_linkedin(queries: List[str], location: str, hours_old: int, results_wa
         for index, term in enumerate(failed_terms):
             if index > 0:
                 time.sleep(1.0)
-            df = _fetch_single_linkedin_term(term, location, hours_old, results_wanted)
+            df = _fetch_single_linkedin_term(
+                term,
+                location,
+                hours_old,
+                int(term_budget.get(term, results_wanted)),
+            )
             if df is None or df.empty:
                 continue
             df = df.loc[:, df.notna().any(axis=0)]
@@ -464,9 +491,15 @@ def main():
 
     t0 = time.time()
     search_terms = _resolve_search_terms(title_query=title_query, queries=queries)
-    per_query_results = _results_per_query(results_wanted, len(search_terms))
-    logger.info("Search terms=%s per_query_results=%s", len(search_terms), per_query_results)
-    df = fetch_linkedin(search_terms, location, hours_old, per_query_results)
+    results_budget_by_term = _build_results_budget_by_term(search_terms, results_wanted)
+    logger.info("Search terms=%s results_budget_by_term=%s", len(search_terms), results_budget_by_term)
+    df = fetch_linkedin(
+        search_terms,
+        location,
+        hours_old,
+        results_wanted,
+        results_budget_by_term=results_budget_by_term,
+    )
     if df.empty:
         items: List[Dict[str, Any]] = []
     else:

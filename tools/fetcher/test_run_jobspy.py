@@ -44,6 +44,19 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertEqual(rj._results_per_query(100, 8), 13)
         self.assertEqual(rj._results_per_query(100, 1), 100)
 
+    def test_build_results_budget_assigns_full_budget_to_each_term(self):
+        budget = rj._build_results_budget_by_term(
+            ["Software Engineer", "Frontend Engineer", "Backend Engineer"],
+            100,
+        )
+        self.assertEqual(budget["Software Engineer"], 100)
+        self.assertEqual(budget["Frontend Engineer"], 100)
+        self.assertEqual(budget["Backend Engineer"], 100)
+
+    def test_build_results_budget_single_term_is_unchanged(self):
+        budget = rj._build_results_budget_by_term(["Software Engineer"], 80)
+        self.assertEqual(budget, {"Software Engineer": 80})
+
     def test_resolve_fetch_query_workers_uses_safe_defaults_and_limits(self):
         original = os.environ.get("FETCH_QUERY_CONCURRENCY")
         try:
