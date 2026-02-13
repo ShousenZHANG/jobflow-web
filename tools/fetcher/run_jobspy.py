@@ -3,6 +3,7 @@ import re
 import json
 import time
 import math
+import random
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional
@@ -17,8 +18,12 @@ logger = logging.getLogger("jobspy_runner")
 SCRAPE_RETRIES = 2
 SCRAPE_BACKOFF_SEC = 2
 IMPORT_RETRIES = 2
-DEFAULT_FETCH_QUERY_CONCURRENCY = 3
+DEFAULT_FETCH_QUERY_CONCURRENCY = 2
 MAX_FETCH_QUERY_CONCURRENCY = 6
+DEFAULT_RATE_LIMIT_RETRIES = 5
+DEFAULT_RATE_LIMIT_BASE_SEC = 15.0
+DEFAULT_RATE_LIMIT_MAX_SEC = 120.0
+DEFAULT_RATE_LIMIT_COOLDOWN_SEC = 20.0
 
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
@@ -139,6 +144,30 @@ def _resolve_fetch_query_workers(query_count: int) -> int:
         configured = DEFAULT_FETCH_QUERY_CONCURRENCY
     configured = max(1, min(MAX_FETCH_QUERY_CONCURRENCY, configured))
     return min(query_count, configured)
+
+
+def _is_rate_limited_error(err: Exception) -> bool:
+    msg = str(err).lower()
+    return " 429 " in f" {msg} " or "too many 429" in msg or "rate limit" in msg
+
+
+def _retry_sleep_seconds(err: Exception, attempt: int) -> float:
+    # For rate-limit errors we back off aggressively with jitter.
+    if _is_rate_limited_error(err):
+        raw_base = os.environ.get("FETCH_RATE_LIMIT_BASE_SEC", "").strip()
+        raw_max = os.environ.get("FETCH_RATE_LIMIT_MAX_SEC", "").strip()
+        try:
+            base = float(raw_base) if raw_base else DEFAULT_RATE_LIMIT_BASE_SEC
+        except ValueError:
+            base = DEFAULT_RATE_LIMIT_BASE_SEC
+        try:
+            max_sec = float(raw_max) if raw_max else DEFAULT_RATE_LIMIT_MAX_SEC
+        except ValueError:
+            max_sec = DEFAULT_RATE_LIMIT_MAX_SEC
+        sleep_sec = min(max_sec, base * (2**attempt))
+        return sleep_sec + random.uniform(0, min(3.0, sleep_sec * 0.2))
+    sleep_sec = SCRAPE_BACKOFF_SEC * (attempt + 1)
+    return sleep_sec + random.uniform(0, 0.5)
 
 
 def _fetch_terms(
@@ -408,7 +437,14 @@ def _fetch_single_linkedin_term(
     hours_old: int,
     results_wanted: int,
 ) -> Optional[pd.DataFrame]:
-    for attempt in range(SCRAPE_RETRIES + 1):
+    raw_rl_retries = os.environ.get("FETCH_RATE_LIMIT_RETRIES", "").strip()
+    try:
+        rate_limit_retries = int(raw_rl_retries) if raw_rl_retries else DEFAULT_RATE_LIMIT_RETRIES
+    except ValueError:
+        rate_limit_retries = DEFAULT_RATE_LIMIT_RETRIES
+    max_attempts = max(SCRAPE_RETRIES + 1, max(1, rate_limit_retries))
+
+    for attempt in range(max_attempts):
         try:
             df = scrape_jobs(
                 site_name=["linkedin"],
@@ -421,10 +457,21 @@ def _fetch_single_linkedin_term(
             )
             return df
         except Exception as e:
-            if attempt >= SCRAPE_RETRIES:
+            is_429 = _is_rate_limited_error(e)
+            if attempt >= (max_attempts - 1):
                 logger.error("scrape_jobs failed term=%s error=%s", term, e)
                 return None
-            time.sleep(SCRAPE_BACKOFF_SEC * (attempt + 1))
+            sleep_sec = _retry_sleep_seconds(e, attempt)
+            logger.warning(
+                "scrape_jobs retry term=%s attempt=%s/%s rate_limited=%s sleep=%.1fs error=%s",
+                term,
+                attempt + 1,
+                max_attempts,
+                is_429,
+                sleep_sec,
+                e,
+            )
+            time.sleep(sleep_sec)
     return None
 
 
@@ -437,14 +484,42 @@ def fetch_linkedin(queries: List[str], location: str, hours_old: int, results_wa
         lambda term: _fetch_single_linkedin_term(term, location, hours_old, results_wanted),
         max_workers=workers,
     )
+    failed_terms: List[str] = []
     for term, df in pairs:
         if df is None or df.empty:
+            failed_terms.append(term)
             continue
         df = df.loc[:, df.notna().any(axis=0)]
         if "job_url" in df.columns:
             df = df.drop_duplicates(subset=["job_url"], keep="first")
         df["source_query"] = term
         dfs.append(df)
+
+    # If concurrent mode hit rate limits, recover some recall by replaying failed terms sequentially.
+    if failed_terms and workers > 1:
+        raw_cooldown = os.environ.get("FETCH_RATE_LIMIT_COOLDOWN_SEC", "").strip()
+        try:
+            cooldown_sec = float(raw_cooldown) if raw_cooldown else DEFAULT_RATE_LIMIT_COOLDOWN_SEC
+        except ValueError:
+            cooldown_sec = DEFAULT_RATE_LIMIT_COOLDOWN_SEC
+        logger.info(
+            "Sequential fallback for %s failed queries after cooldown %.1fs",
+            len(failed_terms),
+            cooldown_sec,
+        )
+        time.sleep(max(1.0, cooldown_sec))
+        for index, term in enumerate(failed_terms):
+            if index > 0:
+                time.sleep(1.0)
+            df = _fetch_single_linkedin_term(term, location, hours_old, results_wanted)
+            if df is None or df.empty:
+                continue
+            df = df.loc[:, df.notna().any(axis=0)]
+            if "job_url" in df.columns:
+                df = df.drop_duplicates(subset=["job_url"], keep="first")
+            df["source_query"] = term
+            dfs.append(df)
+
     if not dfs:
         return pd.DataFrame()
     out = pd.concat(dfs, ignore_index=True, sort=False)

@@ -44,6 +44,28 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertEqual(rj._results_per_query(100, 8), 13)
         self.assertEqual(rj._results_per_query(100, 1), 100)
 
+    def test_resolve_fetch_query_workers_uses_safe_defaults_and_limits(self):
+        original = os.environ.get("FETCH_QUERY_CONCURRENCY")
+        try:
+            os.environ.pop("FETCH_QUERY_CONCURRENCY", None)
+            self.assertEqual(rj._resolve_fetch_query_workers(10), 2)
+
+            os.environ["FETCH_QUERY_CONCURRENCY"] = "99"
+            self.assertEqual(rj._resolve_fetch_query_workers(10), 6)
+
+            os.environ["FETCH_QUERY_CONCURRENCY"] = "1"
+            self.assertEqual(rj._resolve_fetch_query_workers(10), 1)
+        finally:
+            if original is None:
+                os.environ.pop("FETCH_QUERY_CONCURRENCY", None)
+            else:
+                os.environ["FETCH_QUERY_CONCURRENCY"] = original
+
+    def test_is_rate_limited_error_detects_429_messages(self):
+        self.assertTrue(rj._is_rate_limited_error(Exception("too many 429 error responses")))
+        self.assertTrue(rj._is_rate_limited_error(Exception("Rate limit exceeded")))
+        self.assertFalse(rj._is_rate_limited_error(Exception("connection reset by peer")))
+
     def test_fetch_terms_uses_multiple_threads_when_workers_gt1(self):
         queries = ["q1", "q2", "q3", "q4"]
         thread_names = set()
