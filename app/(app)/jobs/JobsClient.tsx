@@ -269,6 +269,106 @@ function getUserTimeZone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
 
+type ExperienceRequirementSignal = {
+  key: string;
+  label: string;
+  evidence: string;
+  minYears: number;
+  isRequired: boolean;
+};
+
+const EXPERIENCE_SOFT_RE = /\b(preferred|nice to have|nice-to-have|bonus|desired|a plus)\b/i;
+const EXPERIENCE_HARD_RE =
+  /\b(require|required|requirements|qualification|qualifications|minimum|at least|must have|must-have|must be)\b/i;
+const EXPERIENCE_CONTEXT_RE =
+  /\b(experience|exp|in (software|engineering|frontend|backend|full stack|development|devops|data|product|role|position|industry|field))\b/i;
+const COMPANY_TENURE_RE =
+  /\b(for|over|more than|around|about|nearly|almost|since)\b.*\b(company|startup|business|organisation|organization|team|firm|history|founded)\b/i;
+
+function parseExperienceGate(description: string): ExperienceRequirementSignal[] {
+  if (!description) return [];
+  const normalized = description.replace(/\u2013|\u2014/g, "-").replace(/\s+/g, " ").trim();
+  if (!normalized) return [];
+
+  const segments = normalized
+    .split(/[\n.;]+/)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  const output: ExperienceRequirementSignal[] = [];
+  const seen = new Set<string>();
+
+  const emit = (
+    label: string,
+    minYears: number,
+    segment: string,
+    isRequired: boolean,
+  ) => {
+    const key = `${label.toLowerCase()}|${isRequired ? "required" : "preferred"}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    output.push({
+      key,
+      label: `${isRequired ? "Required" : "Preferred"}: ${label}`,
+      evidence: segment,
+      minYears,
+      isRequired,
+    });
+  };
+
+  for (const segment of segments) {
+    const lower = segment.toLowerCase();
+    if (COMPANY_TENURE_RE.test(lower) && !EXPERIENCE_CONTEXT_RE.test(lower)) continue;
+
+    const soft = EXPERIENCE_SOFT_RE.test(lower);
+    const hard = EXPERIENCE_HARD_RE.test(lower);
+    const hasExperienceContext = EXPERIENCE_CONTEXT_RE.test(lower);
+    if (!hasExperienceContext && !hard && !soft) continue;
+
+    let matched = false;
+
+    const rangeMatch = segment.match(/\b(\d{1,2})\s*(?:-|to)\s*(\d{1,2})\s*(?:years?|yrs?)\b/i);
+    if (rangeMatch) {
+      const start = Number(rangeMatch[1]);
+      const end = Number(rangeMatch[2]);
+      if (Number.isFinite(start) && Number.isFinite(end)) {
+        const minYears = Math.min(start, end);
+        const maxYears = Math.max(start, end);
+        emit(`${minYears}-${maxYears} years`, minYears, segment, hard && !soft);
+        matched = true;
+      }
+    }
+
+    const plusMatch = segment.match(/\b(\d{1,2})\s*\+\s*(?:years?|yrs?)\b/i);
+    if (plusMatch) {
+      const years = Number(plusMatch[1]);
+      if (Number.isFinite(years)) {
+        emit(`${years}+ years`, years, segment, hard && !soft);
+        matched = true;
+      }
+    }
+
+    if (!matched) {
+      const plainMatch = segment.match(
+        /\b(\d{1,2})\s*(?:years?|yrs?)\b(?:\s*(?:of|in))?\s*(?:\w+\s+){0,3}(?:experience|exp|role|position|industry|field)\b/i,
+      );
+      if (plainMatch) {
+        const years = Number(plainMatch[1]);
+        if (Number.isFinite(years)) {
+          emit(`${years}+ years`, years, segment, hard && !soft);
+        }
+      }
+    }
+  }
+
+  return output
+    .sort((a, b) => {
+      if (a.isRequired !== b.isRequired) return a.isRequired ? -1 : 1;
+      return b.minYears - a.minYears;
+    })
+    .slice(0, 4);
+}
+
 export function JobsClient({
   initialItems = [],
   initialCursor = null,
@@ -1039,6 +1139,10 @@ export function JobsClient({
     : null;
   const detailLoading = detailQuery.isFetching && !detailQuery.data;
   const isLongDescription = selectedDescription.length > 600;
+  const experienceSignals = useMemo(
+    () => parseExperienceGate(selectedDescription),
+    [selectedDescription],
+  );
   const isExpanded =
     selectedJob && expandedDescriptions[selectedJob.id] ? true : false;
   const highlightRegex = useMemo(() => {
@@ -1755,6 +1859,28 @@ export function JobsClient({
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
                   Job Description
                 </div>
+                {experienceSignals.length ? (
+                  <div className="rounded-xl border border-slate-900/10 bg-slate-50/70 p-3">
+                    <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                      Experience gate
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {experienceSignals.map((signal) => (
+                        <span
+                          key={signal.key}
+                          className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${
+                            signal.isRequired
+                              ? "border-rose-200 bg-rose-50 text-rose-700"
+                              : "border-amber-200 bg-amber-50 text-amber-800"
+                          }`}
+                          title={signal.evidence}
+                        >
+                          {signal.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 {detailError ? (
                   <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
                     {detailError}

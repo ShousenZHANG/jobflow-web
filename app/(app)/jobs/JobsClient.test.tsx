@@ -230,6 +230,42 @@ describe("JobsClient", () => {
     expect(quote.closest("blockquote")).toHaveClass("border-l-2");
   });
 
+  it("shows experience gate chips for year-limit requirements in JD", async () => {
+    const jd =
+      "Requirements: Minimum of 5 years of experience in software engineering required. " +
+      "Nice to have: 3+ years in React.";
+
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?limit=50")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs?")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs/") && (!init || !init.method || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: jd }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+
+    vi.stubGlobal("fetch", mockFetch);
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    expect(await screen.findByText("Experience gate")).toBeInTheDocument();
+    expect(await screen.findByText("Required: 5+ years")).toBeInTheDocument();
+    expect(await screen.findByText("Preferred: 3+ years")).toBeInTheDocument();
+  });
+
   it("keeps Saved CV in the primary actions row and keeps Remove as a trailing secondary action", async () => {
     const jobWithSavedCv = {
       ...baseJob,
