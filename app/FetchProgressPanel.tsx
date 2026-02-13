@@ -10,6 +10,9 @@ export function FetchProgressPanel() {
     status,
     importedCount,
     error,
+    queryTitle,
+    queryTerms,
+    smartExpand,
     elapsedSeconds,
     open,
     setOpen,
@@ -43,6 +46,8 @@ export function FetchProgressPanel() {
         : status === "RUNNING"
           ? "bg-blue-100 text-blue-700"
           : "bg-muted text-muted-foreground";
+  const shownTerms = queryTerms.slice(0, 6);
+  const hiddenTerms = Math.max(0, queryTerms.length - shownTerms.length);
 
   if (!open && runId) {
     return (
@@ -96,6 +101,30 @@ export function FetchProgressPanel() {
                 ? "Fetch failed or cancelled."
                 : "Queued and starting soon."}
         </div>
+        {queryTerms.length ? (
+          <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-2">
+            <div className="text-[11px] text-muted-foreground">
+              {smartExpand && queryTitle
+                ? `Smart fetch expanded "${queryTitle}" into ${queryTerms.length} role queries.`
+                : `Role queries in this run (${queryTerms.length}).`}
+            </div>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {shownTerms.map((term) => (
+                <span
+                  key={term}
+                  className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] text-slate-700"
+                >
+                  {term}
+                </span>
+              ))}
+              {hiddenTerms ? (
+                <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] text-slate-500">
+                  +{hiddenTerms} more
+                </span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         <Progress
           value={progressValue}
           className="h-2 bg-emerald-100/70"

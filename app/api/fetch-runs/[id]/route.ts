@@ -8,6 +8,53 @@ export const runtime = "nodejs";
 
 const ParamsSchema = z.object({ id: z.string().uuid() });
 
+function normalizeQueryTerms(raw: unknown) {
+  const out: string[] = [];
+  const seen = new Set<string>();
+
+  const push = (value: unknown) => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(trimmed);
+  };
+
+  if (Array.isArray(raw)) {
+    raw.forEach(push);
+  } else if (raw && typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    if (Array.isArray(obj.queries)) {
+      obj.queries.forEach(push);
+    }
+    push(obj.title);
+  }
+
+  return out;
+}
+
+function resolveTitle(raw: unknown, terms: string[]) {
+  if (raw && typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    if (typeof obj.title === "string" && obj.title.trim()) {
+      return obj.title.trim();
+    }
+  }
+  return terms[0] ?? null;
+}
+
+function resolveSmartExpand(raw: unknown) {
+  if (raw && typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    if (typeof obj.smartExpand === "boolean") {
+      return obj.smartExpand;
+    }
+  }
+  return true;
+}
+
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -24,12 +71,29 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       status: true,
       importedCount: true,
       error: true,
+      queries: true,
       createdAt: true,
       updatedAt: true,
     },
   });
 
   if (!run) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
-  return NextResponse.json({ run });
+  const queryTerms = normalizeQueryTerms(run.queries);
+  const queryTitle = resolveTitle(run.queries, queryTerms);
+  const smartExpand = resolveSmartExpand(run.queries);
+
+  return NextResponse.json({
+    run: {
+      id: run.id,
+      status: run.status,
+      importedCount: run.importedCount,
+      error: run.error,
+      createdAt: run.createdAt,
+      updatedAt: run.updatedAt,
+      queryTitle,
+      queryTerms,
+      smartExpand,
+    },
+  });
 }
 

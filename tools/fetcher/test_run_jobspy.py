@@ -10,6 +10,13 @@ import run_jobspy as rj  # noqa: E402
 
 
 class RunJobspyDedupeTests(unittest.TestCase):
+    def test_resolve_search_terms_prefers_queries_and_dedupes(self):
+        terms = rj._resolve_search_terms(
+            title_query="Software Engineer",
+            queries=["Frontend Engineer", "Software Engineer", "Frontend Engineer", "Backend Engineer"],
+        )
+        self.assertEqual(terms, ["Frontend Engineer", "Software Engineer", "Backend Engineer"])
+
     def test_dedupe_jobs_collapses_title_company_location(self):
         df = pd.DataFrame(
             [
@@ -30,6 +37,10 @@ class RunJobspyDedupeTests(unittest.TestCase):
 
         deduped = rj.dedupe_jobs(df)
         self.assertEqual(len(deduped), 1)
+
+    def test_results_per_query_splits_budget_across_terms(self):
+        self.assertEqual(rj._results_per_query(100, 8), 13)
+        self.assertEqual(rj._results_per_query(100, 1), 100)
 
     def test_filter_title_includes_description_match_when_enforced(self):
         df = pd.DataFrame(

@@ -17,6 +17,9 @@ type FetchRunSnapshot = {
   status: FetchRunStatus;
   importedCount: number;
   error: string | null;
+  queryTitle?: string | null;
+  queryTerms?: string[];
+  smartExpand?: boolean;
   updatedAt?: string | null;
 };
 
@@ -25,6 +28,9 @@ type FetchStatusContextValue = {
   status: FetchRunStatus | null;
   importedCount: number;
   error: string | null;
+  queryTitle: string | null;
+  queryTerms: string[];
+  smartExpand: boolean;
   elapsedSeconds: number;
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -47,6 +53,9 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
   const [status, setStatus] = useState<FetchRunStatus | null>(null);
   const [importedCount, setImportedCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [queryTitle, setQueryTitle] = useState<string | null>(null);
+  const [queryTerms, setQueryTerms] = useState<string[]>([]);
+  const [smartExpand, setSmartExpand] = useState<boolean>(true);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [open, setOpenState] = useState(false);
   const autoCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,6 +77,9 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     setStatus(null);
     setImportedCount(0);
     setError(null);
+    setQueryTitle(null);
+    setQueryTerms([]);
+    setSmartExpand(true);
     setElapsedSeconds(0);
     setOpenState(false);
   }, []);
@@ -148,6 +160,9 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     setStatus("QUEUED");
     setImportedCount(0);
     setError(null);
+    setQueryTitle(null);
+    setQueryTerms([]);
+    setSmartExpand(true);
     setElapsedSeconds(0);
     setOpen(true);
     localStorage.setItem(storageKeys.runId, id);
@@ -198,6 +213,9 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
         setStatus(r.status);
         setImportedCount(r.importedCount ?? 0);
         setError(r.error ?? null);
+        setQueryTitle(r.queryTitle ?? null);
+        setQueryTerms(Array.isArray(r.queryTerms) ? r.queryTerms : []);
+        setSmartExpand(r.smartExpand ?? true);
         if (r.status === "SUCCEEDED" || r.status === "FAILED") {
           const endMs = r.updatedAt ? Date.parse(r.updatedAt) : Date.now();
           localStorage.setItem(storageKeys.endedAt, String(endMs));
@@ -254,6 +272,9 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       status,
       importedCount,
       error,
+      queryTitle,
+      queryTerms,
+      smartExpand,
       elapsedSeconds,
       open,
       setOpen,
@@ -261,7 +282,21 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       markRunning,
       cancelRun,
     }),
-    [runId, status, importedCount, error, elapsedSeconds, open, setOpen, startRun, markRunning, cancelRun],
+    [
+      runId,
+      status,
+      importedCount,
+      error,
+      queryTitle,
+      queryTerms,
+      smartExpand,
+      elapsedSeconds,
+      open,
+      setOpen,
+      startRun,
+      markRunning,
+      cancelRun,
+    ],
   );
 
   return <FetchStatusContext.Provider value={value}>{children}</FetchStatusContext.Provider>;

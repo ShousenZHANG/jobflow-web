@@ -1,7 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FetchClient } from "./FetchClient";
+
+Object.defineProperty(window.HTMLElement.prototype, "scrollIntoView", {
+  value: vi.fn(),
+  writable: true,
+});
 
 const pushMock = vi.fn();
 const startRunMock = vi.fn();
@@ -53,6 +58,7 @@ describe("FetchClient", () => {
     startRunMock.mockReset();
     markRunningMock.mockReset();
     markTaskCompleteMock.mockReset();
+    localStorage.clear();
 
     const fetchMock = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.url;
@@ -76,6 +82,10 @@ describe("FetchClient", () => {
     vi.stubGlobal("fetch", fetchMock);
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
   it("does not start a page-level polling interval after submitting fetch", async () => {
     const user = userEvent.setup();
     const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
@@ -91,5 +101,38 @@ describe("FetchClient", () => {
     expect(markRunningMock).toHaveBeenCalled();
     const pollingCalls = setIntervalSpy.mock.calls.filter((call) => call[1] === 3000);
     expect(pollingCalls).toHaveLength(0);
+  });
+
+  it("splits multiple titles into queries when creating a fetch run", async () => {
+    const user = userEvent.setup();
+
+    render(<FetchClient />);
+
+    const titleInput = screen.getAllByPlaceholderText(/e\.g\. software engineer/i)[0];
+    await user.clear(titleInput);
+    await user.type(titleInput, "Software Engineer, Frontend Engineer | Backend Engineer");
+    await user.click(screen.getByRole("button", { name: /start fetch/i }));
+
+    await waitFor(() => {
+      expect(startRunMock).toHaveBeenCalledWith("run-1");
+    });
+
+    const fetchMock = global.fetch as unknown as {
+      mock: { calls: Array<[RequestInfo | URL, RequestInit | undefined]> };
+    };
+    const createCall = fetchMock.mock.calls.find(
+      ([url, init]) => url === "/api/fetch-runs" && init?.method === "POST",
+    );
+
+    expect(createCall).toBeTruthy();
+    const body = JSON.parse(String(createCall?.[1]?.body ?? "{}"));
+
+    expect(body.title).toBe("Software Engineer");
+    expect(body.queries).toEqual([
+      "Software Engineer",
+      "Frontend Engineer",
+      "Backend Engineer",
+    ]);
+    expect(body.smartExpand).toBe(true);
   });
 });

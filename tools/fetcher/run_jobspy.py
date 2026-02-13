@@ -2,6 +2,7 @@ import os
 import re
 import json
 import time
+import math
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -100,6 +101,29 @@ def _build_query_phrases(queries: List[str]) -> List[str]:
         if q2:
             phrases.append(q2.lower())
     return phrases
+
+
+def _resolve_search_terms(title_query: str, queries: List[str]) -> List[str]:
+    candidates = [*(queries or []), title_query]
+    out: List[str] = []
+    seen = set()
+    for item in candidates:
+        cleaned = (item or "").strip()
+        if not cleaned:
+            continue
+        key = cleaned.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(cleaned)
+    return out
+
+
+def _results_per_query(total_results: int, query_count: int) -> int:
+    if query_count <= 0:
+        return max(1, int(total_results or 1))
+    base = max(1, int(total_results or 1))
+    return max(1, math.ceil(base / query_count))
 
 
 def _normalize_text(text: str) -> str:
@@ -466,8 +490,10 @@ def main():
     ).raise_for_status()
 
     t0 = time.time()
-    search_terms = [title_query] if title_query else queries
-    df = fetch_linkedin(search_terms, location, hours_old, results_wanted)
+    search_terms = _resolve_search_terms(title_query=title_query, queries=queries)
+    per_query_results = _results_per_query(results_wanted, len(search_terms))
+    logger.info("Search terms=%s per_query_results=%s", len(search_terms), per_query_results)
+    df = fetch_linkedin(search_terms, location, hours_old, per_query_results)
     if df.empty:
         items: List[Dict[str, Any]] = []
     else:

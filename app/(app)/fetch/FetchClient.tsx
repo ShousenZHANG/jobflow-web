@@ -66,6 +66,7 @@ export function FetchClient() {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [hoursOld, setHoursOld] = useState(48);
   const [resultsWanted, setResultsWanted] = useState(100);
+  const [smartExpand, setSmartExpand] = useState(true);
   const [applyExcludes, setApplyExcludes] = useState(true);
   const [excludeTitleTerms, setExcludeTitleTerms] = useState<string[]>([
     "senior",
@@ -100,10 +101,17 @@ export function FetchClient() {
   const prevUserIdRef = useRef<string | null>(null);
 
   const queries = useMemo(() => {
-    return jobTitle.trim() ? [jobTitle.trim()] : [];
+    const parts = jobTitle
+      .split(/[\n,|]/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    return Array.from(new Set(parts));
   }, [jobTitle]);
 
-  const suggestionQuery = jobTitle.trim().toLowerCase();
+  const suggestionQuery = useMemo(() => {
+    const segments = jobTitle.split(/[\n,|]/);
+    return (segments.at(-1) ?? "").trim().toLowerCase();
+  }, [jobTitle]);
   const suggestionMode = suggestionQuery.length < 2 ? "Popular" : "Suggestions";
   const suggestions = useMemo(() => {
     if (suggestionQuery.length < 2) {
@@ -123,6 +131,40 @@ export function FetchClient() {
     prevUserIdRef.current = userId;
   }, [userId]);
 
+  useEffect(() => {
+    const raw = localStorage.getItem("jobflow.fetch.preferences");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as {
+        title?: string;
+        location?: string;
+        hoursOld?: number;
+        resultsWanted?: number;
+        smartExpand?: boolean;
+      };
+      if (parsed.title) setJobTitle(parsed.title);
+      if (parsed.location) setLocation(parsed.location);
+      if (parsed.hoursOld) setHoursOld(parsed.hoursOld);
+      if (parsed.resultsWanted) setResultsWanted(parsed.resultsWanted);
+      if (typeof parsed.smartExpand === "boolean") setSmartExpand(parsed.smartExpand);
+    } catch {
+      // ignore invalid local preference payload
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "jobflow.fetch.preferences",
+      JSON.stringify({
+        title: jobTitle,
+        location,
+        hoursOld,
+        resultsWanted,
+        smartExpand,
+      }),
+    );
+  }, [jobTitle, location, hoursOld, resultsWanted, smartExpand]);
+
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
     if (typeof err === "string") return err;
@@ -134,11 +176,12 @@ export function FetchClient() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title: jobTitle.trim(),
+        title: queries[0] ?? jobTitle.trim(),
         queries,
         location,
         hoursOld,
         resultsWanted,
+        smartExpand,
         applyExcludes,
         excludeTitleTerms,
         excludeDescriptionRules,
@@ -159,8 +202,8 @@ export function FetchClient() {
     setIsSubmitting(true);
     setLocalError(null);
     try {
-      if (!jobTitle.trim()) {
-        throw new Error("Please enter one job title to search.");
+      if (!queries.length) {
+        throw new Error("Please enter at least one job title to search.");
       }
       const id = await createRun();
       startRun(id);
@@ -198,16 +241,16 @@ export function FetchClient() {
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
               <PopoverAnchor asChild>
                 <Input
-                  placeholder="e.g. Software Engineer"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                onFocus={() => {
+                  placeholder="e.g. Software Engineer, Frontend Engineer | Backend Engineer"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  onFocus={() => {
                     setSuggestionsOpen(true);
-                }}
-                onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
-              />
-            </PopoverAnchor>
-            <PopoverContent
+                  }}
+                  onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
+                />
+              </PopoverAnchor>
+              <PopoverContent
                 align="start"
                 className="w-[var(--radix-popover-trigger-width)] p-0"
                 onOpenAutoFocus={(e) => e.preventDefault()}
@@ -221,7 +264,9 @@ export function FetchClient() {
                             key={item}
                             value={item}
                             onSelect={(value) => {
-                              setJobTitle(value);
+                              const segments = jobTitle.split(/[\n,|]/);
+                              const prefix = segments.slice(0, -1).map((part) => part.trim()).filter(Boolean);
+                              setJobTitle([...prefix, value].join(", "));
                               setSuggestionsOpen(false);
                             }}
                           >
@@ -236,6 +281,10 @@ export function FetchClient() {
                 </Command>
               </PopoverContent>
             </Popover>
+            <p className="text-xs text-muted-foreground">
+              Smart fetch can auto-expand one title to related roles. You can still separate multiple
+              titles with comma or <code>|</code>.
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Location</Label>
@@ -279,6 +328,16 @@ export function FetchClient() {
           <CardTitle className="text-base">Filters</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pb-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-sm font-medium">Smart role coverage</div>
+              <div className="text-xs text-muted-foreground">
+                Expand one title to related role variants automatically.
+              </div>
+            </div>
+            <Switch checked={smartExpand} onCheckedChange={setSmartExpand} />
+          </div>
+
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="text-sm font-medium">Apply exclusions</div>

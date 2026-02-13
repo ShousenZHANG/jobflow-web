@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { expandRoleQueries } from "@/lib/shared/fetchRolePacks";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,7 @@ const CreateSchema = z
     location: z.string().trim().min(1).optional(),
     hoursOld: z.coerce.number().int().min(1).max(24 * 30).optional(),
     resultsWanted: z.coerce.number().int().min(1).max(500).optional(),
+    smartExpand: z.coerce.boolean().optional().default(true),
     applyExcludes: z.coerce.boolean().optional().default(true),
     excludeTitleTerms: z.array(TitleExcludeEnum).optional().default([]),
     excludeDescriptionRules: z.array(DescExcludeEnum).optional().default([]),
@@ -66,8 +68,14 @@ export async function POST(req: Request) {
     );
   }
 
-  const title = parsed.data.title ?? parsed.data.queries?.[0] ?? "";
-  const queries = parsed.data.queries?.length ? parsed.data.queries : title ? [title] : [];
+  const fallbackTitle = parsed.data.title ?? parsed.data.queries?.[0] ?? "";
+  const baseQueries = parsed.data.queries?.length
+    ? parsed.data.queries
+    : fallbackTitle
+      ? [fallbackTitle]
+      : [];
+  const queries = parsed.data.smartExpand ? expandRoleQueries(baseQueries) : baseQueries;
+  const title = fallbackTitle || queries[0] || "";
 
   const run = await prisma.fetchRun.create({
     data: {
@@ -78,6 +86,7 @@ export async function POST(req: Request) {
       queries: {
         title,
         queries,
+        smartExpand: parsed.data.smartExpand,
         applyExcludes: parsed.data.applyExcludes,
         excludeTitleTerms: parsed.data.excludeTitleTerms,
         excludeDescriptionRules: parsed.data.excludeDescriptionRules,
