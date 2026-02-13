@@ -65,7 +65,6 @@ export function FetchClient() {
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [hoursOld, setHoursOld] = useState(48);
-  const [resultsWanted, setResultsWanted] = useState(100);
   const [smartExpand, setSmartExpand] = useState(true);
   const [applyExcludes, setApplyExcludes] = useState(true);
   const [excludeTitleTerms, setExcludeTitleTerms] = useState<string[]>([
@@ -135,13 +134,11 @@ export function FetchClient() {
         title?: string;
         location?: string;
         hoursOld?: number;
-        resultsWanted?: number;
         smartExpand?: boolean;
       };
       if (parsed.title) setJobTitle(parsed.title);
       if (parsed.location) setLocation(parsed.location);
       if (parsed.hoursOld) setHoursOld(parsed.hoursOld);
-      if (parsed.resultsWanted) setResultsWanted(parsed.resultsWanted);
       if (typeof parsed.smartExpand === "boolean") setSmartExpand(parsed.smartExpand);
     } catch {
       // ignore invalid local preference payload
@@ -155,11 +152,10 @@ export function FetchClient() {
         title: jobTitle,
         location,
         hoursOld,
-        resultsWanted,
         smartExpand,
       }),
     );
-  }, [jobTitle, location, hoursOld, resultsWanted, smartExpand]);
+  }, [jobTitle, location, hoursOld, smartExpand]);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -176,7 +172,6 @@ export function FetchClient() {
         queries,
         location,
         hoursOld,
-        resultsWanted,
         smartExpand,
         applyExcludes,
         excludeTitleTerms,
@@ -231,7 +226,7 @@ export function FetchClient() {
       ) : null}
 
       <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
-        <CardContent className="grid gap-4 p-5 md:grid-cols-4">
+        <CardContent className="grid gap-4 p-5 md:grid-cols-3">
           <div className="space-y-2">
             <Label>Job title</Label>
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
@@ -296,21 +291,6 @@ export function FetchClient() {
                 {[1, 6, 12, 24, 48, 72].map((h) => (
                   <SelectItem key={h} value={String(h)}>
                     {h} hours
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Results wanted</Label>
-            <Select value={String(resultsWanted)} onValueChange={(v) => setResultsWanted(Number(v))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[20, 50, 80, 100, 150, 200].map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n} results
                   </SelectItem>
                 ))}
               </SelectContent>

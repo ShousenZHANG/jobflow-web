@@ -24,6 +24,7 @@ DEFAULT_RATE_LIMIT_RETRIES = 5
 DEFAULT_RATE_LIMIT_BASE_SEC = 15.0
 DEFAULT_RATE_LIMIT_MAX_SEC = 120.0
 DEFAULT_RATE_LIMIT_COOLDOWN_SEC = 20.0
+DEFAULT_FULL_FETCH_RESULTS_WANTED = 10000
 
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
@@ -471,7 +472,7 @@ def main():
 
     location = run.get("location") or "Sydney, New South Wales, Australia"
     hours_old = int(run.get("hoursOld") or 48)
-    results_wanted = int(run.get("resultsWanted") or 120)
+    results_wanted = int(run.get("resultsWanted") or DEFAULT_FULL_FETCH_RESULTS_WANTED)
     include_from_queries = bool(run.get("includeFromQueries") or False)
 
     exclude_rights = apply_excludes and "identity_requirement" in exclude_desc_rules

@@ -88,4 +88,24 @@ describe("fetch runs create api", () => {
     const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data?.queries;
     expect(payload.excludeDescriptionRules).toEqual(["identity_requirement"]);
   });
+
+  it("ignores resultsWanted input and stores null for full-fetch mode", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/fetch-runs", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Software Engineer",
+          resultsWanted: 5000,
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data;
+    expect(payload.resultsWanted).toBeNull();
+  });
 });
