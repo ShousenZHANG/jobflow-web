@@ -13,7 +13,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { CircleHelp, Circle, CircleCheckBig, Navigation, Sparkles } from "lucide-react";
+import { Circle, CircleCheckBig, Navigation, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ONBOARDING_TASKS,
@@ -816,20 +816,6 @@ export function GuideProvider({ children }: { children: ReactNode }) {
             </>
           ) : null}
 
-          <button
-            type="button"
-            aria-label="Open guide"
-            onClick={openGuide}
-            className="edu-outline edu-cta--press edu-outline--compact fixed bottom-6 left-6 z-50 flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium"
-          >
-            <CircleHelp className="h-4 w-4" />
-            Guide
-            {loading ? null : (
-              <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
-                {state?.completedCount ?? 0}/{state?.totalCount ?? ONBOARDING_TASKS.length}
-              </span>
-            )}
-          </button>
         </>
       ) : null}
     </GuideContext.Provider>
