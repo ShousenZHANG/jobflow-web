@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/server/prisma";
+import { canonicalizeJobUrl } from "@/lib/shared/canonicalizeJobUrl";
 
 export const runtime = "nodejs";
 
@@ -34,25 +35,6 @@ function requireImportSecret(req: Request) {
   }
   const got = req.headers.get("x-import-secret");
   return got === expected;
-}
-
-function canonicalizeJobUrl(raw: string) {
-  const input = raw.trim();
-  if (!input) return "";
-  try {
-    const parsed = new URL(input);
-    const protocol = parsed.protocol.toLowerCase();
-    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
-    const isDefaultPort =
-      (protocol === "https:" && parsed.port === "443") ||
-      (protocol === "http:" && parsed.port === "80");
-    const host = parsed.port && !isDefaultPort ? `${hostname}:${parsed.port}` : hostname;
-    let pathname = parsed.pathname || "/";
-    if (pathname !== "/") pathname = pathname.replace(/\/+$/, "") || "/";
-    return `${protocol}//${host}${pathname}`;
-  } catch {
-    return input;
-  }
 }
 
 export async function POST(req: Request) {

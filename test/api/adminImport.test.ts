@@ -65,6 +65,65 @@ describe("admin import api", () => {
     expect(created.jobUrl).toBe("https://linkedin.com/jobs/view/123");
   });
 
+  it("normalizes LinkedIn currentJobId variants to the stable jobs/view URL", async () => {
+    const res = await POST(
+      new Request("http://localhost/api/admin/import", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-import-secret": "import-secret",
+        },
+        body: JSON.stringify({
+          userEmail: "user@example.com",
+          items: [
+            {
+              jobUrl:
+                "https://www.linkedin.com/jobs/search/?keywords=Backend%20Engineer&currentJobId=456&trk=public_jobs_jobs-search-bar_search-submit",
+              title: "Backend Engineer",
+            },
+          ],
+        }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.imported).toBe(1);
+    const created = prismaStore.job.create.mock.calls[0]?.[0]?.data;
+    expect(created.jobUrl).toBe("https://linkedin.com/jobs/view/456");
+  });
+
+  it("filters out deleted LinkedIn jobs even when incoming URL is a currentJobId variant", async () => {
+    prismaStore.deletedJobUrl.findMany.mockResolvedValueOnce([
+      { jobUrl: "https://linkedin.com/jobs/view/777" },
+    ]);
+
+    const res = await POST(
+      new Request("http://localhost/api/admin/import", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-import-secret": "import-secret",
+        },
+        body: JSON.stringify({
+          userEmail: "user@example.com",
+          items: [
+            {
+              jobUrl:
+                "https://www.linkedin.com/jobs/search/?keywords=Software%20Engineer&currentJobId=777&trk=public_jobs_jobs-search-bar_search-submit",
+              title: "Software Engineer",
+            },
+          ],
+        }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.imported).toBe(0);
+    expect(prismaStore.job.create).not.toHaveBeenCalled();
+  });
+
   it("filters out entries that match deleted URLs after canonicalization", async () => {
     prismaStore.deletedJobUrl.findMany.mockResolvedValueOnce([
       { jobUrl: "https://linkedin.com/jobs/view/777" },
@@ -95,4 +154,3 @@ describe("admin import api", () => {
     expect(prismaStore.job.create).not.toHaveBeenCalled();
   });
 });
-

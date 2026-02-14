@@ -9,6 +9,7 @@ import { LatexRenderError } from "@/lib/server/latex/compilePdf";
 import { put } from "@vercel/blob";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
+import { canonicalizeJobUrl } from "@/lib/shared/canonicalizeJobUrl";
 
 export const runtime = "nodejs";
 
@@ -220,9 +221,9 @@ export async function DELETE(
 
   await prisma.$transaction([
     prisma.deletedJobUrl.upsert({
-      where: { userId_jobUrl: { userId, jobUrl: job.jobUrl } },
+      where: { userId_jobUrl: { userId, jobUrl: canonicalizeJobUrl(job.jobUrl) } },
       update: {},
-      create: { userId, jobUrl: job.jobUrl },
+      create: { userId, jobUrl: canonicalizeJobUrl(job.jobUrl) },
     }),
     prisma.job.delete({ where: { id: job.id } }),
   ]);

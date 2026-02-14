@@ -7,7 +7,7 @@ import math
 import random
 import logging
 from html import unescape
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit, parse_qs
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional
 
@@ -257,10 +257,35 @@ def _resolve_detail_backoff_base_sec() -> float:
 
 
 def _extract_linkedin_job_id(url: str) -> str:
-    match = LINKEDIN_JOB_ID_RE.search(url or "")
-    if not match:
+    raw = (url or "").strip()
+    if not raw:
         return ""
-    return match.group(1)
+
+    match = LINKEDIN_JOB_ID_RE.search(raw)
+    if match:
+        return match.group(1)
+
+    try:
+        parts = urlsplit(raw)
+    except Exception:
+        return ""
+
+    if not (parts.scheme and parts.netloc):
+        return ""
+
+    hostname = (parts.hostname or "").lower()
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+    if hostname != "linkedin.com" and not hostname.endswith(".linkedin.com"):
+        return ""
+
+    qs = parse_qs(parts.query or "")
+    for key in ("currentJobId", "currentjobid", "jobId", "jobid"):
+        val = (qs.get(key) or [""])[0]
+        if val and str(val).isdigit():
+            return str(val)
+
+    return ""
 
 
 def _canonicalize_job_url(url: str) -> str:
@@ -278,6 +303,8 @@ def _canonicalize_job_url(url: str) -> str:
     hostname = (parts.hostname or "").lower()
     if hostname.startswith("www."):
         hostname = hostname[4:]
+    if hostname == "linkedin.com" or hostname.endswith(".linkedin.com"):
+        hostname = "linkedin.com"
     port = parts.port
     if not hostname:
         return raw
@@ -285,6 +312,11 @@ def _canonicalize_job_url(url: str) -> str:
         netloc = f"{hostname}:{port}"
     else:
         netloc = hostname
+
+    if hostname == "linkedin.com":
+        job_id = _extract_linkedin_job_id(raw)
+        if job_id:
+            return f"https://linkedin.com/jobs/view/{job_id}"
 
     path = parts.path or "/"
     if path != "/":

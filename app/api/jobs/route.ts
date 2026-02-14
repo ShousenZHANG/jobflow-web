@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
 import { buildJobsListEtag } from "@/lib/server/jobsListEtag";
+import { canonicalizeJobUrl } from "@/lib/shared/canonicalizeJobUrl";
 
 export const runtime = "nodejs";
 
@@ -216,8 +217,13 @@ export async function POST(req: Request) {
     );
   }
 
+  const jobUrl = canonicalizeJobUrl(parsed.data.jobUrl);
+  if (!jobUrl) {
+    return NextResponse.json({ error: "INVALID_BODY", details: { jobUrl: ["Invalid URL"] } }, { status: 400 });
+  }
+
   const created = await prisma.job.upsert({
-    where: { userId_jobUrl: { userId, jobUrl: parsed.data.jobUrl } },
+    where: { userId_jobUrl: { userId, jobUrl } },
     update: {
       title: parsed.data.title,
       company: parsed.data.company ?? null,
@@ -228,7 +234,7 @@ export async function POST(req: Request) {
     },
     create: {
       userId,
-      jobUrl: parsed.data.jobUrl,
+      jobUrl,
       title: parsed.data.title,
       company: parsed.data.company ?? null,
       location: parsed.data.location ?? null,

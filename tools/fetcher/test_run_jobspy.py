@@ -73,6 +73,14 @@ class RunJobspyDedupeTests(unittest.TestCase):
             "https://linkedin.com/jobs/view/123",
         )
 
+    def test_canonicalize_job_url_normalizes_linkedin_current_job_id(self):
+        self.assertEqual(
+            rj._canonicalize_job_url(
+                "https://www.linkedin.com/jobs/search/?keywords=Software%20Engineer&currentJobId=999&trk=public_jobs_jobs-search-bar_search-submit"
+            ),
+            "https://linkedin.com/jobs/view/999",
+        )
+
     def test_results_per_query_splits_budget_across_terms(self):
         self.assertEqual(rj._results_per_query(100, 8), 13)
         self.assertEqual(rj._results_per_query(100, 1), 100)
