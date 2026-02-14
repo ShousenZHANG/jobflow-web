@@ -5,6 +5,7 @@ import time
 import math
 import random
 import logging
+from html import unescape
 from urllib.parse import urlsplit, urlunsplit
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional
@@ -26,6 +27,13 @@ DEFAULT_RATE_LIMIT_BASE_SEC = 15.0
 DEFAULT_RATE_LIMIT_MAX_SEC = 120.0
 DEFAULT_RATE_LIMIT_COOLDOWN_SEC = 20.0
 DEFAULT_FULL_FETCH_RESULTS_WANTED = 10000
+DEFAULT_DETAIL_URL_WORKERS = 4
+MAX_DETAIL_URL_WORKERS = 8
+DEFAULT_DETAIL_URL_TIMEOUT_SEC = 12.0
+DEFAULT_DETAIL_URL_RETRIES = 2
+DEFAULT_DETAIL_URL_BACKOFF_BASE_SEC = 1.5
+
+LINKEDIN_JOB_ID_RE = re.compile(r"linkedin\.com/jobs/view/(\d+)", re.IGNORECASE)
 
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
@@ -195,6 +203,64 @@ def _fingerprint_value(value: Any) -> str:
     return _normalize_text(value or "")
 
 
+def _parse_csv_list(raw: str) -> List[str]:
+    out: List[str] = []
+    seen = set()
+    for part in (raw or "").split(","):
+        value = (part or "").strip().lower()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        out.append(value)
+    return out
+
+
+def _resolve_detail_workers(url_count: int) -> int:
+    if url_count <= 1:
+        return 1
+    raw = os.environ.get("FETCH_DETAIL_URL_WORKERS", "").strip()
+    try:
+        configured = int(raw) if raw else DEFAULT_DETAIL_URL_WORKERS
+    except ValueError:
+        configured = DEFAULT_DETAIL_URL_WORKERS
+    configured = max(1, min(MAX_DETAIL_URL_WORKERS, configured))
+    return min(url_count, configured)
+
+
+def _resolve_detail_timeout_sec() -> float:
+    raw = os.environ.get("FETCH_DETAIL_URL_TIMEOUT_SEC", "").strip()
+    try:
+        value = float(raw) if raw else DEFAULT_DETAIL_URL_TIMEOUT_SEC
+    except ValueError:
+        value = DEFAULT_DETAIL_URL_TIMEOUT_SEC
+    return max(2.0, value)
+
+
+def _resolve_detail_retries() -> int:
+    raw = os.environ.get("FETCH_DETAIL_URL_RETRIES", "").strip()
+    try:
+        value = int(raw) if raw else DEFAULT_DETAIL_URL_RETRIES
+    except ValueError:
+        value = DEFAULT_DETAIL_URL_RETRIES
+    return max(0, min(6, value))
+
+
+def _resolve_detail_backoff_base_sec() -> float:
+    raw = os.environ.get("FETCH_DETAIL_URL_BACKOFF_BASE_SEC", "").strip()
+    try:
+        value = float(raw) if raw else DEFAULT_DETAIL_URL_BACKOFF_BASE_SEC
+    except ValueError:
+        value = DEFAULT_DETAIL_URL_BACKOFF_BASE_SEC
+    return max(0.2, min(10.0, value))
+
+
+def _extract_linkedin_job_id(url: str) -> str:
+    match = LINKEDIN_JOB_ID_RE.search(url or "")
+    if not match:
+        return ""
+    return match.group(1)
+
+
 def _canonicalize_job_url(url: str) -> str:
     raw = (url or "").strip()
     if not raw:
@@ -352,11 +418,220 @@ def clean_description(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _find_description_in_json_ld(payload: Any) -> str:
+    if isinstance(payload, dict):
+        description = payload.get("description")
+        if isinstance(description, str) and description.strip():
+            return description
+        for value in payload.values():
+            nested = _find_description_in_json_ld(value)
+            if nested:
+                return nested
+    elif isinstance(payload, list):
+        for item in payload:
+            nested = _find_description_in_json_ld(item)
+            if nested:
+                return nested
+    return ""
+
+
+def _strip_html(html_text: str) -> str:
+    text = html_text or ""
+    text = re.sub(r"(?is)<script[^>]*>.*?</script>", " ", text)
+    text = re.sub(r"(?is)<style[^>]*>.*?</style>", " ", text)
+    text = re.sub(r"(?is)<[^>]+>", " ", text)
+    text = unescape(text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def _extract_description_from_html(html_text: str) -> str:
+    if not html_text:
+        return ""
+
+    for snippet in re.findall(
+        r'(?is)<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        html_text,
+    ):
+        try:
+            payload = json.loads(snippet.strip())
+        except Exception:
+            continue
+        desc = _find_description_in_json_ld(payload)
+        if desc:
+            return _clean_description_text(desc)
+
+    linkedin_match = re.search(
+        r'(?is)<div[^>]*class="[^"]*show-more-less-html__markup[^"]*"[^>]*>(.*?)</div>',
+        html_text,
+    )
+    if linkedin_match:
+        text = _strip_html(linkedin_match.group(1))
+        if text:
+            return _clean_description_text(text)
+
+    meta_desc_match = re.search(
+        r'(?is)<meta[^>]+(?:name|property)=["\'](?:description|og:description)["\'][^>]+content=["\'](.*?)["\']',
+        html_text,
+    )
+    if meta_desc_match:
+        text = _strip_html(meta_desc_match.group(1))
+        if text:
+            return _clean_description_text(text)
+
+    text = _strip_html(html_text)
+    return _clean_description_text(text) if text else ""
+
+
+def _fetch_description_for_url(
+    job_url: str,
+    proxy_pool: Optional[List[str]] = None,
+) -> str:
+    canonical = _canonicalize_job_url(job_url)
+    if not canonical:
+        return ""
+
+    timeout_sec = _resolve_detail_timeout_sec()
+    retries = _resolve_detail_retries()
+    backoff_base_sec = _resolve_detail_backoff_base_sec()
+    user_agent = os.environ.get("FETCH_DETAIL_USER_AGENT", "").strip() or (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    )
+    headers = {"User-Agent": user_agent}
+
+    for attempt in range(retries + 1):
+        proxy = _proxy_for_attempt(proxy_pool or [], canonical, attempt)
+        proxies = {"http": proxy, "https": proxy} if proxy else None
+        try:
+            linkedin_id = _extract_linkedin_job_id(canonical)
+            if linkedin_id:
+                detail_url = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{linkedin_id}"
+            else:
+                detail_url = canonical
+            res = requests.get(detail_url, timeout=timeout_sec, headers=headers, proxies=proxies)
+            if res.status_code >= 400:
+                raise RuntimeError(f"http_{res.status_code}")
+            description = _extract_description_from_html(res.text or "")
+            if description:
+                return description
+            return ""
+        except Exception as err:
+            if attempt >= retries:
+                logger.warning("detail fetch failed url=%s error=%s", canonical, err)
+                return ""
+            sleep_sec = backoff_base_sec * (2**attempt) + random.uniform(0.0, 0.5)
+            time.sleep(sleep_sec)
+    return ""
+
+
+def _description_needs_enrichment(description: Any) -> bool:
+    text = str(description or "").strip()
+    return not text
+
+
+def _enrich_descriptions_for_urls(
+    df: pd.DataFrame,
+    proxy_pool: Optional[List[str]] = None,
+    fetch_fn=None,
+) -> pd.DataFrame:
+    if df.empty or "job_url" not in df.columns:
+        return df
+    out = df.copy()
+    if "description" not in out.columns:
+        out["description"] = ""
+    out["description"] = out["description"].fillna("")
+
+    out["_canonical_job_url"] = out["job_url"].fillna("").apply(_canonicalize_job_url)
+    candidates = out[
+        out["_canonical_job_url"].astype(bool)
+        & out["description"].apply(_description_needs_enrichment)
+    ]
+    if candidates.empty:
+        return out.drop(columns=["_canonical_job_url"], errors="ignore")
+
+    urls = list(dict.fromkeys(candidates["_canonical_job_url"].tolist()))
+    workers = _resolve_detail_workers(len(urls))
+    logger.info("Phase2 detail enrichment: urls=%s workers=%s", len(urls), workers)
+
+    resolve = fetch_fn or (lambda url: _fetch_description_for_url(url, proxy_pool=proxy_pool))
+
+    def fetch_one(url: str):
+        return url, str(resolve(url) or "").strip()
+
+    pairs: List[tuple[str, str]]
+    if workers <= 1:
+        pairs = [fetch_one(url) for url in urls]
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            pairs = list(pool.map(fetch_one, urls))
+
+    details = pd.DataFrame(
+        [
+            {"job_url": url, "description": description}
+            for url, description in pairs
+            if description
+        ]
+    )
+    if details.empty:
+        return out.drop(columns=["_canonical_job_url"], errors="ignore")
+    merged = _merge_phase_details(
+        out.drop(columns=["_canonical_job_url"], errors="ignore"),
+        details,
+    )
+    return merged
+
+
+def _proxy_for_attempt(proxy_pool: List[str], term: str, attempt: int) -> Optional[str]:
+    if not proxy_pool:
+        return None
+    base = abs(hash(term)) % len(proxy_pool)
+    index = (base + attempt) % len(proxy_pool)
+    return proxy_pool[index]
+
+
+def _merge_phase_details(base_df: pd.DataFrame, details_df: pd.DataFrame) -> pd.DataFrame:
+    if base_df.empty:
+        return base_df
+    if details_df.empty:
+        return base_df
+
+    out = base_df.copy()
+    details = details_df.copy()
+    out["_canonical_job_url"] = out.get("job_url", "").fillna("").apply(_canonicalize_job_url)
+    details["_canonical_job_url"] = details.get("job_url", "").fillna("").apply(_canonicalize_job_url)
+    details = details[details["_canonical_job_url"].astype(bool)].drop_duplicates(
+        subset=["_canonical_job_url"], keep="first"
+    )
+    details_by_url = details.set_index("_canonical_job_url")
+
+    if "description" not in out.columns:
+        out["description"] = ""
+    out["description"] = out["description"].fillna("")
+
+    def resolve_description(row):
+        current = str(row.get("description") or "").strip()
+        if current:
+            return current
+        key = row.get("_canonical_job_url") or ""
+        if not key or key not in details_by_url.index:
+            return current
+        details_val = details_by_url.loc[key, "description"]
+        if isinstance(details_val, pd.Series):
+            details_val = details_val.iloc[0]
+        return str(details_val or "").strip()
+
+    out["description"] = out.apply(resolve_description, axis=1)
+    return out.drop(columns=["_canonical_job_url"], errors="ignore")
+
+
 def _fetch_single_linkedin_term(
     term: str,
     location: str,
     hours_old: int,
     results_wanted: int,
+    fetch_description: bool,
+    proxy_pool: Optional[List[str]] = None,
 ) -> Optional[pd.DataFrame]:
     raw_rl_retries = os.environ.get("FETCH_RATE_LIMIT_RETRIES", "").strip()
     try:
@@ -367,6 +642,7 @@ def _fetch_single_linkedin_term(
 
     for attempt in range(max_attempts):
         try:
+            proxy = _proxy_for_attempt(proxy_pool or [], term, attempt)
             df = scrape_jobs(
                 site_name=["linkedin"],
                 search_term=term,
@@ -374,7 +650,8 @@ def _fetch_single_linkedin_term(
                 hours_old=hours_old,
                 results_wanted=results_wanted,
                 verbose=0,
-                linkedin_fetch_description=True,
+                linkedin_fetch_description=fetch_description,
+                proxies=proxy,
             )
             return df
         except Exception as e:
@@ -402,61 +679,69 @@ def fetch_linkedin(
     hours_old: int,
     results_wanted: int,
     results_budget_by_term: Optional[Dict[str, int]] = None,
+    fetch_description: bool = True,
+    proxy_pool: Optional[List[str]] = None,
 ) -> pd.DataFrame:
     dfs: List[pd.DataFrame] = []
     workers = _resolve_fetch_query_workers(len(queries))
     term_budget = results_budget_by_term or {}
-    logger.info("Fetch mode: queries=%s workers=%s", len(queries), workers)
-    pairs = _fetch_terms(
-        queries,
-        lambda term: _fetch_single_linkedin_term(
-            term,
-            location,
-            hours_old,
-            int(term_budget.get(term, results_wanted)),
-        ),
-        max_workers=workers,
+    logger.info(
+        "Fetch mode: queries=%s workers=%s fetch_description=%s",
+        len(queries),
+        workers,
+        fetch_description,
     )
-    failed_terms: List[str] = []
-    for term, df in pairs:
-        if df is None or df.empty:
-            failed_terms.append(term)
-            continue
-        df = df.loc[:, df.notna().any(axis=0)]
-        if "job_url" in df.columns:
-            df = df.drop_duplicates(subset=["job_url"], keep="first")
-        df["source_query"] = term
-        dfs.append(df)
 
-    # If concurrent mode hit rate limits, recover some recall by replaying failed terms sequentially.
-    if failed_terms and workers > 1:
-        raw_cooldown = os.environ.get("FETCH_RATE_LIMIT_COOLDOWN_SEC", "").strip()
-        try:
-            cooldown_sec = float(raw_cooldown) if raw_cooldown else DEFAULT_RATE_LIMIT_COOLDOWN_SEC
-        except ValueError:
-            cooldown_sec = DEFAULT_RATE_LIMIT_COOLDOWN_SEC
-        logger.info(
-            "Sequential fallback for %s failed queries after cooldown %.1fs",
-            len(failed_terms),
-            cooldown_sec,
-        )
-        time.sleep(max(1.0, cooldown_sec))
-        for index, term in enumerate(failed_terms):
-            if index > 0:
-                time.sleep(1.0)
-            df = _fetch_single_linkedin_term(
+    pending_terms = list(queries)
+    current_workers = workers
+    rounds = 0
+    while pending_terms:
+        rounds += 1
+        pairs = _fetch_terms(
+            pending_terms,
+            lambda term: _fetch_single_linkedin_term(
                 term,
                 location,
                 hours_old,
                 int(term_budget.get(term, results_wanted)),
-            )
+                fetch_description=fetch_description,
+                proxy_pool=proxy_pool,
+            ),
+            max_workers=current_workers,
+        )
+        failed_terms: List[str] = []
+        for term, df in pairs:
             if df is None or df.empty:
+                failed_terms.append(term)
                 continue
             df = df.loc[:, df.notna().any(axis=0)]
             if "job_url" in df.columns:
                 df = df.drop_duplicates(subset=["job_url"], keep="first")
             df["source_query"] = term
             dfs.append(df)
+
+        if not failed_terms:
+            break
+        if current_workers <= 1 or rounds >= 3:
+            logger.info("Fallback reached safe mode after %s rounds; stop retries", rounds)
+            break
+
+        raw_cooldown = os.environ.get("FETCH_RATE_LIMIT_COOLDOWN_SEC", "").strip()
+        try:
+            cooldown_sec = float(raw_cooldown) if raw_cooldown else DEFAULT_RATE_LIMIT_COOLDOWN_SEC
+        except ValueError:
+            cooldown_sec = DEFAULT_RATE_LIMIT_COOLDOWN_SEC
+        next_workers = max(1, current_workers // 2)
+        logger.info(
+            "Adaptive fallback for %s failed terms after cooldown %.1fs (workers %s -> %s)",
+            len(failed_terms),
+            cooldown_sec,
+            current_workers,
+            next_workers,
+        )
+        time.sleep(max(1.0, cooldown_sec))
+        pending_terms = failed_terms
+        current_workers = next_workers
 
     if not dfs:
         return pd.DataFrame()
@@ -504,12 +789,14 @@ def main():
         apply_excludes = bool(run.get("filterDescription") if run.get("filterDescription") is not None else True)
         exclude_title_terms: List[str] = []
         exclude_desc_rules: List[str] = []
+        source_options: Dict[str, Any] = {}
     elif isinstance(raw_queries, dict):
         title_query = (raw_queries.get("title") or "").strip()
         queries = raw_queries.get("queries") or ([title_query] if title_query else [])
         apply_excludes = bool(raw_queries.get("applyExcludes", True))
         exclude_title_terms = raw_queries.get("excludeTitleTerms") or []
         exclude_desc_rules = raw_queries.get("excludeDescriptionRules") or []
+        source_options = raw_queries.get("sourceOptions") or {}
     else:
         raise RuntimeError("run.queries must be a list or object")
 
@@ -517,6 +804,8 @@ def main():
     hours_old = int(run.get("hoursOld") or 48)
     results_wanted = int(run.get("resultsWanted") or DEFAULT_FULL_FETCH_RESULTS_WANTED)
     include_from_queries = bool(run.get("includeFromQueries") or False)
+    two_phase = bool(source_options.get("twoPhase", True))
+    proxy_pool = _parse_csv_list(os.environ.get("FETCH_PROXY_POOL", ""))
 
     exclude_rights = apply_excludes and "identity_requirement" in exclude_desc_rules
     exclude_clearance = False
@@ -536,14 +825,36 @@ def main():
     t0 = time.time()
     search_terms = _resolve_search_terms(title_query=title_query, queries=queries)
     results_budget_by_term = _build_results_budget_by_term(search_terms, results_wanted)
-    logger.info("Search terms=%s results_budget_by_term=%s", len(search_terms), results_budget_by_term)
-    df = fetch_linkedin(
-        search_terms,
-        location,
-        hours_old,
-        results_wanted,
-        results_budget_by_term=results_budget_by_term,
+    logger.info(
+        "Search terms=%s results_budget_by_term=%s source_options=%s",
+        len(search_terms),
+        results_budget_by_term,
+        {
+            "twoPhase": two_phase,
+            "proxyPoolSize": len(proxy_pool),
+        },
     )
+    if two_phase:
+        df = fetch_linkedin(
+            search_terms,
+            location,
+            hours_old,
+            results_wanted,
+            results_budget_by_term=results_budget_by_term,
+            fetch_description=False,
+            proxy_pool=proxy_pool,
+        )
+    else:
+        df = fetch_linkedin(
+            search_terms,
+            location,
+            hours_old,
+            results_wanted,
+            results_budget_by_term=results_budget_by_term,
+            fetch_description=True,
+            proxy_pool=proxy_pool,
+        )
+
     if df.empty:
         items: List[Dict[str, Any]] = []
     else:
@@ -555,6 +866,13 @@ def main():
             exclude_terms=exclude_title_terms if apply_excludes else None,
         )
         logger.info("Rows after title filter: %s", len(df))
+        df = keep_columns(df)
+        if two_phase:
+            df = _enrich_descriptions_for_urls(
+                df,
+                proxy_pool=proxy_pool,
+            )
+            logger.info("Rows after detail enrichment: %s", len(df))
         # Clean before description exclusion for more consistent matching
         df = clean_description(df)
         if filter_desc:
@@ -565,7 +883,6 @@ def main():
                 exclude_sponsorship=exclude_sponsorship,
             )
             logger.info("Rows after description filter: %s", len(df))
-        df = keep_columns(df)
         df = dedupe_jobs(df)
         items = df.to_dict(orient="records")
 

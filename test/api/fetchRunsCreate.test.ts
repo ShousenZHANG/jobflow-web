@@ -108,4 +108,25 @@ describe("fetch runs create api", () => {
     const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data;
     expect(payload.resultsWanted).toBeNull();
   });
+
+  it("stores optimal source strategy defaults for fetch worker", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/fetch-runs", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Software Engineer",
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data?.queries;
+    expect(payload.sourceOptions).toEqual({
+      twoPhase: true,
+    });
+  });
 });

@@ -48,6 +48,14 @@ const CreateSchema = z
       .optional()
       .default([])
       .transform((rules) => rules.filter((rule) => DESC_EXCLUDE_ALLOWED.has(rule))),
+    sourceOptions: z
+      .object({
+        twoPhase: z.coerce.boolean().optional().default(true),
+      })
+      .optional()
+      .default({
+        twoPhase: true,
+      }),
   })
   .refine((data) => (data.title ?? data.queries?.[0])?.trim(), {
     message: "title is required",
@@ -93,6 +101,7 @@ export async function POST(req: Request) {
         applyExcludes: parsed.data.applyExcludes,
         excludeTitleTerms: parsed.data.excludeTitleTerms,
         excludeDescriptionRules: parsed.data.excludeDescriptionRules,
+        sourceOptions: parsed.data.sourceOptions,
       },
       location: parsed.data.location ?? null,
       hoursOld: parsed.data.hoursOld ?? null,

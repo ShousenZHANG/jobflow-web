@@ -260,6 +260,78 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertIn("Must-have: Python.", cleaned)
         self.assertNotIn("<p>", cleaned)
 
+    def test_parse_csv_list_dedupes_and_trims(self):
+        out = rj._parse_csv_list(" alpha , beta , ,BETA ")
+        self.assertEqual(out, ["alpha", "beta"])
+
+    def test_merge_phase_details_prefers_non_empty_description(self):
+        base = pd.DataFrame(
+            [
+                {
+                    "job_url": "https://linkedin.com/jobs/view/1?trk=a",
+                    "title": "Software Engineer",
+                    "company": "Acme",
+                    "location": "Sydney",
+                    "description": "",
+                }
+            ]
+        )
+        details = pd.DataFrame(
+            [
+                {
+                    "job_url": "https://www.linkedin.com/jobs/view/1?tracking=xyz",
+                    "title": "Software Engineer",
+                    "company": "Acme",
+                    "location": "Sydney",
+                    "description": "Detailed JD body",
+                }
+            ]
+        )
+
+        merged = rj._merge_phase_details(base, details)
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged.iloc[0]["description"], "Detailed JD body")
+
+    def test_extract_linkedin_job_id_from_url(self):
+        self.assertEqual(
+            rj._extract_linkedin_job_id("https://www.linkedin.com/jobs/view/1234567890/?ref=abc"),
+            "1234567890",
+        )
+        self.assertEqual(rj._extract_linkedin_job_id("https://example.com/jobs/view/1"), "")
+
+    def test_enrich_descriptions_for_urls_only_fetches_missing_and_deduped_urls(self):
+        base = pd.DataFrame(
+            [
+                {
+                    "job_url": "https://www.linkedin.com/jobs/view/123/?trk=a",
+                    "title": "Software Engineer",
+                    "description": "",
+                },
+                {
+                    "job_url": "https://linkedin.com/jobs/view/123?tracking=b",
+                    "title": "Software Engineer",
+                    "description": "",
+                },
+                {
+                    "job_url": "https://linkedin.com/jobs/view/999",
+                    "title": "Backend Engineer",
+                    "description": "Already has details",
+                },
+            ]
+        )
+        calls = []
+
+        def fake_fetch(url: str):
+            calls.append(rj._canonicalize_job_url(url))
+            return "Fetched JD for 123"
+
+        out = rj._enrich_descriptions_for_urls(
+            base,
+            fetch_fn=fake_fetch,
+        )
+        self.assertEqual(calls, ["https://linkedin.com/jobs/view/123"])
+        self.assertEqual(out.iloc[0]["description"], "Fetched JD for 123")
+        self.assertEqual(out.iloc[2]["description"], "Already has details")
 
 if __name__ == "__main__":
     unittest.main()

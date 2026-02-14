@@ -66,6 +66,7 @@ export function FetchClient() {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [hoursOld, setHoursOld] = useState(48);
   const [smartExpand, setSmartExpand] = useState(true);
+  const [twoPhase, setTwoPhase] = useState(true);
   const [applyExcludes, setApplyExcludes] = useState(true);
   const [excludeTitleTerms, setExcludeTitleTerms] = useState<string[]>([
     "senior",
@@ -135,11 +136,13 @@ export function FetchClient() {
         location?: string;
         hoursOld?: number;
         smartExpand?: boolean;
+        twoPhase?: boolean;
       };
       if (parsed.title) setJobTitle(parsed.title);
       if (parsed.location) setLocation(parsed.location);
       if (parsed.hoursOld) setHoursOld(parsed.hoursOld);
       if (typeof parsed.smartExpand === "boolean") setSmartExpand(parsed.smartExpand);
+      if (typeof parsed.twoPhase === "boolean") setTwoPhase(parsed.twoPhase);
     } catch {
       // ignore invalid local preference payload
     }
@@ -153,9 +156,10 @@ export function FetchClient() {
         location,
         hoursOld,
         smartExpand,
+        twoPhase,
       }),
     );
-  }, [jobTitle, location, hoursOld, smartExpand]);
+  }, [jobTitle, location, hoursOld, smartExpand, twoPhase]);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -176,6 +180,9 @@ export function FetchClient() {
         applyExcludes,
         excludeTitleTerms,
         excludeDescriptionRules,
+        sourceOptions: {
+          twoPhase,
+        },
       }),
     });
     const json = await res.json().catch(() => ({}));
@@ -312,6 +319,16 @@ export function FetchClient() {
               </div>
             </div>
             <Switch checked={smartExpand} onCheckedChange={setSmartExpand} />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-sm font-medium">Two-phase fetch</div>
+              <div className="text-xs text-muted-foreground">
+                Fetch listings first, then enrich descriptions to reduce rate-limit risk.
+              </div>
+            </div>
+            <Switch checked={twoPhase} onCheckedChange={setTwoPhase} />
           </div>
 
           <div className="flex items-center justify-between gap-4">
