@@ -804,7 +804,6 @@ def main():
     hours_old = int(run.get("hoursOld") or 48)
     results_wanted = int(run.get("resultsWanted") or DEFAULT_FULL_FETCH_RESULTS_WANTED)
     include_from_queries = bool(run.get("includeFromQueries") or False)
-    two_phase = bool(source_options.get("twoPhase", True))
     proxy_pool = _parse_csv_list(os.environ.get("FETCH_PROXY_POOL", ""))
 
     exclude_rights = apply_excludes and "identity_requirement" in exclude_desc_rules
@@ -830,30 +829,18 @@ def main():
         len(search_terms),
         results_budget_by_term,
         {
-            "twoPhase": two_phase,
             "proxyPoolSize": len(proxy_pool),
         },
     )
-    if two_phase:
-        df = fetch_linkedin(
-            search_terms,
-            location,
-            hours_old,
-            results_wanted,
-            results_budget_by_term=results_budget_by_term,
-            fetch_description=False,
-            proxy_pool=proxy_pool,
-        )
-    else:
-        df = fetch_linkedin(
-            search_terms,
-            location,
-            hours_old,
-            results_wanted,
-            results_budget_by_term=results_budget_by_term,
-            fetch_description=True,
-            proxy_pool=proxy_pool,
-        )
+    df = fetch_linkedin(
+        search_terms,
+        location,
+        hours_old,
+        results_wanted,
+        results_budget_by_term=results_budget_by_term,
+        fetch_description=True,
+        proxy_pool=proxy_pool,
+    )
 
     if df.empty:
         items: List[Dict[str, Any]] = []
@@ -867,12 +854,6 @@ def main():
         )
         logger.info("Rows after title filter: %s", len(df))
         df = keep_columns(df)
-        if two_phase:
-            df = _enrich_descriptions_for_urls(
-                df,
-                proxy_pool=proxy_pool,
-            )
-            logger.info("Rows after detail enrichment: %s", len(df))
         # Clean before description exclusion for more consistent matching
         df = clean_description(df)
         if filter_desc:

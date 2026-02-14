@@ -109,7 +109,7 @@ describe("fetch runs create api", () => {
     expect(payload.resultsWanted).toBeNull();
   });
 
-  it("stores optimal source strategy defaults for fetch worker", async () => {
+  it("does not persist sourceOptions defaults (single-phase fetch)", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1", email: "user@example.com" },
     });
@@ -125,8 +125,6 @@ describe("fetch runs create api", () => {
 
     expect(res.status).toBe(201);
     const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data?.queries;
-    expect(payload.sourceOptions).toEqual({
-      twoPhase: true,
-    });
+    expect(payload.sourceOptions).toBeUndefined();
   });
 });
