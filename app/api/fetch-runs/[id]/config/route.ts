@@ -27,6 +27,9 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     select: {
       id: true,
       userEmail: true,
+      status: true,
+      error: true,
+      importedCount: true,
       queries: true,
       location: true,
       hoursOld: true,

@@ -18,6 +18,8 @@ const tailorApplicationContent = vi.hoisted(() =>
     },
     source: { cv: "ai", cover: "ai" },
     reason: "ai_ok",
+    // Keep the mock return shape flexible so per-test overrides can include quality gate details.
+    qualityReport: { passed: true, issues: [] as Array<{ code: string; message: string }> },
   })),
 );
 

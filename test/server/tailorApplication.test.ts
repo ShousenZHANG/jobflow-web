@@ -1,10 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const buildTailorPrompts = vi.hoisted(() =>
-  vi.fn(() => ({
-    systemPrompt: "system",
-    userPrompt: "user",
-  })),
+  vi.fn((rules: unknown, input: unknown) => {
+    void rules;
+    void input;
+    return {
+      systemPrompt: "system",
+      userPrompt: "user",
+    };
+  }),
 );
 
 vi.mock("@/lib/server/ai/buildPrompt", () => ({

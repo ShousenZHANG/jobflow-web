@@ -10,7 +10,6 @@ Object.defineProperty(window.HTMLElement.prototype, "scrollIntoView", {
 
 const pushMock = vi.fn();
 const startRunMock = vi.fn();
-const markRunningMock = vi.fn();
 const markTaskCompleteMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -39,7 +38,6 @@ vi.mock("@/app/GuideContext", () => ({
 vi.mock("@/app/FetchStatusContext", () => ({
   useFetchStatus: () => ({
     startRun: startRunMock,
-    markRunning: markRunningMock,
     status: null,
     runId: null,
     error: null,
@@ -56,7 +54,6 @@ describe("FetchClient", () => {
     vi.restoreAllMocks();
     pushMock.mockReset();
     startRunMock.mockReset();
-    markRunningMock.mockReset();
     markTaskCompleteMock.mockReset();
     localStorage.clear();
 
@@ -98,7 +95,6 @@ describe("FetchClient", () => {
       expect(startRunMock).toHaveBeenCalledWith("run-1");
     });
 
-    expect(markRunningMock).toHaveBeenCalled();
     const pollingCalls = setIntervalSpy.mock.calls.filter((call) => call[1] === 3000);
     expect(pollingCalls).toHaveLength(0);
   });

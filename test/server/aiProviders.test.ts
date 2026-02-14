@@ -25,14 +25,17 @@ describe("ai providers", () => {
   });
 
   it("calls Gemini endpoint", async () => {
-    const fetchMock = vi.fn(async () => ({
-      ok: true,
-      json: async () => ({
-        candidates: [
-          { content: { parts: [{ text: "{\"ok\":true}" }] } },
-        ],
-      }),
-    }));
+    const fetchMock = vi.fn(async (...args: unknown[]) => {
+      void args;
+      return {
+        ok: true,
+        json: async () => ({
+          candidates: [
+            { content: { parts: [{ text: "{\"ok\":true}" }] } },
+          ],
+        }),
+      };
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     const content = await callGemini({
@@ -42,15 +45,18 @@ describe("ai providers", () => {
       userPrompt: "user",
     });
 
-    expect(fetchMock.mock.calls[0][0]).toContain("gemini-2.5-flash");
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("gemini-2.5-flash");
     expect(content).toContain("ok");
   });
 
   it("calls Claude endpoint", async () => {
-    const fetchMock = vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ content: [{ text: "{\"ok\":true}" }] }),
-    }));
+    const fetchMock = vi.fn(async (...args: unknown[]) => {
+      void args;
+      return {
+        ok: true,
+        json: async () => ({ content: [{ text: "{\"ok\":true}" }] }),
+      };
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     const content = await callClaude({

@@ -12,7 +12,6 @@ vi.mock("./FetchStatusContext", () => ({
     open: true,
     setOpen: vi.fn(),
     startRun: vi.fn(),
-    markRunning: vi.fn(),
     cancelRun: vi.fn(),
     queryTitle: "Software Engineer",
     queryTerms: ["Software Engineer", "Frontend Engineer", "Backend Engineer"],

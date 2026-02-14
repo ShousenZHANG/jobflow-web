@@ -85,7 +85,6 @@ export function FetchClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     startRun,
-    markRunning,
     status: globalStatus,
     runId: globalRunId,
     error: globalError,
@@ -199,7 +198,6 @@ export function FetchClient() {
       const id = await createRun();
       startRun(id);
       await triggerRun(id);
-      markRunning();
       markTaskComplete("first_fetch");
     } catch (e: unknown) {
       setLocalError(getErrorMessage(e));

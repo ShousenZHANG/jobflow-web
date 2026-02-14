@@ -35,7 +35,6 @@ type FetchStatusContextValue = {
   open: boolean;
   setOpen: (open: boolean) => void;
   startRun: (id: string) => void;
-  markRunning: () => void;
   cancelRun: () => Promise<void>;
 };
 
@@ -172,10 +171,6 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     window.dispatchEvent(new Event("jobflow-fetch-started"));
   }, [setOpen, storageKeys]);
 
-  const markRunning = useCallback(() => {
-    setStatus((prev) => (prev === "QUEUED" ? "RUNNING" : prev));
-  }, []);
-
   const cancelRun = useCallback(async () => {
     if (!runId) return;
     try {
@@ -279,7 +274,6 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       open,
       setOpen,
       startRun,
-      markRunning,
       cancelRun,
     }),
     [
@@ -294,7 +288,6 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       open,
       setOpen,
       startRun,
-      markRunning,
       cancelRun,
     ],
   );

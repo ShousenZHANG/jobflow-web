@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import sys
 import time
 import math
 import random
@@ -35,6 +36,7 @@ DEFAULT_DETAIL_URL_BACKOFF_BASE_SEC = 1.5
 
 LINKEDIN_JOB_ID_RE = re.compile(r"linkedin\.com/jobs/view/(\d+)", re.IGNORECASE)
 
+CANCELLED_ERROR = "Cancelled by user"
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
 
@@ -765,6 +767,28 @@ def headers_secret(secret_env: str, header_name: str) -> Dict[str, str]:
     return {header_name: secret, "Content-Type": "application/json"}
 
 
+def _is_cancelled_run(run: Dict[str, Any]) -> bool:
+    return (run or {}).get("status") == "FAILED" and (run or {}).get("error") == CANCELLED_ERROR
+
+
+def _fetch_run_config(base: str, run_id: str, headers: Dict[str, str]) -> Dict[str, Any]:
+    cfg_res = requests.get(
+        f"{base}/api/fetch-runs/{run_id}/config",
+        headers=headers,
+        timeout=30,
+    )
+    cfg_res.raise_for_status()
+    return cfg_res.json()["run"]
+
+
+def _abort_if_cancelled(base: str, run_id: str, headers: Dict[str, str], stage: str) -> None:
+    run = _fetch_run_config(base, run_id, headers=headers)
+    if _is_cancelled_run(run):
+        logger.info("FetchRun cancelled at stage=%s. exiting.", stage)
+        # SystemExit is not caught by the bottom-level Exception handler.
+        sys.exit(0)
+
+
 def main():
     run_id = os.environ.get("RUN_ID", "").strip()
     if not run_id:
@@ -772,14 +796,13 @@ def main():
 
     base = api_base()
 
+    fetch_headers = headers_secret("FETCH_RUN_SECRET", "x-fetch-run-secret")
+
     # Get run config
-    cfg_res = requests.get(
-        f"{base}/api/fetch-runs/{run_id}/config",
-        headers=headers_secret("FETCH_RUN_SECRET", "x-fetch-run-secret"),
-        timeout=30,
-    )
-    cfg_res.raise_for_status()
-    run = cfg_res.json()["run"]
+    run = _fetch_run_config(base, run_id, headers=fetch_headers)
+    if _is_cancelled_run(run):
+        logger.info("FetchRun already cancelled before start. exiting.")
+        sys.exit(0)
 
     user_email = run["userEmail"]
     raw_queries = run["queries"] or {}
@@ -816,7 +839,7 @@ def main():
     # Mark running
     requests.patch(
         f"{base}/api/fetch-runs/{run_id}/update",
-        headers=headers_secret("FETCH_RUN_SECRET", "x-fetch-run-secret"),
+        headers=fetch_headers,
         data=json.dumps({"status": "RUNNING"}),
         timeout=30,
     ).raise_for_status()
@@ -870,8 +893,10 @@ def main():
     # Import into DB via Vercel API (chunked to avoid payload/time limits)
     imported = 0
     if items:
+        _abort_if_cancelled(base, run_id, headers=fetch_headers, stage="before_import")
         batch_size = 50
         for i in range(0, len(items), batch_size):
+            _abort_if_cancelled(base, run_id, headers=fetch_headers, stage=f"before_import_batch_{i}")
             batch = items[i : i + batch_size]
             imp_res = None
             for attempt in range(IMPORT_RETRIES + 1):
@@ -891,9 +916,10 @@ def main():
             imported += int(imp_res.json().get("imported", 0))
 
     # Update run
+    _abort_if_cancelled(base, run_id, headers=fetch_headers, stage="before_succeeded_update")
     requests.patch(
         f"{base}/api/fetch-runs/{run_id}/update",
-        headers=headers_secret("FETCH_RUN_SECRET", "x-fetch-run-secret"),
+        headers=fetch_headers,
         data=json.dumps({"status": "SUCCEEDED", "importedCount": imported, "error": None}),
         timeout=30,
     ).raise_for_status()

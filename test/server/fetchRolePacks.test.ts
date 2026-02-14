@@ -7,6 +7,9 @@ describe("fetch role packs", () => {
     expect(out).toEqual([
       "Software Engineer",
       "Software Developer",
+      "Web Developer",
+      "Application Engineer",
+      "Web Application Developer",
       "Full Stack Engineer",
       "Full Stack Developer",
       "Backend Engineer",

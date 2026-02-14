@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/server/prisma";
+import type { FetchRunStatus } from "@/lib/generated/prisma";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,8 @@ const BodySchema = z.object({
   importedCount: z.number().int().min(0).optional(),
   error: z.string().optional().nullable(),
 });
+
+const CANCELLED_ERROR = "Cancelled by user";
 
 function requireSecret(req: Request) {
   const expected = process.env.FETCH_RUN_SECRET;
@@ -36,18 +39,67 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     );
   }
 
-  const updated = await prisma.fetchRun.updateMany({
+  const current = await prisma.fetchRun.findUnique({
     where: { id: parsedParams.data.id },
-    data: {
-      ...(parsedBody.data.status ? { status: parsedBody.data.status } : {}),
-      ...(parsedBody.data.importedCount !== undefined
-        ? { importedCount: parsedBody.data.importedCount }
-        : {}),
-      ...(parsedBody.data.error !== undefined ? { error: parsedBody.data.error ?? null } : {}),
-    },
+    select: { id: true, status: true, error: true, importedCount: true },
   });
 
-  if (updated.count === 0) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+  if (!current) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+
+  const incoming = parsedBody.data;
+  const nextImportedCount =
+    incoming.importedCount === undefined
+      ? current.importedCount
+      : Math.max(current.importedCount, incoming.importedCount);
+
+  const isCancelled = current.status === "FAILED" && current.error === CANCELLED_ERROR;
+  const isSucceeded = current.status === "SUCCEEDED";
+
+  let nextStatus = current.status;
+  let nextError = current.error ?? null;
+
+  // Terminal states are immutable for status/error.
+  if (isSucceeded) {
+    // Keep status/error, allow importedCount monotonic bump only.
+  } else if (isCancelled) {
+    nextStatus = "FAILED";
+    nextError = CANCELLED_ERROR;
+  } else {
+    if (incoming.status) {
+      const requested = incoming.status;
+      if (current.status === "QUEUED") {
+        if (requested === "RUNNING" || requested === "FAILED") nextStatus = requested;
+      } else if (current.status === "RUNNING") {
+        if (requested === "RUNNING" || requested === "SUCCEEDED" || requested === "FAILED") {
+          nextStatus = requested;
+        }
+      } else if (current.status === "FAILED") {
+        // keep terminal FAILED
+      }
+    }
+
+    if (incoming.error !== undefined) {
+      // Only FAILED runs should carry an error message; allow clearing on non-failed runs.
+      if (nextStatus === "FAILED") nextError = incoming.error ?? null;
+      if (nextStatus !== "FAILED" && incoming.error === null) nextError = null;
+    } else if (nextStatus !== "FAILED" && nextError) {
+      // Clear stale error if worker transitions back to non-failed state.
+      nextError = null;
+    }
+  }
+
+  const patch: { status?: FetchRunStatus; error?: string | null; importedCount?: number } = {};
+  if (nextImportedCount !== current.importedCount) patch.importedCount = nextImportedCount;
+  if (nextStatus !== current.status && nextStatus) patch.status = nextStatus;
+  if ((current.error ?? null) !== nextError) patch.error = nextError;
+
+  if (Object.keys(patch).length) {
+    await prisma.fetchRun.update({
+      where: { id: current.id },
+      data: patch,
+    });
+  }
+
   return NextResponse.json({ ok: true });
 }
 
