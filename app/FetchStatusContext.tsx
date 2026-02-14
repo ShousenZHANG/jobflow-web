@@ -256,10 +256,24 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!open) return;
-    if (status !== "RUNNING") return;
-    const t = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    if (status !== "RUNNING" && status !== "QUEUED") return;
+
+    // Count time from the moment the user clicked "fetch", including queue time.
+    // Compute from timestamps (instead of incrementing) so it stays accurate when the tab sleeps.
+    const tick = () => {
+      const startedRaw = localStorage.getItem(storageKeys.startedAt);
+      const endedRaw = localStorage.getItem(storageKeys.endedAt);
+      const startedMs = startedRaw ? Number(startedRaw) : null;
+      if (!startedMs || Number.isNaN(startedMs)) return;
+      const endedMs = endedRaw ? Number(endedRaw) : null;
+      const effectiveEnd = endedMs && !Number.isNaN(endedMs) ? endedMs : Date.now();
+      setElapsedSeconds(Math.max(0, Math.floor((effectiveEnd - startedMs) / 1000)));
+    };
+
+    tick();
+    const t = setInterval(tick, 1000);
     return () => clearInterval(t);
-  }, [status, open]);
+  }, [status, open, storageKeys.endedAt, storageKeys.startedAt]);
 
   const value = useMemo(
     () => ({
