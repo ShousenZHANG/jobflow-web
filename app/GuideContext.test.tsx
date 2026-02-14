@@ -2,10 +2,13 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { GuideProvider, useGuide } from "./GuideContext";
 
+let mockPathname = "/resume";
+const pushMock = vi.fn();
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/resume",
+  usePathname: () => mockPathname,
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushMock,
   }),
 }));
 
@@ -58,6 +61,9 @@ function Harness() {
   const { closeGuide, markTaskComplete, openGuide, state } = useGuide();
   return (
     <div>
+      <button type="button" data-guide-anchor="resume_setup">
+        anchor-resume
+      </button>
       <button type="button" onClick={() => markTaskComplete("resume_setup")}>
         complete-first
       </button>
@@ -78,6 +84,8 @@ describe("GuideContext", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
     vi.restoreAllMocks();
+    mockPathname = "/resume";
+    pushMock.mockReset();
   });
 
   afterEach(() => {
@@ -161,7 +169,7 @@ describe("GuideContext", () => {
     });
   });
 
-  it("closes the guide when clicking outside the panel", async () => {
+  it("starts the guided tour and navigates steps via Next", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.url;
       if (url === "/api/onboarding/state" && !init?.method) {
@@ -186,10 +194,27 @@ describe("GuideContext", () => {
       </GuideProvider>,
     );
 
-    expect(await screen.findByText(/guide checklist/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId("guide-backdrop"));
     await waitFor(() => {
-      expect(screen.queryByText(/guide checklist/i)).not.toBeInTheDocument();
+      expect(screen.getByTestId("guide-count")).toHaveTextContent("0/5");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "open-guide" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("guide-tour-card")).toBeInTheDocument();
+      expect(screen.getByText(/step 1\/5/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/fetch");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /end tour/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("guide-tour-card")).not.toBeInTheDocument();
     });
   });
 });

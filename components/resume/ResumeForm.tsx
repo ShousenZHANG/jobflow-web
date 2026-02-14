@@ -1641,7 +1641,10 @@ export function ResumeForm() {
             {renderStep()}
           </div>
 
-          <div className="sticky bottom-3 z-20 rounded-2xl border border-slate-900/10 bg-white/95 p-3 shadow-sm backdrop-blur">
+          <div
+            className="sticky bottom-3 z-20 rounded-2xl border border-slate-900/10 bg-white/95 p-3 shadow-sm backdrop-blur"
+            data-guide-anchor="resume_setup"
+          >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Button type="button" variant="ghost" onClick={handleBack} disabled={currentStep === 0}>
@@ -1668,7 +1671,6 @@ export function ResumeForm() {
                     isTaskHighlighted("resume_setup") ? guideHighlightClass : ""
                   }`}
                   data-guide-highlight={isTaskHighlighted("resume_setup") ? "true" : "false"}
-                  data-guide-anchor="resume_setup"
                 >
                   {saving ? "Saving..." : "Save master resume"}
                 </Button>

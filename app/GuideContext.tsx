@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   createContext,
   useCallback,
@@ -13,7 +12,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Circle, CircleCheckBig, Navigation, Sparkles } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ONBOARDING_TASKS,
@@ -37,17 +36,17 @@ type GuideState = {
 
 type GuideContextValue = {
   loading: boolean;
-  open: boolean;
   state: GuideState | null;
   activeTaskId: OnboardingTaskId | null;
   tourRunning: boolean;
   tourTaskId: OnboardingTaskId | null;
+  tourStep: number;
   openGuide: () => void;
   closeGuide: () => void;
-  skipGuide: () => void;
-  resetGuide: () => void;
   startTour: () => void;
   stopTour: () => void;
+  nextStep: () => void;
+  prevStep: () => void;
   markTaskComplete: (taskId: OnboardingTaskId) => void;
   isTaskHighlighted: (taskId: OnboardingTaskId) => boolean;
 };
@@ -86,71 +85,6 @@ function getTaskById(taskId: OnboardingTaskId | null): OnboardingTask | null {
   return ONBOARDING_TASKS.find((task) => task.id === taskId) ?? null;
 }
 
-function pageLabel(href: OnboardingTask["href"]) {
-  if (href === "/resume") return "Resume";
-  if (href === "/fetch") return "Fetch";
-  return "Jobs";
-}
-
-function taskCoachTip(taskId: OnboardingTaskId) {
-  if (taskId === "resume_setup") {
-    return "Complete all resume sections, then save your master resume.";
-  }
-  if (taskId === "first_fetch") {
-    return "Use one clear role title first, then run fetch once.";
-  }
-  if (taskId === "triage_first_job") {
-    return "Update one job status to Applied or Rejected to start tracking.";
-  }
-  if (taskId === "generate_first_pdf") {
-    return "Generate CV or CL from the selected job to create your first tailored document.";
-  }
-  return "Open the PDF and download once to complete the full loop.";
-}
-
-function currentPageTips(pathname: string) {
-  if (pathname.startsWith("/resume/rules")) {
-    return {
-      title: "Prompt rules page",
-      points: [
-        "Review active template before changing prompts.",
-        "Create a new version instead of editing history in place.",
-      ],
-    };
-  }
-  if (pathname.startsWith("/resume")) {
-    return {
-      title: "Resume page",
-      points: [
-        "Complete all steps, then click Save master resume.",
-        "Use Preview to verify bullets and formatting before tailoring.",
-      ],
-    };
-  }
-  if (pathname.startsWith("/fetch")) {
-    return {
-      title: "Fetch page",
-      points: [
-        "Start with one role title and clear filters.",
-        "Run fetch once, then move to Jobs and triage quickly.",
-      ],
-    };
-  }
-  if (pathname.startsWith("/jobs")) {
-    return {
-      title: "Jobs page",
-      points: [
-        "Open JD details and update status for your first role.",
-        "Generate CV/CL after your master resume is saved, then download one PDF.",
-      ],
-    };
-  }
-  return {
-    title: "Guide",
-    points: ["Open the checklist and continue from your next recommended step."],
-  };
-}
-
 function resolveGuideState(
   previousState: GuideState | null,
   nextState: GuideState,
@@ -179,11 +113,10 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   const userId = session?.user?.id ?? null;
 
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
   const [state, setState] = useState<GuideState | null>(null);
 
   const [tourRunning, setTourRunning] = useState(false);
-  const [tourTaskId, setTourTaskId] = useState<OnboardingTaskId | null>(null);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [targetMissing, setTargetMissing] = useState(false);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
@@ -239,15 +172,6 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     return () => mediaQuery.removeListener(update);
   }, []);
 
-  useEffect(() => {
-    if (!userId || !state) return;
-    if (state.isComplete || state.dismissed) return;
-    const key = `jobflow.guide.autoshown.${userId}`;
-    if (window.sessionStorage.getItem(key) === "1") return;
-    setOpen(true);
-    window.sessionStorage.setItem(key, "1");
-  }, [state, userId]);
-
   const patchState = useCallback(
     async (
       payload:
@@ -280,6 +204,11 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     return nextTask?.id ?? null;
   }, [state]);
 
+  const tourTaskId = useMemo<OnboardingTaskId | null>(() => {
+    if (!tourRunning) return null;
+    return ONBOARDING_TASKS[tourStepIndex]?.id ?? null;
+  }, [tourRunning, tourStepIndex]);
+
   const activeTourTask = useMemo(() => getTaskById(tourTaskId), [tourTaskId]);
 
   const isTourTaskOnCurrentPage = useMemo(() => {
@@ -289,7 +218,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
   const stopTour = useCallback(() => {
     setTourRunning(false);
-    setTourTaskId(null);
+    setTourStepIndex(0);
     setSpotlightRect(null);
     setTargetMissing(false);
     scrolledTargetKeyRef.current = null;
@@ -297,28 +226,11 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
   const startTour = useCallback(() => {
     const nextTask = activeTaskId ?? ONBOARDING_TASKS[0]?.id ?? null;
-    if (!nextTask) {
-      setOpen(true);
-      return;
-    }
-    setTourTaskId(nextTask);
+    const nextIndex = nextTask ? Math.max(0, ONBOARDING_TASKS.findIndex((t) => t.id === nextTask)) : 0;
+    setTourStepIndex(nextIndex >= 0 ? nextIndex : 0);
     setTourRunning(true);
-    setOpen(false);
     void patchState({ type: "reopen" });
   }, [activeTaskId, patchState]);
-
-  useEffect(() => {
-    if (!tourRunning) return;
-    if (!activeTaskId) {
-      stopTour();
-      setOpen(true);
-      return;
-    }
-    if (tourTaskId !== activeTaskId) {
-      setTourTaskId(activeTaskId);
-      scrolledTargetKeyRef.current = null;
-    }
-  }, [activeTaskId, stopTour, tourRunning, tourTaskId]);
 
   const locateTourTarget = useCallback(() => {
     if (!tourRunning || !tourTaskId) {
@@ -371,11 +283,13 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
     const key = `${tourTaskId}:${pathname}`;
     if (scrolledTargetKeyRef.current === key) return;
-    target.scrollIntoView({
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-      block: "center",
-      inline: "nearest",
-    });
+    if (typeof target.scrollIntoView === "function") {
+      target.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    }
     scrolledTargetKeyRef.current = key;
   }, [isTourTaskOnCurrentPage, pathname, prefersReducedMotion, tourRunning, tourTaskId]);
 
@@ -406,48 +320,18 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     [patchState],
   );
 
-  const openGuide = useCallback(() => {
-    stopTour();
-    setOpen(true);
-    void patchState({ type: "reopen" });
-  }, [patchState, stopTour]);
-
-  const closeGuide = useCallback(() => {
-    setOpen(false);
-  }, []);
-
-  const skipGuide = useCallback(() => {
-    stopTour();
-    setOpen(false);
-    void patchState({ type: "skip" });
-  }, [patchState, stopTour]);
-
-  const resetGuide = useCallback(() => {
-    stopTour();
-    setOpen(true);
-    void patchState({ type: "reset" });
-  }, [patchState, stopTour]);
-
-  const handleTourPrimaryAction = useCallback(() => {
-    if (!activeTourTask || !tourTaskId) return;
-    if (!isTourTaskOnCurrentPage) {
-      router.push(activeTourTask.href);
-      return;
-    }
-    markTaskComplete(tourTaskId);
-  }, [activeTourTask, isTourTaskOnCurrentPage, markTaskComplete, router, tourTaskId]);
+  const openGuide = startTour;
+  const closeGuide = stopTour;
 
   const isTaskHighlighted = useCallback(
     (taskId: OnboardingTaskId) => {
-      if (!(open || tourRunning) || !activeTaskId || activeTaskId !== taskId) return false;
+      if (!tourRunning || !tourTaskId || tourTaskId !== taskId) return false;
       const task = ONBOARDING_TASKS.find((item) => item.id === taskId);
       if (!task) return false;
       return pathname === task.href || pathname.startsWith(`${task.href}/`);
     },
-    [activeTaskId, open, pathname, tourRunning],
+    [pathname, tourRunning, tourTaskId],
   );
-
-  const tips = useMemo(() => currentPageTips(pathname), [pathname]);
 
   const spotlightBox = useMemo(() => {
     if (!spotlightRect || viewport.width <= 0 || viewport.height <= 0) return null;
@@ -503,24 +387,31 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     return isTourTaskOnCurrentPage && !targetMissing && !coachLayout;
   }, [coachLayout, isTourTaskOnCurrentPage, targetMissing]);
 
-  const tourPrimaryLabel = useMemo(() => {
-    if (!activeTourTask) return "Continue";
-    if (!isTourTaskOnCurrentPage) {
-      return `Go to ${pageLabel(activeTourTask.href)}`;
+  const tourTotalSteps = ONBOARDING_TASKS.length;
+  const tourStepNumber = tourRunning ? Math.min(tourTotalSteps, tourStepIndex + 1) : 0;
+
+  const prevStep = useCallback(() => {
+    if (!tourRunning) return;
+    setTourStepIndex((prev) => Math.max(0, prev - 1));
+    scrolledTargetKeyRef.current = null;
+  }, [tourRunning]);
+
+  const nextStep = useCallback(() => {
+    if (!tourRunning) return;
+    if (tourStepIndex >= tourTotalSteps - 1) {
+      stopTour();
+      return;
     }
-    return "I completed this";
-  }, [activeTourTask, isTourTaskOnCurrentPage]);
+    setTourStepIndex((prev) => Math.min(tourTotalSteps - 1, prev + 1));
+    scrolledTargetKeyRef.current = null;
+  }, [stopTour, tourRunning, tourStepIndex, tourTotalSteps]);
 
-  const tourStepNumber = useMemo(() => {
-    if (!tourTaskId) return 0;
-    const index = ONBOARDING_TASKS.findIndex((task) => task.id === tourTaskId);
-    return index >= 0 ? index + 1 : 0;
-  }, [tourTaskId]);
-
-  const tourProgressPercent = useMemo(() => {
-    if (tourStepNumber <= 0) return 0;
-    return (tourStepNumber / ONBOARDING_TASKS.length) * 100;
-  }, [tourStepNumber]);
+  useEffect(() => {
+    if (!tourRunning || !activeTourTask) return;
+    if (!isTourTaskOnCurrentPage) {
+      router.push(activeTourTask.href);
+    }
+  }, [activeTourTask, isTourTaskOnCurrentPage, router, tourRunning]);
 
   useEffect(() => {
     if (!tourRunning) return;
@@ -532,7 +423,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (event.key !== "Enter" || event.repeat) return;
+      if (event.repeat) return;
 
       const target = event.target as HTMLElement | null;
       const tag = target?.tagName?.toLowerCase();
@@ -543,44 +434,52 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      event.preventDefault();
-      handleTourPrimaryAction();
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        prevStep();
+        return;
+      }
+
+      if (event.key === "ArrowRight" || event.key === "Enter") {
+        event.preventDefault();
+        nextStep();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [handleTourPrimaryAction, stopTour, tourRunning]);
+  }, [nextStep, prevStep, stopTour, tourRunning]);
 
   const value = useMemo<GuideContextValue>(
     () => ({
       loading,
-      open,
       state,
       activeTaskId,
       tourRunning,
       tourTaskId,
+      tourStep: tourStepNumber,
       openGuide,
       closeGuide,
-      skipGuide,
-      resetGuide,
       startTour,
       stopTour,
+      nextStep,
+      prevStep,
       markTaskComplete,
       isTaskHighlighted,
     }),
     [
       loading,
-      open,
       state,
       activeTaskId,
       tourRunning,
       tourTaskId,
+      tourStepNumber,
       openGuide,
       closeGuide,
-      skipGuide,
-      resetGuide,
       startTour,
       stopTour,
+      nextStep,
+      prevStep,
       markTaskComplete,
       isTaskHighlighted,
     ],
@@ -639,179 +538,77 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                   />
                 ) : null}
 
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-                    <Sparkles className="h-3 w-3" />
-                    Guided tour
-                  </div>
-                  <button
-                    type="button"
-                    onClick={stopTour}
-                    className="text-xs font-medium text-slate-500 transition hover:text-slate-700"
-                  >
-                    Exit
-                  </button>
-                </div>
-
-                <div className="mb-2">
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <span>
-                      Step {tourStepNumber}/{ONBOARDING_TASKS.length}
-                    </span>
-                    <span>{Math.round(tourProgressPercent)}%</span>
-                  </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      className={`h-full rounded-full bg-emerald-500 ${
-                        prefersReducedMotion ? "" : "transition-[width] duration-200 ease-out"
-                      }`}
-                      style={{ width: `${tourProgressPercent}%` }}
-                    />
-                  </div>
-                </div>
-
-                <h3 className="text-sm font-semibold text-slate-900">{activeTourTask.title}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">{activeTourTask.description}</p>
-                <p className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50/70 px-2 py-1.5 text-xs text-emerald-800">
-                  <Navigation className="mr-1 inline h-3.5 w-3.5" />
-                  {taskCoachTip(activeTourTask.id)}
-                </p>
-
-                {!isTourTaskOnCurrentPage ? (
-                  <p className="mt-2 text-[11px] text-slate-500">
-                    This step is on <span className="font-semibold text-slate-700">{pageLabel(activeTourTask.href)}</span>.
-                  </p>
-                ) : targetMissing ? (
-                  <p className="mt-2 text-[11px] text-slate-500">
-                    Waiting for this action area to appear. If needed, select a job first.
-                  </p>
-                ) : null}
-
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={skipGuide}
-                    className="h-8 rounded-xl px-3 text-xs"
-                  >
-                    Skip tour
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleTourPrimaryAction}
-                    className="h-8 rounded-xl px-3 text-xs"
-                  >
-                    {tourPrimaryLabel}
-                  </Button>
-                </div>
-                <p className="mt-2 text-[11px] text-slate-500">Shortcuts: Enter continue | Esc exit</p>
-              </section>
-            </>
-          ) : null}
-
-          {open ? (
-            <>
-              <button
-                type="button"
-                aria-label="Close guide"
-                data-testid="guide-backdrop"
-                onClick={closeGuide}
-                className="fixed inset-0 z-40 bg-transparent"
-              />
-              <section className="fixed bottom-24 left-6 z-50 w-[360px] rounded-3xl border-2 border-slate-900/10 bg-white/95 p-4 shadow-[0_24px_50px_-32px_rgba(15,23,42,0.36)] backdrop-blur">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
+                <section data-testid="guide-tour-card">
+                  <div className="mb-2 flex items-start justify-between gap-3">
                     <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
                       <Sparkles className="h-3 w-3" />
-                      Getting started
+                      Guide
                     </div>
-                    <h3 className="mt-1 text-sm font-semibold text-slate-900">
-                      Guide checklist ({state?.completedCount ?? 0}/{state?.totalCount ?? ONBOARDING_TASKS.length})
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Complete these steps once, then use Guide anytime from the top bar.
-                    </p>
+                    <button
+                      type="button"
+                      aria-label="Exit tour"
+                      onClick={stopTour}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={closeGuide}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Close
-                  </Button>
-                </div>
 
-                <Button
-                  type="button"
-                  onClick={startTour}
-                  className="mb-3 h-9 w-full rounded-xl text-xs"
-                >
-                  Start guided tour
-                </Button>
+                  <div className="mb-2 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>
+                      Step {tourStepNumber}/{tourTotalSteps}
+                    </span>
+                    {state ? (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                        {state.completedCount}/{state.totalCount}
+                      </span>
+                    ) : null}
+                  </div>
 
-                <div className="space-y-2">
-                  {ONBOARDING_TASKS.map((task) => {
-                    const done = Boolean(state?.checklist?.[task.id]);
-                    const active = activeTaskId === task.id;
-                    return (
-                      <Link
-                        key={task.id}
-                        href={task.href}
-                        className={[
-                          "block rounded-xl border bg-slate-50/70 p-2 transition hover:bg-slate-50",
-                          active
-                            ? "border-emerald-300 ring-2 ring-emerald-200"
-                            : "border-slate-900/10 hover:border-slate-300",
-                        ].join(" ")}
+                  <h3 className="text-sm font-semibold text-slate-900">{activeTourTask.title}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{activeTourTask.description}</p>
+
+                  {!isTourTaskOnCurrentPage ? (
+                    <p className="mt-2 text-[11px] text-slate-500">Taking you to the right page...</p>
+                  ) : targetMissing ? (
+                    <p className="mt-2 text-[11px] text-slate-500">
+                      Waiting for this element. If you are on Jobs, select a job first.
+                    </p>
+                  ) : null}
+
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={stopTour}
+                      className="h-9 px-2 text-xs"
+                    >
+                      End Tour
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={prevStep}
+                        disabled={tourStepIndex <= 0}
+                        className="h-9 rounded-xl px-3 text-xs"
                       >
-                        <div className="flex items-start gap-2">
-                          {done ? (
-                            <CircleCheckBig className="mt-0.5 h-4 w-4 text-emerald-600" />
-                          ) : (
-                            <Circle className="mt-0.5 h-4 w-4 text-slate-400" />
-                          )}
-                          <div className="min-w-0">
-                            <div className="text-xs font-semibold text-slate-900">{task.title}</div>
-                            <div className="line-clamp-2 text-[11px] text-muted-foreground">{task.description}</div>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-3 rounded-xl border border-slate-900/10 bg-white p-2">
-                  <div className="mb-1 text-xs font-semibold text-slate-900">{tips.title}</div>
-                  <ul className="space-y-1 text-[11px] text-muted-foreground">
-                    {tips.points.map((point) => (
-                      <li key={point} className="leading-5">
-                        - {point}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={skipGuide}
-                    className="h-8 rounded-xl text-xs"
-                  >
-                    Skip for now
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={resetGuide}
-                    className="h-8 rounded-xl text-xs text-muted-foreground"
-                  >
-                    Reset checklist
-                  </Button>
-                </div>
+                        Back
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={nextStep}
+                        className="h-9 rounded-xl px-3 text-xs"
+                      >
+                        {tourStepIndex >= tourTotalSteps - 1 ? "Finish" : "Next"}
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[11px] text-slate-500">Shortcuts: ← / →, Enter, Esc</p>
+                </section>
               </section>
             </>
           ) : null}
@@ -827,17 +624,17 @@ export function useGuide() {
   if (context) return context;
   return {
     loading: false,
-    open: false,
     state: null,
     activeTaskId: null,
     tourRunning: false,
     tourTaskId: null,
+    tourStep: 0,
     openGuide: () => {},
     closeGuide: () => {},
-    skipGuide: () => {},
-    resetGuide: () => {},
     startTour: () => {},
     stopTour: () => {},
+    nextStep: () => {},
+    prevStep: () => {},
     markTaskComplete: () => {},
     isTaskHighlighted: () => false,
   };

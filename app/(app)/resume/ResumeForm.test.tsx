@@ -137,4 +137,15 @@ describe("ResumeForm", () => {
     fireEvent.click(previewButton);
     expect(await screen.findByRole("heading", { name: "PDF preview" })).toBeInTheDocument();
   });
+
+  it("exposes a stable guide anchor for the resume setup step", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
+    );
+
+    const { container } = render(<ResumeForm />);
+    expect(await screen.findByRole("heading", { name: "Personal info" })).toBeInTheDocument();
+    expect(container.querySelector('[data-guide-anchor="resume_setup"]')).toBeTruthy();
+  });
 });
