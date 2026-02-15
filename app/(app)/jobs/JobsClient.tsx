@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -30,6 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useGuide } from "@/app/GuideContext";
+import { useFetchStatus, type FetchRunStatus } from "@/app/FetchStatusContext";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -379,6 +380,7 @@ export function JobsClient({
 }) {
   const { toast } = useToast();
   const { isTaskHighlighted, markTaskComplete } = useGuide();
+  const { runId: fetchRunId, status: fetchStatus, importedCount: fetchImportedCount } = useFetchStatus();
   const guideHighlightClass =
     "ring-2 ring-emerald-400 ring-offset-2 ring-offset-white shadow-[0_0_0_4px_rgba(16,185,129,0.18)]";
   const queryClient = useQueryClient();
@@ -409,6 +411,12 @@ export function JobsClient({
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
   const [cursor, setCursor] = useState<string | null>(null);
+  const lastSeenImportRef = useRef<{
+    runId: string | null;
+    status: FetchRunStatus | null;
+    importedCount: number;
+  } | null>(null);
+  const lastImportRefreshAtRef = useRef<number>(0);
 
   const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
   const [q, setQ] = useState("");
@@ -610,6 +618,41 @@ export function JobsClient({
   if (initialQueryRef.current === null) {
     initialQueryRef.current = queryString;
   }
+  const didHydrateInitialRef = useRef(false);
+
+  // Force SSR-provided initialItems into the React Query cache for the default "page 1" view,
+  // even if a fresh cache entry already exists (e.g. navigating back within staleTime).
+  useLayoutEffect(() => {
+    if (didHydrateInitialRef.current) return;
+    const shouldUseInitial =
+      initialItems.length > 0 &&
+      cursor === null &&
+      pageIndex === 0 &&
+      initialQueryRef.current === queryString;
+    if (!shouldUseInitial) return;
+
+    const initialLevels = Array.from(
+      new Set(
+        initialItems
+          .map((item) => item.jobLevel)
+          .filter((level): level is string => Boolean(level)),
+      ),
+    );
+
+    const key = ["jobs", queryString, null] as const;
+    queryClient.setQueryData<JobsResponse>(key, (old) => ({
+      ...old,
+      items: initialItems,
+      nextCursor: initialCursor ?? null,
+      facets: {
+        ...(old?.facets ?? {}),
+        jobLevels: old?.facets?.jobLevels ?? initialLevels,
+      },
+      totalCount: old?.totalCount,
+    }));
+    didHydrateInitialRef.current = true;
+  }, [cursor, initialCursor, initialItems, pageIndex, queryClient, queryString]);
+
   const jobsQuery = useQuery({
     queryKey: ["jobs", queryString, cursor],
     queryFn: async ({ signal }): Promise<JobsResponse> => {
@@ -700,6 +743,61 @@ export function JobsClient({
     },
     [],
   );
+
+  // If a Fetch Run imports new jobs, refresh the jobs list to surface the newest data quickly.
+  // Terminal state: always reset to page 1 and refresh.
+  // In-progress: refresh only when already on page 1 (throttled) to avoid disrupting browsing.
+  useEffect(() => {
+    const current = {
+      runId: fetchRunId ?? null,
+      status: (fetchStatus ?? null) as FetchRunStatus | null,
+      importedCount: typeof fetchImportedCount === "number" ? fetchImportedCount : 0,
+    };
+    const previous = lastSeenImportRef.current;
+    lastSeenImportRef.current = current;
+
+    if (!current.runId || !current.status) return;
+    if (!previous || previous.runId !== current.runId) return;
+
+    const delta = current.importedCount - previous.importedCount;
+    if (delta <= 0) return;
+
+    const isTerminal = current.status === "SUCCEEDED" || current.status === "FAILED";
+    const wasTerminal = previous.status === "SUCCEEDED" || previous.status === "FAILED";
+    const justBecameTerminal = isTerminal && !wasTerminal;
+    const isFirstPage = pageIndex === 0 && cursor === null;
+    const inProgress = current.status === "RUNNING" || current.status === "QUEUED";
+
+    if (!justBecameTerminal && !(inProgress && isFirstPage)) return;
+
+    if (!justBecameTerminal) {
+      const now = Date.now();
+      if (now - lastImportRefreshAtRef.current < 5000) return;
+      lastImportRefreshAtRef.current = now;
+    }
+
+    resetPagination();
+    queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
+
+    if (justBecameTerminal) {
+      toast({
+        title: "Jobs imported",
+        description: `Imported ${delta} new job${delta === 1 ? "" : "s"}. Refreshing list.`,
+        duration: 2200,
+        className:
+          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
+    }
+  }, [
+    cursor,
+    fetchImportedCount,
+    fetchRunId,
+    fetchStatus,
+    pageIndex,
+    queryClient,
+    resetPagination,
+    toast,
+  ]);
 
   function getStatusFilterFromJobsQueryKey(queryKey: readonly unknown[]): JobStatus | "ALL" {
     const serializedQuery = typeof queryKey[1] === "string" ? queryKey[1] : "";
@@ -2115,4 +2213,3 @@ export function JobsClient({
     </>
   );
 }
-

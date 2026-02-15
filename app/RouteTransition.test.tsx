@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { RouteTransition } from "./RouteTransition";
 
-const capturedMainProps: Record<string, unknown>[] = [];
+const capturedMotionProps: Record<string, unknown>[] = [];
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/jobs",
@@ -11,9 +11,9 @@ vi.mock("next/navigation", () => ({
 vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   motion: {
-    main: ({ children, ...props }: React.ComponentProps<"main">) => {
-      capturedMainProps.push(props as Record<string, unknown>);
-      return <main {...props}>{children}</main>;
+    div: ({ children, ...props }: React.ComponentProps<"div">) => {
+      capturedMotionProps.push(props as Record<string, unknown>);
+      return <div {...props}>{children}</div>;
     },
   },
   useReducedMotion: () => false,
@@ -21,7 +21,7 @@ vi.mock("framer-motion", () => ({
 
 describe("RouteTransition", () => {
   it("uses cute fade-scale motion without vertical shift", () => {
-    capturedMainProps.length = 0;
+    capturedMotionProps.length = 0;
 
     render(
       <RouteTransition>
@@ -29,12 +29,13 @@ describe("RouteTransition", () => {
       </RouteTransition>,
     );
 
-    const main = screen.getAllByRole("main")[0];
-    expect(main).toHaveAttribute("data-route-transition", "fade");
+    const wrapper = screen.getByText("Content").closest('div[data-route-transition="fade"]');
+    expect(wrapper).toBeTruthy();
+    expect(wrapper).toHaveAttribute("data-route-transition", "fade");
 
-    const mainProps = capturedMainProps[0] ?? {};
-    expect(mainProps.initial).toEqual({ opacity: 0, scale: 0.985 });
-    expect(mainProps.animate).toEqual({ opacity: 1, scale: 1 });
-    expect(mainProps.exit).toEqual({ opacity: 0, scale: 1.005 });
+    const motionProps = capturedMotionProps[0] ?? {};
+    expect(motionProps.initial).toEqual({ opacity: 0, scale: 0.985 });
+    expect(motionProps.animate).toEqual({ opacity: 1, scale: 1 });
+    expect(motionProps.exit).toEqual({ opacity: 0, scale: 1.005 });
   });
 });

@@ -1,10 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { JobsClient } from "./JobsClient";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toaster } from "@/components/ui/toaster";
+
+const fetchStatusMock = vi.hoisted(() => ({
+  state: { runId: null as string | null, status: null as string | null, importedCount: 0 },
+}));
+
+vi.mock("@/app/FetchStatusContext", () => ({
+  useFetchStatus: () => fetchStatusMock.state,
+}));
+
+afterEach(() => {
+  cleanup();
+});
 
 const baseJob = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -35,6 +47,7 @@ function renderWithClient(ui: React.ReactElement) {
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  fetchStatusMock.state = { runId: null, status: null, importedCount: 0 };
   const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.url;
     if (url.startsWith("/api/jobs?limit=50")) {
@@ -166,6 +179,40 @@ describe("JobsClient", () => {
 
   it("removes a job after delete confirmation", async () => {
     const user = userEvent.setup();
+
+     // Model server state so optimistic update + refetch can't reintroduce deleted items.
+    let deleted = false;
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?limit=50")) {
+        return new Response(
+          JSON.stringify({ items: deleted ? [] : [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs?")) {
+        return new Response(
+          JSON.stringify({ items: deleted ? [] : [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs/") && init?.method === "DELETE") {
+        deleted = true;
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: "Job description" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     const removeButton = (await screen.findAllByTestId("job-remove-button"))[0];
@@ -179,6 +226,110 @@ describe("JobsClient", () => {
         within(resultsPane).queryByRole("button", { name: /Frontend Engineer/i }),
       ).not.toBeInTheDocument();
     });
+  });
+
+  it("forces SSR initial items into an existing fresh React Query cache entry", async () => {
+    const oldJob = { ...baseJob, id: "22222222-2222-2222-2222-222222222222", title: "Old cached job" };
+    const newJob = { ...baseJob, id: "33333333-3333-3333-3333-333333333333", title: "New SSR job" };
+
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+    client.setQueryData(["jobs", "limit=10&sort=newest", null], {
+      items: [oldJob],
+      nextCursor: null,
+      facets: { jobLevels: ["Mid"] },
+    });
+
+    render(
+      <QueryClientProvider client={client}>
+        <JobsClient initialItems={[newJob]} initialCursor={null} />
+        <Toaster />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText("New SSR job").length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText("Old cached job")).not.toBeInTheDocument();
+  });
+
+  it("resets to page 1 and refetches jobs when a fetch run finishes with imports", async () => {
+    const user = userEvent.setup();
+
+    const page1Job = { ...baseJob };
+    const page2Job = { ...baseJob, id: "44444444-4444-4444-4444-444444444444", title: "Page 2 job" };
+
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?")) {
+        const u = new URL(url, "https://example.test");
+        const cursor = u.searchParams.get("cursor");
+        if (cursor) {
+          return new Response(
+            JSON.stringify({ items: [page2Job], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        return new Response(
+          JSON.stringify({ items: [page1Job], nextCursor: "55555555-5555-5555-5555-555555555555", facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: "Job description" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    fetchStatusMock.state = { runId: "run-1", status: "RUNNING", importedCount: 0 };
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+    const wrap = (ui: React.ReactElement) => (
+      <QueryClientProvider client={client}>
+        {ui}
+        <Toaster />
+      </QueryClientProvider>
+    );
+    const { rerender } = render(
+      wrap(<JobsClient initialItems={[page1Job]} initialCursor={"55555555-5555-5555-5555-555555555555"} />),
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Page 1/i).length).toBeGreaterThan(0);
+    });
+
+    await user.click(screen.getByLabelText("Go to next page"));
+    await waitFor(() => {
+      expect(screen.getAllByText(/Page 2/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Page 2 job").length).toBeGreaterThan(0);
+    });
+
+    fetchStatusMock.state = { runId: "run-1", status: "SUCCEEDED", importedCount: 3 };
+    rerender(
+      wrap(<JobsClient initialItems={[page1Job]} initialCursor={"55555555-5555-5555-5555-555555555555"} />),
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Page 1/i).length).toBeGreaterThan(0);
+    });
+
+    const calls = (global.fetch as unknown as { mock: { calls: Array<[RequestInfo, RequestInit | undefined]> } }).mock.calls;
+    const listCalls = calls
+      .map(([req]) => (typeof req === "string" ? req : req.url))
+      .filter((u) => u.startsWith("/api/jobs?"));
+
+    expect(listCalls.some((u) => u.includes("cursor="))).toBe(true);
+    expect(listCalls.some((u) => !u.includes("cursor="))).toBe(true);
   });
 
   it("renders markdown with SaaS-style headings and lists", async () => {

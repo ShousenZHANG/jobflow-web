@@ -173,7 +173,13 @@ export async function GET(req: Request) {
     totalCount,
   });
   if (ifNoneMatch && ifNoneMatch === etag) {
-    return new NextResponse(null, { status: 304 });
+    return new NextResponse(null, {
+      status: 304,
+      headers: {
+        ETag: etag,
+        "Cache-Control": "private, max-age=0, must-revalidate",
+      },
+    });
   }
 
   return new NextResponse(
