@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -573,25 +573,19 @@ export function JobsClient({
     };
   }
 
-  const deferredQ = useDeferredValue(q);
-  const deferredStatus = useDeferredValue(statusFilter);
-  const deferredLocation = useDeferredValue(locationFilter);
-  const deferredJobLevel = useDeferredValue(jobLevelFilter);
-  const deferredSortOrder = useDeferredValue(sortOrder);
+  const debouncedQ = useDebouncedValue(q, 200);
 
-  const filters = useMemo(
+  const debouncedFilters = useMemo(
     () => ({
-      q: deferredQ,
-      statusFilter: deferredStatus,
-      locationFilter: deferredLocation,
-      jobLevelFilter: deferredJobLevel,
-      sortOrder: deferredSortOrder,
+      q: debouncedQ,
+      statusFilter,
+      locationFilter,
+      jobLevelFilter,
+      sortOrder,
       pageSize,
     }),
-    [deferredQ, deferredStatus, deferredLocation, deferredJobLevel, deferredSortOrder, pageSize],
+    [debouncedQ, statusFilter, locationFilter, jobLevelFilter, sortOrder, pageSize],
   );
-
-  const debouncedFilters = useDebouncedValue(filters, 200);
 
   useEffect(() => {
     return () => {
@@ -686,6 +680,11 @@ export function JobsClient({
   function scrollToTop() {
     if (typeof window === "undefined") return;
     window.scrollTo({ top: 0, behavior: "smooth" });
+    // Also reset the ScrollArea viewport so the list starts from the top.
+    const viewport = resultsScrollRef.current?.querySelector(
+      "[data-radix-scroll-area-viewport]",
+    );
+    if (viewport) viewport.scrollTop = 0;
   }
 
   function triggerSearch() {
@@ -739,11 +738,16 @@ export function JobsClient({
         const shouldKeep = currentFilter === "ALL" || currentFilter === status;
         queryClient.setQueryData<JobsResponse>(entryKey, (old) => {
           if (!old || !Array.isArray(old.items)) return old;
+          const didRemove = !shouldKeep && old.items.some((it) => it.id === id);
           return {
             ...old,
             items: shouldKeep
               ? old.items.map((it) => (it.id === id ? { ...it, status } : it))
               : old.items.filter((it) => it.id !== id),
+            totalCount:
+              didRemove && typeof old.totalCount === "number"
+                ? old.totalCount - 1
+                : old.totalCount,
           };
         });
       }
@@ -844,7 +848,11 @@ export function JobsClient({
         if (!old) return old;
         const nextItems = old.items.filter((it) => it.id !== id);
         if (selectedId === id) nextSelectedId = nextItems[0]?.id ?? null;
-        return { ...old, items: nextItems };
+        return {
+          ...old,
+          items: nextItems,
+          totalCount: typeof old.totalCount === "number" ? old.totalCount - 1 : old.totalCount,
+        };
       });
       if (selectedId === id) {
         setSelectedId(nextSelectedId);
