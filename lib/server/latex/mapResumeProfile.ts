@@ -58,7 +58,9 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
 
   const linkedin = findLink("linkedin");
   const github = findLink("github");
-  const website = findLink("portfolio") || findLink("website") || links[0];
+  const websiteExplicit = findLink("portfolio") || findLink("website");
+  const websiteFallback = links.find((item) => item !== linkedin && item !== github);
+  const website = websiteExplicit || websiteFallback;
 
   const projectBlocks = projects
     .map((proj) => {
