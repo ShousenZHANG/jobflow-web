@@ -635,7 +635,7 @@ export function JobsClient({
     placeholderData: (prev) => prev,
     refetchOnWindowFocus: false,
     staleTime: 30_000,
-    initialData: () => {
+    initialData: (): JobsResponse | undefined => {
       const shouldUseInitial =
         initialItems.length > 0 &&
         cursor === null &&
