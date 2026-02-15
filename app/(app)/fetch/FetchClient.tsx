@@ -415,7 +415,7 @@ export function FetchClient() {
         <Button
           onClick={onSubmit}
           disabled={isSubmitting || isRunning}
-          className={`edu-cta edu-cta--press edu-cta--compact h-9 px-4 ${
+          className={`h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.98] disabled:opacity-50 ${
             isTaskHighlighted("first_fetch") ? guideHighlightClass : ""
           }`}
           data-guide-highlight={isTaskHighlighted("first_fetch") ? "true" : "false"}
@@ -425,7 +425,7 @@ export function FetchClient() {
         </Button>
         <Button
           variant="outline"
-          className="edu-outline edu-cta--press edu-outline--compact h-9 px-4"
+          className="h-10 rounded-xl border-2 border-slate-700 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-800 hover:bg-slate-50 hover:shadow-md active:scale-[0.98]"
           onClick={() => router.push("/jobs")}
         >
           View jobs
