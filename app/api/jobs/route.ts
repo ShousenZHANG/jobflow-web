@@ -106,27 +106,30 @@ export async function GET(req: Request) {
     ...(andClauses.length ? { AND: andClauses } : {}),
   };
 
-  const jobsWithExtra = await prisma.job.findMany({
-    where,
-    orderBy,
-    take: limit + 1,
-    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-    select: {
-      id: true,
-      jobUrl: true,
-      title: true,
-      company: true,
-      location: true,
-      jobType: true,
-      jobLevel: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-      applications: {
-        select: { resumePdfUrl: true, resumePdfName: true },
+  const [jobsWithExtra, totalCount] = await Promise.all([
+    prisma.job.findMany({
+      where,
+      orderBy,
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      select: {
+        id: true,
+        jobUrl: true,
+        title: true,
+        company: true,
+        location: true,
+        jobType: true,
+        jobLevel: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        applications: {
+          select: { resumePdfUrl: true, resumePdfName: true },
+        },
       },
-    },
-  });
+    }),
+    prisma.job.count({ where }),
+  ]);
 
   const normalized = jobsWithExtra.map((job) => {
     const { applications, ...rest } = job;
@@ -167,6 +170,7 @@ export async function GET(req: Request) {
       resumePdfUrl: job.resumePdfUrl ?? null,
       resumePdfName: job.resumePdfName ?? null,
     })),
+    totalCount,
   });
   if (ifNoneMatch && ifNoneMatch === etag) {
     return new NextResponse(null, { status: 304 });
@@ -176,6 +180,7 @@ export async function GET(req: Request) {
     JSON.stringify({
       items: jobs,
       nextCursor,
+      totalCount,
       facets: {
         jobLevels,
       },

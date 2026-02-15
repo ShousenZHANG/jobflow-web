@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -51,6 +51,7 @@ type JobItem = {
 type JobsResponse = {
   items: JobItem[];
   nextCursor: string | null;
+  totalCount?: number;
   facets?: {
     jobLevels?: string[];
   };
@@ -626,6 +627,7 @@ export function JobsClient({
       return {
         items: json.items ?? [],
         nextCursor: json.nextCursor ?? null,
+        totalCount: typeof json.totalCount === "number" ? json.totalCount : undefined,
         facets: json.facets ?? undefined,
       };
     },
@@ -658,6 +660,7 @@ export function JobsClient({
   });
 
   const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
+  const totalCount = jobsQuery.data?.totalCount;
   const nextCursor = jobsQuery.data?.nextCursor ?? null;
   const loading = jobsQuery.isFetching;
   const delayedLoading = useDebouncedValue(loading, 160);
@@ -869,7 +872,7 @@ export function JobsClient({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "inactive" });
+      queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
       toast({
         title: "Job deleted",
         description: "The role was removed.",
@@ -1673,7 +1676,14 @@ export function JobsClient({
         {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
         <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)]">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
-            <span>Results</span>
+            <span>
+              Results
+              {typeof totalCount === "number" ? (
+                <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                  · {totalCount} {totalCount === 1 ? "job" : "jobs"}
+                </span>
+              ) : null}
+            </span>
             <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
           </div>
           <ScrollArea

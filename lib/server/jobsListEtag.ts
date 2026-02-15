@@ -15,6 +15,7 @@ type BuildJobsListEtagInput = {
   filtersSignature: string;
   jobLevels: string[];
   items: EtagJobItem[];
+  totalCount?: number;
 };
 
 function toIso(value: Date | string): string {
@@ -43,6 +44,7 @@ export function buildJobsListEtag(input: BuildJobsListEtagInput): string {
     input.filtersSignature,
     levelsSignature,
     itemsSignature,
+    String(input.totalCount ?? -1),
   ].join("::");
   const digest = createHash("sha1").update(payload).digest("base64url");
   return `W/"jobs:${digest}"`;
