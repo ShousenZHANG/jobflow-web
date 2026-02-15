@@ -1666,8 +1666,9 @@ export function JobsClient({
             <Button
               onClick={triggerSearch}
               disabled={loading}
-              className="edu-cta edu-cta--press edu-cta--compact w-full lg:w-auto"
+              className="h-10 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.97] disabled:opacity-50 lg:w-auto"
             >
+              <Search className="mr-1.5 h-4 w-4" />
               Search
             </Button>
           </div>
