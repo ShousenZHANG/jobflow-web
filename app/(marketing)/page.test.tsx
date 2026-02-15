@@ -1,11 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import HomePage from "./page";
 
-vi.mock("next/font/google", () => ({
-  Fredoka: () => ({ variable: "--font-edu-display" }),
-  Nunito: () => ({ variable: "--font-edu-body" }),
-}));
+afterEach(cleanup);
 
 describe("HomePage", () => {
   it("pre-fills the demo fields to avoid an empty flash", () => {
@@ -16,12 +13,30 @@ describe("HomePage", () => {
     expect(screen.getByText("Mid-level")).toBeInTheDocument();
   });
 
-  it("keeps the page animation off the main element to avoid scroll flash", () => {
+  it("uses correct semantic structure with a single main landmark", () => {
     render(<HomePage />);
 
-    const main = screen.getAllByRole("main")[0];
-    expect(main).not.toHaveClass("edu-page-enter");
-    const shell = screen.getAllByTestId("marketing-shell")[0];
-    expect(shell).toHaveClass("edu-page-enter");
+    const mains = screen.getAllByRole("main");
+    expect(mains).toHaveLength(1);
+  });
+
+  it("renders all page sections", () => {
+    render(<HomePage />);
+
+    expect(
+      screen.getByText("Everything you need to land the right role"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("How it works")).toBeInTheDocument();
+    expect(
+      screen.getByText("Ready to find your next role?"),
+    ).toBeInTheDocument();
+  });
+
+  it("includes a skip-to-content link for accessibility", () => {
+    render(<HomePage />);
+
+    const skipLink = screen.getByText("Skip to content");
+    expect(skipLink).toBeInTheDocument();
+    expect(skipLink).toHaveAttribute("href", "#main-content");
   });
 });

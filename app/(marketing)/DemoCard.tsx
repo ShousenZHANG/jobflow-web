@@ -1,0 +1,135 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+type ActiveField = "title" | "location" | "level" | "results" | null;
+
+interface DemoSequence {
+  title: string;
+  location: string;
+  level: string;
+  results: string;
+}
+
+const sequences: DemoSequence[] = [
+  {
+    title: "Frontend Engineer",
+    location: "Remote",
+    level: "Mid-level",
+    results: "128 roles available",
+  },
+  {
+    title: "Product Designer",
+    location: "Sydney",
+    level: "Junior",
+    results: "64 roles available",
+  },
+  {
+    title: "Data Analyst",
+    location: "Hybrid",
+    level: "Entry-level",
+    results: "92 roles available",
+  },
+];
+
+export function DemoCard() {
+  const [title, setTitle] = useState(sequences[0].title);
+  const [location, setLocation] = useState(sequences[0].location);
+  const [level, setLevel] = useState(sequences[0].level);
+  const [results, setResults] = useState(sequences[0].results);
+  const [activeField, setActiveField] = useState<ActiveField>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+
+    async function typeField(
+      field: ActiveField,
+      setter: (v: string) => void,
+      value: string,
+    ) {
+      setActiveField(field);
+      setter("");
+      for (let i = 1; i <= value.length; i += 1) {
+        if (cancelled) return;
+        setter(value.slice(0, i));
+        await sleep(40);
+      }
+    }
+
+    async function run() {
+      // Let user read the initial state before animation starts
+      await sleep(2000);
+      let index = 1;
+      while (!cancelled) {
+        const current = sequences[index];
+        await typeField("title", setTitle, current.title);
+        await sleep(200);
+        await typeField("location", setLocation, current.location);
+        await sleep(200);
+        await typeField("level", setLevel, current.level);
+        await sleep(200);
+        await typeField("results", setResults, current.results);
+        setActiveField(null);
+        await sleep(2000);
+        index = (index + 1) % sequences.length;
+      }
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <div
+      className="edu-card w-full max-w-md text-left"
+      role="region"
+      aria-label="Job search demo"
+    >
+      <div className="text-sm font-semibold text-slate-900">Role search</div>
+      <p className="mt-1 text-xs text-slate-500">
+        Refine your search to see better matches.
+      </p>
+      <div className="mt-4 grid gap-3" aria-live="polite" aria-atomic="false">
+        <div className="edu-input">
+          <span className="text-xs text-slate-500">Title</span>
+          <div className="min-h-[1.25rem] truncate text-sm text-slate-900">
+            {title}
+            {activeField === "title" && <span className="edu-caret" />}
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="edu-input">
+            <span className="text-xs text-slate-500">Location</span>
+            <div className="min-h-[1.25rem] truncate text-sm text-slate-900">
+              {location}
+              {activeField === "location" && <span className="edu-caret" />}
+            </div>
+          </div>
+          <div className="edu-input">
+            <span className="text-xs text-slate-500">Level</span>
+            <div className="min-h-[1.25rem] truncate text-sm text-slate-900">
+              {level}
+              {activeField === "level" && <span className="edu-caret" />}
+            </div>
+          </div>
+        </div>
+        <div className="edu-input">
+          <span className="text-xs text-slate-500">Results</span>
+          <div className="min-h-[1.25rem] truncate text-sm text-slate-900">
+            {results}
+            {activeField === "results" && <span className="edu-caret" />}
+          </div>
+        </div>
+      </div>
+      <Button asChild className="edu-cta edu-cta--press mt-5 w-full">
+        <Link href="/jobs">View matches</Link>
+      </Button>
+    </div>
+  );
+}
