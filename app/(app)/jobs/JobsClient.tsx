@@ -1779,9 +1779,9 @@ export function JobsClient({
         </div>
       ) : null}
 
-        <section className="relative grid flex-1 min-h-0 gap-4 overflow-hidden lg:max-h-[calc(100vh-260px)] lg:grid-cols-[380px_1fr] lg:items-stretch">
+        <section className="relative grid flex-1 min-h-0 gap-4 lg:max-h-[calc(100vh-260px)] lg:grid-cols-[380px_1fr] lg:items-stretch">
         {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)]">
+        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0 lg:max-h-[calc(100vh-260px)]">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>
               Results
@@ -1902,7 +1902,7 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
+        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0 lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="relative flex flex-wrap items-start justify-between gap-3">
@@ -1919,15 +1919,18 @@ export function JobsClient({
                   </div>
                 </div>
                 <div className="w-full lg:w-auto">
-                  <div data-testid="job-primary-actions" className="flex flex-wrap items-center gap-2">
+                  <div
+                    data-testid="job-primary-actions"
+                    className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center"
+                  >
                     <Select
                       value={selectedJob.status}
                       onValueChange={(v) => updateStatus(selectedJob.id, v as JobStatus)}
                       disabled={updatingIds.has(selectedJob.id)}
                     >
                       <SelectTrigger
-                        className={`shrink-0 rounded-xl border-slate-200 bg-white shadow-sm ${
-                          isAppliedSelected ? "h-9 w-[118px] px-3 text-sm" : "h-10 w-[132px]"
+                        className={`rounded-xl border-slate-200 bg-white shadow-sm ${
+                          isAppliedSelected ? "h-9 w-full px-3 text-sm sm:w-[118px]" : "h-10 w-full sm:w-[132px]"
                         } ${highlightTriage ? guideHighlightClass : ""}`}
                         data-guide-highlight={highlightTriage ? "true" : "false"}
                         data-guide-anchor="triage_first_job"
@@ -1943,7 +1946,7 @@ export function JobsClient({
                     <Button
                       asChild
                       size="sm"
-                      className={`min-w-[132px] justify-center rounded-xl border border-emerald-500 bg-emerald-500 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px] ${
+                      className={`w-full justify-center rounded-xl border border-emerald-500 bg-emerald-500 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:border-emerald-600 hover:bg-emerald-600 active:translate-y-[1px] sm:w-auto ${
                         isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
                       }`}
                     >
@@ -1957,7 +1960,7 @@ export function JobsClient({
                       size="sm"
                       disabled={externalPromptLoading}
                       onClick={() => openExternalGenerateDialog(selectedJob, "resume")}
-                      className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                      className={`w-full justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none sm:w-auto ${
                         isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
                       } ${highlightGenerate ? guideHighlightClass : ""}`}
                       data-guide-highlight={highlightGenerate ? "true" : "false"}
@@ -1971,7 +1974,7 @@ export function JobsClient({
                       size="sm"
                       disabled={externalPromptLoading}
                       onClick={() => openExternalGenerateDialog(selectedJob, "cover")}
-                      className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none ${
+                      className={`w-full justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none sm:w-auto ${
                         isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
                       } ${highlightGenerate ? guideHighlightClass : ""}`}
                       data-guide-highlight={highlightGenerate ? "true" : "false"}
@@ -1984,7 +1987,7 @@ export function JobsClient({
                         variant="outline"
                         size="sm"
                         asChild
-                        className={`min-w-[132px] justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
+                        className={`w-full justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] sm:w-auto ${
                           isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
                         } ${highlightDownload ? guideHighlightClass : ""}`}
                         data-guide-anchor="download_first_pdf"

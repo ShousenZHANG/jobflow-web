@@ -411,11 +411,11 @@ export function FetchClient() {
         </CardContent>
       </Card>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center" data-testid="fetch-actions">
         <Button
           onClick={onSubmit}
           disabled={isSubmitting || isRunning}
-          className={`h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.98] disabled:opacity-50 ${
+          className={`h-10 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.98] disabled:opacity-50 sm:w-auto ${
             isTaskHighlighted("first_fetch") ? guideHighlightClass : ""
           }`}
           data-guide-highlight={isTaskHighlighted("first_fetch") ? "true" : "false"}
@@ -425,7 +425,7 @@ export function FetchClient() {
         </Button>
         <Button
           variant="outline"
-          className="h-10 rounded-xl border-2 border-slate-700 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-800 hover:bg-slate-50 hover:shadow-md active:scale-[0.98]"
+          className="h-10 w-full rounded-xl border-2 border-slate-700 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-800 hover:bg-slate-50 hover:shadow-md active:scale-[0.98] sm:w-auto"
           onClick={() => router.push("/jobs")}
         >
           View jobs
@@ -434,4 +434,3 @@ export function FetchClient() {
     </div>
   );
 }
-

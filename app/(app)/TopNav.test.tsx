@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import { TopNav } from "./TopNav";
 
 const openGuideMock = vi.fn();
@@ -21,10 +21,23 @@ vi.mock("../GuideContext", () => ({
 }));
 
 describe("TopNav", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("does not render duplicate route progress element", () => {
     const { container } = render(<TopNav />);
-    expect(screen.getByRole("link", { name: "Jobs" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Jobs" }).length).toBeGreaterThan(0);
     expect(container.querySelector(".edu-route-progress")).toBeNull();
   });
-});
 
+  it("renders a dedicated mobile tab navigation fallback", () => {
+    render(<TopNav />);
+
+    const mobileTabs = screen.getAllByTestId("mobile-tab-nav")[0];
+    expect(mobileTabs).toBeInTheDocument();
+    expect(screen.getAllByTestId("mobile-tab-jobs")[0]).toBeInTheDocument();
+    expect(screen.getAllByTestId("mobile-tab-fetch")[0]).toBeInTheDocument();
+    expect(screen.getAllByTestId("mobile-tab-resume")[0]).toBeInTheDocument();
+  });
+});

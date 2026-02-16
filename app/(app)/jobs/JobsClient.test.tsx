@@ -446,6 +446,13 @@ describe("JobsClient", () => {
     expect(removeButton).not.toHaveClass("sm:absolute");
   });
 
+  it("uses a responsive stacked primary action layout for mobile", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const actionRows = await screen.findAllByTestId("job-primary-actions");
+    expect(actionRows[0]).toHaveClass("grid", "grid-cols-1", "sm:grid-cols-2");
+  });
+
   it("disables skill pack download until prompt meta is ready, then advances to Copy Prompt with one click", async () => {
     const user = userEvent.setup();
     let resolvePrompt!: (value: Response) => void;

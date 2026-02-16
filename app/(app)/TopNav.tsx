@@ -29,9 +29,9 @@ export function TopNav() {
 
   return (
     <div className="sticky top-0 z-40">
-      <div className="relative app-frame py-4" style={{ height: 88 }}>
-        <div className="edu-nav edu-nav--press">
-          <div className="flex items-center gap-4">
+      <div className="relative app-frame py-3">
+        <div className="edu-nav edu-nav--press flex-col items-stretch gap-3 md:flex-row md:items-center">
+          <div className="flex items-center justify-between gap-4 md:justify-start">
             <div className="flex items-center gap-3">
               <div className="edu-logo">
                 <Search className="h-4 w-4 text-emerald-700" />
@@ -61,7 +61,29 @@ export function TopNav() {
               })}
             </nav>
           </div>
-          <div className="flex items-center gap-3 text-sm">
+          <nav
+            className="grid grid-cols-3 gap-2 md:hidden"
+            data-testid="mobile-tab-nav"
+            aria-label="Primary"
+          >
+            {links.map((link) => {
+              const active = pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={`mobile-${link.href}`}
+                  href={link.href}
+                  onClick={prepareRouteChange}
+                  data-testid={`mobile-tab-${link.label.toLowerCase()}`}
+                  className={`edu-nav-link edu-nav-pill justify-center text-sm ${
+                    active ? "edu-nav-pill--active" : ""
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="flex items-center justify-end gap-2 text-sm sm:gap-3">
             {email ? (
               <a
                 href={`mailto:${email}`}

@@ -1537,8 +1537,9 @@ export function ResumeForm() {
     <div className="space-y-6">
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent
-          className="h-[92vh] w-[98vw] max-w-[min(98vw,1280px)] overflow-hidden p-0"
+          className="h-[100dvh] w-[100vw] max-w-none overflow-hidden rounded-none p-0 sm:h-[92vh] sm:w-[98vw] sm:max-w-[min(98vw,1280px)] sm:rounded-lg"
           showCloseButton={false}
+          data-testid="resume-preview-dialog"
         >
           <DialogHeader className="sr-only">
             <DialogTitle>PDF preview</DialogTitle>
@@ -1637,13 +1638,15 @@ export function ResumeForm() {
             </div>
           </div>
 
-          <div className="min-h-[540px] rounded-2xl border border-slate-900/10 bg-white/70 p-6">
+          <div className="min-h-[420px] rounded-2xl border border-slate-900/10 bg-white/70 p-4 sm:min-h-[540px] sm:p-6">
             {renderStep()}
           </div>
 
           <div
-            className="sticky bottom-3 z-20 rounded-2xl border border-slate-900/10 bg-white/95 p-3 shadow-sm backdrop-blur"
+            className="sticky bottom-2 z-20 rounded-2xl border border-slate-900/10 bg-white/95 p-3 shadow-sm backdrop-blur sm:bottom-3"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.5rem)" }}
             data-guide-anchor="resume_setup"
+            data-testid="resume-action-bar"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">

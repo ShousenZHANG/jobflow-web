@@ -17,13 +17,15 @@ const nunito = Nunito({
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`app-edu ${fredoka.variable} ${nunito.variable} relative flex min-h-screen flex-col overflow-hidden`}>
+    <div
+      className={`app-edu ${fredoka.variable} ${nunito.variable} relative grid min-h-dvh grid-rows-[auto_1fr] overflow-hidden`}
+    >
       <div className="edu-bg" />
       <div className="edu-blob edu-blob--mint" />
       <div className="edu-blob edu-blob--peach" />
       <GuideProvider>
         <TopNav />
-        <div className="relative z-10 app-frame flex flex-1 flex-col py-8 app-shell">
+        <div className="relative z-10 app-frame app-shell flex min-h-0 flex-col py-4 sm:py-6 md:py-8">
           <RouteTransition>{children}</RouteTransition>
         </div>
       </GuideProvider>

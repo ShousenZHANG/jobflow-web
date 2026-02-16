@@ -138,6 +138,40 @@ describe("ResumeForm", () => {
     expect(await screen.findByRole("heading", { name: "PDF preview" })).toBeInTheDocument();
   });
 
+  it("uses mobile-safe preview and action-bar hooks for responsive layout", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
+    );
+
+    render(<ResumeForm />);
+
+    expect(await screen.findByRole("heading", { name: "Personal info" })).toBeInTheDocument();
+
+    const actionBar = screen.getByTestId("resume-action-bar");
+    expect(actionBar).toBeInTheDocument();
+    expect(actionBar).toHaveStyle({ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.5rem)" });
+
+    fireEvent.change(screen.getByLabelText("Full name"), {
+      target: { value: "Jane Doe" },
+    });
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Software Engineer" },
+    });
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "jane@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Phone"), {
+      target: { value: "+1 555 0100" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    expect(await screen.findByRole("heading", { name: "PDF preview" })).toBeInTheDocument();
+
+    const previewDialog = screen.getByTestId("resume-preview-dialog");
+    expect(previewDialog).toHaveClass("h-[100dvh]", "w-[100vw]", "sm:h-[92vh]");
+  });
+
   it("exposes a stable guide anchor for the resume setup step", async () => {
     vi.stubGlobal(
       "fetch",

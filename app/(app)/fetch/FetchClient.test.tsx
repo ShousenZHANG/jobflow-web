@@ -133,4 +133,14 @@ describe("FetchClient", () => {
     expect(body.excludeDescriptionRules).toEqual(["identity_requirement"]);
     expect(body.sourceOptions).toBeUndefined();
   });
+
+  it("uses a mobile-friendly stacked fetch action layout", () => {
+    render(<FetchClient />);
+
+    const actions = screen.getByTestId("fetch-actions");
+    expect(actions).toHaveClass("flex-col");
+
+    expect(screen.getByRole("button", { name: /start fetch/i })).toHaveClass("w-full");
+    expect(screen.getByRole("button", { name: /view jobs/i })).toHaveClass("w-full");
+  });
 });
