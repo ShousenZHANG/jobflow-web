@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { Prisma } from "@/lib/generated/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { buildJobFitAnalysis } from "@/lib/server/ai/jobFitAnalysis";
 import { getDefaultModel, normalizeProviderModel } from "@/lib/server/ai/providers";
@@ -109,6 +110,10 @@ function normalizeSource(value: string | null): JobFitSource {
   return value === "heuristic+gemini" ? "heuristic+gemini" : "heuristic";
 }
 
+function isUniqueConflict(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+}
+
 function toApiResponse(row: {
   status: "PENDING" | "READY" | "FAILED";
   score: number | null;
@@ -191,17 +196,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const context = await buildContext(userId, parsed.data.id);
   if ("error" in context) return context.error;
 
+  const cacheIdentity = {
+    userId,
+    jobId: context.job.id,
+    resumeSnapshotUpdatedAt: context.profile.updatedAt,
+    promptRuleVersion: context.promptRuleVersion,
+    jobUpdatedAt: context.job.updatedAt,
+    analyzerVersion: JOB_FIT_ANALYZER_VERSION,
+    model: context.model,
+  };
   const cache = await prisma.jobFitAnalysis.findFirst({
-    where: {
-      userId,
-      jobId: context.job.id,
-      resumeSnapshotUpdatedAt: context.profile.updatedAt,
-      promptRuleVersion: context.promptRuleVersion,
-      jobUpdatedAt: context.job.updatedAt,
-      analyzerVersion: JOB_FIT_ANALYZER_VERSION,
-      provider: context.provider,
-      model: context.model,
-    },
+    where: cacheIdentity,
     orderBy: { updatedAt: "desc" },
   });
 
@@ -230,19 +235,22 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   const context = await buildContext(userId, parsed.data.id);
   if ("error" in context) return context.error;
 
-  const cacheWhere = {
+  const cacheIdentity = {
     userId,
     jobId: context.job.id,
     resumeSnapshotUpdatedAt: context.profile.updatedAt,
     promptRuleVersion: context.promptRuleVersion,
     jobUpdatedAt: context.job.updatedAt,
     analyzerVersion: JOB_FIT_ANALYZER_VERSION,
-    provider: context.provider,
     model: context.model,
+  };
+  const cacheWhere = {
+    ...cacheIdentity,
+    provider: context.provider,
   };
 
   const cached = await prisma.jobFitAnalysis.findFirst({
-    where: cacheWhere,
+    where: cacheIdentity,
     orderBy: { updatedAt: "desc" },
   });
   if (cached?.status === "READY") {
@@ -252,16 +260,20 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   const description = (context.job.description ?? "").trim();
   if (!description) {
     if (!cached) {
-      await prisma.jobFitAnalysis.create({
-        data: {
-          ...cacheWhere,
-          status: "PENDING",
-          source: "heuristic",
-          aiEnhanced: false,
-          aiReason: "NO_JD",
-          error: null,
-        },
-      });
+      try {
+        await prisma.jobFitAnalysis.create({
+          data: {
+            ...cacheWhere,
+            status: "PENDING",
+            source: "heuristic",
+            aiEnhanced: false,
+            aiReason: "NO_JD",
+            error: null,
+          },
+        });
+      } catch (error) {
+        if (!isUniqueConflict(error)) throw error;
+      }
     }
     return NextResponse.json({
       status: "PENDING",
@@ -303,12 +315,27 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
           where: { id: cached.id },
           data: readyPayload,
         })
-      : await prisma.jobFitAnalysis.create({
-          data: {
-            ...cacheWhere,
-            ...readyPayload,
-          },
-        });
+      : await (async () => {
+          try {
+            return await prisma.jobFitAnalysis.create({
+              data: {
+                ...cacheWhere,
+                ...readyPayload,
+              },
+            });
+          } catch (error) {
+            if (!isUniqueConflict(error)) throw error;
+            const existing = await prisma.jobFitAnalysis.findFirst({
+              where: cacheIdentity,
+              orderBy: { updatedAt: "desc" },
+            });
+            if (!existing) throw error;
+            return prisma.jobFitAnalysis.update({
+              where: { id: existing.id },
+              data: readyPayload,
+            });
+          }
+        })();
     return NextResponse.json(toApiResponse(saved));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Analysis failed";
@@ -324,16 +351,36 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
         },
       });
     } else {
-      await prisma.jobFitAnalysis.create({
-        data: {
-          ...cacheWhere,
-          status: "FAILED",
-          source: "heuristic",
-          aiEnhanced: false,
-          aiReason: "ANALYSIS_FAILED",
-          error: message,
-        },
-      });
+      try {
+        await prisma.jobFitAnalysis.create({
+          data: {
+            ...cacheWhere,
+            status: "FAILED",
+            source: "heuristic",
+            aiEnhanced: false,
+            aiReason: "ANALYSIS_FAILED",
+            error: message,
+          },
+        });
+      } catch (createError) {
+        if (!isUniqueConflict(createError)) throw createError;
+        const existing = await prisma.jobFitAnalysis.findFirst({
+          where: cacheIdentity,
+          orderBy: { updatedAt: "desc" },
+        });
+        if (existing) {
+          await prisma.jobFitAnalysis.update({
+            where: { id: existing.id },
+            data: {
+              status: "FAILED",
+              source: "heuristic",
+              aiEnhanced: false,
+              aiReason: "ANALYSIS_FAILED",
+              error: message,
+            },
+          });
+        }
+      }
     }
     return NextResponse.json({ status: "FAILED", message } satisfies JobFitApiResponse, { status: 500 });
   }
