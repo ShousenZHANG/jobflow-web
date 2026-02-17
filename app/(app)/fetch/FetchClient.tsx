@@ -328,8 +328,7 @@ export function FetchClient() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="outline"
-                    className="edu-outline edu-cta--press edu-outline--compact h-9 w-full justify-between"
+                    className="h-10 w-full justify-between rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.98] disabled:opacity-50"
                     disabled={!applyExcludes}
                   >
                     {excludeTitleTerms.length ? `Selected (${excludeTitleTerms.length})` : "Select terms"}
@@ -373,8 +372,7 @@ export function FetchClient() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="outline"
-                    className="edu-outline edu-cta--press edu-outline--compact h-9 w-full justify-between"
+                    className="h-10 w-full justify-between rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.98] disabled:opacity-50"
                     disabled={!applyExcludes}
                   >
                     {excludeDescriptionRules.length
