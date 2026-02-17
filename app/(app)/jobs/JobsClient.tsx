@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useGuide } from "@/app/GuideContext";
 import { useFetchStatus, type FetchRunStatus } from "@/app/FetchStatusContext";
+import { type JobFitApiResponse, type JobFitGateStatus } from "@/lib/shared/jobFitAnalysis";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -57,6 +58,12 @@ type JobsResponse = {
     jobLevels?: string[];
   };
 };
+
+function fitGateClass(status: JobFitGateStatus) {
+  if (status === "PASS") return "bg-emerald-100 text-emerald-700";
+  if (status === "BLOCK") return "bg-rose-100 text-rose-700";
+  return "bg-amber-100 text-amber-800";
+}
 
 type CvSource = "ai" | "base" | "manual_import";
 type CoverSource = "ai" | "fallback" | "manual_import";
@@ -1310,11 +1317,56 @@ export function JobsClient({
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
+  const fitQuery = useQuery({
+    queryKey: ["job-fit", effectiveSelectedId],
+    queryFn: async () => {
+      const res = await fetch(`/api/jobs/${effectiveSelectedId}/fit-analysis`);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || json?.message || "Failed to load fit analysis");
+      return json as JobFitApiResponse;
+    },
+    enabled: Boolean(effectiveSelectedId),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchInterval: (query) => (query.state.data?.status === "PENDING" ? 4000 : false),
+  });
+  const fitStartMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      const res = await fetch(`/api/jobs/${jobId}/fit-analysis`, {
+        method: "POST",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || json?.message || "Failed to start fit analysis");
+      return json as JobFitApiResponse;
+    },
+    onSuccess: (payload, jobId) => {
+      queryClient.setQueryData(["job-fit", jobId], payload);
+      if (payload.status === "PENDING") {
+        queryClient.invalidateQueries({ queryKey: ["job-fit", jobId] });
+      }
+    },
+  });
+  const fitTriggerRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!effectiveSelectedId) return;
+    if (fitTriggerRef.current === effectiveSelectedId) return;
+    fitTriggerRef.current = effectiveSelectedId;
+    fitStartMutation.mutate(effectiveSelectedId);
+  }, [effectiveSelectedId, fitStartMutation]);
   const selectedDescription = selectedJob ? detailQuery.data?.description ?? "" : "";
   const detailError = detailQuery.error
     ? getErrorMessage(detailQuery.error, "Failed to load details")
     : null;
   const detailLoading = detailQuery.isFetching && !detailQuery.data;
+  const fitData = selectedJob ? fitQuery.data : undefined;
+  const fitReady = fitData?.status === "READY" ? fitData.analysis : null;
+  const fitPending = fitData?.status === "PENDING";
+  const fitLoading = Boolean(selectedJob) && ((fitStartMutation.isPending && !fitData) || fitQuery.isLoading);
+  const fitError = fitData?.status === "FAILED"
+    ? fitData.message || "Fit analysis failed."
+    : fitQuery.error
+      ? getErrorMessage(fitQuery.error, "Fit analysis failed.")
+      : null;
   const isLongDescription = selectedDescription.length > 600;
   const experienceSignals = useMemo(
     () => parseExperienceGate(selectedDescription),
@@ -2016,6 +2068,55 @@ export function JobsClient({
                       Remove
                     </Button>
                   </div>
+                </div>
+                <div className="w-full rounded-2xl border border-slate-900/10 bg-slate-50/60 p-3" data-testid="job-fit-snapshot">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                      AI Fit Snapshot
+                    </div>
+                    {fitReady ? (
+                      <Badge className={fitGateClass(fitReady.gateStatus)}>{fitReady.gateStatus}</Badge>
+                    ) : null}
+                  </div>
+                  {fitLoading || fitPending ? (
+                    <div className="mt-2 text-sm text-muted-foreground">Analyzing resume vs JD...</div>
+                  ) : null}
+                  {fitError ? (
+                    <div className="mt-2 text-sm text-rose-700">{fitError}</div>
+                  ) : null}
+                  {fitReady ? (
+                    <div className="mt-3 space-y-2">
+                      <div className="grid gap-2 sm:grid-cols-4">
+                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                          <div className="text-[11px] text-muted-foreground">Match score</div>
+                          <div className="text-base font-semibold text-slate-900">{fitReady.score}</div>
+                        </div>
+                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                          <div className="text-[11px] text-muted-foreground">Gate</div>
+                          <div className="text-base font-semibold text-slate-900">{fitReady.gateStatus}</div>
+                        </div>
+                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                          <div className="text-[11px] text-muted-foreground">Stack match</div>
+                          <div className="text-base font-semibold text-slate-900">
+                            {fitReady.stackMatch.matched}/{fitReady.stackMatch.total}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                          <div className="text-[11px] text-muted-foreground">Recommendation</div>
+                          <div className="text-base font-semibold text-slate-900">{fitReady.recommendation}</div>
+                        </div>
+                      </div>
+                      {fitReady.topGaps.length ? (
+                        <ul className="list-disc space-y-1 pl-5 text-xs text-slate-700">
+                          {fitReady.topGaps.map((gap) => (
+                            <li key={gap}>{gap}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="text-xs text-muted-foreground">No major gaps detected.</div>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
                 {selectedTailorSource ? (
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">

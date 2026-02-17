@@ -28,6 +28,18 @@ enum FetchRunStatus {
   FAILED
 }
 
+enum JobFitStatus {
+  PENDING
+  READY
+  FAILED
+}
+
+enum JobFitGateStatus {
+  PASS
+  RISK
+  BLOCK
+}
+
 enum OnboardingStage {
   NEW_USER
   ACTIVATED_USER
@@ -47,6 +59,7 @@ model User {
   sessions  Session[]
 
   jobs           Job[]
+  jobFitAnalyses JobFitAnalysis[]
   fetchRuns      FetchRun[]
   deletedJobUrls DeletedJobUrl[]
   dailyCheckins  DailyCheckin[]
@@ -111,6 +124,7 @@ model Job {
   updatedAt   DateTime  @updatedAt
 
   applications Application[]
+  fitAnalyses  JobFitAnalysis[]
 
   @@unique([userId, jobUrl])
   @@index([userId, createdAt])
@@ -215,6 +229,39 @@ model Application {
 
   @@unique([userId, jobId])
   @@index([userId, createdAt])
+}
+
+model JobFitAnalysis {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId     String   @db.Uuid
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  resumeSnapshotUpdatedAt DateTime
+  promptRuleVersion       Int
+  jobUpdatedAt            DateTime
+  analyzerVersion         String
+  model                   String
+
+  status         JobFitStatus      @default(PENDING)
+  score          Int?
+  gateStatus     JobFitGateStatus?
+  recommendation String?
+  stackMatched   Int?
+  stackTotal     Int?
+  topGaps        Json?
+  gates          Json?
+  evidence       Json?
+  error          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, jobId, resumeSnapshotUpdatedAt, promptRuleVersion, jobUpdatedAt, analyzerVersion, model])
+  @@index([userId, jobId, updatedAt])
+  @@index([userId, status])
 }
 
 model PromptRuleTemplate {

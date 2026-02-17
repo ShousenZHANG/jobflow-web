@@ -50,6 +50,42 @@ beforeEach(() => {
   fetchStatusMock.state = { runId: null, status: null, importedCount: 0 };
   const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.url;
+    if (url.includes("/fit-analysis") && init?.method === "POST") {
+      return new Response(
+        JSON.stringify({
+          status: "READY",
+          analysis: {
+            score: 78,
+            gateStatus: "PASS",
+            recommendation: "Worth Applying",
+            stackMatch: { matched: 3, total: 4 },
+            topGaps: ["Kafka hands-on ownership"],
+            gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+            evidence: [],
+            generatedAt: new Date().toISOString(),
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (url.includes("/fit-analysis") && (!init || init.method === "GET")) {
+      return new Response(
+        JSON.stringify({
+          status: "READY",
+          analysis: {
+            score: 78,
+            gateStatus: "PASS",
+            recommendation: "Worth Applying",
+            stackMatch: { matched: 3, total: 4 },
+            topGaps: ["Kafka hands-on ownership"],
+            gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+            evidence: [],
+            generatedAt: new Date().toISOString(),
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
     if (url.startsWith("/api/jobs?limit=50")) {
       return new Response(
         JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
@@ -89,6 +125,15 @@ describe("JobsClient", () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     expect((await screen.findAllByText("Frontend Engineer")).length).toBeGreaterThan(0);
+  });
+
+  it("shows AI fit snapshot for the selected job", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    expect(await screen.findByText("AI Fit Snapshot")).toBeInTheDocument();
+    expect(await screen.findByText("78")).toBeInTheDocument();
+    expect(await screen.findByText("Worth Applying")).toBeInTheDocument();
+    expect(await screen.findByText("Kafka hands-on ownership")).toBeInTheDocument();
   });
 
   it("shows sort and results in the top toolbar", () => {
@@ -184,6 +229,42 @@ describe("JobsClient", () => {
     let deleted = false;
     const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.url;
+      if (url.includes("/fit-analysis") && init?.method === "POST") {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.includes("/fit-analysis") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
       if (url.startsWith("/api/jobs?limit=50")) {
         return new Response(
           JSON.stringify({ items: deleted ? [] : [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
@@ -264,6 +345,42 @@ describe("JobsClient", () => {
 
     const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.url;
+      if (url.includes("/fit-analysis") && init?.method === "POST") {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.includes("/fit-analysis") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
       if (url.startsWith("/api/jobs?")) {
         const u = new URL(url, "https://example.test");
         const cursor = u.searchParams.get("cursor");
@@ -336,6 +453,42 @@ describe("JobsClient", () => {
     const markdown = "## Requirements\n\n- Ownership\n\n> Note";
     const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.url;
+      if (url.includes("/fit-analysis") && init?.method === "POST") {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.includes("/fit-analysis") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
       if (url.startsWith("/api/jobs?limit=50")) {
         return new Response(
           JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
@@ -388,6 +541,42 @@ describe("JobsClient", () => {
 
     const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.url;
+      if (url.includes("/fit-analysis") && init?.method === "POST") {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.includes("/fit-analysis") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
       if (url.startsWith("/api/jobs?limit=50")) {
         return new Response(
           JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
@@ -465,6 +654,42 @@ describe("JobsClient", () => {
 
     const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.url;
+      if (url.includes("/fit-analysis") && init?.method === "POST") {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.includes("/fit-analysis") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({
+            status: "READY",
+            analysis: {
+              score: 78,
+              gateStatus: "PASS",
+              recommendation: "Worth Applying",
+              stackMatch: { matched: 3, total: 4 },
+              topGaps: ["Kafka hands-on ownership"],
+              gates: [{ key: "experience_years", label: "Experience years", status: "PASS" }],
+              evidence: [],
+              generatedAt: new Date().toISOString(),
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
       if (url.startsWith("/api/jobs?limit=50")) {
         return new Response(
           JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
