@@ -70,6 +70,8 @@ function formatAiReason(reason?: string | null) {
   if (reason === "GEMINI_API_KEY_MISSING") return "Gemini API key is not configured.";
   if (reason === "GEMINI_REQUEST_FAILED") return "Gemini request failed; using rule-based result.";
   if (reason === "GEMINI_INVALID_JSON") return "Gemini returned invalid JSON; using rule-based result.";
+  if (reason === "GEMINI_INVALID_JSON_RETRY_FAILED")
+    return "Gemini returned invalid JSON twice; using rule-based result.";
   if (reason === "NO_JD") return "Job description is not available yet.";
   if (reason === "NOT_COMPUTED") return "Analysis has not run yet.";
   if (reason === "ANALYSIS_FAILED") return "Analysis fallback was used due to an internal error.";

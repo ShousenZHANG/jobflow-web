@@ -366,24 +366,7 @@ async function maybeRefineWithGemini(
     `Current analysis: ${JSON.stringify(analysis)}`,
   ].join("\n");
 
-  try {
-    const raw = await callProvider("gemini", {
-      apiKey,
-      model,
-      systemPrompt,
-      userPrompt,
-    });
-    const parsed = parseFirstJsonObject(raw);
-    if (!parsed) {
-      return {
-        analysis,
-        source: "heuristic",
-        aiEnhanced: false,
-        provider: null,
-        model,
-        aiReason: "GEMINI_INVALID_JSON",
-      };
-    }
+  const parsePatch = (parsed: Record<string, unknown>) => {
     const topGaps = Array.isArray(parsed.topGaps)
       ? parsed.topGaps
           .map((item) => (typeof item === "string" ? item.trim() : ""))
@@ -426,11 +409,44 @@ async function maybeRefineWithGemini(
         gateStatus,
         recommendation,
       },
-      source: "heuristic+gemini",
+      source: "heuristic+gemini" as const,
       aiEnhanced: true,
-      provider: "gemini",
+      provider: "gemini" as const,
       model,
       aiReason: null,
+    };
+  };
+
+  try {
+    const raw = await callProvider("gemini", {
+      apiKey,
+      model,
+      systemPrompt,
+      userPrompt,
+    });
+    const parsed = parseFirstJsonObject(raw);
+    if (parsed) return parsePatch(parsed);
+
+    const retryRaw = await callProvider("gemini", {
+      apiKey,
+      model,
+      systemPrompt: `${systemPrompt}\nReturn one valid JSON object only. No markdown, no prose, no code fences.`,
+      userPrompt: [
+        userPrompt,
+        "",
+        "Retry mode: Output EXACTLY one JSON object. Do not include explanations.",
+      ].join("\n"),
+    });
+    const retryParsed = parseFirstJsonObject(retryRaw);
+    if (retryParsed) return parsePatch(retryParsed);
+
+    return {
+      analysis,
+      source: "heuristic",
+      aiEnhanced: false,
+      provider: null,
+      model,
+      aiReason: "GEMINI_INVALID_JSON_RETRY_FAILED",
     };
   } catch {
     return {
