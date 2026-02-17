@@ -2101,64 +2101,6 @@ export function JobsClient({
                     </Button>
                   </div>
                 </div>
-                <div className="w-full rounded-2xl border border-slate-900/10 bg-slate-50/60 p-3" data-testid="job-fit-snapshot">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                      AI Fit Snapshot
-                    </div>
-                    {fitData?.status === "READY" ? (
-                      <Badge
-                        className={
-                          fitData.aiEnhanced
-                            ? "bg-cyan-100 text-cyan-800"
-                            : "bg-slate-200 text-slate-700"
-                        }
-                      >
-                        {fitData.aiEnhanced ? "AI Enhanced" : "Rule-based"}
-                      </Badge>
-                    ) : null}
-                  </div>
-                  {fitLoading ? (
-                    <div className="mt-2 text-sm text-muted-foreground">Analyzing resume vs JD...</div>
-                  ) : null}
-                  {!fitLoading && fitPending ? (
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      {fitPendingReason || "Preparing analysis..."}
-                    </div>
-                  ) : null}
-                  {fitError ? (
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-rose-700">
-                      <span>{fitError}</span>
-                      {selectedJob ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="h-7 rounded-lg border-rose-200 px-2 text-xs text-rose-700 hover:bg-rose-50"
-                          onClick={() => fitStartMutation.mutate(selectedJob.id)}
-                        >
-                          Retry
-                        </Button>
-                      ) : null}
-                    </div>
-                  ) : null}
-                  {fitReady ? (
-                    <div className="mt-2 space-y-1.5">
-                      <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <span className="rounded-md border border-slate-200 bg-white px-2 py-1 font-semibold text-slate-900">
-                          Score {fitReady.score}
-                        </span>
-                        <span className="text-slate-500">•</span>
-                        <span className="font-medium text-slate-900">{fitReady.recommendation}</span>
-                      </div>
-                      {!fitData?.aiEnhanced && fitData?.aiReason ? (
-                        <div className="text-xs text-amber-700">{formatAiReason(fitData.aiReason)}</div>
-                      ) : (
-                        <div className="text-xs text-muted-foreground">Result source verified.</div>
-                      )}
-                    </div>
-                  ) : null}
-                </div>
                 {selectedTailorSource ? (
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                     {selectedTailorSource.cv ? (
@@ -2186,6 +2128,86 @@ export function JobsClient({
             <div key={effectiveSelectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-slate-900/10 bg-slate-50/60 p-3" data-testid="job-fit-snapshot">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                      AI Fit Snapshot
+                    </div>
+                    {fitData?.status === "READY" ? (
+                      <Badge className={fitData.aiEnhanced ? "bg-cyan-100 text-cyan-800" : "bg-slate-200 text-slate-700"}>
+                        {fitData.aiEnhanced ? "AI Enhanced" : "Rule-based"}
+                      </Badge>
+                    ) : null}
+                  </div>
+                  {fitLoading ? <div className="mt-2 text-sm text-muted-foreground">Analyzing resume vs JD...</div> : null}
+                  {!fitLoading && fitPending ? (
+                    <div className="mt-2 text-sm text-muted-foreground">{fitPendingReason || "Preparing analysis..."}</div>
+                  ) : null}
+                  {fitError ? (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-rose-700">
+                      <span>{fitError}</span>
+                      {selectedJob ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 rounded-lg border-rose-200 px-2 text-xs text-rose-700 hover:bg-rose-50"
+                          onClick={() => fitStartMutation.mutate(selectedJob.id)}
+                        >
+                          Retry
+                        </Button>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {fitReady ? (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <span className="rounded-md border border-slate-200 bg-white px-2 py-1 font-semibold text-slate-900">
+                          Score {fitReady.score}
+                        </span>
+                        <span className="font-medium text-slate-900">{fitReady.recommendation}</span>
+                      </div>
+                      {fitReady.topGaps.length > 0 ? (
+                        <div>
+                          <div className="mb-1 text-[11px] font-medium text-slate-600">Top mismatches</div>
+                          <ul className="list-disc space-y-1 pl-4 text-xs text-slate-700">
+                            {fitReady.topGaps.slice(0, 3).map((gap) => (
+                              <li key={gap}>{gap}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                      {fitReady.gates.some((gate) => gate.status !== "PASS") ? (
+                        <div>
+                          <div className="mb-1 text-[11px] font-medium text-slate-600">Hard gates</div>
+                          <div className="flex flex-wrap gap-2">
+                            {fitReady.gates
+                              .filter((gate) => gate.status !== "PASS")
+                              .slice(0, 3)
+                              .map((gate) => (
+                                <span
+                                  key={gate.key}
+                                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                                    gate.status === "BLOCK"
+                                      ? "border-rose-200 bg-rose-50 text-rose-700"
+                                      : "border-amber-200 bg-amber-50 text-amber-800"
+                                  }`}
+                                  title={gate.evidence || gate.label}
+                                >
+                                  {gate.status}: {gate.label}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {!fitData?.aiEnhanced && fitData?.aiReason ? (
+                        <div className="text-xs text-amber-700">{formatAiReason(fitData.aiReason)}</div>
+                      ) : (
+                        <div className="text-xs text-muted-foreground">Result source verified.</div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
                   Job Description
                 </div>
