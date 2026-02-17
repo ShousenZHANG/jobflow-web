@@ -40,12 +40,12 @@ describe("ai providers", () => {
 
     const content = await callGemini({
       apiKey: "key",
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       systemPrompt: "system",
       userPrompt: "user",
     });
 
-    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("gemini-2.5-flash");
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("gemini-2.5-flash-lite");
     expect(content).toContain("ok");
   });
 

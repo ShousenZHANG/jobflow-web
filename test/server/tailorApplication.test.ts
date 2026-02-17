@@ -166,7 +166,7 @@ describe("tailorApplicationContent", () => {
     expect(callProviderSpy).toHaveBeenNthCalledWith(
       2,
       "gemini",
-      expect.objectContaining({ model: "gemini-2.5-flash" }),
+      expect.objectContaining({ model: "gemini-2.5-flash-lite" }),
     );
   });
 

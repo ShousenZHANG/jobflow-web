@@ -146,7 +146,7 @@ describe("JobsClient", () => {
             source: "heuristic",
             aiEnhanced: false,
             provider: "gemini",
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-flash-lite",
             aiReason: "NO_JD",
             message: "Waiting for JD enrichment before analysis.",
           }),

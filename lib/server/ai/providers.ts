@@ -10,7 +10,7 @@ export type ProviderRequest = {
 
 export const DEFAULT_MODELS: Record<AiProviderName, string> = {
   openai: "gpt-4o-mini",
-  gemini: "gemini-2.5-flash",
+  gemini: "gemini-2.5-flash-lite",
   claude: "claude-3-5-sonnet",
 };
 
@@ -28,8 +28,14 @@ function normalizeOpenAiModel(rawModel: string) {
 }
 
 function normalizeGeminiModel(rawModel: string) {
-  const normalized = rawModel.trim();
-  return normalized || getDefaultModel("gemini");
+  const normalized = rawModel.trim().toLowerCase().replace(/[\s_]+/g, "-");
+  if (!normalized) return getDefaultModel("gemini");
+  if (normalized === "gemini-2.5-flash-lite") return "gemini-2.5-flash-lite";
+  if (normalized === "gemini-2.5-flash") return "gemini-2.5-flash";
+  if (normalized === "gemini-2.5-pro") return "gemini-2.5-pro";
+  if (normalized === "gemini-2.0-flash") return "gemini-2.0-flash";
+  if (normalized === "gemini-2.0-flash-lite") return "gemini-2.0-flash-lite";
+  return normalized;
 }
 
 function normalizeClaudeModel(rawModel: string) {
