@@ -62,6 +62,11 @@ type JobsResponse = {
 function formatAiReason(reason?: string | null) {
   if (!reason) return "";
   if (reason === "GEMINI_API_KEY_MISSING") return "Gemini API key is not configured.";
+  if (reason === "GEMINI_AUTH_403") return "Gemini auth failed (403). Check API key/project permissions.";
+  if (reason === "GEMINI_RATE_LIMIT_429") return "Gemini rate limit reached (429). Please retry later.";
+  if (reason === "GEMINI_MODEL_NOT_FOUND_404") return "Gemini model not found (404). Check GEMINI_MODEL.";
+  if (reason === "GEMINI_BAD_REQUEST_400") return "Gemini request invalid (400). Model/output config may be unsupported.";
+  if (reason === "GEMINI_SERVER_5XX") return "Gemini server error (5xx). Please retry.";
   if (reason === "GEMINI_REQUEST_FAILED") return "Gemini request failed; using rule-based result.";
   if (reason === "GEMINI_INVALID_JSON") return "Gemini returned invalid JSON; using rule-based result.";
   if (reason === "GEMINI_INVALID_JSON_RETRY_FAILED")

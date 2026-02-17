@@ -103,7 +103,13 @@ export async function callGemini(request: ProviderRequest) {
   });
 
   if (!response.ok) {
-    throw new Error(`GEMINI_${response.status}`);
+    let detail = "";
+    try {
+      detail = (await response.text()).slice(0, 400);
+    } catch {
+      detail = "";
+    }
+    throw new Error(`GEMINI_${response.status}${detail ? `:${detail}` : ""}`);
   }
 
   const json = (await response.json()) as {

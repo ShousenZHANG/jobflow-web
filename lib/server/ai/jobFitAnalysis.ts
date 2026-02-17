@@ -417,6 +417,16 @@ async function maybeRefineWithGemini(
     };
   };
 
+  const mapGeminiFailureReason = (error: unknown): string => {
+    const message = error instanceof Error ? error.message : "";
+    if (message.startsWith("GEMINI_403")) return "GEMINI_AUTH_403";
+    if (message.startsWith("GEMINI_429")) return "GEMINI_RATE_LIMIT_429";
+    if (message.startsWith("GEMINI_404")) return "GEMINI_MODEL_NOT_FOUND_404";
+    if (message.startsWith("GEMINI_400")) return "GEMINI_BAD_REQUEST_400";
+    if (message.startsWith("GEMINI_5")) return "GEMINI_SERVER_5XX";
+    return "GEMINI_REQUEST_FAILED";
+  };
+
   try {
     const raw = await callProvider("gemini", {
       apiKey,
@@ -448,14 +458,14 @@ async function maybeRefineWithGemini(
       model,
       aiReason: "GEMINI_INVALID_JSON_RETRY_FAILED",
     };
-  } catch {
+  } catch (error) {
     return {
       analysis,
       source: "heuristic",
       aiEnhanced: false,
-      provider: null,
+      provider: "gemini",
       model,
-      aiReason: "GEMINI_REQUEST_FAILED",
+      aiReason: mapGeminiFailureReason(error),
     };
   }
 }
