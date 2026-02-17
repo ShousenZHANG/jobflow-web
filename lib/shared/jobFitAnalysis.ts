@@ -1,6 +1,7 @@
 export type JobFitStatus = "PENDING" | "READY" | "FAILED";
 export type JobFitGateStatus = "PASS" | "RISK" | "BLOCK";
 export type JobFitRecommendation = "Worth Applying" | "Apply with Tailored CV" | "Low Priority";
+export type JobFitSource = "heuristic" | "heuristic+gemini";
 
 export const JOB_FIT_ANALYZER_VERSION = "jobfit-v1";
 
@@ -34,5 +35,10 @@ export type JobFitAnalysisPayload = {
 export type JobFitApiResponse = {
   status: JobFitStatus;
   analysis?: JobFitAnalysisPayload;
+  source?: JobFitSource;
+  aiEnhanced?: boolean;
+  provider?: string | null;
+  model?: string | null;
+  aiReason?: string | null;
   message?: string;
 };

@@ -243,6 +243,10 @@ model JobFitAnalysis {
   promptRuleVersion       Int
   jobUpdatedAt            DateTime
   analyzerVersion         String
+  source                  String?  @default("heuristic")
+  aiEnhanced              Boolean  @default(false)
+  provider                String?
+  aiReason                String?
   model                   String
 
   status         JobFitStatus      @default(PENDING)

@@ -65,6 +65,17 @@ function fitGateClass(status: JobFitGateStatus) {
   return "bg-amber-100 text-amber-800";
 }
 
+function formatAiReason(reason?: string | null) {
+  if (!reason) return "";
+  if (reason === "GEMINI_API_KEY_MISSING") return "Gemini API key is not configured.";
+  if (reason === "GEMINI_REQUEST_FAILED") return "Gemini request failed; using rule-based result.";
+  if (reason === "GEMINI_INVALID_JSON") return "Gemini returned invalid JSON; using rule-based result.";
+  if (reason === "NO_JD") return "Job description is not available yet.";
+  if (reason === "NOT_COMPUTED") return "Analysis has not run yet.";
+  if (reason === "ANALYSIS_FAILED") return "Analysis fallback was used due to an internal error.";
+  return reason;
+}
+
 type CvSource = "ai" | "base" | "manual_import";
 type CoverSource = "ai" | "fallback" | "manual_import";
 type ResumeImportOutput = {
@@ -2074,6 +2085,17 @@ export function JobsClient({
                     <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-700">
                       AI Fit Snapshot
                     </div>
+                    {fitData?.status === "READY" ? (
+                      <Badge
+                        className={
+                          fitData.aiEnhanced
+                            ? "bg-cyan-100 text-cyan-800"
+                            : "bg-slate-200 text-slate-700"
+                        }
+                      >
+                        {fitData.aiEnhanced ? "AI Enhanced" : "Rule-based"}
+                      </Badge>
+                    ) : null}
                     {fitReady ? (
                       <Badge className={fitGateClass(fitReady.gateStatus)}>{fitReady.gateStatus}</Badge>
                     ) : null}
@@ -2106,14 +2128,13 @@ export function JobsClient({
                           <div className="text-base font-semibold text-slate-900">{fitReady.recommendation}</div>
                         </div>
                       </div>
-                      {fitReady.topGaps.length ? (
-                        <ul className="list-disc space-y-1 pl-5 text-xs text-slate-700">
-                          {fitReady.topGaps.map((gap) => (
-                            <li key={gap}>{gap}</li>
-                          ))}
-                        </ul>
+                      <div className="text-xs text-slate-600">
+                        Gap signals: <span className="font-semibold text-slate-800">{fitReady.topGaps.length}</span>
+                      </div>
+                      {!fitData?.aiEnhanced && fitData?.aiReason ? (
+                        <div className="text-xs text-amber-700">{formatAiReason(fitData.aiReason)}</div>
                       ) : (
-                        <div className="text-xs text-muted-foreground">No major gaps detected.</div>
+                        <div className="text-xs text-muted-foreground">Result source verified.</div>
                       )}
                     </div>
                   ) : null}

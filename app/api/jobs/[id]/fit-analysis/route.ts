@@ -11,6 +11,7 @@ import {
   type JobFitApiResponse,
   type JobFitEvidence,
   type JobFitGate,
+  type JobFitSource,
 } from "@/lib/shared/jobFitAnalysis";
 
 export const runtime = "nodejs";
@@ -59,9 +60,10 @@ async function buildContext(userId: string, id: string) {
   }
 
   const promptRuleVersion = await getPromptRuleVersion(userId);
+  const provider = "gemini";
   const model = normalizeProviderModel("gemini", process.env.GEMINI_MODEL || getDefaultModel("gemini"));
 
-  return { job, profile, promptRuleVersion, model } as const;
+  return { job, profile, promptRuleVersion, provider, model } as const;
 }
 
 function asStringArray(value: unknown): string[] {
@@ -103,6 +105,10 @@ function asEvidenceArray(value: unknown): JobFitEvidence[] {
   return out;
 }
 
+function normalizeSource(value: string | null): JobFitSource {
+  return value === "heuristic+gemini" ? "heuristic+gemini" : "heuristic";
+}
+
 function toApiResponse(row: {
   status: "PENDING" | "READY" | "FAILED";
   score: number | null;
@@ -113,14 +119,34 @@ function toApiResponse(row: {
   topGaps: unknown;
   gates: unknown;
   evidence: unknown;
+  source: string | null;
+  aiEnhanced: boolean | null;
+  provider: string | null;
+  model: string | null;
+  aiReason: string | null;
   error: string | null;
   updatedAt: Date;
 }): JobFitApiResponse {
   if (row.status === "FAILED") {
-    return { status: "FAILED", message: row.error || "Fit analysis failed." };
+    return {
+      status: "FAILED",
+      source: normalizeSource(row.source),
+      aiEnhanced: row.aiEnhanced ?? false,
+      provider: row.provider ?? null,
+      model: row.model ?? null,
+      aiReason: row.aiReason ?? "ANALYSIS_FAILED",
+      message: row.error || "Fit analysis failed.",
+    };
   }
   if (row.status !== "READY" || row.score === null || row.gateStatus === null || !row.recommendation) {
-    return { status: "PENDING" };
+    return {
+      status: "PENDING",
+      source: row.source ? normalizeSource(row.source) : undefined,
+      aiEnhanced: row.aiEnhanced ?? undefined,
+      provider: row.provider ?? undefined,
+      model: row.model ?? undefined,
+      aiReason: row.aiReason ?? undefined,
+    };
   }
 
   const recommendation =
@@ -132,6 +158,11 @@ function toApiResponse(row: {
 
   return {
     status: "READY",
+    source: normalizeSource(row.source),
+    aiEnhanced: row.aiEnhanced ?? false,
+    provider: row.provider ?? null,
+    model: row.model ?? null,
+    aiReason: row.aiReason ?? null,
     analysis: {
       score: row.score,
       gateStatus: row.gateStatus,
@@ -168,13 +199,21 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       promptRuleVersion: context.promptRuleVersion,
       jobUpdatedAt: context.job.updatedAt,
       analyzerVersion: JOB_FIT_ANALYZER_VERSION,
+      provider: context.provider,
       model: context.model,
     },
     orderBy: { updatedAt: "desc" },
   });
 
   if (!cache) {
-    return NextResponse.json({ status: "PENDING" } satisfies JobFitApiResponse);
+    return NextResponse.json({
+      status: "PENDING",
+      source: "heuristic",
+      aiEnhanced: false,
+      provider: context.provider,
+      model: context.model,
+      aiReason: "NOT_COMPUTED",
+    } satisfies JobFitApiResponse);
   }
   return NextResponse.json(toApiResponse(cache));
 }
@@ -198,6 +237,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     promptRuleVersion: context.promptRuleVersion,
     jobUpdatedAt: context.job.updatedAt,
     analyzerVersion: JOB_FIT_ANALYZER_VERSION,
+    provider: context.provider,
     model: context.model,
   };
 
@@ -216,12 +256,20 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
         data: {
           ...cacheWhere,
           status: "PENDING",
+          source: "heuristic",
+          aiEnhanced: false,
+          aiReason: "NO_JD",
           error: null,
         },
       });
     }
     return NextResponse.json({
       status: "PENDING",
+      source: "heuristic",
+      aiEnhanced: false,
+      provider: context.provider,
+      model: context.model,
+      aiReason: "NO_JD",
       message: "Waiting for JD enrichment before analysis.",
     } satisfies JobFitApiResponse);
   }
@@ -235,14 +283,19 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     });
     const readyPayload = {
       status: "READY" as const,
-      score: analysis.score,
-      gateStatus: analysis.gateStatus,
-      recommendation: analysis.recommendation,
-      stackMatched: analysis.stackMatch.matched,
-      stackTotal: analysis.stackMatch.total,
-      topGaps: analysis.topGaps,
-      gates: analysis.gates,
-      evidence: analysis.evidence,
+      source: analysis.source,
+      aiEnhanced: analysis.aiEnhanced,
+      provider: context.provider,
+      model: analysis.model ?? context.model,
+      aiReason: analysis.aiReason,
+      score: analysis.analysis.score,
+      gateStatus: analysis.analysis.gateStatus,
+      recommendation: analysis.analysis.recommendation,
+      stackMatched: analysis.analysis.stackMatch.matched,
+      stackTotal: analysis.analysis.stackMatch.total,
+      topGaps: analysis.analysis.topGaps,
+      gates: analysis.analysis.gates,
+      evidence: analysis.analysis.evidence,
       error: null,
     };
     const saved = cached
@@ -264,6 +317,9 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
         where: { id: cached.id },
         data: {
           status: "FAILED",
+          source: "heuristic",
+          aiEnhanced: false,
+          aiReason: "ANALYSIS_FAILED",
           error: message,
         },
       });
@@ -272,6 +328,9 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
         data: {
           ...cacheWhere,
           status: "FAILED",
+          source: "heuristic",
+          aiEnhanced: false,
+          aiReason: "ANALYSIS_FAILED",
           error: message,
         },
       });

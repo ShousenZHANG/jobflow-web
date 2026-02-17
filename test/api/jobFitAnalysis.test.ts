@@ -10,6 +10,7 @@ const prismaStore = vi.hoisted(() => ({
   jobFitAnalysis: {
     findFirst: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
@@ -45,6 +46,7 @@ describe("job fit analysis api", () => {
     prismaStore.promptRuleTemplate.findFirst.mockReset();
     prismaStore.jobFitAnalysis.findFirst.mockReset();
     prismaStore.jobFitAnalysis.create.mockReset();
+    prismaStore.jobFitAnalysis.update.mockReset();
   });
 
   it("returns 401 when user is not authenticated", async () => {
@@ -93,6 +95,9 @@ describe("job fit analysis api", () => {
     expect(res.status).toBe(200);
     expect(json.status).toBe("PENDING");
     expect(json.analysis).toBeUndefined();
+    expect(json.source).toBe("heuristic");
+    expect(json.aiEnhanced).toBe(false);
+    expect(json.aiReason).toBe("NOT_COMPUTED");
   });
 
   it("creates and returns READY analysis from POST when cache miss", async () => {
@@ -140,6 +145,8 @@ describe("job fit analysis api", () => {
     expect(typeof json.analysis.score).toBe("number");
     expect(["PASS", "RISK", "BLOCK"]).toContain(json.analysis.gateStatus);
     expect(Array.isArray(json.analysis.topGaps)).toBe(true);
+    expect(["heuristic", "heuristic+gemini"]).toContain(json.source);
+    expect(typeof json.aiEnhanced).toBe("boolean");
     expect(prismaStore.jobFitAnalysis.create).toHaveBeenCalledTimes(1);
   });
 });

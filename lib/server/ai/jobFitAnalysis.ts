@@ -5,6 +5,7 @@ import {
   type JobFitGate,
   type JobFitGateStatus,
   type JobFitRecommendation,
+  type JobFitSource,
 } from "@/lib/shared/jobFitAnalysis";
 
 type ResumeLike = {
@@ -19,6 +20,15 @@ type BuildInput = {
   company: string | null;
   description: string;
   resume: ResumeLike;
+};
+
+export type BuildJobFitResult = {
+  analysis: JobFitAnalysisPayload;
+  source: JobFitSource;
+  aiEnhanced: boolean;
+  provider: "gemini" | null;
+  model: string | null;
+  aiReason: string | null;
 };
 
 const TECH_KEYWORDS = [
@@ -107,6 +117,29 @@ function dedupe(items: string[]): string[] {
     out.push(item.trim());
   }
   return out;
+}
+
+function buildGapSignals(input: {
+  missingResponsibilities: string[];
+  unmatchedTech: string[];
+  yearsGateStatus: JobFitGateStatus;
+  yearRequirement: number | null;
+  visaRequired: boolean;
+}): string[] {
+  const signals: string[] = [];
+  if (input.missingResponsibilities.length > 0) {
+    signals.push(`Responsibility coverage gap (${input.missingResponsibilities.length})`);
+  }
+  for (const tech of input.unmatchedTech.slice(0, 2)) {
+    signals.push(`Missing stack: ${tech}`);
+  }
+  if (input.yearsGateStatus !== "PASS" && input.yearRequirement !== null) {
+    signals.push(`Seniority gap: ${input.yearRequirement}+ years target`);
+  }
+  if (input.visaRequired) {
+    signals.push("Work rights requirement present");
+  }
+  return dedupe(signals).slice(0, 3);
 }
 
 function collectResumeText(resume: ResumeLike): string {
@@ -299,9 +332,18 @@ function parseFirstJsonObject(raw: string): Record<string, unknown> | null {
 async function maybeRefineWithGemini(
   input: BuildInput,
   analysis: JobFitAnalysisPayload,
-): Promise<JobFitAnalysisPayload> {
+): Promise<BuildJobFitResult> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return analysis;
+  if (!apiKey) {
+    return {
+      analysis,
+      source: "heuristic",
+      aiEnhanced: false,
+      provider: null,
+      model: null,
+      aiReason: "GEMINI_API_KEY_MISSING",
+    };
+  }
 
   const model = normalizeProviderModel("gemini", process.env.GEMINI_MODEL || getDefaultModel("gemini"));
   const systemPrompt = [
@@ -332,7 +374,16 @@ async function maybeRefineWithGemini(
       userPrompt,
     });
     const parsed = parseFirstJsonObject(raw);
-    if (!parsed) return analysis;
+    if (!parsed) {
+      return {
+        analysis,
+        source: "heuristic",
+        aiEnhanced: false,
+        provider: null,
+        model,
+        aiReason: "GEMINI_INVALID_JSON",
+      };
+    }
     const topGaps = Array.isArray(parsed.topGaps)
       ? parsed.topGaps
           .map((item) => (typeof item === "string" ? item.trim() : ""))
@@ -368,18 +419,32 @@ async function maybeRefineWithGemini(
         : "PASS";
 
     return {
-      ...analysis,
-      topGaps,
-      gates,
-      gateStatus,
-      recommendation,
+      analysis: {
+        ...analysis,
+        topGaps,
+        gates,
+        gateStatus,
+        recommendation,
+      },
+      source: "heuristic+gemini",
+      aiEnhanced: true,
+      provider: "gemini",
+      model,
+      aiReason: null,
     };
   } catch {
-    return analysis;
+    return {
+      analysis,
+      source: "heuristic",
+      aiEnhanced: false,
+      provider: null,
+      model,
+      aiReason: "GEMINI_REQUEST_FAILED",
+    };
   }
 }
 
-export async function buildJobFitAnalysis(input: BuildInput): Promise<JobFitAnalysisPayload> {
+export async function buildJobFitAnalysis(input: BuildInput): Promise<BuildJobFitResult> {
   const resumeText = collectResumeText(input.resume);
   const resumeBullets = collectResumeBullets(input.resume);
   const jdTech = dedupe(TECH_KEYWORDS.filter((keyword) => containsTerm(input.description, keyword)));
@@ -447,19 +512,14 @@ export async function buildJobFitAnalysis(input: BuildInput): Promise<JobFitAnal
   );
   score = Math.max(0, Math.min(100, score));
 
-  const topGaps = dedupe(
-    [
-      ...missingResponsibilities.map((item) => `Responsibility gap: ${item}`),
-      ...jdTech
-        .filter((tech) => !matchedTech.includes(tech))
-        .slice(0, 3)
-        .map((item) => `Stack gap: ${item}`),
-      yearsGateStatus !== "PASS" && yearReq.years !== null
-        ? `Seniority gap: target ${yearReq.years}+ years`
-        : "",
-      visaReq.required ? "Eligibility risk: work rights / visa requirement" : "",
-    ].filter(Boolean),
-  ).slice(0, 3);
+  const unmatchedTech = jdTech.filter((tech) => !matchedTech.includes(tech));
+  const topGaps = buildGapSignals({
+    missingResponsibilities,
+    unmatchedTech,
+    yearsGateStatus,
+    yearRequirement: yearReq.years,
+    visaRequired: visaReq.required,
+  });
 
   const evidence = topResponsibilities
     .slice(0, 3)

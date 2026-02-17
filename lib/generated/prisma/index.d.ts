@@ -12669,6 +12669,10 @@ export namespace Prisma {
     promptRuleVersion: number | null
     jobUpdatedAt: Date | null
     analyzerVersion: string | null
+    source: string | null
+    aiEnhanced: boolean | null
+    provider: string | null
+    aiReason: string | null
     model: string | null
     status: $Enums.JobFitStatus | null
     score: number | null
@@ -12689,6 +12693,10 @@ export namespace Prisma {
     promptRuleVersion: number | null
     jobUpdatedAt: Date | null
     analyzerVersion: string | null
+    source: string | null
+    aiEnhanced: boolean | null
+    provider: string | null
+    aiReason: string | null
     model: string | null
     status: $Enums.JobFitStatus | null
     score: number | null
@@ -12709,6 +12717,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: number
     analyzerVersion: number
+    source: number
+    aiEnhanced: number
+    provider: number
+    aiReason: number
     model: number
     status: number
     score: number
@@ -12748,6 +12760,10 @@ export namespace Prisma {
     promptRuleVersion?: true
     jobUpdatedAt?: true
     analyzerVersion?: true
+    source?: true
+    aiEnhanced?: true
+    provider?: true
+    aiReason?: true
     model?: true
     status?: true
     score?: true
@@ -12768,6 +12784,10 @@ export namespace Prisma {
     promptRuleVersion?: true
     jobUpdatedAt?: true
     analyzerVersion?: true
+    source?: true
+    aiEnhanced?: true
+    provider?: true
+    aiReason?: true
     model?: true
     status?: true
     score?: true
@@ -12788,6 +12808,10 @@ export namespace Prisma {
     promptRuleVersion?: true
     jobUpdatedAt?: true
     analyzerVersion?: true
+    source?: true
+    aiEnhanced?: true
+    provider?: true
+    aiReason?: true
     model?: true
     status?: true
     score?: true
@@ -12898,6 +12922,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date
     analyzerVersion: string
+    source: string | null
+    aiEnhanced: boolean
+    provider: string | null
+    aiReason: string | null
     model: string
     status: $Enums.JobFitStatus
     score: number | null
@@ -12940,6 +12968,10 @@ export namespace Prisma {
     promptRuleVersion?: boolean
     jobUpdatedAt?: boolean
     analyzerVersion?: boolean
+    source?: boolean
+    aiEnhanced?: boolean
+    provider?: boolean
+    aiReason?: boolean
     model?: boolean
     status?: boolean
     score?: boolean
@@ -12965,6 +12997,10 @@ export namespace Prisma {
     promptRuleVersion?: boolean
     jobUpdatedAt?: boolean
     analyzerVersion?: boolean
+    source?: boolean
+    aiEnhanced?: boolean
+    provider?: boolean
+    aiReason?: boolean
     model?: boolean
     status?: boolean
     score?: boolean
@@ -12990,6 +13026,10 @@ export namespace Prisma {
     promptRuleVersion?: boolean
     jobUpdatedAt?: boolean
     analyzerVersion?: boolean
+    source?: boolean
+    aiEnhanced?: boolean
+    provider?: boolean
+    aiReason?: boolean
     model?: boolean
     status?: boolean
     score?: boolean
@@ -13015,6 +13055,10 @@ export namespace Prisma {
     promptRuleVersion?: boolean
     jobUpdatedAt?: boolean
     analyzerVersion?: boolean
+    source?: boolean
+    aiEnhanced?: boolean
+    provider?: boolean
+    aiReason?: boolean
     model?: boolean
     status?: boolean
     score?: boolean
@@ -13030,7 +13074,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type JobFitAnalysisOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobId" | "resumeSnapshotUpdatedAt" | "promptRuleVersion" | "jobUpdatedAt" | "analyzerVersion" | "model" | "status" | "score" | "gateStatus" | "recommendation" | "stackMatched" | "stackTotal" | "topGaps" | "gates" | "evidence" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["jobFitAnalysis"]>
+  export type JobFitAnalysisOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobId" | "resumeSnapshotUpdatedAt" | "promptRuleVersion" | "jobUpdatedAt" | "analyzerVersion" | "source" | "aiEnhanced" | "provider" | "aiReason" | "model" | "status" | "score" | "gateStatus" | "recommendation" | "stackMatched" | "stackTotal" | "topGaps" | "gates" | "evidence" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["jobFitAnalysis"]>
   export type JobFitAnalysisInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     job?: boolean | JobDefaultArgs<ExtArgs>
@@ -13058,6 +13102,10 @@ export namespace Prisma {
       promptRuleVersion: number
       jobUpdatedAt: Date
       analyzerVersion: string
+      source: string | null
+      aiEnhanced: boolean
+      provider: string | null
+      aiReason: string | null
       model: string
       status: $Enums.JobFitStatus
       score: number | null
@@ -13503,6 +13551,10 @@ export namespace Prisma {
     readonly promptRuleVersion: FieldRef<"JobFitAnalysis", 'Int'>
     readonly jobUpdatedAt: FieldRef<"JobFitAnalysis", 'DateTime'>
     readonly analyzerVersion: FieldRef<"JobFitAnalysis", 'String'>
+    readonly source: FieldRef<"JobFitAnalysis", 'String'>
+    readonly aiEnhanced: FieldRef<"JobFitAnalysis", 'Boolean'>
+    readonly provider: FieldRef<"JobFitAnalysis", 'String'>
+    readonly aiReason: FieldRef<"JobFitAnalysis", 'String'>
     readonly model: FieldRef<"JobFitAnalysis", 'String'>
     readonly status: FieldRef<"JobFitAnalysis", 'JobFitStatus'>
     readonly score: FieldRef<"JobFitAnalysis", 'Int'>
@@ -16342,6 +16394,10 @@ export namespace Prisma {
     promptRuleVersion: 'promptRuleVersion',
     jobUpdatedAt: 'jobUpdatedAt',
     analyzerVersion: 'analyzerVersion',
+    source: 'source',
+    aiEnhanced: 'aiEnhanced',
+    provider: 'provider',
+    aiReason: 'aiReason',
     model: 'model',
     status: 'status',
     score: 'score',
@@ -17354,6 +17410,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFilter<"JobFitAnalysis"> | number
     jobUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
     analyzerVersion?: StringFilter<"JobFitAnalysis"> | string
+    source?: StringNullableFilter<"JobFitAnalysis"> | string | null
+    aiEnhanced?: BoolFilter<"JobFitAnalysis"> | boolean
+    provider?: StringNullableFilter<"JobFitAnalysis"> | string | null
+    aiReason?: StringNullableFilter<"JobFitAnalysis"> | string | null
     model?: StringFilter<"JobFitAnalysis"> | string
     status?: EnumJobFitStatusFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
     score?: IntNullableFilter<"JobFitAnalysis"> | number | null
@@ -17379,6 +17439,10 @@ export namespace Prisma {
     promptRuleVersion?: SortOrder
     jobUpdatedAt?: SortOrder
     analyzerVersion?: SortOrder
+    source?: SortOrderInput | SortOrder
+    aiEnhanced?: SortOrder
+    provider?: SortOrderInput | SortOrder
+    aiReason?: SortOrderInput | SortOrder
     model?: SortOrder
     status?: SortOrder
     score?: SortOrderInput | SortOrder
@@ -17408,6 +17472,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFilter<"JobFitAnalysis"> | number
     jobUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
     analyzerVersion?: StringFilter<"JobFitAnalysis"> | string
+    source?: StringNullableFilter<"JobFitAnalysis"> | string | null
+    aiEnhanced?: BoolFilter<"JobFitAnalysis"> | boolean
+    provider?: StringNullableFilter<"JobFitAnalysis"> | string | null
+    aiReason?: StringNullableFilter<"JobFitAnalysis"> | string | null
     model?: StringFilter<"JobFitAnalysis"> | string
     status?: EnumJobFitStatusFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
     score?: IntNullableFilter<"JobFitAnalysis"> | number | null
@@ -17433,6 +17501,10 @@ export namespace Prisma {
     promptRuleVersion?: SortOrder
     jobUpdatedAt?: SortOrder
     analyzerVersion?: SortOrder
+    source?: SortOrderInput | SortOrder
+    aiEnhanced?: SortOrder
+    provider?: SortOrderInput | SortOrder
+    aiReason?: SortOrderInput | SortOrder
     model?: SortOrder
     status?: SortOrder
     score?: SortOrderInput | SortOrder
@@ -17464,6 +17536,10 @@ export namespace Prisma {
     promptRuleVersion?: IntWithAggregatesFilter<"JobFitAnalysis"> | number
     jobUpdatedAt?: DateTimeWithAggregatesFilter<"JobFitAnalysis"> | Date | string
     analyzerVersion?: StringWithAggregatesFilter<"JobFitAnalysis"> | string
+    source?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
+    aiEnhanced?: BoolWithAggregatesFilter<"JobFitAnalysis"> | boolean
+    provider?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
+    aiReason?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
     model?: StringWithAggregatesFilter<"JobFitAnalysis"> | string
     status?: EnumJobFitStatusWithAggregatesFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
     score?: IntNullableWithAggregatesFilter<"JobFitAnalysis"> | number | null
@@ -18473,6 +18549,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -18498,6 +18578,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -18519,6 +18603,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -18544,6 +18632,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -18567,6 +18659,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -18588,6 +18684,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -18611,6 +18711,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -19697,6 +19801,10 @@ export namespace Prisma {
     promptRuleVersion?: SortOrder
     jobUpdatedAt?: SortOrder
     analyzerVersion?: SortOrder
+    source?: SortOrder
+    aiEnhanced?: SortOrder
+    provider?: SortOrder
+    aiReason?: SortOrder
     model?: SortOrder
     status?: SortOrder
     score?: SortOrder
@@ -19727,6 +19835,10 @@ export namespace Prisma {
     promptRuleVersion?: SortOrder
     jobUpdatedAt?: SortOrder
     analyzerVersion?: SortOrder
+    source?: SortOrder
+    aiEnhanced?: SortOrder
+    provider?: SortOrder
+    aiReason?: SortOrder
     model?: SortOrder
     status?: SortOrder
     score?: SortOrder
@@ -19747,6 +19859,10 @@ export namespace Prisma {
     promptRuleVersion?: SortOrder
     jobUpdatedAt?: SortOrder
     analyzerVersion?: SortOrder
+    source?: SortOrder
+    aiEnhanced?: SortOrder
+    provider?: SortOrder
+    aiReason?: SortOrder
     model?: SortOrder
     status?: SortOrder
     score?: SortOrder
@@ -21215,6 +21331,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -21238,6 +21358,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -21613,6 +21737,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFilter<"JobFitAnalysis"> | number
     jobUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
     analyzerVersion?: StringFilter<"JobFitAnalysis"> | string
+    source?: StringNullableFilter<"JobFitAnalysis"> | string | null
+    aiEnhanced?: BoolFilter<"JobFitAnalysis"> | boolean
+    provider?: StringNullableFilter<"JobFitAnalysis"> | string | null
+    aiReason?: StringNullableFilter<"JobFitAnalysis"> | string | null
     model?: StringFilter<"JobFitAnalysis"> | string
     status?: EnumJobFitStatusFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
     score?: IntNullableFilter<"JobFitAnalysis"> | number | null
@@ -22131,6 +22259,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -22154,6 +22286,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -23363,6 +23499,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -23571,6 +23711,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -23594,6 +23738,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -23616,6 +23764,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -23862,6 +24014,10 @@ export namespace Prisma {
     promptRuleVersion: number
     jobUpdatedAt: Date | string
     analyzerVersion: string
+    source?: string | null
+    aiEnhanced?: boolean
+    provider?: string | null
+    aiReason?: string | null
     model: string
     status?: $Enums.JobFitStatus
     score?: number | null
@@ -23928,6 +24084,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -23951,6 +24111,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
@@ -23973,6 +24137,10 @@ export namespace Prisma {
     promptRuleVersion?: IntFieldUpdateOperationsInput | number
     jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     analyzerVersion?: StringFieldUpdateOperationsInput | string
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
     model?: StringFieldUpdateOperationsInput | string
     status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
     score?: NullableIntFieldUpdateOperationsInput | number | null
