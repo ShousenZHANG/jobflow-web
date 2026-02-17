@@ -131,9 +131,8 @@ describe("JobsClient", () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     expect(await screen.findByText("AI Fit Snapshot")).toBeInTheDocument();
-    expect(await screen.findByText("78")).toBeInTheDocument();
+    expect(await screen.findByText("Score 78")).toBeInTheDocument();
     expect(await screen.findByText("Worth Applying")).toBeInTheDocument();
-    expect(await screen.findByText("Gap signals:")).toBeInTheDocument();
     expect(await screen.findByText("Rule-based")).toBeInTheDocument();
   });
 

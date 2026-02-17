@@ -31,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useGuide } from "@/app/GuideContext";
 import { useFetchStatus, type FetchRunStatus } from "@/app/FetchStatusContext";
-import { type JobFitApiResponse, type JobFitGateStatus } from "@/lib/shared/jobFitAnalysis";
+import { type JobFitApiResponse } from "@/lib/shared/jobFitAnalysis";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -58,12 +58,6 @@ type JobsResponse = {
     jobLevels?: string[];
   };
 };
-
-function fitGateClass(status: JobFitGateStatus) {
-  if (status === "PASS") return "bg-emerald-100 text-emerald-700";
-  if (status === "BLOCK") return "bg-rose-100 text-rose-700";
-  return "bg-amber-100 text-amber-800";
-}
 
 function formatAiReason(reason?: string | null) {
   if (!reason) return "";
@@ -2103,8 +2097,8 @@ export function JobsClient({
                   </div>
                 </div>
                 <div className="w-full rounded-2xl border border-slate-900/10 bg-slate-50/60 p-3" data-testid="job-fit-snapshot">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-600">
                       AI Fit Snapshot
                     </div>
                     {fitData?.status === "READY" ? (
@@ -2117,9 +2111,6 @@ export function JobsClient({
                       >
                         {fitData.aiEnhanced ? "AI Enhanced" : "Rule-based"}
                       </Badge>
-                    ) : null}
-                    {fitReady ? (
-                      <Badge className={fitGateClass(fitReady.gateStatus)}>{fitReady.gateStatus}</Badge>
                     ) : null}
                   </div>
                   {fitLoading ? (
@@ -2147,29 +2138,13 @@ export function JobsClient({
                     </div>
                   ) : null}
                   {fitReady ? (
-                    <div className="mt-3 space-y-2">
-                      <div className="grid gap-2 sm:grid-cols-4">
-                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-                          <div className="text-[11px] text-muted-foreground">Match score</div>
-                          <div className="text-base font-semibold text-slate-900">{fitReady.score}</div>
-                        </div>
-                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-                          <div className="text-[11px] text-muted-foreground">Gate</div>
-                          <div className="text-base font-semibold text-slate-900">{fitReady.gateStatus}</div>
-                        </div>
-                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-                          <div className="text-[11px] text-muted-foreground">Stack match</div>
-                          <div className="text-base font-semibold text-slate-900">
-                            {fitReady.stackMatch.matched}/{fitReady.stackMatch.total}
-                          </div>
-                        </div>
-                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-                          <div className="text-[11px] text-muted-foreground">Recommendation</div>
-                          <div className="text-base font-semibold text-slate-900">{fitReady.recommendation}</div>
-                        </div>
-                      </div>
-                      <div className="text-xs text-slate-600">
-                        Gap signals: <span className="font-semibold text-slate-800">{fitReady.topGaps.length}</span>
+                    <div className="mt-2 space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <span className="rounded-md border border-slate-200 bg-white px-2 py-1 font-semibold text-slate-900">
+                          Score {fitReady.score}
+                        </span>
+                        <span className="text-slate-500">•</span>
+                        <span className="font-medium text-slate-900">{fitReady.recommendation}</span>
                       </div>
                       {!fitData?.aiEnhanced && fitData?.aiReason ? (
                         <div className="text-xs text-amber-700">{formatAiReason(fitData.aiReason)}</div>
