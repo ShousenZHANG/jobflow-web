@@ -2162,21 +2162,19 @@ export function JobsClient({
                   {fitReady ? (
                     <div className="mt-2 space-y-2">
                       <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <span className="rounded-md border border-slate-200 bg-white px-2 py-1 font-semibold text-slate-900">
-                          Score {fitReady.score}
+                        <span
+                          className={`rounded-md border px-2 py-1 font-semibold ${
+                            fitReady.gateStatus === "PASS"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : fitReady.gateStatus === "BLOCK"
+                                ? "border-rose-200 bg-rose-50 text-rose-700"
+                                : "border-amber-200 bg-amber-50 text-amber-800"
+                          }`}
+                        >
+                          Hard gate: {fitReady.gateStatus}
                         </span>
                         <span className="font-medium text-slate-900">{fitReady.recommendation}</span>
                       </div>
-                      {fitReady.topGaps.length > 0 ? (
-                        <div>
-                          <div className="mb-1 text-[11px] font-medium text-slate-600">Top mismatches</div>
-                          <ul className="list-disc space-y-1 pl-4 text-xs text-slate-700">
-                            {fitReady.topGaps.slice(0, 3).map((gap) => (
-                              <li key={gap}>{gap}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
                       {fitReady.gates.some((gate) => gate.status !== "PASS") ? (
                         <div>
                           <div className="mb-1 text-[11px] font-medium text-slate-600">Hard gates</div>
