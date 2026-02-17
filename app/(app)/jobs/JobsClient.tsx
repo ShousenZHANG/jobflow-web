@@ -1373,11 +1373,31 @@ export function JobsClient({
   const fitReady = fitData?.status === "READY" ? fitData.analysis : null;
   const fitPending = fitData?.status === "PENDING";
   const fitLoading = Boolean(selectedJob) && ((fitStartMutation.isPending && !fitData) || fitQuery.isLoading);
+  const fitPendingReason =
+    fitData?.aiReason && fitData.aiReason !== "NOT_COMPUTED"
+      ? formatAiReason(fitData.aiReason)
+      : fitData?.message || null;
+  const fitMutationError = fitStartMutation.error
+    ? getErrorMessage(fitStartMutation.error, "Failed to start fit analysis.")
+    : null;
   const fitError = fitData?.status === "FAILED"
     ? fitData.message || "Fit analysis failed."
+    : fitMutationError
+      ? fitMutationError
     : fitQuery.error
       ? getErrorMessage(fitQuery.error, "Fit analysis failed.")
       : null;
+  const fitRetryRef = useRef<Record<string, number>>({});
+  useEffect(() => {
+    if (!effectiveSelectedId) return;
+    if (!fitPending) return;
+    if (fitData?.aiReason !== "NOT_COMPUTED") return;
+    if (fitStartMutation.isPending) return;
+    const attempts = fitRetryRef.current[effectiveSelectedId] ?? 0;
+    if (attempts >= 2) return;
+    fitRetryRef.current[effectiveSelectedId] = attempts + 1;
+    fitStartMutation.mutate(effectiveSelectedId);
+  }, [effectiveSelectedId, fitPending, fitData?.aiReason, fitStartMutation]);
   const isLongDescription = selectedDescription.length > 600;
   const experienceSignals = useMemo(
     () => parseExperienceGate(selectedDescription),
@@ -2100,11 +2120,29 @@ export function JobsClient({
                       <Badge className={fitGateClass(fitReady.gateStatus)}>{fitReady.gateStatus}</Badge>
                     ) : null}
                   </div>
-                  {fitLoading || fitPending ? (
+                  {fitLoading ? (
                     <div className="mt-2 text-sm text-muted-foreground">Analyzing resume vs JD...</div>
                   ) : null}
+                  {!fitLoading && fitPending ? (
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      {fitPendingReason || "Preparing analysis..."}
+                    </div>
+                  ) : null}
                   {fitError ? (
-                    <div className="mt-2 text-sm text-rose-700">{fitError}</div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-rose-700">
+                      <span>{fitError}</span>
+                      {selectedJob ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 rounded-lg border-rose-200 px-2 text-xs text-rose-700 hover:bg-rose-50"
+                          onClick={() => fitStartMutation.mutate(selectedJob.id)}
+                        >
+                          Retry
+                        </Button>
+                      ) : null}
+                    </div>
                   ) : null}
                   {fitReady ? (
                     <div className="mt-3 space-y-2">
