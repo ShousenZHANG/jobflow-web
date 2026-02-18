@@ -59,9 +59,15 @@ type RenderResumeInput = {
 };
 
 const TEMPLATE_ROOT = path.join(process.cwd(), "latexTemp", "Resume");
+const templateCache = new Map<string, string>();
 
 function readTemplate(relPath: string) {
-  return fs.readFileSync(path.join(TEMPLATE_ROOT, relPath), "utf-8");
+  const absolutePath = path.join(TEMPLATE_ROOT, relPath);
+  const cached = templateCache.get(absolutePath);
+  if (cached !== undefined) return cached;
+  const loaded = fs.readFileSync(absolutePath, "utf-8");
+  templateCache.set(absolutePath, loaded);
+  return loaded;
 }
 
 function replaceAll(text: string, map: Record<string, string>) {

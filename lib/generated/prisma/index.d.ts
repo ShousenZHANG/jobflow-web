@@ -15644,10 +15644,10 @@ export namespace Prisma {
 
   export type ResumeProfileWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    userId?: string
     AND?: ResumeProfileWhereInput | ResumeProfileWhereInput[]
     OR?: ResumeProfileWhereInput[]
     NOT?: ResumeProfileWhereInput | ResumeProfileWhereInput[]
-    userId?: UuidFilter<"ResumeProfile"> | string
     summary?: StringNullableFilter<"ResumeProfile"> | string | null
     basics?: JsonNullableFilter<"ResumeProfile">
     links?: JsonNullableFilter<"ResumeProfile">
@@ -15659,7 +15659,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ResumeProfile"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     applications?: ApplicationListRelationFilter
-  }, "id">
+  }, "id" | "userId">
 
   export type ResumeProfileOrderByWithAggregationInput = {
     id?: SortOrder

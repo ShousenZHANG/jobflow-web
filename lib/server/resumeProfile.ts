@@ -46,9 +46,8 @@ export type ResumeProfileInput = {
 };
 
 export async function getResumeProfile(userId: string) {
-  return prisma.resumeProfile.findFirst({
+  return prisma.resumeProfile.findUnique({
     where: { userId },
-    orderBy: { updatedAt: "desc" },
   });
 }
 
@@ -72,20 +71,10 @@ export async function upsertResumeProfile(
     education: toJsonValue(data.education),
   };
 
-  const existing = await prisma.resumeProfile.findFirst({
+  return prisma.resumeProfile.upsert({
     where: { userId },
-    orderBy: { updatedAt: "desc" },
-  });
-
-  if (existing) {
-    return prisma.resumeProfile.update({
-      where: { id: existing.id },
-      data: normalized,
-    });
-  }
-
-  return prisma.resumeProfile.create({
-    data: {
+    update: normalized,
+    create: {
       userId,
       ...normalized,
     },

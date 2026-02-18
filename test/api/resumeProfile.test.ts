@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const resumeProfileStore = vi.hoisted(() => ({
-  findFirst: vi.fn(),
-  create: vi.fn(),
-  update: vi.fn(),
+  findUnique: vi.fn(),
+  upsert: vi.fn(),
 }));
 
 vi.mock("@/lib/server/prisma", () => ({
@@ -25,9 +24,8 @@ import { GET, POST } from "@/app/api/resume-profile/route";
 
 describe("resume profile api", () => {
   beforeEach(() => {
-    resumeProfileStore.findFirst.mockReset();
-    resumeProfileStore.create.mockReset();
-    resumeProfileStore.update.mockReset();
+    resumeProfileStore.findUnique.mockReset();
+    resumeProfileStore.upsert.mockReset();
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockReset();
   });
 
@@ -35,7 +33,7 @@ describe("resume profile api", () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
-    resumeProfileStore.findFirst.mockResolvedValueOnce(null);
+    resumeProfileStore.findUnique.mockResolvedValueOnce(null);
 
     const res = await GET();
     const json = await res.json();
@@ -48,8 +46,7 @@ describe("resume profile api", () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
-    resumeProfileStore.findFirst.mockResolvedValueOnce(null);
-    resumeProfileStore.create.mockResolvedValueOnce({
+    resumeProfileStore.upsert.mockResolvedValueOnce({
       id: "rp-1",
       userId: "user-1",
       summary: "Hello",
@@ -106,8 +103,10 @@ describe("resume profile api", () => {
     const json = await res.json();
     expect(res.status).toBe(200);
     expect(json.profile.summary).toBe("Hello");
-    expect(resumeProfileStore.create).toHaveBeenCalledWith({
-      data: {
+    expect(resumeProfileStore.upsert).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      update: payload,
+      create: {
         userId: "user-1",
         ...payload,
       },

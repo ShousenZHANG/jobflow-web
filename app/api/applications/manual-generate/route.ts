@@ -21,7 +21,7 @@ export const runtime = "nodejs";
 const ManualGenerateSchema = z.object({
   jobId: z.string().uuid(),
   target: z.enum(["resume", "cover"]),
-  modelOutput: z.string().min(20),
+  modelOutput: z.string().min(20).max(80000),
   promptMeta: z
     .object({
       ruleSetId: z.string().min(1),

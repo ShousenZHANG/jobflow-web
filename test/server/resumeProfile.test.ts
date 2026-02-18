@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const resumeProfileStore = vi.hoisted(() => ({
-  findFirst: vi.fn(),
-  create: vi.fn(),
-  update: vi.fn(),
+  findUnique: vi.fn(),
+  upsert: vi.fn(),
 }));
 
 vi.mock("@/lib/server/prisma", () => ({
@@ -16,14 +15,12 @@ import { getResumeProfile, upsertResumeProfile } from "@/lib/server/resumeProfil
 
 describe("resumeProfile data access", () => {
   beforeEach(() => {
-    resumeProfileStore.findFirst.mockReset();
-    resumeProfileStore.create.mockReset();
-    resumeProfileStore.update.mockReset();
+    resumeProfileStore.findUnique.mockReset();
+    resumeProfileStore.upsert.mockReset();
   });
 
   it("upserts and fetches resume profile", async () => {
-    resumeProfileStore.findFirst.mockResolvedValueOnce(null);
-    resumeProfileStore.create.mockResolvedValueOnce({
+    resumeProfileStore.upsert.mockResolvedValueOnce({
       id: "rp-1",
       userId: "user-1",
       summary: "A",
@@ -114,8 +111,18 @@ describe("resumeProfile data access", () => {
       education,
     });
 
-    expect(resumeProfileStore.create).toHaveBeenCalledWith({
-      data: {
+    expect(resumeProfileStore.upsert).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      update: {
+        summary: "A",
+        basics,
+        links,
+        skills,
+        experiences,
+        projects,
+        education,
+      },
+      create: {
         userId: "user-1",
         summary: "A",
         basics,
@@ -128,7 +135,7 @@ describe("resumeProfile data access", () => {
     });
     expect(created.summary).toBe("A");
 
-    resumeProfileStore.findFirst.mockResolvedValueOnce({
+    resumeProfileStore.findUnique.mockResolvedValueOnce({
       id: "rp-1",
       userId: "user-1",
       summary: "A",
@@ -145,12 +152,7 @@ describe("resumeProfile data access", () => {
   });
 
   it("updates when a profile already exists", async () => {
-    resumeProfileStore.findFirst.mockResolvedValueOnce({
-      id: "rp-2",
-      userId: "user-2",
-      summary: "Old",
-    });
-    resumeProfileStore.update.mockResolvedValueOnce({
+    resumeProfileStore.upsert.mockResolvedValueOnce({
       id: "rp-2",
       userId: "user-2",
       summary: "New",
@@ -158,9 +160,13 @@ describe("resumeProfile data access", () => {
 
     const updated = await upsertResumeProfile("user-2", { summary: "New" });
 
-    expect(resumeProfileStore.update).toHaveBeenCalledWith({
-      where: { id: "rp-2" },
-      data: { summary: "New" },
+    expect(resumeProfileStore.upsert).toHaveBeenCalledWith({
+      where: { userId: "user-2" },
+      update: { summary: "New" },
+      create: {
+        userId: "user-2",
+        summary: "New",
+      },
     });
     expect(updated.summary).toBe("New");
   });

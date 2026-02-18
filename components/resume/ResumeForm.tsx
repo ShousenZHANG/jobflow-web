@@ -825,32 +825,33 @@ export function ResumeForm() {
   const handleSave = async () => {
     if (!canContinue) return;
     setSaving(true);
+    try {
+      const payload = buildPayload("save");
+      const res = await fetch("/api/resume-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const payload = buildPayload("save");
+      if (!res.ok) {
+        throw new Error("Save failed");
+      }
 
-    const res = await fetch("/api/resume-profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    setSaving(false);
-
-    if (!res.ok) {
+      toast({
+        title: "Saved",
+        description: "Your master resume has been updated.",
+      });
+      markTaskComplete("resume_setup");
+      schedulePreview(150);
+    } catch {
       toast({
         title: "Save failed",
         description: "Please try again.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setSaving(false);
     }
-
-    toast({
-      title: "Saved",
-      description: "Your master resume has been updated.",
-    });
-    markTaskComplete("resume_setup");
-    schedulePreview(150);
   };
 
   const handleOpenPreview = () => {
