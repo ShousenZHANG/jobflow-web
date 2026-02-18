@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS "JobFitAnalysis";
+DROP TYPE IF EXISTS "JobFitGateStatus";
+DROP TYPE IF EXISTS "JobFitStatus";

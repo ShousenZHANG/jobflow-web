@@ -8,8 +8,7 @@ const prismaStore = vi.hoisted(() => ({
     findMany: vi.fn(),
   },
   job: {
-    findUnique: vi.fn(),
-    create: vi.fn(),
+    createMany: vi.fn(),
   },
 }));
 
@@ -24,13 +23,11 @@ describe("admin import api", () => {
     process.env.IMPORT_SECRET = "import-secret";
     prismaStore.user.findUnique.mockReset();
     prismaStore.deletedJobUrl.findMany.mockReset();
-    prismaStore.job.findUnique.mockReset();
-    prismaStore.job.create.mockReset();
+    prismaStore.job.createMany.mockReset();
 
     prismaStore.user.findUnique.mockResolvedValue({ id: "user-1" });
     prismaStore.deletedJobUrl.findMany.mockResolvedValue([]);
-    prismaStore.job.findUnique.mockResolvedValue(null);
-    prismaStore.job.create.mockResolvedValue({ id: "job-1" });
+    prismaStore.job.createMany.mockResolvedValue({ count: 1 });
   });
 
   it("canonicalizes tracking variants and imports only one record", async () => {
@@ -60,9 +57,9 @@ describe("admin import api", () => {
 
     expect(res.status).toBe(200);
     expect(json.imported).toBe(1);
-    expect(prismaStore.job.create).toHaveBeenCalledTimes(1);
-    const created = prismaStore.job.create.mock.calls[0]?.[0]?.data;
-    expect(created.jobUrl).toBe("https://linkedin.com/jobs/view/123");
+    expect(prismaStore.job.createMany).toHaveBeenCalledTimes(1);
+    const created = prismaStore.job.createMany.mock.calls[0]?.[0]?.data?.[0];
+    expect(created?.jobUrl).toBe("https://linkedin.com/jobs/view/123");
   });
 
   it("normalizes LinkedIn currentJobId variants to the stable jobs/view URL", async () => {
@@ -89,8 +86,8 @@ describe("admin import api", () => {
 
     expect(res.status).toBe(200);
     expect(json.imported).toBe(1);
-    const created = prismaStore.job.create.mock.calls[0]?.[0]?.data;
-    expect(created.jobUrl).toBe("https://linkedin.com/jobs/view/456");
+    const created = prismaStore.job.createMany.mock.calls[0]?.[0]?.data?.[0];
+    expect(created?.jobUrl).toBe("https://linkedin.com/jobs/view/456");
   });
 
   it("filters out deleted LinkedIn jobs even when incoming URL is a currentJobId variant", async () => {
@@ -121,7 +118,7 @@ describe("admin import api", () => {
 
     expect(res.status).toBe(200);
     expect(json.imported).toBe(0);
-    expect(prismaStore.job.create).not.toHaveBeenCalled();
+    expect(prismaStore.job.createMany).not.toHaveBeenCalled();
   });
 
   it("filters out entries that match deleted URLs after canonicalization", async () => {
@@ -151,6 +148,6 @@ describe("admin import api", () => {
 
     expect(res.status).toBe(200);
     expect(json.imported).toBe(0);
-    expect(prismaStore.job.create).not.toHaveBeenCalled();
+    expect(prismaStore.job.createMany).not.toHaveBeenCalled();
   });
 });

@@ -59,11 +59,6 @@ export type ResumeProfile = $Result.DefaultSelection<Prisma.$ResumeProfilePayloa
  */
 export type Application = $Result.DefaultSelection<Prisma.$ApplicationPayload>
 /**
- * Model JobFitAnalysis
- * 
- */
-export type JobFitAnalysis = $Result.DefaultSelection<Prisma.$JobFitAnalysisPayload>
-/**
  * Model PromptRuleTemplate
  * 
  */
@@ -97,24 +92,6 @@ export const FetchRunStatus: {
 export type FetchRunStatus = (typeof FetchRunStatus)[keyof typeof FetchRunStatus]
 
 
-export const JobFitStatus: {
-  PENDING: 'PENDING',
-  READY: 'READY',
-  FAILED: 'FAILED'
-};
-
-export type JobFitStatus = (typeof JobFitStatus)[keyof typeof JobFitStatus]
-
-
-export const JobFitGateStatus: {
-  PASS: 'PASS',
-  RISK: 'RISK',
-  BLOCK: 'BLOCK'
-};
-
-export type JobFitGateStatus = (typeof JobFitGateStatus)[keyof typeof JobFitGateStatus]
-
-
 export const OnboardingStage: {
   NEW_USER: 'NEW_USER',
   ACTIVATED_USER: 'ACTIVATED_USER',
@@ -132,14 +109,6 @@ export const JobStatus: typeof $Enums.JobStatus
 export type FetchRunStatus = $Enums.FetchRunStatus
 
 export const FetchRunStatus: typeof $Enums.FetchRunStatus
-
-export type JobFitStatus = $Enums.JobFitStatus
-
-export const JobFitStatus: typeof $Enums.JobFitStatus
-
-export type JobFitGateStatus = $Enums.JobFitGateStatus
-
-export const JobFitGateStatus: typeof $Enums.JobFitGateStatus
 
 export type OnboardingStage = $Enums.OnboardingStage
 
@@ -351,16 +320,6 @@ export class PrismaClient<
     * ```
     */
   get application(): Prisma.ApplicationDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.jobFitAnalysis`: Exposes CRUD operations for the **JobFitAnalysis** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more JobFitAnalyses
-    * const jobFitAnalyses = await prisma.jobFitAnalysis.findMany()
-    * ```
-    */
-  get jobFitAnalysis(): Prisma.JobFitAnalysisDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.promptRuleTemplate`: Exposes CRUD operations for the **PromptRuleTemplate** model.
@@ -824,7 +783,6 @@ export namespace Prisma {
     FetchRun: 'FetchRun',
     ResumeProfile: 'ResumeProfile',
     Application: 'Application',
-    JobFitAnalysis: 'JobFitAnalysis',
     PromptRuleTemplate: 'PromptRuleTemplate',
     OnboardingState: 'OnboardingState'
   };
@@ -842,7 +800,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "application" | "jobFitAnalysis" | "promptRuleTemplate" | "onboardingState"
+      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "application" | "promptRuleTemplate" | "onboardingState"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1512,80 +1470,6 @@ export namespace Prisma {
           }
         }
       }
-      JobFitAnalysis: {
-        payload: Prisma.$JobFitAnalysisPayload<ExtArgs>
-        fields: Prisma.JobFitAnalysisFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.JobFitAnalysisFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.JobFitAnalysisFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>
-          }
-          findFirst: {
-            args: Prisma.JobFitAnalysisFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.JobFitAnalysisFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>
-          }
-          findMany: {
-            args: Prisma.JobFitAnalysisFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>[]
-          }
-          create: {
-            args: Prisma.JobFitAnalysisCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>
-          }
-          createMany: {
-            args: Prisma.JobFitAnalysisCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.JobFitAnalysisCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>[]
-          }
-          delete: {
-            args: Prisma.JobFitAnalysisDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>
-          }
-          update: {
-            args: Prisma.JobFitAnalysisUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>
-          }
-          deleteMany: {
-            args: Prisma.JobFitAnalysisDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.JobFitAnalysisUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.JobFitAnalysisUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>[]
-          }
-          upsert: {
-            args: Prisma.JobFitAnalysisUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$JobFitAnalysisPayload>
-          }
-          aggregate: {
-            args: Prisma.JobFitAnalysisAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateJobFitAnalysis>
-          }
-          groupBy: {
-            args: Prisma.JobFitAnalysisGroupByArgs<ExtArgs>
-            result: $Utils.Optional<JobFitAnalysisGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.JobFitAnalysisCountArgs<ExtArgs>
-            result: $Utils.Optional<JobFitAnalysisCountAggregateOutputType> | number
-          }
-        }
-      }
       PromptRuleTemplate: {
         payload: Prisma.$PromptRuleTemplatePayload<ExtArgs>
         fields: Prisma.PromptRuleTemplateFieldRefs
@@ -1851,7 +1735,6 @@ export namespace Prisma {
     fetchRun?: FetchRunOmit
     resumeProfile?: ResumeProfileOmit
     application?: ApplicationOmit
-    jobFitAnalysis?: JobFitAnalysisOmit
     promptRuleTemplate?: PromptRuleTemplateOmit
     onboardingState?: OnboardingStateOmit
   }
@@ -1937,7 +1820,6 @@ export namespace Prisma {
     accounts: number
     sessions: number
     jobs: number
-    jobFitAnalyses: number
     fetchRuns: number
     deletedJobUrls: number
     dailyCheckins: number
@@ -1950,7 +1832,6 @@ export namespace Prisma {
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
     jobs?: boolean | UserCountOutputTypeCountJobsArgs
-    jobFitAnalyses?: boolean | UserCountOutputTypeCountJobFitAnalysesArgs
     fetchRuns?: boolean | UserCountOutputTypeCountFetchRunsArgs
     deletedJobUrls?: boolean | UserCountOutputTypeCountDeletedJobUrlsArgs
     dailyCheckins?: boolean | UserCountOutputTypeCountDailyCheckinsArgs
@@ -1989,13 +1870,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountJobsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: JobWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountJobFitAnalysesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: JobFitAnalysisWhereInput
   }
 
   /**
@@ -2047,12 +1921,10 @@ export namespace Prisma {
 
   export type JobCountOutputType = {
     applications: number
-    fitAnalyses: number
   }
 
   export type JobCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     applications?: boolean | JobCountOutputTypeCountApplicationsArgs
-    fitAnalyses?: boolean | JobCountOutputTypeCountFitAnalysesArgs
   }
 
   // Custom InputTypes
@@ -2071,13 +1943,6 @@ export namespace Prisma {
    */
   export type JobCountOutputTypeCountApplicationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ApplicationWhereInput
-  }
-
-  /**
-   * JobCountOutputType without action
-   */
-  export type JobCountOutputTypeCountFitAnalysesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: JobFitAnalysisWhereInput
   }
 
 
@@ -2299,7 +2164,6 @@ export namespace Prisma {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     jobs?: boolean | User$jobsArgs<ExtArgs>
-    jobFitAnalyses?: boolean | User$jobFitAnalysesArgs<ExtArgs>
     fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
     deletedJobUrls?: boolean | User$deletedJobUrlsArgs<ExtArgs>
     dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
@@ -2345,7 +2209,6 @@ export namespace Prisma {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     jobs?: boolean | User$jobsArgs<ExtArgs>
-    jobFitAnalyses?: boolean | User$jobFitAnalysesArgs<ExtArgs>
     fetchRuns?: boolean | User$fetchRunsArgs<ExtArgs>
     deletedJobUrls?: boolean | User$deletedJobUrlsArgs<ExtArgs>
     dailyCheckins?: boolean | User$dailyCheckinsArgs<ExtArgs>
@@ -2364,7 +2227,6 @@ export namespace Prisma {
       accounts: Prisma.$AccountPayload<ExtArgs>[]
       sessions: Prisma.$SessionPayload<ExtArgs>[]
       jobs: Prisma.$JobPayload<ExtArgs>[]
-      jobFitAnalyses: Prisma.$JobFitAnalysisPayload<ExtArgs>[]
       fetchRuns: Prisma.$FetchRunPayload<ExtArgs>[]
       deletedJobUrls: Prisma.$DeletedJobUrlPayload<ExtArgs>[]
       dailyCheckins: Prisma.$DailyCheckinPayload<ExtArgs>[]
@@ -2778,7 +2640,6 @@ export namespace Prisma {
     accounts<T extends User$accountsArgs<ExtArgs> = {}>(args?: Subset<T, User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     jobs<T extends User$jobsArgs<ExtArgs> = {}>(args?: Subset<T, User$jobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    jobFitAnalyses<T extends User$jobFitAnalysesArgs<ExtArgs> = {}>(args?: Subset<T, User$jobFitAnalysesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     fetchRuns<T extends User$fetchRunsArgs<ExtArgs> = {}>(args?: Subset<T, User$fetchRunsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FetchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     deletedJobUrls<T extends User$deletedJobUrlsArgs<ExtArgs> = {}>(args?: Subset<T, User$deletedJobUrlsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeletedJobUrlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dailyCheckins<T extends User$dailyCheckinsArgs<ExtArgs> = {}>(args?: Subset<T, User$dailyCheckinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyCheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3279,30 +3140,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: JobScalarFieldEnum | JobScalarFieldEnum[]
-  }
-
-  /**
-   * User.jobFitAnalyses
-   */
-  export type User$jobFitAnalysesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    where?: JobFitAnalysisWhereInput
-    orderBy?: JobFitAnalysisOrderByWithRelationInput | JobFitAnalysisOrderByWithRelationInput[]
-    cursor?: JobFitAnalysisWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: JobFitAnalysisScalarFieldEnum | JobFitAnalysisScalarFieldEnum[]
   }
 
   /**
@@ -5989,7 +5826,6 @@ export namespace Prisma {
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     applications?: boolean | Job$applicationsArgs<ExtArgs>
-    fitAnalyses?: boolean | Job$fitAnalysesArgs<ExtArgs>
     _count?: boolean | JobCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["job"]>
 
@@ -6044,7 +5880,6 @@ export namespace Prisma {
   export type JobInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     applications?: boolean | Job$applicationsArgs<ExtArgs>
-    fitAnalyses?: boolean | Job$fitAnalysesArgs<ExtArgs>
     _count?: boolean | JobCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type JobIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6059,7 +5894,6 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       applications: Prisma.$ApplicationPayload<ExtArgs>[]
-      fitAnalyses: Prisma.$JobFitAnalysisPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6470,7 +6304,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     applications<T extends Job$applicationsArgs<ExtArgs> = {}>(args?: Subset<T, Job$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    fitAnalyses<T extends Job$fitAnalysesArgs<ExtArgs> = {}>(args?: Subset<T, Job$fitAnalysesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6929,30 +6762,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ApplicationScalarFieldEnum | ApplicationScalarFieldEnum[]
-  }
-
-  /**
-   * Job.fitAnalyses
-   */
-  export type Job$fitAnalysesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    where?: JobFitAnalysisWhereInput
-    orderBy?: JobFitAnalysisOrderByWithRelationInput | JobFitAnalysisOrderByWithRelationInput[]
-    cursor?: JobFitAnalysisWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: JobFitAnalysisScalarFieldEnum | JobFitAnalysisScalarFieldEnum[]
   }
 
   /**
@@ -12636,1353 +12445,6 @@ export namespace Prisma {
 
 
   /**
-   * Model JobFitAnalysis
-   */
-
-  export type AggregateJobFitAnalysis = {
-    _count: JobFitAnalysisCountAggregateOutputType | null
-    _avg: JobFitAnalysisAvgAggregateOutputType | null
-    _sum: JobFitAnalysisSumAggregateOutputType | null
-    _min: JobFitAnalysisMinAggregateOutputType | null
-    _max: JobFitAnalysisMaxAggregateOutputType | null
-  }
-
-  export type JobFitAnalysisAvgAggregateOutputType = {
-    promptRuleVersion: number | null
-    score: number | null
-    stackMatched: number | null
-    stackTotal: number | null
-  }
-
-  export type JobFitAnalysisSumAggregateOutputType = {
-    promptRuleVersion: number | null
-    score: number | null
-    stackMatched: number | null
-    stackTotal: number | null
-  }
-
-  export type JobFitAnalysisMinAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    jobId: string | null
-    resumeSnapshotUpdatedAt: Date | null
-    promptRuleVersion: number | null
-    jobUpdatedAt: Date | null
-    analyzerVersion: string | null
-    source: string | null
-    aiEnhanced: boolean | null
-    provider: string | null
-    aiReason: string | null
-    model: string | null
-    status: $Enums.JobFitStatus | null
-    score: number | null
-    gateStatus: $Enums.JobFitGateStatus | null
-    recommendation: string | null
-    stackMatched: number | null
-    stackTotal: number | null
-    error: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type JobFitAnalysisMaxAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    jobId: string | null
-    resumeSnapshotUpdatedAt: Date | null
-    promptRuleVersion: number | null
-    jobUpdatedAt: Date | null
-    analyzerVersion: string | null
-    source: string | null
-    aiEnhanced: boolean | null
-    provider: string | null
-    aiReason: string | null
-    model: string | null
-    status: $Enums.JobFitStatus | null
-    score: number | null
-    gateStatus: $Enums.JobFitGateStatus | null
-    recommendation: string | null
-    stackMatched: number | null
-    stackTotal: number | null
-    error: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type JobFitAnalysisCountAggregateOutputType = {
-    id: number
-    userId: number
-    jobId: number
-    resumeSnapshotUpdatedAt: number
-    promptRuleVersion: number
-    jobUpdatedAt: number
-    analyzerVersion: number
-    source: number
-    aiEnhanced: number
-    provider: number
-    aiReason: number
-    model: number
-    status: number
-    score: number
-    gateStatus: number
-    recommendation: number
-    stackMatched: number
-    stackTotal: number
-    topGaps: number
-    gates: number
-    evidence: number
-    error: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type JobFitAnalysisAvgAggregateInputType = {
-    promptRuleVersion?: true
-    score?: true
-    stackMatched?: true
-    stackTotal?: true
-  }
-
-  export type JobFitAnalysisSumAggregateInputType = {
-    promptRuleVersion?: true
-    score?: true
-    stackMatched?: true
-    stackTotal?: true
-  }
-
-  export type JobFitAnalysisMinAggregateInputType = {
-    id?: true
-    userId?: true
-    jobId?: true
-    resumeSnapshotUpdatedAt?: true
-    promptRuleVersion?: true
-    jobUpdatedAt?: true
-    analyzerVersion?: true
-    source?: true
-    aiEnhanced?: true
-    provider?: true
-    aiReason?: true
-    model?: true
-    status?: true
-    score?: true
-    gateStatus?: true
-    recommendation?: true
-    stackMatched?: true
-    stackTotal?: true
-    error?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type JobFitAnalysisMaxAggregateInputType = {
-    id?: true
-    userId?: true
-    jobId?: true
-    resumeSnapshotUpdatedAt?: true
-    promptRuleVersion?: true
-    jobUpdatedAt?: true
-    analyzerVersion?: true
-    source?: true
-    aiEnhanced?: true
-    provider?: true
-    aiReason?: true
-    model?: true
-    status?: true
-    score?: true
-    gateStatus?: true
-    recommendation?: true
-    stackMatched?: true
-    stackTotal?: true
-    error?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type JobFitAnalysisCountAggregateInputType = {
-    id?: true
-    userId?: true
-    jobId?: true
-    resumeSnapshotUpdatedAt?: true
-    promptRuleVersion?: true
-    jobUpdatedAt?: true
-    analyzerVersion?: true
-    source?: true
-    aiEnhanced?: true
-    provider?: true
-    aiReason?: true
-    model?: true
-    status?: true
-    score?: true
-    gateStatus?: true
-    recommendation?: true
-    stackMatched?: true
-    stackTotal?: true
-    topGaps?: true
-    gates?: true
-    evidence?: true
-    error?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type JobFitAnalysisAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which JobFitAnalysis to aggregate.
-     */
-    where?: JobFitAnalysisWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of JobFitAnalyses to fetch.
-     */
-    orderBy?: JobFitAnalysisOrderByWithRelationInput | JobFitAnalysisOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: JobFitAnalysisWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` JobFitAnalyses from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` JobFitAnalyses.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned JobFitAnalyses
-    **/
-    _count?: true | JobFitAnalysisCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: JobFitAnalysisAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: JobFitAnalysisSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: JobFitAnalysisMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: JobFitAnalysisMaxAggregateInputType
-  }
-
-  export type GetJobFitAnalysisAggregateType<T extends JobFitAnalysisAggregateArgs> = {
-        [P in keyof T & keyof AggregateJobFitAnalysis]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateJobFitAnalysis[P]>
-      : GetScalarType<T[P], AggregateJobFitAnalysis[P]>
-  }
-
-
-
-
-  export type JobFitAnalysisGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: JobFitAnalysisWhereInput
-    orderBy?: JobFitAnalysisOrderByWithAggregationInput | JobFitAnalysisOrderByWithAggregationInput[]
-    by: JobFitAnalysisScalarFieldEnum[] | JobFitAnalysisScalarFieldEnum
-    having?: JobFitAnalysisScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: JobFitAnalysisCountAggregateInputType | true
-    _avg?: JobFitAnalysisAvgAggregateInputType
-    _sum?: JobFitAnalysisSumAggregateInputType
-    _min?: JobFitAnalysisMinAggregateInputType
-    _max?: JobFitAnalysisMaxAggregateInputType
-  }
-
-  export type JobFitAnalysisGroupByOutputType = {
-    id: string
-    userId: string
-    jobId: string
-    resumeSnapshotUpdatedAt: Date
-    promptRuleVersion: number
-    jobUpdatedAt: Date
-    analyzerVersion: string
-    source: string | null
-    aiEnhanced: boolean
-    provider: string | null
-    aiReason: string | null
-    model: string
-    status: $Enums.JobFitStatus
-    score: number | null
-    gateStatus: $Enums.JobFitGateStatus | null
-    recommendation: string | null
-    stackMatched: number | null
-    stackTotal: number | null
-    topGaps: JsonValue | null
-    gates: JsonValue | null
-    evidence: JsonValue | null
-    error: string | null
-    createdAt: Date
-    updatedAt: Date
-    _count: JobFitAnalysisCountAggregateOutputType | null
-    _avg: JobFitAnalysisAvgAggregateOutputType | null
-    _sum: JobFitAnalysisSumAggregateOutputType | null
-    _min: JobFitAnalysisMinAggregateOutputType | null
-    _max: JobFitAnalysisMaxAggregateOutputType | null
-  }
-
-  type GetJobFitAnalysisGroupByPayload<T extends JobFitAnalysisGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<JobFitAnalysisGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof JobFitAnalysisGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], JobFitAnalysisGroupByOutputType[P]>
-            : GetScalarType<T[P], JobFitAnalysisGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type JobFitAnalysisSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    jobId?: boolean
-    resumeSnapshotUpdatedAt?: boolean
-    promptRuleVersion?: boolean
-    jobUpdatedAt?: boolean
-    analyzerVersion?: boolean
-    source?: boolean
-    aiEnhanced?: boolean
-    provider?: boolean
-    aiReason?: boolean
-    model?: boolean
-    status?: boolean
-    score?: boolean
-    gateStatus?: boolean
-    recommendation?: boolean
-    stackMatched?: boolean
-    stackTotal?: boolean
-    topGaps?: boolean
-    gates?: boolean
-    evidence?: boolean
-    error?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    job?: boolean | JobDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["jobFitAnalysis"]>
-
-  export type JobFitAnalysisSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    jobId?: boolean
-    resumeSnapshotUpdatedAt?: boolean
-    promptRuleVersion?: boolean
-    jobUpdatedAt?: boolean
-    analyzerVersion?: boolean
-    source?: boolean
-    aiEnhanced?: boolean
-    provider?: boolean
-    aiReason?: boolean
-    model?: boolean
-    status?: boolean
-    score?: boolean
-    gateStatus?: boolean
-    recommendation?: boolean
-    stackMatched?: boolean
-    stackTotal?: boolean
-    topGaps?: boolean
-    gates?: boolean
-    evidence?: boolean
-    error?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    job?: boolean | JobDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["jobFitAnalysis"]>
-
-  export type JobFitAnalysisSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    jobId?: boolean
-    resumeSnapshotUpdatedAt?: boolean
-    promptRuleVersion?: boolean
-    jobUpdatedAt?: boolean
-    analyzerVersion?: boolean
-    source?: boolean
-    aiEnhanced?: boolean
-    provider?: boolean
-    aiReason?: boolean
-    model?: boolean
-    status?: boolean
-    score?: boolean
-    gateStatus?: boolean
-    recommendation?: boolean
-    stackMatched?: boolean
-    stackTotal?: boolean
-    topGaps?: boolean
-    gates?: boolean
-    evidence?: boolean
-    error?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    job?: boolean | JobDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["jobFitAnalysis"]>
-
-  export type JobFitAnalysisSelectScalar = {
-    id?: boolean
-    userId?: boolean
-    jobId?: boolean
-    resumeSnapshotUpdatedAt?: boolean
-    promptRuleVersion?: boolean
-    jobUpdatedAt?: boolean
-    analyzerVersion?: boolean
-    source?: boolean
-    aiEnhanced?: boolean
-    provider?: boolean
-    aiReason?: boolean
-    model?: boolean
-    status?: boolean
-    score?: boolean
-    gateStatus?: boolean
-    recommendation?: boolean
-    stackMatched?: boolean
-    stackTotal?: boolean
-    topGaps?: boolean
-    gates?: boolean
-    evidence?: boolean
-    error?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type JobFitAnalysisOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobId" | "resumeSnapshotUpdatedAt" | "promptRuleVersion" | "jobUpdatedAt" | "analyzerVersion" | "source" | "aiEnhanced" | "provider" | "aiReason" | "model" | "status" | "score" | "gateStatus" | "recommendation" | "stackMatched" | "stackTotal" | "topGaps" | "gates" | "evidence" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["jobFitAnalysis"]>
-  export type JobFitAnalysisInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    job?: boolean | JobDefaultArgs<ExtArgs>
-  }
-  export type JobFitAnalysisIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    job?: boolean | JobDefaultArgs<ExtArgs>
-  }
-  export type JobFitAnalysisIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    job?: boolean | JobDefaultArgs<ExtArgs>
-  }
-
-  export type $JobFitAnalysisPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "JobFitAnalysis"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      job: Prisma.$JobPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      userId: string
-      jobId: string
-      resumeSnapshotUpdatedAt: Date
-      promptRuleVersion: number
-      jobUpdatedAt: Date
-      analyzerVersion: string
-      source: string | null
-      aiEnhanced: boolean
-      provider: string | null
-      aiReason: string | null
-      model: string
-      status: $Enums.JobFitStatus
-      score: number | null
-      gateStatus: $Enums.JobFitGateStatus | null
-      recommendation: string | null
-      stackMatched: number | null
-      stackTotal: number | null
-      topGaps: Prisma.JsonValue | null
-      gates: Prisma.JsonValue | null
-      evidence: Prisma.JsonValue | null
-      error: string | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["jobFitAnalysis"]>
-    composites: {}
-  }
-
-  type JobFitAnalysisGetPayload<S extends boolean | null | undefined | JobFitAnalysisDefaultArgs> = $Result.GetResult<Prisma.$JobFitAnalysisPayload, S>
-
-  type JobFitAnalysisCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<JobFitAnalysisFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: JobFitAnalysisCountAggregateInputType | true
-    }
-
-  export interface JobFitAnalysisDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['JobFitAnalysis'], meta: { name: 'JobFitAnalysis' } }
-    /**
-     * Find zero or one JobFitAnalysis that matches the filter.
-     * @param {JobFitAnalysisFindUniqueArgs} args - Arguments to find a JobFitAnalysis
-     * @example
-     * // Get one JobFitAnalysis
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends JobFitAnalysisFindUniqueArgs>(args: SelectSubset<T, JobFitAnalysisFindUniqueArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one JobFitAnalysis that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {JobFitAnalysisFindUniqueOrThrowArgs} args - Arguments to find a JobFitAnalysis
-     * @example
-     * // Get one JobFitAnalysis
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends JobFitAnalysisFindUniqueOrThrowArgs>(args: SelectSubset<T, JobFitAnalysisFindUniqueOrThrowArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first JobFitAnalysis that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {JobFitAnalysisFindFirstArgs} args - Arguments to find a JobFitAnalysis
-     * @example
-     * // Get one JobFitAnalysis
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends JobFitAnalysisFindFirstArgs>(args?: SelectSubset<T, JobFitAnalysisFindFirstArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first JobFitAnalysis that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {JobFitAnalysisFindFirstOrThrowArgs} args - Arguments to find a JobFitAnalysis
-     * @example
-     * // Get one JobFitAnalysis
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends JobFitAnalysisFindFirstOrThrowArgs>(args?: SelectSubset<T, JobFitAnalysisFindFirstOrThrowArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more JobFitAnalyses that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {JobFitAnalysisFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all JobFitAnalyses
-     * const jobFitAnalyses = await prisma.jobFitAnalysis.findMany()
-     * 
-     * // Get first 10 JobFitAnalyses
-     * const jobFitAnalyses = await prisma.jobFitAnalysis.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const jobFitAnalysisWithIdOnly = await prisma.jobFitAnalysis.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends JobFitAnalysisFindManyArgs>(args?: SelectSubset<T, JobFitAnalysisFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a JobFitAnalysis.
-     * @param {JobFitAnalysisCreateArgs} args - Arguments to create a JobFitAnalysis.
-     * @example
-     * // Create one JobFitAnalysis
-     * const JobFitAnalysis = await prisma.jobFitAnalysis.create({
-     *   data: {
-     *     // ... data to create a JobFitAnalysis
-     *   }
-     * })
-     * 
-     */
-    create<T extends JobFitAnalysisCreateArgs>(args: SelectSubset<T, JobFitAnalysisCreateArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many JobFitAnalyses.
-     * @param {JobFitAnalysisCreateManyArgs} args - Arguments to create many JobFitAnalyses.
-     * @example
-     * // Create many JobFitAnalyses
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends JobFitAnalysisCreateManyArgs>(args?: SelectSubset<T, JobFitAnalysisCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many JobFitAnalyses and returns the data saved in the database.
-     * @param {JobFitAnalysisCreateManyAndReturnArgs} args - Arguments to create many JobFitAnalyses.
-     * @example
-     * // Create many JobFitAnalyses
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many JobFitAnalyses and only return the `id`
-     * const jobFitAnalysisWithIdOnly = await prisma.jobFitAnalysis.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends JobFitAnalysisCreateManyAndReturnArgs>(args?: SelectSubset<T, JobFitAnalysisCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a JobFitAnalysis.
-     * @param {JobFitAnalysisDeleteArgs} args - Arguments to delete one JobFitAnalysis.
-     * @example
-     * // Delete one JobFitAnalysis
-     * const JobFitAnalysis = await prisma.jobFitAnalysis.delete({
-     *   where: {
-     *     // ... filter to delete one JobFitAnalysis
-     *   }
-     * })
-     * 
-     */
-    delete<T extends JobFitAnalysisDeleteArgs>(args: SelectSubset<T, JobFitAnalysisDeleteArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one JobFitAnalysis.
-     * @param {JobFitAnalysisUpdateArgs} args - Arguments to update one JobFitAnalysis.
-     * @example
-     * // Update one JobFitAnalysis
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends JobFitAnalysisUpdateArgs>(args: SelectSubset<T, JobFitAnalysisUpdateArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more JobFitAnalyses.
-     * @param {JobFitAnalysisDeleteManyArgs} args - Arguments to filter JobFitAnalyses to delete.
-     * @example
-     * // Delete a few JobFitAnalyses
-     * const { count } = await prisma.jobFitAnalysis.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends JobFitAnalysisDeleteManyArgs>(args?: SelectSubset<T, JobFitAnalysisDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more JobFitAnalyses.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {JobFitAnalysisUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many JobFitAnalyses
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends JobFitAnalysisUpdateManyArgs>(args: SelectSubset<T, JobFitAnalysisUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more JobFitAnalyses and returns the data updated in the database.
-     * @param {JobFitAnalysisUpdateManyAndReturnArgs} args - Arguments to update many JobFitAnalyses.
-     * @example
-     * // Update many JobFitAnalyses
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more JobFitAnalyses and only return the `id`
-     * const jobFitAnalysisWithIdOnly = await prisma.jobFitAnalysis.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends JobFitAnalysisUpdateManyAndReturnArgs>(args: SelectSubset<T, JobFitAnalysisUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one JobFitAnalysis.
-     * @param {JobFitAnalysisUpsertArgs} args - Arguments to update or create a JobFitAnalysis.
-     * @example
-     * // Update or create a JobFitAnalysis
-     * const jobFitAnalysis = await prisma.jobFitAnalysis.upsert({
-     *   create: {
-     *     // ... data to create a JobFitAnalysis
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the JobFitAnalysis we want to update
-     *   }
-     * })
-     */
-    upsert<T extends JobFitAnalysisUpsertArgs>(args: SelectSubset<T, JobFitAnalysisUpsertArgs<ExtArgs>>): Prisma__JobFitAnalysisClient<$Result.GetResult<Prisma.$JobFitAnalysisPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of JobFitAnalyses.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {JobFitAnalysisCountArgs} args - Arguments to filter JobFitAnalyses to count.
-     * @example
-     * // Count the number of JobFitAnalyses
-     * const count = await prisma.jobFitAnalysis.count({
-     *   where: {
-     *     // ... the filter for the JobFitAnalyses we want to count
-     *   }
-     * })
-    **/
-    count<T extends JobFitAnalysisCountArgs>(
-      args?: Subset<T, JobFitAnalysisCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], JobFitAnalysisCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a JobFitAnalysis.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {JobFitAnalysisAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends JobFitAnalysisAggregateArgs>(args: Subset<T, JobFitAnalysisAggregateArgs>): Prisma.PrismaPromise<GetJobFitAnalysisAggregateType<T>>
-
-    /**
-     * Group by JobFitAnalysis.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {JobFitAnalysisGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends JobFitAnalysisGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: JobFitAnalysisGroupByArgs['orderBy'] }
-        : { orderBy?: JobFitAnalysisGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, JobFitAnalysisGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetJobFitAnalysisGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the JobFitAnalysis model
-   */
-  readonly fields: JobFitAnalysisFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for JobFitAnalysis.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__JobFitAnalysisClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    job<T extends JobDefaultArgs<ExtArgs> = {}>(args?: Subset<T, JobDefaultArgs<ExtArgs>>): Prisma__JobClient<$Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the JobFitAnalysis model
-   */
-  interface JobFitAnalysisFieldRefs {
-    readonly id: FieldRef<"JobFitAnalysis", 'String'>
-    readonly userId: FieldRef<"JobFitAnalysis", 'String'>
-    readonly jobId: FieldRef<"JobFitAnalysis", 'String'>
-    readonly resumeSnapshotUpdatedAt: FieldRef<"JobFitAnalysis", 'DateTime'>
-    readonly promptRuleVersion: FieldRef<"JobFitAnalysis", 'Int'>
-    readonly jobUpdatedAt: FieldRef<"JobFitAnalysis", 'DateTime'>
-    readonly analyzerVersion: FieldRef<"JobFitAnalysis", 'String'>
-    readonly source: FieldRef<"JobFitAnalysis", 'String'>
-    readonly aiEnhanced: FieldRef<"JobFitAnalysis", 'Boolean'>
-    readonly provider: FieldRef<"JobFitAnalysis", 'String'>
-    readonly aiReason: FieldRef<"JobFitAnalysis", 'String'>
-    readonly model: FieldRef<"JobFitAnalysis", 'String'>
-    readonly status: FieldRef<"JobFitAnalysis", 'JobFitStatus'>
-    readonly score: FieldRef<"JobFitAnalysis", 'Int'>
-    readonly gateStatus: FieldRef<"JobFitAnalysis", 'JobFitGateStatus'>
-    readonly recommendation: FieldRef<"JobFitAnalysis", 'String'>
-    readonly stackMatched: FieldRef<"JobFitAnalysis", 'Int'>
-    readonly stackTotal: FieldRef<"JobFitAnalysis", 'Int'>
-    readonly topGaps: FieldRef<"JobFitAnalysis", 'Json'>
-    readonly gates: FieldRef<"JobFitAnalysis", 'Json'>
-    readonly evidence: FieldRef<"JobFitAnalysis", 'Json'>
-    readonly error: FieldRef<"JobFitAnalysis", 'String'>
-    readonly createdAt: FieldRef<"JobFitAnalysis", 'DateTime'>
-    readonly updatedAt: FieldRef<"JobFitAnalysis", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * JobFitAnalysis findUnique
-   */
-  export type JobFitAnalysisFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * Filter, which JobFitAnalysis to fetch.
-     */
-    where: JobFitAnalysisWhereUniqueInput
-  }
-
-  /**
-   * JobFitAnalysis findUniqueOrThrow
-   */
-  export type JobFitAnalysisFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * Filter, which JobFitAnalysis to fetch.
-     */
-    where: JobFitAnalysisWhereUniqueInput
-  }
-
-  /**
-   * JobFitAnalysis findFirst
-   */
-  export type JobFitAnalysisFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * Filter, which JobFitAnalysis to fetch.
-     */
-    where?: JobFitAnalysisWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of JobFitAnalyses to fetch.
-     */
-    orderBy?: JobFitAnalysisOrderByWithRelationInput | JobFitAnalysisOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for JobFitAnalyses.
-     */
-    cursor?: JobFitAnalysisWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` JobFitAnalyses from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` JobFitAnalyses.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of JobFitAnalyses.
-     */
-    distinct?: JobFitAnalysisScalarFieldEnum | JobFitAnalysisScalarFieldEnum[]
-  }
-
-  /**
-   * JobFitAnalysis findFirstOrThrow
-   */
-  export type JobFitAnalysisFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * Filter, which JobFitAnalysis to fetch.
-     */
-    where?: JobFitAnalysisWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of JobFitAnalyses to fetch.
-     */
-    orderBy?: JobFitAnalysisOrderByWithRelationInput | JobFitAnalysisOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for JobFitAnalyses.
-     */
-    cursor?: JobFitAnalysisWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` JobFitAnalyses from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` JobFitAnalyses.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of JobFitAnalyses.
-     */
-    distinct?: JobFitAnalysisScalarFieldEnum | JobFitAnalysisScalarFieldEnum[]
-  }
-
-  /**
-   * JobFitAnalysis findMany
-   */
-  export type JobFitAnalysisFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * Filter, which JobFitAnalyses to fetch.
-     */
-    where?: JobFitAnalysisWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of JobFitAnalyses to fetch.
-     */
-    orderBy?: JobFitAnalysisOrderByWithRelationInput | JobFitAnalysisOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing JobFitAnalyses.
-     */
-    cursor?: JobFitAnalysisWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` JobFitAnalyses from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` JobFitAnalyses.
-     */
-    skip?: number
-    distinct?: JobFitAnalysisScalarFieldEnum | JobFitAnalysisScalarFieldEnum[]
-  }
-
-  /**
-   * JobFitAnalysis create
-   */
-  export type JobFitAnalysisCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * The data needed to create a JobFitAnalysis.
-     */
-    data: XOR<JobFitAnalysisCreateInput, JobFitAnalysisUncheckedCreateInput>
-  }
-
-  /**
-   * JobFitAnalysis createMany
-   */
-  export type JobFitAnalysisCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many JobFitAnalyses.
-     */
-    data: JobFitAnalysisCreateManyInput | JobFitAnalysisCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * JobFitAnalysis createManyAndReturn
-   */
-  export type JobFitAnalysisCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * The data used to create many JobFitAnalyses.
-     */
-    data: JobFitAnalysisCreateManyInput | JobFitAnalysisCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * JobFitAnalysis update
-   */
-  export type JobFitAnalysisUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * The data needed to update a JobFitAnalysis.
-     */
-    data: XOR<JobFitAnalysisUpdateInput, JobFitAnalysisUncheckedUpdateInput>
-    /**
-     * Choose, which JobFitAnalysis to update.
-     */
-    where: JobFitAnalysisWhereUniqueInput
-  }
-
-  /**
-   * JobFitAnalysis updateMany
-   */
-  export type JobFitAnalysisUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update JobFitAnalyses.
-     */
-    data: XOR<JobFitAnalysisUpdateManyMutationInput, JobFitAnalysisUncheckedUpdateManyInput>
-    /**
-     * Filter which JobFitAnalyses to update
-     */
-    where?: JobFitAnalysisWhereInput
-    /**
-     * Limit how many JobFitAnalyses to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * JobFitAnalysis updateManyAndReturn
-   */
-  export type JobFitAnalysisUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * The data used to update JobFitAnalyses.
-     */
-    data: XOR<JobFitAnalysisUpdateManyMutationInput, JobFitAnalysisUncheckedUpdateManyInput>
-    /**
-     * Filter which JobFitAnalyses to update
-     */
-    where?: JobFitAnalysisWhereInput
-    /**
-     * Limit how many JobFitAnalyses to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * JobFitAnalysis upsert
-   */
-  export type JobFitAnalysisUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * The filter to search for the JobFitAnalysis to update in case it exists.
-     */
-    where: JobFitAnalysisWhereUniqueInput
-    /**
-     * In case the JobFitAnalysis found by the `where` argument doesn't exist, create a new JobFitAnalysis with this data.
-     */
-    create: XOR<JobFitAnalysisCreateInput, JobFitAnalysisUncheckedCreateInput>
-    /**
-     * In case the JobFitAnalysis was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<JobFitAnalysisUpdateInput, JobFitAnalysisUncheckedUpdateInput>
-  }
-
-  /**
-   * JobFitAnalysis delete
-   */
-  export type JobFitAnalysisDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-    /**
-     * Filter which JobFitAnalysis to delete.
-     */
-    where: JobFitAnalysisWhereUniqueInput
-  }
-
-  /**
-   * JobFitAnalysis deleteMany
-   */
-  export type JobFitAnalysisDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which JobFitAnalyses to delete
-     */
-    where?: JobFitAnalysisWhereInput
-    /**
-     * Limit how many JobFitAnalyses to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * JobFitAnalysis without action
-   */
-  export type JobFitAnalysisDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the JobFitAnalysis
-     */
-    select?: JobFitAnalysisSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the JobFitAnalysis
-     */
-    omit?: JobFitAnalysisOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: JobFitAnalysisInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model PromptRuleTemplate
    */
 
@@ -16386,36 +14848,6 @@ export namespace Prisma {
   export type ApplicationScalarFieldEnum = (typeof ApplicationScalarFieldEnum)[keyof typeof ApplicationScalarFieldEnum]
 
 
-  export const JobFitAnalysisScalarFieldEnum: {
-    id: 'id',
-    userId: 'userId',
-    jobId: 'jobId',
-    resumeSnapshotUpdatedAt: 'resumeSnapshotUpdatedAt',
-    promptRuleVersion: 'promptRuleVersion',
-    jobUpdatedAt: 'jobUpdatedAt',
-    analyzerVersion: 'analyzerVersion',
-    source: 'source',
-    aiEnhanced: 'aiEnhanced',
-    provider: 'provider',
-    aiReason: 'aiReason',
-    model: 'model',
-    status: 'status',
-    score: 'score',
-    gateStatus: 'gateStatus',
-    recommendation: 'recommendation',
-    stackMatched: 'stackMatched',
-    stackTotal: 'stackTotal',
-    topGaps: 'topGaps',
-    gates: 'gates',
-    evidence: 'evidence',
-    error: 'error',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type JobFitAnalysisScalarFieldEnum = (typeof JobFitAnalysisScalarFieldEnum)[keyof typeof JobFitAnalysisScalarFieldEnum]
-
-
   export const PromptRuleTemplateScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -16592,34 +15024,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'JobFitStatus'
-   */
-  export type EnumJobFitStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobFitStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'JobFitStatus[]'
-   */
-  export type ListEnumJobFitStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobFitStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'JobFitGateStatus'
-   */
-  export type EnumJobFitGateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobFitGateStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'JobFitGateStatus[]'
-   */
-  export type ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobFitGateStatus[]'>
-    
-
-
-  /**
    * Reference to a field of type 'OnboardingStage'
    */
   export type EnumOnboardingStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OnboardingStage'>
@@ -16664,7 +15068,6 @@ export namespace Prisma {
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
     jobs?: JobListRelationFilter
-    jobFitAnalyses?: JobFitAnalysisListRelationFilter
     fetchRuns?: FetchRunListRelationFilter
     deletedJobUrls?: DeletedJobUrlListRelationFilter
     dailyCheckins?: DailyCheckinListRelationFilter
@@ -16685,7 +15088,6 @@ export namespace Prisma {
     accounts?: AccountOrderByRelationAggregateInput
     sessions?: SessionOrderByRelationAggregateInput
     jobs?: JobOrderByRelationAggregateInput
-    jobFitAnalyses?: JobFitAnalysisOrderByRelationAggregateInput
     fetchRuns?: FetchRunOrderByRelationAggregateInput
     deletedJobUrls?: DeletedJobUrlOrderByRelationAggregateInput
     dailyCheckins?: DailyCheckinOrderByRelationAggregateInput
@@ -16709,7 +15111,6 @@ export namespace Prisma {
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
     jobs?: JobListRelationFilter
-    jobFitAnalyses?: JobFitAnalysisListRelationFilter
     fetchRuns?: FetchRunListRelationFilter
     deletedJobUrls?: DeletedJobUrlListRelationFilter
     dailyCheckins?: DailyCheckinListRelationFilter
@@ -16926,7 +15327,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Job"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     applications?: ApplicationListRelationFilter
-    fitAnalyses?: JobFitAnalysisListRelationFilter
   }
 
   export type JobOrderByWithRelationInput = {
@@ -16944,7 +15344,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
     applications?: ApplicationOrderByRelationAggregateInput
-    fitAnalyses?: JobFitAnalysisOrderByRelationAggregateInput
   }
 
   export type JobWhereUniqueInput = Prisma.AtLeast<{
@@ -16966,7 +15365,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Job"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     applications?: ApplicationListRelationFilter
-    fitAnalyses?: JobFitAnalysisListRelationFilter
   }, "id" | "userId_jobUrl">
 
   export type JobOrderByWithAggregationInput = {
@@ -17399,162 +15797,6 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Application"> | Date | string
   }
 
-  export type JobFitAnalysisWhereInput = {
-    AND?: JobFitAnalysisWhereInput | JobFitAnalysisWhereInput[]
-    OR?: JobFitAnalysisWhereInput[]
-    NOT?: JobFitAnalysisWhereInput | JobFitAnalysisWhereInput[]
-    id?: UuidFilter<"JobFitAnalysis"> | string
-    userId?: UuidFilter<"JobFitAnalysis"> | string
-    jobId?: UuidFilter<"JobFitAnalysis"> | string
-    resumeSnapshotUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    promptRuleVersion?: IntFilter<"JobFitAnalysis"> | number
-    jobUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    analyzerVersion?: StringFilter<"JobFitAnalysis"> | string
-    source?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    aiEnhanced?: BoolFilter<"JobFitAnalysis"> | boolean
-    provider?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    aiReason?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    model?: StringFilter<"JobFitAnalysis"> | string
-    status?: EnumJobFitStatusFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
-    score?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    gateStatus?: EnumJobFitGateStatusNullableFilter<"JobFitAnalysis"> | $Enums.JobFitGateStatus | null
-    recommendation?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    stackMatched?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    stackTotal?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    topGaps?: JsonNullableFilter<"JobFitAnalysis">
-    gates?: JsonNullableFilter<"JobFitAnalysis">
-    evidence?: JsonNullableFilter<"JobFitAnalysis">
-    error?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    createdAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    updatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    job?: XOR<JobScalarRelationFilter, JobWhereInput>
-  }
-
-  export type JobFitAnalysisOrderByWithRelationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    jobId?: SortOrder
-    resumeSnapshotUpdatedAt?: SortOrder
-    promptRuleVersion?: SortOrder
-    jobUpdatedAt?: SortOrder
-    analyzerVersion?: SortOrder
-    source?: SortOrderInput | SortOrder
-    aiEnhanced?: SortOrder
-    provider?: SortOrderInput | SortOrder
-    aiReason?: SortOrderInput | SortOrder
-    model?: SortOrder
-    status?: SortOrder
-    score?: SortOrderInput | SortOrder
-    gateStatus?: SortOrderInput | SortOrder
-    recommendation?: SortOrderInput | SortOrder
-    stackMatched?: SortOrderInput | SortOrder
-    stackTotal?: SortOrderInput | SortOrder
-    topGaps?: SortOrderInput | SortOrder
-    gates?: SortOrderInput | SortOrder
-    evidence?: SortOrderInput | SortOrder
-    error?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    job?: JobOrderByWithRelationInput
-  }
-
-  export type JobFitAnalysisWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    userId_jobId_resumeSnapshotUpdatedAt_promptRuleVersion_jobUpdatedAt_analyzerVersion_model?: JobFitAnalysisUserIdJobIdResumeSnapshotUpdatedAtPromptRuleVersionJobUpdatedAtAnalyzerVersionModelCompoundUniqueInput
-    AND?: JobFitAnalysisWhereInput | JobFitAnalysisWhereInput[]
-    OR?: JobFitAnalysisWhereInput[]
-    NOT?: JobFitAnalysisWhereInput | JobFitAnalysisWhereInput[]
-    userId?: UuidFilter<"JobFitAnalysis"> | string
-    jobId?: UuidFilter<"JobFitAnalysis"> | string
-    resumeSnapshotUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    promptRuleVersion?: IntFilter<"JobFitAnalysis"> | number
-    jobUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    analyzerVersion?: StringFilter<"JobFitAnalysis"> | string
-    source?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    aiEnhanced?: BoolFilter<"JobFitAnalysis"> | boolean
-    provider?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    aiReason?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    model?: StringFilter<"JobFitAnalysis"> | string
-    status?: EnumJobFitStatusFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
-    score?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    gateStatus?: EnumJobFitGateStatusNullableFilter<"JobFitAnalysis"> | $Enums.JobFitGateStatus | null
-    recommendation?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    stackMatched?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    stackTotal?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    topGaps?: JsonNullableFilter<"JobFitAnalysis">
-    gates?: JsonNullableFilter<"JobFitAnalysis">
-    evidence?: JsonNullableFilter<"JobFitAnalysis">
-    error?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    createdAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    updatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    job?: XOR<JobScalarRelationFilter, JobWhereInput>
-  }, "id" | "userId_jobId_resumeSnapshotUpdatedAt_promptRuleVersion_jobUpdatedAt_analyzerVersion_model">
-
-  export type JobFitAnalysisOrderByWithAggregationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    jobId?: SortOrder
-    resumeSnapshotUpdatedAt?: SortOrder
-    promptRuleVersion?: SortOrder
-    jobUpdatedAt?: SortOrder
-    analyzerVersion?: SortOrder
-    source?: SortOrderInput | SortOrder
-    aiEnhanced?: SortOrder
-    provider?: SortOrderInput | SortOrder
-    aiReason?: SortOrderInput | SortOrder
-    model?: SortOrder
-    status?: SortOrder
-    score?: SortOrderInput | SortOrder
-    gateStatus?: SortOrderInput | SortOrder
-    recommendation?: SortOrderInput | SortOrder
-    stackMatched?: SortOrderInput | SortOrder
-    stackTotal?: SortOrderInput | SortOrder
-    topGaps?: SortOrderInput | SortOrder
-    gates?: SortOrderInput | SortOrder
-    evidence?: SortOrderInput | SortOrder
-    error?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: JobFitAnalysisCountOrderByAggregateInput
-    _avg?: JobFitAnalysisAvgOrderByAggregateInput
-    _max?: JobFitAnalysisMaxOrderByAggregateInput
-    _min?: JobFitAnalysisMinOrderByAggregateInput
-    _sum?: JobFitAnalysisSumOrderByAggregateInput
-  }
-
-  export type JobFitAnalysisScalarWhereWithAggregatesInput = {
-    AND?: JobFitAnalysisScalarWhereWithAggregatesInput | JobFitAnalysisScalarWhereWithAggregatesInput[]
-    OR?: JobFitAnalysisScalarWhereWithAggregatesInput[]
-    NOT?: JobFitAnalysisScalarWhereWithAggregatesInput | JobFitAnalysisScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"JobFitAnalysis"> | string
-    userId?: UuidWithAggregatesFilter<"JobFitAnalysis"> | string
-    jobId?: UuidWithAggregatesFilter<"JobFitAnalysis"> | string
-    resumeSnapshotUpdatedAt?: DateTimeWithAggregatesFilter<"JobFitAnalysis"> | Date | string
-    promptRuleVersion?: IntWithAggregatesFilter<"JobFitAnalysis"> | number
-    jobUpdatedAt?: DateTimeWithAggregatesFilter<"JobFitAnalysis"> | Date | string
-    analyzerVersion?: StringWithAggregatesFilter<"JobFitAnalysis"> | string
-    source?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
-    aiEnhanced?: BoolWithAggregatesFilter<"JobFitAnalysis"> | boolean
-    provider?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
-    aiReason?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
-    model?: StringWithAggregatesFilter<"JobFitAnalysis"> | string
-    status?: EnumJobFitStatusWithAggregatesFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
-    score?: IntNullableWithAggregatesFilter<"JobFitAnalysis"> | number | null
-    gateStatus?: EnumJobFitGateStatusNullableWithAggregatesFilter<"JobFitAnalysis"> | $Enums.JobFitGateStatus | null
-    recommendation?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
-    stackMatched?: IntNullableWithAggregatesFilter<"JobFitAnalysis"> | number | null
-    stackTotal?: IntNullableWithAggregatesFilter<"JobFitAnalysis"> | number | null
-    topGaps?: JsonNullableWithAggregatesFilter<"JobFitAnalysis">
-    gates?: JsonNullableWithAggregatesFilter<"JobFitAnalysis">
-    evidence?: JsonNullableWithAggregatesFilter<"JobFitAnalysis">
-    error?: StringNullableWithAggregatesFilter<"JobFitAnalysis"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"JobFitAnalysis"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"JobFitAnalysis"> | Date | string
-  }
-
   export type PromptRuleTemplateWhereInput = {
     AND?: PromptRuleTemplateWhereInput | PromptRuleTemplateWhereInput[]
     OR?: PromptRuleTemplateWhereInput[]
@@ -17724,7 +15966,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -17745,7 +15986,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -17766,7 +16006,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -17787,7 +16026,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -18021,7 +16259,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutJobsInput
     applications?: ApplicationCreateNestedManyWithoutJobInput
-    fitAnalyses?: JobFitAnalysisCreateNestedManyWithoutJobInput
   }
 
   export type JobUncheckedCreateInput = {
@@ -18038,7 +16275,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
-    fitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutJobInput
   }
 
   export type JobUpdateInput = {
@@ -18055,7 +16291,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutJobsNestedInput
     applications?: ApplicationUpdateManyWithoutJobNestedInput
-    fitAnalyses?: JobFitAnalysisUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateInput = {
@@ -18072,7 +16307,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
-    fitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutJobNestedInput
   }
 
   export type JobCreateManyInput = {
@@ -18543,193 +16777,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type JobFitAnalysisCreateInput = {
-    id?: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutJobFitAnalysesInput
-    job: JobCreateNestedOneWithoutFitAnalysesInput
-  }
-
-  export type JobFitAnalysisUncheckedCreateInput = {
-    id?: string
-    userId: string
-    jobId: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type JobFitAnalysisUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutJobFitAnalysesNestedInput
-    job?: JobUpdateOneRequiredWithoutFitAnalysesNestedInput
-  }
-
-  export type JobFitAnalysisUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    jobId?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type JobFitAnalysisCreateManyInput = {
-    id?: string
-    userId: string
-    jobId: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type JobFitAnalysisUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type JobFitAnalysisUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    jobId?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type PromptRuleTemplateCreateInput = {
     id?: string
     name: string
@@ -18970,12 +17017,6 @@ export namespace Prisma {
     none?: JobWhereInput
   }
 
-  export type JobFitAnalysisListRelationFilter = {
-    every?: JobFitAnalysisWhereInput
-    some?: JobFitAnalysisWhereInput
-    none?: JobFitAnalysisWhereInput
-  }
-
   export type FetchRunListRelationFilter = {
     every?: FetchRunWhereInput
     some?: FetchRunWhereInput
@@ -19031,10 +17072,6 @@ export namespace Prisma {
   }
 
   export type JobOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type JobFitAnalysisOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -19764,144 +17801,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type EnumJobFitStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitStatus | EnumJobFitStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumJobFitStatusFilter<$PrismaModel> | $Enums.JobFitStatus
-  }
-
-  export type EnumJobFitGateStatusNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitGateStatus | EnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    in?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumJobFitGateStatusNullableFilter<$PrismaModel> | $Enums.JobFitGateStatus | null
-  }
-
-  export type JobScalarRelationFilter = {
-    is?: JobWhereInput
-    isNot?: JobWhereInput
-  }
-
-  export type JobFitAnalysisUserIdJobIdResumeSnapshotUpdatedAtPromptRuleVersionJobUpdatedAtAnalyzerVersionModelCompoundUniqueInput = {
-    userId: string
-    jobId: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    model: string
-  }
-
-  export type JobFitAnalysisCountOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    jobId?: SortOrder
-    resumeSnapshotUpdatedAt?: SortOrder
-    promptRuleVersion?: SortOrder
-    jobUpdatedAt?: SortOrder
-    analyzerVersion?: SortOrder
-    source?: SortOrder
-    aiEnhanced?: SortOrder
-    provider?: SortOrder
-    aiReason?: SortOrder
-    model?: SortOrder
-    status?: SortOrder
-    score?: SortOrder
-    gateStatus?: SortOrder
-    recommendation?: SortOrder
-    stackMatched?: SortOrder
-    stackTotal?: SortOrder
-    topGaps?: SortOrder
-    gates?: SortOrder
-    evidence?: SortOrder
-    error?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type JobFitAnalysisAvgOrderByAggregateInput = {
-    promptRuleVersion?: SortOrder
-    score?: SortOrder
-    stackMatched?: SortOrder
-    stackTotal?: SortOrder
-  }
-
-  export type JobFitAnalysisMaxOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    jobId?: SortOrder
-    resumeSnapshotUpdatedAt?: SortOrder
-    promptRuleVersion?: SortOrder
-    jobUpdatedAt?: SortOrder
-    analyzerVersion?: SortOrder
-    source?: SortOrder
-    aiEnhanced?: SortOrder
-    provider?: SortOrder
-    aiReason?: SortOrder
-    model?: SortOrder
-    status?: SortOrder
-    score?: SortOrder
-    gateStatus?: SortOrder
-    recommendation?: SortOrder
-    stackMatched?: SortOrder
-    stackTotal?: SortOrder
-    error?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type JobFitAnalysisMinOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    jobId?: SortOrder
-    resumeSnapshotUpdatedAt?: SortOrder
-    promptRuleVersion?: SortOrder
-    jobUpdatedAt?: SortOrder
-    analyzerVersion?: SortOrder
-    source?: SortOrder
-    aiEnhanced?: SortOrder
-    provider?: SortOrder
-    aiReason?: SortOrder
-    model?: SortOrder
-    status?: SortOrder
-    score?: SortOrder
-    gateStatus?: SortOrder
-    recommendation?: SortOrder
-    stackMatched?: SortOrder
-    stackTotal?: SortOrder
-    error?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type JobFitAnalysisSumOrderByAggregateInput = {
-    promptRuleVersion?: SortOrder
-    score?: SortOrder
-    stackMatched?: SortOrder
-    stackTotal?: SortOrder
-  }
-
-  export type EnumJobFitStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitStatus | EnumJobFitStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumJobFitStatusWithAggregatesFilter<$PrismaModel> | $Enums.JobFitStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumJobFitStatusFilter<$PrismaModel>
-    _max?: NestedEnumJobFitStatusFilter<$PrismaModel>
-  }
-
-  export type EnumJobFitGateStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitGateStatus | EnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    in?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumJobFitGateStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.JobFitGateStatus | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumJobFitGateStatusNullableFilter<$PrismaModel>
-    _max?: NestedEnumJobFitGateStatusNullableFilter<$PrismaModel>
-  }
-
   export type PromptRuleTemplateUserIdVersionCompoundUniqueInput = {
     userId: string
     version: number
@@ -20020,13 +17919,6 @@ export namespace Prisma {
     connect?: JobWhereUniqueInput | JobWhereUniqueInput[]
   }
 
-  export type JobFitAnalysisCreateNestedManyWithoutUserInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutUserInput, JobFitAnalysisUncheckedCreateWithoutUserInput> | JobFitAnalysisCreateWithoutUserInput[] | JobFitAnalysisUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutUserInput | JobFitAnalysisCreateOrConnectWithoutUserInput[]
-    createMany?: JobFitAnalysisCreateManyUserInputEnvelope
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-  }
-
   export type FetchRunCreateNestedManyWithoutUserInput = {
     create?: XOR<FetchRunCreateWithoutUserInput, FetchRunUncheckedCreateWithoutUserInput> | FetchRunCreateWithoutUserInput[] | FetchRunUncheckedCreateWithoutUserInput[]
     connectOrCreate?: FetchRunCreateOrConnectWithoutUserInput | FetchRunCreateOrConnectWithoutUserInput[]
@@ -20094,13 +17986,6 @@ export namespace Prisma {
     connectOrCreate?: JobCreateOrConnectWithoutUserInput | JobCreateOrConnectWithoutUserInput[]
     createMany?: JobCreateManyUserInputEnvelope
     connect?: JobWhereUniqueInput | JobWhereUniqueInput[]
-  }
-
-  export type JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutUserInput, JobFitAnalysisUncheckedCreateWithoutUserInput> | JobFitAnalysisCreateWithoutUserInput[] | JobFitAnalysisUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutUserInput | JobFitAnalysisCreateOrConnectWithoutUserInput[]
-    createMany?: JobFitAnalysisCreateManyUserInputEnvelope
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
   }
 
   export type FetchRunUncheckedCreateNestedManyWithoutUserInput = {
@@ -20207,20 +18092,6 @@ export namespace Prisma {
     update?: JobUpdateWithWhereUniqueWithoutUserInput | JobUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: JobUpdateManyWithWhereWithoutUserInput | JobUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: JobScalarWhereInput | JobScalarWhereInput[]
-  }
-
-  export type JobFitAnalysisUpdateManyWithoutUserNestedInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutUserInput, JobFitAnalysisUncheckedCreateWithoutUserInput> | JobFitAnalysisCreateWithoutUserInput[] | JobFitAnalysisUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutUserInput | JobFitAnalysisCreateOrConnectWithoutUserInput[]
-    upsert?: JobFitAnalysisUpsertWithWhereUniqueWithoutUserInput | JobFitAnalysisUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: JobFitAnalysisCreateManyUserInputEnvelope
-    set?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    disconnect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    delete?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    update?: JobFitAnalysisUpdateWithWhereUniqueWithoutUserInput | JobFitAnalysisUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: JobFitAnalysisUpdateManyWithWhereWithoutUserInput | JobFitAnalysisUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: JobFitAnalysisScalarWhereInput | JobFitAnalysisScalarWhereInput[]
   }
 
   export type FetchRunUpdateManyWithoutUserNestedInput = {
@@ -20357,20 +18228,6 @@ export namespace Prisma {
     update?: JobUpdateWithWhereUniqueWithoutUserInput | JobUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: JobUpdateManyWithWhereWithoutUserInput | JobUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: JobScalarWhereInput | JobScalarWhereInput[]
-  }
-
-  export type JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutUserInput, JobFitAnalysisUncheckedCreateWithoutUserInput> | JobFitAnalysisCreateWithoutUserInput[] | JobFitAnalysisUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutUserInput | JobFitAnalysisCreateOrConnectWithoutUserInput[]
-    upsert?: JobFitAnalysisUpsertWithWhereUniqueWithoutUserInput | JobFitAnalysisUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: JobFitAnalysisCreateManyUserInputEnvelope
-    set?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    disconnect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    delete?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    update?: JobFitAnalysisUpdateWithWhereUniqueWithoutUserInput | JobFitAnalysisUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: JobFitAnalysisUpdateManyWithWhereWithoutUserInput | JobFitAnalysisUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: JobFitAnalysisScalarWhereInput | JobFitAnalysisScalarWhereInput[]
   }
 
   export type FetchRunUncheckedUpdateManyWithoutUserNestedInput = {
@@ -20516,25 +18373,11 @@ export namespace Prisma {
     connect?: ApplicationWhereUniqueInput | ApplicationWhereUniqueInput[]
   }
 
-  export type JobFitAnalysisCreateNestedManyWithoutJobInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutJobInput, JobFitAnalysisUncheckedCreateWithoutJobInput> | JobFitAnalysisCreateWithoutJobInput[] | JobFitAnalysisUncheckedCreateWithoutJobInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutJobInput | JobFitAnalysisCreateOrConnectWithoutJobInput[]
-    createMany?: JobFitAnalysisCreateManyJobInputEnvelope
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-  }
-
   export type ApplicationUncheckedCreateNestedManyWithoutJobInput = {
     create?: XOR<ApplicationCreateWithoutJobInput, ApplicationUncheckedCreateWithoutJobInput> | ApplicationCreateWithoutJobInput[] | ApplicationUncheckedCreateWithoutJobInput[]
     connectOrCreate?: ApplicationCreateOrConnectWithoutJobInput | ApplicationCreateOrConnectWithoutJobInput[]
     createMany?: ApplicationCreateManyJobInputEnvelope
     connect?: ApplicationWhereUniqueInput | ApplicationWhereUniqueInput[]
-  }
-
-  export type JobFitAnalysisUncheckedCreateNestedManyWithoutJobInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutJobInput, JobFitAnalysisUncheckedCreateWithoutJobInput> | JobFitAnalysisCreateWithoutJobInput[] | JobFitAnalysisUncheckedCreateWithoutJobInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutJobInput | JobFitAnalysisCreateOrConnectWithoutJobInput[]
-    createMany?: JobFitAnalysisCreateManyJobInputEnvelope
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
   }
 
   export type EnumJobStatusFieldUpdateOperationsInput = {
@@ -20563,20 +18406,6 @@ export namespace Prisma {
     deleteMany?: ApplicationScalarWhereInput | ApplicationScalarWhereInput[]
   }
 
-  export type JobFitAnalysisUpdateManyWithoutJobNestedInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutJobInput, JobFitAnalysisUncheckedCreateWithoutJobInput> | JobFitAnalysisCreateWithoutJobInput[] | JobFitAnalysisUncheckedCreateWithoutJobInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutJobInput | JobFitAnalysisCreateOrConnectWithoutJobInput[]
-    upsert?: JobFitAnalysisUpsertWithWhereUniqueWithoutJobInput | JobFitAnalysisUpsertWithWhereUniqueWithoutJobInput[]
-    createMany?: JobFitAnalysisCreateManyJobInputEnvelope
-    set?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    disconnect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    delete?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    update?: JobFitAnalysisUpdateWithWhereUniqueWithoutJobInput | JobFitAnalysisUpdateWithWhereUniqueWithoutJobInput[]
-    updateMany?: JobFitAnalysisUpdateManyWithWhereWithoutJobInput | JobFitAnalysisUpdateManyWithWhereWithoutJobInput[]
-    deleteMany?: JobFitAnalysisScalarWhereInput | JobFitAnalysisScalarWhereInput[]
-  }
-
   export type ApplicationUncheckedUpdateManyWithoutJobNestedInput = {
     create?: XOR<ApplicationCreateWithoutJobInput, ApplicationUncheckedCreateWithoutJobInput> | ApplicationCreateWithoutJobInput[] | ApplicationUncheckedCreateWithoutJobInput[]
     connectOrCreate?: ApplicationCreateOrConnectWithoutJobInput | ApplicationCreateOrConnectWithoutJobInput[]
@@ -20589,20 +18418,6 @@ export namespace Prisma {
     update?: ApplicationUpdateWithWhereUniqueWithoutJobInput | ApplicationUpdateWithWhereUniqueWithoutJobInput[]
     updateMany?: ApplicationUpdateManyWithWhereWithoutJobInput | ApplicationUpdateManyWithWhereWithoutJobInput[]
     deleteMany?: ApplicationScalarWhereInput | ApplicationScalarWhereInput[]
-  }
-
-  export type JobFitAnalysisUncheckedUpdateManyWithoutJobNestedInput = {
-    create?: XOR<JobFitAnalysisCreateWithoutJobInput, JobFitAnalysisUncheckedCreateWithoutJobInput> | JobFitAnalysisCreateWithoutJobInput[] | JobFitAnalysisUncheckedCreateWithoutJobInput[]
-    connectOrCreate?: JobFitAnalysisCreateOrConnectWithoutJobInput | JobFitAnalysisCreateOrConnectWithoutJobInput[]
-    upsert?: JobFitAnalysisUpsertWithWhereUniqueWithoutJobInput | JobFitAnalysisUpsertWithWhereUniqueWithoutJobInput[]
-    createMany?: JobFitAnalysisCreateManyJobInputEnvelope
-    set?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    disconnect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    delete?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    connect?: JobFitAnalysisWhereUniqueInput | JobFitAnalysisWhereUniqueInput[]
-    update?: JobFitAnalysisUpdateWithWhereUniqueWithoutJobInput | JobFitAnalysisUpdateWithWhereUniqueWithoutJobInput[]
-    updateMany?: JobFitAnalysisUpdateManyWithWhereWithoutJobInput | JobFitAnalysisUpdateManyWithWhereWithoutJobInput[]
-    deleteMany?: JobFitAnalysisScalarWhereInput | JobFitAnalysisScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutDeletedJobUrlsInput = {
@@ -20763,42 +18578,6 @@ export namespace Prisma {
     delete?: ResumeProfileWhereInput | boolean
     connect?: ResumeProfileWhereUniqueInput
     update?: XOR<XOR<ResumeProfileUpdateToOneWithWhereWithoutApplicationsInput, ResumeProfileUpdateWithoutApplicationsInput>, ResumeProfileUncheckedUpdateWithoutApplicationsInput>
-  }
-
-  export type UserCreateNestedOneWithoutJobFitAnalysesInput = {
-    create?: XOR<UserCreateWithoutJobFitAnalysesInput, UserUncheckedCreateWithoutJobFitAnalysesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutJobFitAnalysesInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type JobCreateNestedOneWithoutFitAnalysesInput = {
-    create?: XOR<JobCreateWithoutFitAnalysesInput, JobUncheckedCreateWithoutFitAnalysesInput>
-    connectOrCreate?: JobCreateOrConnectWithoutFitAnalysesInput
-    connect?: JobWhereUniqueInput
-  }
-
-  export type EnumJobFitStatusFieldUpdateOperationsInput = {
-    set?: $Enums.JobFitStatus
-  }
-
-  export type NullableEnumJobFitGateStatusFieldUpdateOperationsInput = {
-    set?: $Enums.JobFitGateStatus | null
-  }
-
-  export type UserUpdateOneRequiredWithoutJobFitAnalysesNestedInput = {
-    create?: XOR<UserCreateWithoutJobFitAnalysesInput, UserUncheckedCreateWithoutJobFitAnalysesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutJobFitAnalysesInput
-    upsert?: UserUpsertWithoutJobFitAnalysesInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutJobFitAnalysesInput, UserUpdateWithoutJobFitAnalysesInput>, UserUncheckedUpdateWithoutJobFitAnalysesInput>
-  }
-
-  export type JobUpdateOneRequiredWithoutFitAnalysesNestedInput = {
-    create?: XOR<JobCreateWithoutFitAnalysesInput, JobUncheckedCreateWithoutFitAnalysesInput>
-    connectOrCreate?: JobCreateOrConnectWithoutFitAnalysesInput
-    upsert?: JobUpsertWithoutFitAnalysesInput
-    connect?: JobWhereUniqueInput
-    update?: XOR<XOR<JobUpdateToOneWithWhereWithoutFitAnalysesInput, JobUpdateWithoutFitAnalysesInput>, JobUncheckedUpdateWithoutFitAnalysesInput>
   }
 
   export type UserCreateNestedOneWithoutPromptRuleTemplatesInput = {
@@ -21164,40 +18943,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumJobFitStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitStatus | EnumJobFitStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumJobFitStatusFilter<$PrismaModel> | $Enums.JobFitStatus
-  }
-
-  export type NestedEnumJobFitGateStatusNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitGateStatus | EnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    in?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumJobFitGateStatusNullableFilter<$PrismaModel> | $Enums.JobFitGateStatus | null
-  }
-
-  export type NestedEnumJobFitStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitStatus | EnumJobFitStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.JobFitStatus[] | ListEnumJobFitStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumJobFitStatusWithAggregatesFilter<$PrismaModel> | $Enums.JobFitStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumJobFitStatusFilter<$PrismaModel>
-    _max?: NestedEnumJobFitStatusFilter<$PrismaModel>
-  }
-
-  export type NestedEnumJobFitGateStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.JobFitGateStatus | EnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    in?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.JobFitGateStatus[] | ListEnumJobFitGateStatusFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumJobFitGateStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.JobFitGateStatus | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumJobFitGateStatusNullableFilter<$PrismaModel>
-    _max?: NestedEnumJobFitGateStatusNullableFilter<$PrismaModel>
-  }
-
   export type NestedEnumOnboardingStageFilter<$PrismaModel = never> = {
     equals?: $Enums.OnboardingStage | EnumOnboardingStageFieldRefInput<$PrismaModel>
     in?: $Enums.OnboardingStage[] | ListEnumOnboardingStageFieldRefInput<$PrismaModel>
@@ -21296,7 +19041,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationCreateNestedManyWithoutJobInput
-    fitAnalyses?: JobFitAnalysisCreateNestedManyWithoutJobInput
   }
 
   export type JobUncheckedCreateWithoutUserInput = {
@@ -21312,7 +19056,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
-    fitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutJobInput
   }
 
   export type JobCreateOrConnectWithoutUserInput = {
@@ -21322,68 +19065,6 @@ export namespace Prisma {
 
   export type JobCreateManyUserInputEnvelope = {
     data: JobCreateManyUserInput | JobCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type JobFitAnalysisCreateWithoutUserInput = {
-    id?: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    job: JobCreateNestedOneWithoutFitAnalysesInput
-  }
-
-  export type JobFitAnalysisUncheckedCreateWithoutUserInput = {
-    id?: string
-    jobId: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type JobFitAnalysisCreateOrConnectWithoutUserInput = {
-    where: JobFitAnalysisWhereUniqueInput
-    create: XOR<JobFitAnalysisCreateWithoutUserInput, JobFitAnalysisUncheckedCreateWithoutUserInput>
-  }
-
-  export type JobFitAnalysisCreateManyUserInputEnvelope = {
-    data: JobFitAnalysisCreateManyUserInput | JobFitAnalysisCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -21710,52 +19391,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Job"> | Date | string
   }
 
-  export type JobFitAnalysisUpsertWithWhereUniqueWithoutUserInput = {
-    where: JobFitAnalysisWhereUniqueInput
-    update: XOR<JobFitAnalysisUpdateWithoutUserInput, JobFitAnalysisUncheckedUpdateWithoutUserInput>
-    create: XOR<JobFitAnalysisCreateWithoutUserInput, JobFitAnalysisUncheckedCreateWithoutUserInput>
-  }
-
-  export type JobFitAnalysisUpdateWithWhereUniqueWithoutUserInput = {
-    where: JobFitAnalysisWhereUniqueInput
-    data: XOR<JobFitAnalysisUpdateWithoutUserInput, JobFitAnalysisUncheckedUpdateWithoutUserInput>
-  }
-
-  export type JobFitAnalysisUpdateManyWithWhereWithoutUserInput = {
-    where: JobFitAnalysisScalarWhereInput
-    data: XOR<JobFitAnalysisUpdateManyMutationInput, JobFitAnalysisUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type JobFitAnalysisScalarWhereInput = {
-    AND?: JobFitAnalysisScalarWhereInput | JobFitAnalysisScalarWhereInput[]
-    OR?: JobFitAnalysisScalarWhereInput[]
-    NOT?: JobFitAnalysisScalarWhereInput | JobFitAnalysisScalarWhereInput[]
-    id?: UuidFilter<"JobFitAnalysis"> | string
-    userId?: UuidFilter<"JobFitAnalysis"> | string
-    jobId?: UuidFilter<"JobFitAnalysis"> | string
-    resumeSnapshotUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    promptRuleVersion?: IntFilter<"JobFitAnalysis"> | number
-    jobUpdatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    analyzerVersion?: StringFilter<"JobFitAnalysis"> | string
-    source?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    aiEnhanced?: BoolFilter<"JobFitAnalysis"> | boolean
-    provider?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    aiReason?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    model?: StringFilter<"JobFitAnalysis"> | string
-    status?: EnumJobFitStatusFilter<"JobFitAnalysis"> | $Enums.JobFitStatus
-    score?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    gateStatus?: EnumJobFitGateStatusNullableFilter<"JobFitAnalysis"> | $Enums.JobFitGateStatus | null
-    recommendation?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    stackMatched?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    stackTotal?: IntNullableFilter<"JobFitAnalysis"> | number | null
-    topGaps?: JsonNullableFilter<"JobFitAnalysis">
-    gates?: JsonNullableFilter<"JobFitAnalysis">
-    evidence?: JsonNullableFilter<"JobFitAnalysis">
-    error?: StringNullableFilter<"JobFitAnalysis"> | string | null
-    createdAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-    updatedAt?: DateTimeFilter<"JobFitAnalysis"> | Date | string
-  }
-
   export type FetchRunUpsertWithWhereUniqueWithoutUserInput = {
     where: FetchRunWhereUniqueInput
     update: XOR<FetchRunUpdateWithoutUserInput, FetchRunUncheckedUpdateWithoutUserInput>
@@ -21986,7 +19621,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -22006,7 +19640,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -22042,7 +19675,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -22062,7 +19694,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -22082,7 +19713,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -22102,7 +19732,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -22138,7 +19767,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -22158,7 +19786,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -22178,7 +19805,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -22198,7 +19824,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -22253,68 +19878,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type JobFitAnalysisCreateWithoutJobInput = {
-    id?: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutJobFitAnalysesInput
-  }
-
-  export type JobFitAnalysisUncheckedCreateWithoutJobInput = {
-    id?: string
-    userId: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type JobFitAnalysisCreateOrConnectWithoutJobInput = {
-    where: JobFitAnalysisWhereUniqueInput
-    create: XOR<JobFitAnalysisCreateWithoutJobInput, JobFitAnalysisUncheckedCreateWithoutJobInput>
-  }
-
-  export type JobFitAnalysisCreateManyJobInputEnvelope = {
-    data: JobFitAnalysisCreateManyJobInput | JobFitAnalysisCreateManyJobInput[]
-    skipDuplicates?: boolean
-  }
-
   export type UserUpsertWithoutJobsInput = {
     update: XOR<UserUpdateWithoutJobsInput, UserUncheckedUpdateWithoutJobsInput>
     create: XOR<UserCreateWithoutJobsInput, UserUncheckedCreateWithoutJobsInput>
@@ -22336,7 +19899,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -22356,7 +19918,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -22382,22 +19943,6 @@ export namespace Prisma {
     data: XOR<ApplicationUpdateManyMutationInput, ApplicationUncheckedUpdateManyWithoutJobInput>
   }
 
-  export type JobFitAnalysisUpsertWithWhereUniqueWithoutJobInput = {
-    where: JobFitAnalysisWhereUniqueInput
-    update: XOR<JobFitAnalysisUpdateWithoutJobInput, JobFitAnalysisUncheckedUpdateWithoutJobInput>
-    create: XOR<JobFitAnalysisCreateWithoutJobInput, JobFitAnalysisUncheckedCreateWithoutJobInput>
-  }
-
-  export type JobFitAnalysisUpdateWithWhereUniqueWithoutJobInput = {
-    where: JobFitAnalysisWhereUniqueInput
-    data: XOR<JobFitAnalysisUpdateWithoutJobInput, JobFitAnalysisUncheckedUpdateWithoutJobInput>
-  }
-
-  export type JobFitAnalysisUpdateManyWithWhereWithoutJobInput = {
-    where: JobFitAnalysisScalarWhereInput
-    data: XOR<JobFitAnalysisUpdateManyMutationInput, JobFitAnalysisUncheckedUpdateManyWithoutJobInput>
-  }
-
   export type UserCreateWithoutDeletedJobUrlsInput = {
     id?: string
     email?: string | null
@@ -22409,7 +19954,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
@@ -22429,7 +19973,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
@@ -22465,7 +20008,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
@@ -22485,7 +20027,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
@@ -22505,7 +20046,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
@@ -22525,7 +20065,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
@@ -22561,7 +20100,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
@@ -22581,7 +20119,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
@@ -22601,7 +20138,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
@@ -22621,7 +20157,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
     resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
@@ -22657,7 +20192,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
@@ -22677,7 +20211,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
     resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
@@ -22697,7 +20230,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -22717,7 +20249,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -22793,7 +20324,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -22813,7 +20343,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -22849,7 +20378,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -22869,7 +20397,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -22896,7 +20423,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutJobsInput
-    fitAnalyses?: JobFitAnalysisCreateNestedManyWithoutJobInput
   }
 
   export type JobUncheckedCreateWithoutApplicationsInput = {
@@ -22912,7 +20438,6 @@ export namespace Prisma {
     status?: $Enums.JobStatus
     createdAt?: Date | string
     updatedAt?: Date | string
-    fitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutJobInput
   }
 
   export type JobCreateOrConnectWithoutApplicationsInput = {
@@ -22975,7 +20500,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -22995,7 +20519,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -23028,7 +20551,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutJobsNestedInput
-    fitAnalyses?: JobFitAnalysisUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateWithoutApplicationsInput = {
@@ -23044,7 +20566,6 @@ export namespace Prisma {
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutJobNestedInput
   }
 
   export type ResumeProfileUpsertWithoutApplicationsInput = {
@@ -23086,182 +20607,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type UserCreateWithoutJobFitAnalysesInput = {
-    id?: string
-    email?: string | null
-    name?: string | null
-    image?: string | null
-    emailVerified?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    accounts?: AccountCreateNestedManyWithoutUserInput
-    sessions?: SessionCreateNestedManyWithoutUserInput
-    jobs?: JobCreateNestedManyWithoutUserInput
-    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
-    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
-    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
-    resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
-    applications?: ApplicationCreateNestedManyWithoutUserInput
-    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
-    onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutJobFitAnalysesInput = {
-    id?: string
-    email?: string | null
-    name?: string | null
-    image?: string | null
-    emailVerified?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
-    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
-    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
-    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
-    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
-    resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
-    applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
-    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
-    onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutJobFitAnalysesInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutJobFitAnalysesInput, UserUncheckedCreateWithoutJobFitAnalysesInput>
-  }
-
-  export type JobCreateWithoutFitAnalysesInput = {
-    id?: string
-    jobUrl: string
-    title: string
-    company?: string | null
-    location?: string | null
-    jobType?: string | null
-    jobLevel?: string | null
-    description?: string | null
-    status?: $Enums.JobStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutJobsInput
-    applications?: ApplicationCreateNestedManyWithoutJobInput
-  }
-
-  export type JobUncheckedCreateWithoutFitAnalysesInput = {
-    id?: string
-    userId: string
-    jobUrl: string
-    title: string
-    company?: string | null
-    location?: string | null
-    jobType?: string | null
-    jobLevel?: string | null
-    description?: string | null
-    status?: $Enums.JobStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
-  }
-
-  export type JobCreateOrConnectWithoutFitAnalysesInput = {
-    where: JobWhereUniqueInput
-    create: XOR<JobCreateWithoutFitAnalysesInput, JobUncheckedCreateWithoutFitAnalysesInput>
-  }
-
-  export type UserUpsertWithoutJobFitAnalysesInput = {
-    update: XOR<UserUpdateWithoutJobFitAnalysesInput, UserUncheckedUpdateWithoutJobFitAnalysesInput>
-    create: XOR<UserCreateWithoutJobFitAnalysesInput, UserUncheckedCreateWithoutJobFitAnalysesInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutJobFitAnalysesInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutJobFitAnalysesInput, UserUncheckedUpdateWithoutJobFitAnalysesInput>
-  }
-
-  export type UserUpdateWithoutJobFitAnalysesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    accounts?: AccountUpdateManyWithoutUserNestedInput
-    sessions?: SessionUpdateManyWithoutUserNestedInput
-    jobs?: JobUpdateManyWithoutUserNestedInput
-    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
-    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
-    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
-    resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
-    applications?: ApplicationUpdateManyWithoutUserNestedInput
-    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
-    onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutJobFitAnalysesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
-    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
-    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
-    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
-    resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
-    applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
-    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
-    onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
-  }
-
-  export type JobUpsertWithoutFitAnalysesInput = {
-    update: XOR<JobUpdateWithoutFitAnalysesInput, JobUncheckedUpdateWithoutFitAnalysesInput>
-    create: XOR<JobCreateWithoutFitAnalysesInput, JobUncheckedCreateWithoutFitAnalysesInput>
-    where?: JobWhereInput
-  }
-
-  export type JobUpdateToOneWithWhereWithoutFitAnalysesInput = {
-    where?: JobWhereInput
-    data: XOR<JobUpdateWithoutFitAnalysesInput, JobUncheckedUpdateWithoutFitAnalysesInput>
-  }
-
-  export type JobUpdateWithoutFitAnalysesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    jobUrl?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    company?: NullableStringFieldUpdateOperationsInput | string | null
-    location?: NullableStringFieldUpdateOperationsInput | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
-    jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutJobsNestedInput
-    applications?: ApplicationUpdateManyWithoutJobNestedInput
-  }
-
-  export type JobUncheckedUpdateWithoutFitAnalysesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    jobUrl?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    company?: NullableStringFieldUpdateOperationsInput | string | null
-    location?: NullableStringFieldUpdateOperationsInput | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
-    jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
-  }
-
   export type UserCreateWithoutPromptRuleTemplatesInput = {
     id?: string
     email?: string | null
@@ -23273,7 +20618,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -23293,7 +20637,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -23329,7 +20672,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -23349,7 +20691,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -23369,7 +20710,6 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     jobs?: JobCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
@@ -23389,7 +20729,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     jobs?: JobUncheckedCreateNestedManyWithoutUserInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedCreateNestedManyWithoutUserInput
     fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
     deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
     dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
@@ -23425,7 +20764,6 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     jobs?: JobUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
@@ -23445,7 +20783,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
-    jobFitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutUserNestedInput
     fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
     deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
     dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
@@ -23488,32 +20825,6 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type JobFitAnalysisCreateManyUserInput = {
-    id?: string
-    jobId: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -23672,7 +20983,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUpdateManyWithoutJobNestedInput
-    fitAnalyses?: JobFitAnalysisUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateWithoutUserInput = {
@@ -23688,7 +20998,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
-    fitAnalyses?: JobFitAnalysisUncheckedUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateManyWithoutUserInput = {
@@ -23701,84 +21010,6 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type JobFitAnalysisUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    job?: JobUpdateOneRequiredWithoutFitAnalysesNestedInput
-  }
-
-  export type JobFitAnalysisUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    jobId?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type JobFitAnalysisUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    jobId?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24007,32 +21238,6 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type JobFitAnalysisCreateManyJobInput = {
-    id?: string
-    userId: string
-    resumeSnapshotUpdatedAt: Date | string
-    promptRuleVersion: number
-    jobUpdatedAt: Date | string
-    analyzerVersion: string
-    source?: string | null
-    aiEnhanced?: boolean
-    provider?: string | null
-    aiReason?: string | null
-    model: string
-    status?: $Enums.JobFitStatus
-    score?: number | null
-    gateStatus?: $Enums.JobFitGateStatus | null
-    recommendation?: string | null
-    stackMatched?: number | null
-    stackTotal?: number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type ApplicationUpdateWithoutJobInput = {
     id?: StringFieldUpdateOperationsInput | string
     company?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24074,84 +21279,6 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type JobFitAnalysisUpdateWithoutJobInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutJobFitAnalysesNestedInput
-  }
-
-  export type JobFitAnalysisUncheckedUpdateWithoutJobInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type JobFitAnalysisUncheckedUpdateManyWithoutJobInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    resumeSnapshotUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    promptRuleVersion?: IntFieldUpdateOperationsInput | number
-    jobUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    analyzerVersion?: StringFieldUpdateOperationsInput | string
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    aiEnhanced?: BoolFieldUpdateOperationsInput | boolean
-    provider?: NullableStringFieldUpdateOperationsInput | string | null
-    aiReason?: NullableStringFieldUpdateOperationsInput | string | null
-    model?: StringFieldUpdateOperationsInput | string
-    status?: EnumJobFitStatusFieldUpdateOperationsInput | $Enums.JobFitStatus
-    score?: NullableIntFieldUpdateOperationsInput | number | null
-    gateStatus?: NullableEnumJobFitGateStatusFieldUpdateOperationsInput | $Enums.JobFitGateStatus | null
-    recommendation?: NullableStringFieldUpdateOperationsInput | string | null
-    stackMatched?: NullableIntFieldUpdateOperationsInput | number | null
-    stackTotal?: NullableIntFieldUpdateOperationsInput | number | null
-    topGaps?: NullableJsonNullValueInput | InputJsonValue
-    gates?: NullableJsonNullValueInput | InputJsonValue
-    evidence?: NullableJsonNullValueInput | InputJsonValue
-    error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

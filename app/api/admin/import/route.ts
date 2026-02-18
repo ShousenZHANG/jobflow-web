@@ -114,42 +114,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, imported: 0, invalid: invalid.length });
     }
 
-    // Concurrency-limited upsert to improve throughput without tx timeouts
-    const CONCURRENCY = 5;
+    // Atomic batch insert with unique(userId, jobUrl) dedupe at DB level.
+    // This avoids race conditions from "find then create" under concurrent imports.
+    const BATCH_SIZE = 200;
     let written = 0;
-    let index = 0;
-
-    async function worker() {
-      while (index < normalized.length) {
-        const current = normalized[index];
-        index += 1;
-        const existing = await prisma.job.findUnique({
-          where: { userId_jobUrl: { userId, jobUrl: current.jobUrl } },
-          select: { id: true },
-        });
-        if (existing) {
-          continue;
-        }
-        await prisma.job.create({
-          data: {
-            userId,
-            jobUrl: current.jobUrl,
-            title: current.title,
-            company: current.company,
-            location: current.location,
-            jobType: current.jobType,
-            jobLevel: current.jobLevel,
-            description: current.description,
-            status: "NEW",
-          },
-          select: { id: true },
-        });
-        written += 1;
-      }
+    for (let i = 0; i < normalized.length; i += BATCH_SIZE) {
+      const batch = normalized.slice(i, i + BATCH_SIZE);
+      const result = await prisma.job.createMany({
+        data: batch.map((current) => ({
+          userId,
+          jobUrl: current.jobUrl,
+          title: current.title,
+          company: current.company,
+          location: current.location,
+          jobType: current.jobType,
+          jobLevel: current.jobLevel,
+          description: current.description,
+          status: "NEW",
+        })),
+        skipDuplicates: true,
+      });
+      written += result.count;
     }
-
-    const workers = Array.from({ length: CONCURRENCY }, () => worker());
-    await Promise.all(workers);
 
     return NextResponse.json({ ok: true, imported: written, invalid: invalid.length });
   } catch (err: unknown) {
@@ -162,4 +148,3 @@ export async function POST(req: Request) {
     );
   }
 }
-
