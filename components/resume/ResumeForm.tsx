@@ -155,6 +155,9 @@ export function ResumeForm() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewAbortRef = useRef<AbortController | null>(null);
+  const previewScheduledKeyRef = useRef<string | null>(null);
+  const previewInFlightKeyRef = useRef<string | null>(null);
+  const previewLatestKeyRef = useRef<string | null>(null);
 
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
   const [links, setLinks] = useState<ResumeLink[]>(defaultLinks);
@@ -719,8 +722,15 @@ export function ResumeForm() {
     );
   }, [basics, links, summary, experiences, projects, education, skills]);
 
+  const previewDraftPayload = useMemo(() => buildPayload("preview"), [buildPayload]);
+  const previewDraftKey = useMemo(() => JSON.stringify(previewDraftPayload), [previewDraftPayload]);
+
   const schedulePreview = useCallback(
-    (delayMs = 800, showEmptyToast = false) => {
+    (
+      delayMs = 800,
+      showEmptyToast = false,
+      options?: { payload?: ResumeProfilePayload; payloadKey?: string; force?: boolean },
+    ) => {
       if (!hasAnyContent) {
         if (showEmptyToast) {
           toast({
@@ -731,12 +741,21 @@ export function ResumeForm() {
         }
         return;
       }
+      const payload = options?.payload ?? buildPayload("preview");
+      const payloadKey = options?.payloadKey ?? JSON.stringify(payload);
+      const shouldSkip =
+        !options?.force &&
+        (payloadKey === previewScheduledKeyRef.current ||
+          payloadKey === previewInFlightKeyRef.current ||
+          payloadKey === previewLatestKeyRef.current);
+      if (shouldSkip) {
+        return;
+      }
+
       if (previewTimerRef.current) {
         clearTimeout(previewTimerRef.current);
       }
       previewAbortRef.current?.abort();
-
-      const payload = buildPayload("preview");
       const hasExistingPreview = Boolean(pdfUrl);
       if (!hasExistingPreview) {
         setPreviewStatus("loading");
@@ -744,8 +763,11 @@ export function ResumeForm() {
         setPreviewStatus("ready");
       }
       setPreviewError(null);
+      previewScheduledKeyRef.current = payloadKey;
 
       const runPreview = async (attempt: number) => {
+        previewScheduledKeyRef.current = null;
+        previewInFlightKeyRef.current = payloadKey;
         const controller = new AbortController();
         previewAbortRef.current = controller;
         try {
@@ -794,6 +816,7 @@ export function ResumeForm() {
             return url;
           });
           setPreviewStatus("ready");
+          previewLatestKeyRef.current = payloadKey;
         } catch (err) {
           if ((err as Error).name === "AbortError") return;
           if (!hasExistingPreview) {
@@ -801,6 +824,9 @@ export function ResumeForm() {
             setPreviewStatus("error");
           }
         } finally {
+          if (previewInFlightKeyRef.current === payloadKey) {
+            previewInFlightKeyRef.current = null;
+          }
           previewAbortRef.current = null;
         }
       };
@@ -811,6 +837,16 @@ export function ResumeForm() {
     },
     [buildPayload, hasAnyContent, pdfUrl, toast],
   );
+
+  useEffect(() => {
+    if (!previewOpen || !hasAnyContent) {
+      return;
+    }
+    schedulePreview(450, false, {
+      payload: previewDraftPayload,
+      payloadKey: previewDraftKey,
+    });
+  }, [hasAnyContent, previewDraftKey, previewDraftPayload, previewOpen, schedulePreview]);
 
   const handleNext = () => {
     if (!canContinue) return;
@@ -908,7 +944,12 @@ export function ResumeForm() {
           }
         >
           <span>{previewError ?? "Preview failed. Try again."}</span>
-          <Button type="button" size="sm" variant="outline" onClick={() => schedulePreview(0)}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => schedulePreview(0, false, { force: true })}
+          >
             Retry
           </Button>
         </div>

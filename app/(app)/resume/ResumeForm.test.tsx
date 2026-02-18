@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ResumeForm } from "@/components/resume/ResumeForm";
 
 afterEach(() => {
@@ -181,5 +181,55 @@ describe("ResumeForm", () => {
     const { container } = render(<ResumeForm />);
     expect(await screen.findByRole("heading", { name: "Personal info" })).toBeInTheDocument();
     expect(container.querySelector('[data-guide-anchor="resume_setup"]')).toBeTruthy();
+  });
+
+  it("auto-refreshes preview when content changes while preview is open", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url === "/api/resume-profile") {
+        return new Response(JSON.stringify({ profile: null }), { status: 200 });
+      }
+      if (url === "/api/resume-pdf") {
+        return new Response(new Uint8Array([37, 80, 68, 70]), {
+          status: 200,
+          headers: { "content-type": "application/pdf" },
+        });
+      }
+      return new Response("not found", { status: 404 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const getPreviewCallCount = () =>
+      fetchMock.mock.calls.filter(([firstArg]) => firstArg === "/api/resume-pdf").length;
+
+    render(<ResumeForm />);
+
+    fireEvent.change(await screen.findByLabelText("Full name"), {
+      target: { value: "Jane Doe" },
+    });
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Software Engineer" },
+    });
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "jane@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Phone"), {
+      target: { value: "+1 555 0100" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    expect(await screen.findByRole("heading", { name: "PDF preview" })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(getPreviewCallCount()).toBe(1);
+    }, { timeout: 2000 });
+
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Senior Software Engineer" },
+    });
+
+    await waitFor(() => {
+      expect(getPreviewCallCount()).toBe(2);
+    }, { timeout: 2200 });
   });
 });
