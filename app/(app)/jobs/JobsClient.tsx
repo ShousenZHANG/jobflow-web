@@ -31,7 +31,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useGuide } from "@/app/GuideContext";
 import { useFetchStatus, type FetchRunStatus } from "@/app/FetchStatusContext";
-import { type JobFitApiResponse } from "@/lib/shared/jobFitAnalysis";
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -58,24 +57,6 @@ type JobsResponse = {
     jobLevels?: string[];
   };
 };
-
-function formatAiReason(reason?: string | null) {
-  if (!reason) return "";
-  if (reason === "GEMINI_API_KEY_MISSING") return "Gemini API key is not configured.";
-  if (reason === "GEMINI_AUTH_403") return "Gemini auth failed (403). Check API key/project permissions.";
-  if (reason === "GEMINI_RATE_LIMIT_429") return "Gemini rate limit reached (429). Please retry later.";
-  if (reason === "GEMINI_MODEL_NOT_FOUND_404") return "Gemini model not found (404). Check GEMINI_MODEL.";
-  if (reason === "GEMINI_BAD_REQUEST_400") return "Gemini request invalid (400). Model/output config may be unsupported.";
-  if (reason === "GEMINI_SERVER_5XX") return "Gemini server error (5xx). Please retry.";
-  if (reason === "GEMINI_REQUEST_FAILED") return "Gemini request failed; using rule-based result.";
-  if (reason === "GEMINI_INVALID_JSON") return "Gemini returned invalid JSON; using rule-based result.";
-  if (reason === "GEMINI_INVALID_JSON_RETRY_FAILED")
-    return "Gemini returned invalid JSON twice; using rule-based result.";
-  if (reason === "NO_JD") return "Job description is not available yet.";
-  if (reason === "NOT_COMPUTED") return "Analysis has not run yet.";
-  if (reason === "ANALYSIS_FAILED") return "Analysis fallback was used due to an internal error.";
-  return reason;
-}
 
 type CvSource = "ai" | "base" | "manual_import";
 type CoverSource = "ai" | "fallback" | "manual_import";
@@ -1329,76 +1310,11 @@ export function JobsClient({
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
-  const fitQuery = useQuery({
-    queryKey: ["job-fit", effectiveSelectedId],
-    queryFn: async () => {
-      const res = await fetch(`/api/jobs/${effectiveSelectedId}/fit-analysis`);
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || json?.message || "Failed to load fit analysis");
-      return json as JobFitApiResponse;
-    },
-    enabled: Boolean(effectiveSelectedId),
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchInterval: (query) => (query.state.data?.status === "PENDING" ? 4000 : false),
-  });
-  const fitStartMutation = useMutation({
-    mutationFn: async (jobId: string) => {
-      const res = await fetch(`/api/jobs/${jobId}/fit-analysis`, {
-        method: "POST",
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || json?.message || "Failed to start fit analysis");
-      return json as JobFitApiResponse;
-    },
-    onSuccess: (payload, jobId) => {
-      queryClient.setQueryData(["job-fit", jobId], payload);
-      if (payload.status === "PENDING") {
-        queryClient.invalidateQueries({ queryKey: ["job-fit", jobId] });
-      }
-    },
-  });
-  const fitTriggerRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!effectiveSelectedId) return;
-    if (fitTriggerRef.current === effectiveSelectedId) return;
-    fitTriggerRef.current = effectiveSelectedId;
-    fitStartMutation.mutate(effectiveSelectedId);
-  }, [effectiveSelectedId, fitStartMutation]);
   const selectedDescription = selectedJob ? detailQuery.data?.description ?? "" : "";
   const detailError = detailQuery.error
     ? getErrorMessage(detailQuery.error, "Failed to load details")
     : null;
   const detailLoading = detailQuery.isFetching && !detailQuery.data;
-  const fitData = selectedJob ? fitQuery.data : undefined;
-  const fitReady = fitData?.status === "READY" ? fitData.analysis : null;
-  const fitPending = fitData?.status === "PENDING";
-  const fitLoading = Boolean(selectedJob) && ((fitStartMutation.isPending && !fitData) || fitQuery.isLoading);
-  const fitPendingReason =
-    fitData?.aiReason && fitData.aiReason !== "NOT_COMPUTED"
-      ? formatAiReason(fitData.aiReason)
-      : fitData?.message || null;
-  const fitMutationError = fitStartMutation.error
-    ? getErrorMessage(fitStartMutation.error, "Failed to start fit analysis.")
-    : null;
-  const fitError = fitData?.status === "FAILED"
-    ? fitData.message || "Fit analysis failed."
-    : fitMutationError
-      ? fitMutationError
-    : fitQuery.error
-      ? getErrorMessage(fitQuery.error, "Fit analysis failed.")
-      : null;
-  const fitRetryRef = useRef<Record<string, number>>({});
-  useEffect(() => {
-    if (!effectiveSelectedId) return;
-    if (!fitPending) return;
-    if (fitData?.aiReason !== "NOT_COMPUTED") return;
-    if (fitStartMutation.isPending) return;
-    const attempts = fitRetryRef.current[effectiveSelectedId] ?? 0;
-    if (attempts >= 2) return;
-    fitRetryRef.current[effectiveSelectedId] = attempts + 1;
-    fitStartMutation.mutate(effectiveSelectedId);
-  }, [effectiveSelectedId, fitPending, fitData?.aiReason, fitStartMutation]);
   const isLongDescription = selectedDescription.length > 600;
   const experienceSignals = useMemo(
     () => parseExperienceGate(selectedDescription),
@@ -2128,84 +2044,6 @@ export function JobsClient({
             <div key={effectiveSelectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (
               <div className="space-y-4 text-sm text-muted-foreground">
-                <div className="rounded-2xl border border-slate-900/10 bg-slate-50/60 p-3" data-testid="job-fit-snapshot">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                      AI Fit Snapshot
-                    </div>
-                    {fitData?.status === "READY" ? (
-                      <Badge className={fitData.aiEnhanced ? "bg-cyan-100 text-cyan-800" : "bg-slate-200 text-slate-700"}>
-                        {fitData.aiEnhanced ? "AI Enhanced" : "Rule-based"}
-                      </Badge>
-                    ) : null}
-                  </div>
-                  {fitLoading ? <div className="mt-2 text-sm text-muted-foreground">Analyzing resume vs JD...</div> : null}
-                  {!fitLoading && fitPending ? (
-                    <div className="mt-2 text-sm text-muted-foreground">{fitPendingReason || "Preparing analysis..."}</div>
-                  ) : null}
-                  {fitError ? (
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-rose-700">
-                      <span>{fitError}</span>
-                      {selectedJob ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="h-7 rounded-lg border-rose-200 px-2 text-xs text-rose-700 hover:bg-rose-50"
-                          onClick={() => fitStartMutation.mutate(selectedJob.id)}
-                        >
-                          Retry
-                        </Button>
-                      ) : null}
-                    </div>
-                  ) : null}
-                  {fitReady ? (
-                    <div className="mt-2 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <span
-                          className={`rounded-md border px-2 py-1 font-semibold ${
-                            fitReady.gateStatus === "PASS"
-                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                              : fitReady.gateStatus === "BLOCK"
-                                ? "border-rose-200 bg-rose-50 text-rose-700"
-                                : "border-amber-200 bg-amber-50 text-amber-800"
-                          }`}
-                        >
-                          Hard gate: {fitReady.gateStatus}
-                        </span>
-                        <span className="font-medium text-slate-900">{fitReady.recommendation}</span>
-                      </div>
-                      {fitReady.gates.some((gate) => gate.status !== "PASS") ? (
-                        <div>
-                          <div className="mb-1 text-[11px] font-medium text-slate-600">Hard gates</div>
-                          <div className="flex flex-wrap gap-2">
-                            {fitReady.gates
-                              .filter((gate) => gate.status !== "PASS")
-                              .slice(0, 3)
-                              .map((gate) => (
-                                <span
-                                  key={gate.key}
-                                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-                                    gate.status === "BLOCK"
-                                      ? "border-rose-200 bg-rose-50 text-rose-700"
-                                      : "border-amber-200 bg-amber-50 text-amber-800"
-                                  }`}
-                                  title={gate.evidence || gate.label}
-                                >
-                                  {gate.status}: {gate.label}
-                                </span>
-                              ))}
-                          </div>
-                        </div>
-                      ) : null}
-                      {!fitData?.aiEnhanced && fitData?.aiReason ? (
-                        <div className="text-xs text-amber-700">{formatAiReason(fitData.aiReason)}</div>
-                      ) : (
-                        <div className="text-xs text-muted-foreground">Result source verified.</div>
-                      )}
-                    </div>
-                  ) : null}
-                </div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
                   Job Description
                 </div>
