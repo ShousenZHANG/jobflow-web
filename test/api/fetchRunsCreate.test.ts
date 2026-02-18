@@ -89,6 +89,34 @@ describe("fetch runs create api", () => {
     expect(payload.excludeDescriptionRules).toEqual(["identity_requirement"]);
   });
 
+  it("keeps only supported description exclusion rules", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    await POST(
+      new Request("http://localhost/api/fetch-runs", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Software Engineer",
+          excludeDescriptionRules: [
+            "identity_requirement",
+            "clearance_requirement",
+            "sponsorship_unavailable",
+            "exp_7",
+          ],
+        }),
+      }),
+    );
+
+    const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data?.queries;
+    expect(payload.excludeDescriptionRules).toEqual([
+      "identity_requirement",
+      "clearance_requirement",
+      "sponsorship_unavailable",
+    ]);
+  });
+
   it("ignores resultsWanted input and stores null for full-fetch mode", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1", email: "user@example.com" },

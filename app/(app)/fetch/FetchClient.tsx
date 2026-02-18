@@ -385,6 +385,8 @@ export function FetchClient() {
                 <DropdownMenuContent align="start" className="w-72">
                   {[
                     { value: "identity_requirement", label: "PR/Citizen requirement" },
+                    { value: "clearance_requirement", label: "Security clearance required" },
+                    { value: "sponsorship_unavailable", label: "No visa sponsorship" },
                   ].map((opt) => {
                     const checked = excludeDescriptionRules.includes(opt.value);
                     return (

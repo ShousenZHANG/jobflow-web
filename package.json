@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "deps:policy": "node tools/ci/check-dependency-policy.mjs",
+    "deps:audit": "npm audit --omit=dev --audit-level=high",
     "readme:metrics": "node tools/readme/update-metrics-badges.mjs"
   },
   "dependencies": {

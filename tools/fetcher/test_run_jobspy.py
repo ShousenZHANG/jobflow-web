@@ -171,6 +171,59 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Software Engineer")
 
+    def test_filter_title_enforce_include_drops_non_matching_titles(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "title": "Software Engineer",
+                    "description": "Build APIs",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Product Designer",
+                    "description": "Design product experiences",
+                    "company": "Beta",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        out = rj.filter_title(
+            df,
+            queries=["Software Engineer"],
+            enforce_include=True,
+            exclude_terms=[],
+        )
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out.iloc[0]["title"], "Software Engineer")
+
+    def test_filter_title_without_enforce_include_keeps_non_matching_titles(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "title": "Software Engineer",
+                    "description": "Build APIs",
+                    "company": "Acme",
+                    "location": "Sydney",
+                },
+                {
+                    "title": "Product Designer",
+                    "description": "Design product experiences",
+                    "company": "Beta",
+                    "location": "Sydney",
+                },
+            ]
+        )
+
+        out = rj.filter_title(
+            df,
+            queries=["Software Engineer"],
+            enforce_include=False,
+            exclude_terms=[],
+        )
+        self.assertEqual(len(out), 2)
+
     def test_filter_description_only_drops_hard_rights_requirement(self):
         df = pd.DataFrame(
             [

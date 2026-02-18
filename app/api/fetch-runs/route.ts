@@ -18,7 +18,11 @@ const TitleExcludeEnum = z.enum([
   "architect",
 ]);
 
-const DESC_EXCLUDE_ALLOWED = new Set(["identity_requirement"]);
+const DESC_EXCLUDE_ALLOWED = new Set([
+  "identity_requirement",
+  "clearance_requirement",
+  "sponsorship_unavailable",
+]);
 
 const CreateSchema = z
   .object({
@@ -41,6 +45,7 @@ const CreateSchema = z
     location: z.string().trim().min(1).optional(),
     hoursOld: z.coerce.number().int().min(1).max(24 * 30).optional(),
     smartExpand: z.coerce.boolean().optional().default(true),
+    includeFromQueries: z.coerce.boolean().optional().default(false),
     applyExcludes: z.coerce.boolean().optional().default(true),
     excludeTitleTerms: z.array(TitleExcludeEnum).optional().default([]),
     excludeDescriptionRules: z
@@ -90,6 +95,7 @@ export async function POST(req: Request) {
         title,
         queries,
         smartExpand: parsed.data.smartExpand,
+        includeFromQueries: parsed.data.includeFromQueries,
         applyExcludes: parsed.data.applyExcludes,
         excludeTitleTerms: parsed.data.excludeTitleTerms,
         excludeDescriptionRules: parsed.data.excludeDescriptionRules,
@@ -97,7 +103,7 @@ export async function POST(req: Request) {
       location: parsed.data.location ?? null,
       hoursOld: parsed.data.hoursOld ?? null,
       resultsWanted: null,
-      includeFromQueries: false,
+      includeFromQueries: parsed.data.includeFromQueries,
       filterDescription: parsed.data.applyExcludes,
     },
     select: { id: true },

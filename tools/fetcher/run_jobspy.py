@@ -374,8 +374,15 @@ def filter_title(
     else:
         exc = t.apply(lambda s: False)
     out = df[~exc].copy()
-    # Mainline behavior: do not enforce query inclusion here. Filters should be explicit,
-    # e.g., exclude_terms (like "senior") selected by the user.
+    # Optional strict include mode for parity with includeFromQueries config.
+    if enforce_include:
+        include_terms = _build_query_phrases(queries)
+        if include_terms:
+            normalized_titles = out["title"].fillna("").apply(_normalize_text)
+            include_mask = normalized_titles.apply(
+                lambda value: any(term in value for term in include_terms)
+            )
+            out = out[include_mask].copy()
     return out
 
 
@@ -859,11 +866,13 @@ def main():
     hours_old = int(run.get("hoursOld") or 48)
     results_wanted = int(run.get("resultsWanted") or DEFAULT_FULL_FETCH_RESULTS_WANTED)
     include_from_queries = bool(run.get("includeFromQueries") or False)
+    if not include_from_queries and isinstance(raw_queries, dict):
+        include_from_queries = bool(raw_queries.get("includeFromQueries") or False)
     proxy_pool = _parse_csv_list(os.environ.get("FETCH_PROXY_POOL", ""))
 
     exclude_rights = apply_excludes and "identity_requirement" in exclude_desc_rules
-    exclude_clearance = False
-    exclude_sponsorship = False
+    exclude_clearance = apply_excludes and "clearance_requirement" in exclude_desc_rules
+    exclude_sponsorship = apply_excludes and "sponsorship_unavailable" in exclude_desc_rules
     filter_desc = apply_excludes and bool(
         exclude_rights or exclude_clearance or exclude_sponsorship
     )
