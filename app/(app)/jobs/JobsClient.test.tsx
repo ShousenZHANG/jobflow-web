@@ -48,6 +48,30 @@ function renderWithClient(ui: React.ReactElement) {
 beforeEach(() => {
   vi.restoreAllMocks();
   fetchStatusMock.state = { runId: null, status: null, importedCount: 0 };
+  if (!HTMLElement.prototype.hasPointerCapture) {
+    Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
+      configurable: true,
+      value: () => false,
+    });
+  }
+  if (!HTMLElement.prototype.setPointerCapture) {
+    Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
+      configurable: true,
+      value: () => {},
+    });
+  }
+  if (!HTMLElement.prototype.releasePointerCapture) {
+    Object.defineProperty(HTMLElement.prototype, "releasePointerCapture", {
+      configurable: true,
+      value: () => {},
+    });
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: () => {},
+    });
+  }
   const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.url;
     if (url.startsWith("/api/jobs?limit=50")) {
@@ -549,6 +573,150 @@ describe("JobsClient", () => {
     expect(await screen.findByText(/copy prompt and paste it/i)).toBeInTheDocument();
     expect(createObjectUrlSpy).toHaveBeenCalled();
     expect(revokeObjectUrlSpy).toHaveBeenCalled();
+  });
+
+  it("restores filtered query cache item when status update fails", async () => {
+    const user = userEvent.setup();
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+    const newFilterKey = ["jobs", "limit=50&status=NEW&sort=newest", null] as const;
+    client.setQueryData<{
+      items: typeof baseJob[];
+      nextCursor: string | null;
+      totalCount?: number;
+      facets?: { jobLevels?: string[] };
+    }>(newFilterKey, {
+      items: [baseJob],
+      nextCursor: null,
+      totalCount: 1,
+      facets: { jobLevels: ["Mid"] },
+    });
+
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null, totalCount: 1, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs/") && init?.method === "PATCH") {
+        return new Response(JSON.stringify({ error: "patch failed" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: "Job description" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    render(
+      <QueryClientProvider client={client}>
+        <JobsClient initialItems={[baseJob]} initialCursor={null} />
+        <Toaster />
+      </QueryClientProvider>,
+    );
+
+    const primaryActions = (await screen.findAllByTestId("job-primary-actions"))[0];
+    const statusCombobox = within(primaryActions).getByRole("combobox");
+    await user.click(statusCombobox);
+    await user.click(await screen.findByText("Applied"));
+
+    await screen.findByText("Update failed");
+
+    await waitFor(() => {
+      const cache = client.getQueryData<{
+        items: Array<{ id: string; status: string }>;
+        totalCount?: number;
+      }>(newFilterKey);
+      expect(cache?.items.some((it) => it.id === baseJob.id && it.status === "NEW")).toBe(true);
+      expect(cache?.totalCount).toBe(1);
+    });
+  });
+
+  it("does not decrement totalCount for cached queries that do not contain the deleted job", async () => {
+    const user = userEvent.setup();
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+
+    const appliedOnlyJob = {
+      ...baseJob,
+      id: "99999999-9999-9999-9999-999999999999",
+      status: "APPLIED" as const,
+      title: "Applied role",
+    };
+    const appliedFilterKey = ["jobs", "limit=50&status=APPLIED&sort=newest", null] as const;
+    client.setQueryData<{
+      items: typeof baseJob[];
+      nextCursor: string | null;
+      totalCount?: number;
+      facets?: { jobLevels?: string[] };
+    }>(appliedFilterKey, {
+      items: [appliedOnlyJob],
+      nextCursor: null,
+      totalCount: 5,
+      facets: { jobLevels: ["Mid"] },
+    });
+
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null, totalCount: 1, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs/") && init?.method === "DELETE") {
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: "Job description" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    render(
+      <QueryClientProvider client={client}>
+        <JobsClient initialItems={[baseJob]} initialCursor={null} />
+        <Toaster />
+      </QueryClientProvider>,
+    );
+
+    const removeButton = (await screen.findAllByTestId("job-remove-button"))[0];
+    await user.click(removeButton);
+    const dialog = await screen.findByRole("alertdialog", { name: /delete this job/i });
+    await user.click(within(dialog).getByRole("button", { name: /^delete$/i }));
+
+    await screen.findByText("Job deleted");
+
+    await waitFor(() => {
+      const cache = client.getQueryData<{
+        items: Array<{ id: string; status: string }>;
+        totalCount?: number;
+      }>(appliedFilterKey);
+      expect(cache?.items).toHaveLength(1);
+      expect(cache?.items[0]?.id).toBe(appliedOnlyJob.id);
+      expect(cache?.totalCount).toBe(5);
+    });
   });
 
 });
