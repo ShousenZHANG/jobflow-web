@@ -2,11 +2,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogClose,
@@ -175,6 +181,7 @@ export function ResumeForm() {
   const [profileName, setProfileName] = useState("Custom Blank");
   const [profileSwitching, setProfileSwitching] = useState(false);
   const [profileCreating, setProfileCreating] = useState(false);
+  const [profileDeleting, setProfileDeleting] = useState(false);
 
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
   const [links, setLinks] = useState<ResumeLink[]>(defaultLinks);
@@ -914,23 +921,34 @@ export function ResumeForm() {
     });
   }, [hasAnyContent, previewDraftKey, previewDraftPayload, previewOpen, schedulePreview]);
 
-  const handleCreateProfile = async () => {
-    if (profileCreating || profileSwitching) return;
+  const handleCreateProfile = async (mode: "copy" | "blank" = "copy") => {
+    if (profileCreating || profileSwitching || profileDeleting) return;
     setProfileCreating(true);
     try {
       const res = await fetch("/api/resume-profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "create" }),
+        body: JSON.stringify({
+          action: "create",
+          mode,
+          sourceProfileId: activeProfileId ?? selectedProfileId ?? undefined,
+        }),
       });
       if (!res.ok) {
+        const code = (await res.json().catch(() => null))?.error;
+        if (code === "MIGRATION_REQUIRED") {
+          throw new Error("MIGRATION_REQUIRED");
+        }
         throw new Error("Create profile failed");
       }
       const json = await res.json();
       hydrateFromResumeApi(json);
       toast({
         title: "New version created",
-        description: "You can now edit this resume version.",
+        description:
+          mode === "copy"
+            ? "Started from your active version so you can edit only the differences."
+            : "Created a blank version.",
       });
       setPdfUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
@@ -941,7 +959,8 @@ export function ResumeForm() {
     } catch {
       toast({
         title: "Could not create version",
-        description: "Please try again.",
+        description:
+          "Please run migrations if needed (`npx prisma migrate deploy`) and try again.",
         variant: "destructive",
       });
     } finally {
@@ -949,8 +968,76 @@ export function ResumeForm() {
     }
   };
 
+  const handleDeleteProfile = async () => {
+    if (!selectedProfileId || profileDeleting || profileCreating || profileSwitching) return;
+    if (profiles.length <= 1) {
+      toast({
+        title: "Cannot delete the only version",
+        description: "Keep at least one master resume version.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId);
+    const confirmed = window.confirm(
+      `Delete "${selectedProfile?.name ?? "this version"}"? This action cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setProfileDeleting(true);
+    try {
+      const res = await fetch("/api/resume-profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", profileId: selectedProfileId }),
+      });
+      if (!res.ok) {
+        const code = (await res.json().catch(() => null))?.error;
+        if (code === "LAST_PROFILE") {
+          throw new Error("LAST_PROFILE");
+        }
+        throw new Error("Delete profile failed");
+      }
+      const json = await res.json();
+      hydrateFromResumeApi(json);
+      setPdfUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setPreviewStatus("idle");
+      setPreviewError(null);
+      toast({
+        title: "Version deleted",
+        description: "Your remaining versions are unchanged.",
+      });
+    } catch (error) {
+      toast({
+        title:
+          error instanceof Error && error.message === "LAST_PROFILE"
+            ? "Cannot delete the only version"
+            : "Could not delete version",
+        description:
+          error instanceof Error && error.message === "LAST_PROFILE"
+            ? "At least one master resume version is required."
+            : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProfileDeleting(false);
+    }
+  };
+
   const handleActivateProfile = async (profileId: string) => {
-    if (!profileId || profileId === activeProfileId || profileSwitching || profileCreating) return;
+    if (
+      !profileId ||
+      profileId === activeProfileId ||
+      profileSwitching ||
+      profileCreating ||
+      profileDeleting
+    ) {
+      return;
+    }
     setProfileSwitching(true);
     try {
       const res = await fetch("/api/resume-profile", {
@@ -1824,7 +1911,7 @@ export function ResumeForm() {
                     void handleActivateProfile(nextId);
                   }
                 }}
-                disabled={profileSwitching || profileCreating}
+                disabled={profileSwitching || profileCreating || profileDeleting}
                 className="min-h-11 w-full flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-slate-100"
               >
                 {profiles.length === 0 ? (
@@ -1837,14 +1924,46 @@ export function ResumeForm() {
                   </option>
                 ))}
               </select>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCreateProfile}
-                disabled={profileCreating || profileSwitching}
-              >
-                {profileCreating ? "Creating..." : "New version"}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void handleCreateProfile("copy")}
+                  disabled={profileCreating || profileSwitching || profileDeleting}
+                >
+                  <Plus className="h-4 w-4" />
+                  {profileCreating ? "Creating..." : "New version"}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label="More version actions"
+                      disabled={profileCreating || profileSwitching || profileDeleting}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => void handleCreateProfile("copy")}>
+                      New version from active
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => void handleCreateProfile("blank")}>
+                      New blank version
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-rose-600 focus:text-rose-700"
+                      onSelect={() => void handleDeleteProfile()}
+                      disabled={profiles.length <= 1 || !selectedProfileId}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete selected version
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
             <div className="mt-3 space-y-1">
               <Label htmlFor="resume-profile-name">Version name</Label>
@@ -1854,10 +1973,11 @@ export function ResumeForm() {
                 onChange={(event) => setProfileName(event.target.value)}
                 maxLength={80}
                 placeholder="Custom Blank"
+                disabled={profileDeleting}
               />
             </div>
             <p className="mt-2 text-xs text-slate-500">
-              The active version is used for CV and cover-letter generation.
+              New version clones the active resume by default. Active version drives CV and CL generation.
             </p>
           </div>
 
@@ -1908,7 +2028,9 @@ export function ResumeForm() {
               ) : (
                 <Button
                   onClick={handleSave}
-                  disabled={!canContinue || saving || profileSwitching || profileCreating}
+                  disabled={
+                    !canContinue || saving || profileSwitching || profileCreating || profileDeleting
+                  }
                   className={`edu-cta edu-cta--press ${
                     isTaskHighlighted("resume_setup") ? guideHighlightClass : ""
                   }`}

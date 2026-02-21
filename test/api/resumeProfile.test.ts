@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const resumeProfileService = vi.hoisted(() => ({
   listResumeProfiles: vi.fn(),
@@ -7,6 +7,7 @@ const resumeProfileService = vi.hoisted(() => ({
   createResumeProfile: vi.fn(),
   setActiveResumeProfile: vi.fn(),
   renameResumeProfile: vi.fn(),
+  deleteResumeProfile: vi.fn(),
 }));
 
 vi.mock("@/lib/server/resumeProfile", () => resumeProfileService);
@@ -191,5 +192,60 @@ describe("resume profile api", () => {
     expect(resumeProfileService.setActiveResumeProfile).toHaveBeenCalled();
     const json = await res.json();
     expect(json.activeProfileId).toBe("rp-2");
+  });
+
+  it("creates new version from active profile on PATCH create", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    resumeProfileService.createResumeProfile.mockResolvedValue({ id: "rp-3" });
+    resumeProfileService.listResumeProfiles.mockResolvedValue({
+      profiles: [
+        { id: "rp-2", name: "Experienced CV", isActive: false },
+        { id: "rp-3", name: "Experienced CV 2", isActive: true },
+      ],
+      activeProfileId: "rp-3",
+    });
+    resumeProfileService.getResumeProfile.mockResolvedValue({ id: "rp-3", summary: "Copied" });
+
+    const res = await PATCH(
+      new Request("http://localhost/api/resume-profile", {
+        method: "PATCH",
+        body: JSON.stringify({
+          action: "create",
+          mode: "copy",
+          sourceProfileId: "a6437908-54fd-4a26-a1e4-3350fc98ac63",
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(resumeProfileService.createResumeProfile).toHaveBeenCalledWith("user-1", {
+      mode: "copy",
+      sourceProfileId: "a6437908-54fd-4a26-a1e4-3350fc98ac63",
+      name: undefined,
+      setActive: true,
+    });
+  });
+
+  it("returns 409 when deleting the last profile", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    resumeProfileService.deleteResumeProfile.mockResolvedValue({ status: "last_profile" });
+
+    const res = await PATCH(
+      new Request("http://localhost/api/resume-profile", {
+        method: "PATCH",
+        body: JSON.stringify({
+          action: "delete",
+          profileId: "a6437908-54fd-4a26-a1e4-3350fc98ac63",
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(409);
+    const json = await res.json();
+    expect(json.error).toBe("LAST_PROFILE");
   });
 });

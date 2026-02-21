@@ -1,8 +1,17 @@
-﻿import { prisma } from "@/lib/server/prisma";
+import { prisma } from "@/lib/server/prisma";
 import { Prisma } from "@/lib/generated/prisma";
 
 const DEFAULT_PROFILE_BASE_NAME = "Custom Blank";
 const MAX_PROFILE_NAME_LENGTH = 80;
+const PROFILE_CLONE_SELECT = {
+  summary: true,
+  basics: true,
+  links: true,
+  skills: true,
+  experiences: true,
+  projects: true,
+  education: true,
+} satisfies Prisma.ResumeProfileSelect;
 
 export type ResumeProfileInput = {
   summary?: string | null;
@@ -80,6 +89,12 @@ function normalizeProfileName(name?: string | null) {
   if (!trimmed) return DEFAULT_PROFILE_BASE_NAME;
   if (trimmed.length <= MAX_PROFILE_NAME_LENGTH) return trimmed;
   return trimmed.slice(0, MAX_PROFILE_NAME_LENGTH);
+}
+
+function cloneJsonValueForCreate(value: Prisma.JsonValue | null | undefined) {
+  if (value === undefined) return undefined;
+  if (value === null) return Prisma.DbNull;
+  return value as Prisma.InputJsonValue;
 }
 
 async function ensureActivePointer(userId: string, resumeProfileId: string) {
@@ -173,8 +188,11 @@ export async function setActiveResumeProfile(userId: string, profileId: string) 
   return target;
 }
 
-async function buildDefaultProfileName(userId: string) {
-  const existing = await prisma.resumeProfile.findMany({
+async function buildDefaultProfileName(
+  userId: string,
+  tx: Pick<Prisma.TransactionClient, "resumeProfile"> | typeof prisma = prisma,
+) {
+  const existing = await tx.resumeProfile.findMany({
     where: { userId },
     select: { name: true },
   });
@@ -191,21 +209,83 @@ async function buildDefaultProfileName(userId: string) {
   return `${DEFAULT_PROFILE_BASE_NAME} ${suffix}`;
 }
 
-export async function createResumeProfile(userId: string, options?: { name?: string; setActive?: boolean }) {
-  const resolvedName = options?.name ? normalizeProfileName(options.name) : await buildDefaultProfileName(userId);
+export async function createResumeProfile(
+  userId: string,
+  options?: {
+    name?: string;
+    setActive?: boolean;
+    mode?: "copy" | "blank";
+    sourceProfileId?: string;
+  },
+) {
+  const createMode = options?.mode ?? "copy";
 
-  const profile = await prisma.resumeProfile.create({
-    data: {
-      userId,
-      name: resolvedName,
-    },
+  return prisma.$transaction(async (tx) => {
+    const resolvedName = options?.name
+      ? normalizeProfileName(options.name)
+      : await buildDefaultProfileName(userId, tx);
+
+    let sourceProfile: Prisma.ResumeProfileGetPayload<{ select: typeof PROFILE_CLONE_SELECT }> | null =
+      null;
+
+    if (createMode === "copy") {
+      if (options?.sourceProfileId) {
+        sourceProfile = await tx.resumeProfile.findFirst({
+          where: { id: options.sourceProfileId, userId },
+          select: PROFILE_CLONE_SELECT,
+        });
+      }
+
+      if (!sourceProfile) {
+        const activePointer = await tx.activeResumeProfile.findUnique({
+          where: { userId },
+          select: { resumeProfileId: true },
+        });
+        if (activePointer?.resumeProfileId) {
+          sourceProfile = await tx.resumeProfile.findFirst({
+            where: { id: activePointer.resumeProfileId, userId },
+            select: PROFILE_CLONE_SELECT,
+          });
+        }
+      }
+
+      if (!sourceProfile) {
+        sourceProfile = await tx.resumeProfile.findFirst({
+          where: { userId },
+          orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+          select: PROFILE_CLONE_SELECT,
+        });
+      }
+    }
+
+    const profile = await tx.resumeProfile.create({
+      data: {
+        userId,
+        name: resolvedName,
+        ...(sourceProfile
+          ? {
+              summary: sourceProfile.summary,
+              basics: cloneJsonValueForCreate(sourceProfile.basics),
+              links: cloneJsonValueForCreate(sourceProfile.links),
+              skills: cloneJsonValueForCreate(sourceProfile.skills),
+              experiences: cloneJsonValueForCreate(sourceProfile.experiences),
+              projects: cloneJsonValueForCreate(sourceProfile.projects),
+              education: cloneJsonValueForCreate(sourceProfile.education),
+            }
+          : {}),
+      },
+    });
+
+    if (options?.setActive !== false) {
+      await tx.activeResumeProfile.upsert({
+        where: { userId },
+        update: { resumeProfileId: profile.id },
+        create: { userId, resumeProfileId: profile.id },
+      });
+    }
+
+    return profile;
   });
-
-  if (options?.setActive !== false) {
-    await ensureActivePointer(userId, profile.id);
-  }
-
-  return profile;
 }
 
 export async function renameResumeProfile(userId: string, profileId: string, name: string) {
@@ -217,6 +297,60 @@ export async function renameResumeProfile(userId: string, profileId: string, nam
     data: {
       name: normalizeProfileName(name),
     },
+  });
+}
+
+export type DeleteResumeProfileResult =
+  | { status: "deleted"; deletedProfileId: string; activeProfileId: string | null }
+  | { status: "not_found" }
+  | { status: "last_profile" };
+
+export async function deleteResumeProfile(
+  userId: string,
+  profileId: string,
+): Promise<DeleteResumeProfileResult> {
+  return prisma.$transaction(async (tx) => {
+    const profiles = await tx.resumeProfile.findMany({
+      where: { userId },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      select: { id: true },
+    });
+
+    const target = profiles.find((profile) => profile.id === profileId);
+    if (!target) {
+      return { status: "not_found" };
+    }
+
+    if (profiles.length <= 1) {
+      return { status: "last_profile" };
+    }
+
+    const activePointer = await tx.activeResumeProfile.findUnique({
+      where: { userId },
+      select: { resumeProfileId: true },
+    });
+
+    await tx.resumeProfile.delete({
+      where: { id: profileId },
+    });
+
+    let nextActiveProfileId = activePointer?.resumeProfileId ?? null;
+    if (!nextActiveProfileId || nextActiveProfileId === profileId) {
+      nextActiveProfileId = profiles.find((profile) => profile.id !== profileId)?.id ?? null;
+      if (nextActiveProfileId) {
+        await tx.activeResumeProfile.upsert({
+          where: { userId },
+          update: { resumeProfileId: nextActiveProfileId },
+          create: { userId, resumeProfileId: nextActiveProfileId },
+        });
+      }
+    }
+
+    return {
+      status: "deleted",
+      deletedProfileId: profileId,
+      activeProfileId: nextActiveProfileId,
+    };
   });
 }
 

@@ -1,9 +1,11 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
+import { Prisma } from "@/lib/generated/prisma";
 import {
   createResumeProfile,
+  deleteResumeProfile,
   getResumeProfile,
   listResumeProfiles,
   renameResumeProfile,
@@ -76,6 +78,8 @@ const ResumeProfilePatchSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("create"),
     name: z.string().trim().min(1).max(80).optional(),
+    mode: z.enum(["copy", "blank"]).optional(),
+    sourceProfileId: z.string().uuid().optional(),
   }),
   z.object({
     action: z.literal("activate"),
@@ -85,6 +89,10 @@ const ResumeProfilePatchSchema = z.discriminatedUnion("action", [
     action: z.literal("rename"),
     profileId: z.string().uuid(),
     name: z.string().trim().min(1).max(80),
+  }),
+  z.object({
+    action: z.literal("delete"),
+    profileId: z.string().uuid(),
   }),
 ]);
 
@@ -105,6 +113,25 @@ async function buildResumeProfileResponse(userId: string) {
     activeProfile,
     profile: activeProfile,
   };
+}
+
+function parsePrismaError(error: unknown) {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+    return null;
+  }
+
+  if (error.code === "P2002" && String(error.meta?.target ?? "").includes("userId")) {
+    return NextResponse.json(
+      {
+        error: "MIGRATION_REQUIRED",
+        message:
+          "Database schema is outdated. Run `npx prisma migrate deploy` to remove ResumeProfile.userId uniqueness.",
+      },
+      { status: 409 },
+    );
+  }
+
+  return null;
 }
 
 export async function GET() {
@@ -132,23 +159,30 @@ export async function POST(req: Request) {
     );
   }
 
-  const profile = await upsertResumeProfile(
-    userId,
-    {
-      summary: parsed.data.summary,
-      basics: parsed.data.basics,
-      links: parsed.data.links,
-      skills: parsed.data.skills,
-      experiences: parsed.data.experiences,
-      projects: parsed.data.projects,
-      education: parsed.data.education,
-    },
-    {
-      profileId: parsed.data.profileId,
-      name: parsed.data.name,
-      setActive: parsed.data.setActive,
-    },
-  );
+  let profile;
+  try {
+    profile = await upsertResumeProfile(
+      userId,
+      {
+        summary: parsed.data.summary,
+        basics: parsed.data.basics,
+        links: parsed.data.links,
+        skills: parsed.data.skills,
+        experiences: parsed.data.experiences,
+        projects: parsed.data.projects,
+        education: parsed.data.education,
+      },
+      {
+        profileId: parsed.data.profileId,
+        name: parsed.data.name,
+        setActive: parsed.data.setActive,
+      },
+    );
+  } catch (error) {
+    const prismaErrorResponse = parsePrismaError(error);
+    if (prismaErrorResponse) return prismaErrorResponse;
+    throw error;
+  }
 
   if (!profile) {
     return NextResponse.json({ error: "PROFILE_NOT_FOUND" }, { status: 404 });
@@ -174,10 +208,18 @@ export async function PATCH(req: Request) {
   }
 
   if (parsed.data.action === "create") {
-    await createResumeProfile(userId, {
-      name: parsed.data.name,
-      setActive: true,
-    });
+    try {
+      await createResumeProfile(userId, {
+        name: parsed.data.name,
+        setActive: true,
+        mode: parsed.data.mode,
+        sourceProfileId: parsed.data.sourceProfileId,
+      });
+    } catch (error) {
+      const prismaErrorResponse = parsePrismaError(error);
+      if (prismaErrorResponse) return prismaErrorResponse;
+      throw error;
+    }
   }
 
   if (parsed.data.action === "activate") {
@@ -191,6 +233,19 @@ export async function PATCH(req: Request) {
     const target = await renameResumeProfile(userId, parsed.data.profileId, parsed.data.name);
     if (!target) {
       return NextResponse.json({ error: "PROFILE_NOT_FOUND" }, { status: 404 });
+    }
+  }
+
+  if (parsed.data.action === "delete") {
+    const result = await deleteResumeProfile(userId, parsed.data.profileId);
+    if (result.status === "not_found") {
+      return NextResponse.json({ error: "PROFILE_NOT_FOUND" }, { status: 404 });
+    }
+    if (result.status === "last_profile") {
+      return NextResponse.json(
+        { error: "LAST_PROFILE", message: "At least one resume version is required." },
+        { status: 409 },
+      );
     }
   }
 

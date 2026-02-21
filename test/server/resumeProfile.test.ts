@@ -1,10 +1,11 @@
-﻿import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const resumeProfileStore = vi.hoisted(() => ({
   findFirst: vi.fn(),
   findMany: vi.fn(),
   update: vi.fn(),
   create: vi.fn(),
+  delete: vi.fn(),
 }));
 
 const activeResumeProfileStore = vi.hoisted(() => ({
@@ -26,6 +27,7 @@ vi.mock("@/lib/server/prisma", () => ({
 
 import {
   createResumeProfile,
+  deleteResumeProfile,
   getResumeProfile,
   listResumeProfiles,
   setActiveResumeProfile,
@@ -38,10 +40,19 @@ describe("resumeProfile data access", () => {
     resumeProfileStore.findMany.mockReset();
     resumeProfileStore.update.mockReset();
     resumeProfileStore.create.mockReset();
+    resumeProfileStore.delete.mockReset();
     activeResumeProfileStore.findUnique.mockReset();
     activeResumeProfileStore.upsert.mockReset();
     transactionStore.run.mockReset();
-    transactionStore.run.mockImplementation(async (ops: unknown[]) => Promise.all(ops as Promise<unknown>[]));
+    transactionStore.run.mockImplementation(async (arg: unknown) => {
+      if (typeof arg === "function") {
+        return arg({
+          resumeProfile: resumeProfileStore,
+          activeResumeProfile: activeResumeProfileStore,
+        });
+      }
+      return Promise.all(arg as Promise<unknown>[]);
+    });
   });
 
   it("returns active profile when pointer exists", async () => {
@@ -136,20 +147,53 @@ describe("resumeProfile data access", () => {
   });
 
   it("creates a new profile and marks it active", async () => {
+    activeResumeProfileStore.findUnique.mockResolvedValueOnce({ resumeProfileId: "rp-active" });
+    resumeProfileStore.findFirst.mockResolvedValueOnce({
+      summary: "Existing summary",
+      basics: { fullName: "Jane Doe" },
+      links: [{ label: "LinkedIn", url: "https://example.com" }],
+      skills: [{ category: "Languages", items: ["TypeScript"] }],
+      experiences: [{ title: "SE", company: "A", location: "Sydney", dates: "2020-2021", bullets: ["Built"] }],
+      projects: [],
+      education: [],
+    });
     resumeProfileStore.findMany.mockResolvedValueOnce([{ name: "Custom Blank" }]);
     resumeProfileStore.create.mockResolvedValueOnce({
       id: "rp-new",
       userId: "user-1",
       name: "Custom Blank 2",
+      summary: "Existing summary",
     });
 
     const profile = await createResumeProfile("user-1");
 
     expect(profile.id).toBe("rp-new");
-    expect(activeResumeProfileStore.upsert).toHaveBeenCalledWith({
-      where: { userId: "user-1" },
-      update: { resumeProfileId: "rp-new" },
-      create: { userId: "user-1", resumeProfileId: "rp-new" },
+    expect(resumeProfileStore.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: "user-1",
+        name: "Custom Blank 2",
+        summary: "Existing summary",
+      }),
+    });
+    expect(activeResumeProfileStore.upsert).toHaveBeenCalled();
+  });
+
+  it("creates a blank profile when mode is blank", async () => {
+    resumeProfileStore.findMany.mockResolvedValueOnce([{ name: "Custom Blank" }]);
+    resumeProfileStore.create.mockResolvedValueOnce({
+      id: "rp-empty",
+      userId: "user-1",
+      name: "Custom Blank 2",
+    });
+
+    const profile = await createResumeProfile("user-1", { mode: "blank" });
+
+    expect(profile.id).toBe("rp-empty");
+    expect(resumeProfileStore.create).toHaveBeenCalledWith({
+      data: {
+        userId: "user-1",
+        name: "Custom Blank 2",
+      },
     });
   });
 
@@ -185,5 +229,33 @@ describe("resumeProfile data access", () => {
 
     expect(target?.id).toBe("rp-9");
     expect(activeResumeProfileStore.upsert).toHaveBeenCalled();
+  });
+
+  it("deletes selected profile and rotates active pointer", async () => {
+    resumeProfileStore.findMany.mockResolvedValueOnce([{ id: "rp-1" }, { id: "rp-2" }]);
+    activeResumeProfileStore.findUnique.mockResolvedValueOnce({ resumeProfileId: "rp-1" });
+    resumeProfileStore.delete.mockResolvedValueOnce({ id: "rp-1" });
+
+    const result = await deleteResumeProfile("user-1", "rp-1");
+
+    expect(result).toEqual({
+      status: "deleted",
+      deletedProfileId: "rp-1",
+      activeProfileId: "rp-2",
+    });
+    expect(activeResumeProfileStore.upsert).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      update: { resumeProfileId: "rp-2" },
+      create: { userId: "user-1", resumeProfileId: "rp-2" },
+    });
+  });
+
+  it("blocks deleting the last remaining profile", async () => {
+    resumeProfileStore.findMany.mockResolvedValueOnce([{ id: "rp-only" }]);
+
+    const result = await deleteResumeProfile("user-1", "rp-only");
+
+    expect(result).toEqual({ status: "last_profile" });
+    expect(resumeProfileStore.delete).not.toHaveBeenCalled();
   });
 });
