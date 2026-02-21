@@ -23,6 +23,7 @@ describe("renderResumeTex", () => {
           dates: "2023-2025",
           title: "Software Engineer",
           company: "Example Co",
+          links: [{ label: "Demo", url: "https://demo.example.com" }],
           bullets: ["Delivered features", "Improved performance"],
         },
       ],
@@ -58,5 +59,6 @@ describe("renderResumeTex", () => {
     expect(output).toContain("Jobflow");
     expect(output).toContain("Jane Doe");
     expect(output).toContain("Example Co");
+    expect(output).toContain("\\href{https://demo.example.com}{Demo}");
   });
 });

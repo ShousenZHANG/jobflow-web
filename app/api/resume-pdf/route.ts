@@ -29,6 +29,7 @@ const ResumeExperienceSchema = z.object({
   dates: z.string().trim().min(1).max(80),
   title: z.string().trim().min(1).max(120),
   company: z.string().trim().min(1).max(120),
+  links: z.array(ResumeLinkSchema).max(2).optional().nullable(),
   bullets: z.array(z.string().trim().min(1).max(220)).max(12),
 });
 

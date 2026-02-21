@@ -49,5 +49,40 @@ describe("mapResumeProfile", () => {
     expect(mapped.candidate.websiteUrl).toBe("https://jane.dev");
     expect(mapped.candidate.websiteText).toBe("Portfolio");
   });
+
+  it("maps experience links and caps to 2", () => {
+    const mapped = mapResumeProfile({
+      basics: {
+        fullName: "Jane Doe",
+        title: "Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+      },
+      links: [],
+      summary: "",
+      skills: [],
+      experiences: [
+        {
+          location: "Sydney",
+          dates: "2024",
+          title: "Builder",
+          company: "Jobflow",
+          links: [
+            { label: "GitHub", url: "https://github.com/example/jobflow" },
+            { label: "Demo", url: "https://jobflow-web.vercel.app" },
+            { label: "Docs", url: "https://docs.example.com" },
+          ],
+          bullets: ["Built"],
+        },
+      ],
+      projects: [],
+      education: [],
+    });
+
+    expect(mapped.experiences[0]?.links).toEqual([
+      { label: "GitHub", url: "https://github.com/example/jobflow" },
+      { label: "Demo", url: "https://jobflow-web.vercel.app" },
+    ]);
+  });
 });
 
