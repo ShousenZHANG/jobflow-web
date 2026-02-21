@@ -1,8 +1,15 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
-import { getResumeProfile, upsertResumeProfile } from "@/lib/server/resumeProfile";
+import {
+  createResumeProfile,
+  getResumeProfile,
+  listResumeProfiles,
+  renameResumeProfile,
+  setActiveResumeProfile,
+  upsertResumeProfile,
+} from "@/lib/server/resumeProfile";
 
 export const runtime = "nodejs";
 
@@ -59,26 +66,65 @@ const ResumeProfileSchema = z.object({
   education: z.array(ResumeEducationSchema).max(10).optional().nullable(),
 });
 
-export async function GET() {
+const ResumeProfileUpsertSchema = ResumeProfileSchema.extend({
+  profileId: z.string().uuid().optional(),
+  name: z.string().trim().min(1).max(80).optional(),
+  setActive: z.boolean().optional(),
+});
+
+const ResumeProfilePatchSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("create"),
+    name: z.string().trim().min(1).max(80).optional(),
+  }),
+  z.object({
+    action: z.literal("activate"),
+    profileId: z.string().uuid(),
+  }),
+  z.object({
+    action: z.literal("rename"),
+    profileId: z.string().uuid(),
+    name: z.string().trim().min(1).max(80),
+  }),
+]);
+
+async function getAuthorizedUserId() {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  return session?.user?.id ?? null;
+}
+
+async function buildResumeProfileResponse(userId: string) {
+  const { profiles, activeProfileId } = await listResumeProfiles(userId);
+  const activeProfile = activeProfileId
+    ? await getResumeProfile(userId, { profileId: activeProfileId })
+    : null;
+
+  return {
+    profiles,
+    activeProfileId,
+    activeProfile,
+    profile: activeProfile,
+  };
+}
+
+export async function GET() {
+  const userId = await getAuthorizedUserId();
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const profile = await getResumeProfile(userId);
-  return NextResponse.json({ profile }, { status: 200 });
+  const state = await buildResumeProfileResponse(userId);
+  return NextResponse.json(state, { status: 200 });
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  const userId = await getAuthorizedUserId();
   if (!userId) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
 
   const json = await req.json().catch(() => null);
-  const parsed = ResumeProfileSchema.safeParse(json);
+  const parsed = ResumeProfileUpsertSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "INVALID_BODY", details: parsed.error.flatten() },
@@ -86,6 +132,68 @@ export async function POST(req: Request) {
     );
   }
 
-  const profile = await upsertResumeProfile(userId, parsed.data);
-  return NextResponse.json({ profile }, { status: 200 });
+  const profile = await upsertResumeProfile(
+    userId,
+    {
+      summary: parsed.data.summary,
+      basics: parsed.data.basics,
+      links: parsed.data.links,
+      skills: parsed.data.skills,
+      experiences: parsed.data.experiences,
+      projects: parsed.data.projects,
+      education: parsed.data.education,
+    },
+    {
+      profileId: parsed.data.profileId,
+      name: parsed.data.name,
+      setActive: parsed.data.setActive,
+    },
+  );
+
+  if (!profile) {
+    return NextResponse.json({ error: "PROFILE_NOT_FOUND" }, { status: 404 });
+  }
+
+  const state = await buildResumeProfileResponse(userId);
+  return NextResponse.json(state, { status: 200 });
+}
+
+export async function PATCH(req: Request) {
+  const userId = await getAuthorizedUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  }
+
+  const json = await req.json().catch(() => null);
+  const parsed = ResumeProfilePatchSchema.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "INVALID_BODY", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  if (parsed.data.action === "create") {
+    await createResumeProfile(userId, {
+      name: parsed.data.name,
+      setActive: true,
+    });
+  }
+
+  if (parsed.data.action === "activate") {
+    const target = await setActiveResumeProfile(userId, parsed.data.profileId);
+    if (!target) {
+      return NextResponse.json({ error: "PROFILE_NOT_FOUND" }, { status: 404 });
+    }
+  }
+
+  if (parsed.data.action === "rename") {
+    const target = await renameResumeProfile(userId, parsed.data.profileId, parsed.data.name);
+    if (!target) {
+      return NextResponse.json({ error: "PROFILE_NOT_FOUND" }, { status: 404 });
+    }
+  }
+
+  const state = await buildResumeProfileResponse(userId);
+  return NextResponse.json(state, { status: 200 });
 }

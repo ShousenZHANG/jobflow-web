@@ -51,6 +51,7 @@ model User {
   deletedJobUrls DeletedJobUrl[]
   dailyCheckins  DailyCheckin[]
   resumeProfiles ResumeProfile[]
+  activeResumeProfile ActiveResumeProfile?
   applications   Application[]
   promptRuleTemplates PromptRuleTemplate[]
   onboardingState OnboardingState?
@@ -171,8 +172,10 @@ model FetchRun {
 
 model ResumeProfile {
   id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @unique @db.Uuid
+  userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   @default("Custom Blank")
+  revision  Int      @default(1)
 
   summary     String?
   basics      Json?
@@ -186,8 +189,21 @@ model ResumeProfile {
   updatedAt DateTime @updatedAt
 
   applications Application[]
+  activeSelections ActiveResumeProfile[]
 
+  @@index([userId, name])
   @@index([userId, updatedAt])
+}
+
+model ActiveResumeProfile {
+  userId          String        @id @db.Uuid
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeProfileId String        @db.Uuid
+  resumeProfile   ResumeProfile @relation(fields: [resumeProfileId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([resumeProfileId])
 }
 
 model Application {

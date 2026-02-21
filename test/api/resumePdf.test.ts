@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const resumeProfileStore = vi.hoisted(() => ({
+  findFirst: vi.fn(),
+}));
+
+const activeResumeProfileStore = vi.hoisted(() => ({
   findUnique: vi.fn(),
 }));
 
 vi.mock("@/lib/server/prisma", () => ({
   prisma: {
     resumeProfile: resumeProfileStore,
+    activeResumeProfile: activeResumeProfileStore,
   },
 }));
 
@@ -29,7 +34,8 @@ const mockPdf = new Uint8Array([37, 80, 68, 70]);
 
 describe("resume pdf api", () => {
   beforeEach(() => {
-    resumeProfileStore.findUnique.mockReset();
+    resumeProfileStore.findFirst.mockReset();
+    activeResumeProfileStore.findUnique.mockReset();
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockReset();
     vi.stubGlobal("fetch", vi.fn());
     process.env.LATEX_RENDER_URL = "https://latex.example.com/compile";
@@ -40,7 +46,8 @@ describe("resume pdf api", () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
-    resumeProfileStore.findUnique.mockResolvedValueOnce(null);
+    activeResumeProfileStore.findUnique.mockResolvedValueOnce(null);
+    resumeProfileStore.findFirst.mockResolvedValueOnce(null);
 
     const res = await POST(new Request("http://localhost/api/resume-pdf"));
     expect(res.status).toBe(404);
@@ -50,7 +57,8 @@ describe("resume pdf api", () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
-    resumeProfileStore.findUnique.mockResolvedValueOnce({
+    activeResumeProfileStore.findUnique.mockResolvedValueOnce({ resumeProfileId: "rp-1" });
+    resumeProfileStore.findFirst.mockResolvedValueOnce({
       id: "rp-1",
       userId: "user-1",
       summary: "Hi",

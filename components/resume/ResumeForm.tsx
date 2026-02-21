@@ -67,6 +67,8 @@ type ResumeSkillPayload = {
 };
 
 type ResumeProfilePayload = {
+  id?: string;
+  name?: string;
   basics?: ResumeBasics | null;
   links?: ResumeLink[] | null;
   summary?: string | null;
@@ -74,6 +76,15 @@ type ResumeProfilePayload = {
   projects?: ResumeProject[] | null;
   education?: ResumeEducation[] | null;
   skills?: ResumeSkillPayload[] | null;
+};
+
+type ResumeProfileSummary = {
+  id: string;
+  name: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  revision?: number;
 };
 
 const steps = ["Personal info", "Summary", "Experience", "Projects", "Education", "Skills"] as const;
@@ -158,6 +169,12 @@ export function ResumeForm() {
   const previewScheduledKeyRef = useRef<string | null>(null);
   const previewInFlightKeyRef = useRef<string | null>(null);
   const previewLatestKeyRef = useRef<string | null>(null);
+  const [profiles, setProfiles] = useState<ResumeProfileSummary[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState("Custom Blank");
+  const [profileSwitching, setProfileSwitching] = useState(false);
+  const [profileCreating, setProfileCreating] = useState(false);
 
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
   const [links, setLinks] = useState<ResumeLink[]>(defaultLinks);
@@ -205,24 +222,28 @@ export function ResumeForm() {
     [],
   );
 
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      const res = await fetch("/api/resume-profile");
-      if (!res.ok) return;
-      const json = await res.json();
-      if (!active) return;
-      const profile = json.profile as ResumeProfilePayload | null;
-      if (!profile) return;
+  const resetDraft = useCallback(() => {
+    setBasics(emptyBasics);
+    setLinks(defaultLinks);
+    setSummary("");
+    setExperiences([emptyExperience()]);
+    setProjects([emptyProject()]);
+    setEducation([emptyEducation()]);
+    setSkills([emptySkillGroup()]);
+    setCurrentStep(0);
+    setExpandedExperienceIndex(0);
+    setExpandedProjectIndex(0);
+  }, []);
 
-      setBasics(profile.basics ?? emptyBasics);
-
-      if (Array.isArray(profile.links) && profile.links.length > 0) {
-        setLinks(profile.links);
-      } else {
-        setLinks(defaultLinks);
+  const applyProfileToDraft = useCallback(
+    (profile: ResumeProfilePayload | null) => {
+      if (!profile) {
+        resetDraft();
+        return;
       }
 
+      setBasics(profile.basics ?? emptyBasics);
+      setLinks(Array.isArray(profile.links) && profile.links.length > 0 ? profile.links : defaultLinks);
       setSummary(profile.summary ?? "");
 
       if (Array.isArray(profile.experiences) && profile.experiences.length > 0) {
@@ -232,12 +253,11 @@ export function ResumeForm() {
             company: entry.company ?? "",
             location: entry.location ?? "",
             dates: entry.dates ?? "",
-            bullets:
-              Array.isArray(entry.bullets) && entry.bullets.length > 0
-                ? entry.bullets
-                : [""],
+            bullets: Array.isArray(entry.bullets) && entry.bullets.length > 0 ? entry.bullets : [""],
           })),
         );
+      } else {
+        setExperiences([emptyExperience()]);
       }
 
       if (Array.isArray(profile.projects) && profile.projects.length > 0) {
@@ -256,12 +276,11 @@ export function ResumeForm() {
                 : (("link" in entry && (entry as { link?: string }).link
                     ? [{ label: "Link", url: (entry as { link?: string }).link ?? "" }]
                     : [{ label: "", url: "" }]) as ResumeLink[]),
-            bullets:
-              Array.isArray(entry.bullets) && entry.bullets.length > 0
-                ? entry.bullets
-                : [""],
+            bullets: Array.isArray(entry.bullets) && entry.bullets.length > 0 ? entry.bullets : [""],
           })),
         );
+      } else {
+        setProjects([emptyProject()]);
       }
 
       if (Array.isArray(profile.education) && profile.education.length > 0) {
@@ -274,6 +293,8 @@ export function ResumeForm() {
             details: entry.details ?? "",
           })),
         );
+      } else {
+        setEducation([emptyEducation()]);
       }
 
       if (Array.isArray(profile.skills) && profile.skills.length > 0) {
@@ -282,19 +303,64 @@ export function ResumeForm() {
           return {
             category: source.category ?? source.label ?? "",
             itemsText:
-              Array.isArray(source.items) && source.items.length > 0
-                ? source.items.join(", ")
-                : "",
+              Array.isArray(source.items) && source.items.length > 0 ? source.items.join(", ") : "",
           };
         });
         setSkills(skillGroups);
+      } else {
+        setSkills([emptySkillGroup()]);
       }
+
+      setExpandedExperienceIndex(0);
+      setExpandedProjectIndex(0);
+      setCurrentStep(0);
+    },
+    [resetDraft],
+  );
+
+  const hydrateFromResumeApi = useCallback(
+    (json: unknown) => {
+      const record = (json ?? {}) as Record<string, unknown>;
+      const nextProfiles = Array.isArray(record.profiles)
+        ? (record.profiles as ResumeProfileSummary[])
+        : [];
+      const explicitActiveId =
+        typeof record.activeProfileId === "string" ? record.activeProfileId : null;
+      const inferredActiveId =
+        nextProfiles.find((profile) => profile.isActive)?.id ??
+        (nextProfiles.length > 0 ? nextProfiles[0].id : null);
+      const nextActiveProfileId = explicitActiveId ?? inferredActiveId;
+
+      setProfiles(nextProfiles);
+      setActiveProfileId(nextActiveProfileId);
+      setSelectedProfileId(nextActiveProfileId);
+
+      const activeSummary = nextProfiles.find((profile) => profile.id === nextActiveProfileId) ?? null;
+      setProfileName(activeSummary?.name ?? "Custom Blank");
+
+      const activeProfile =
+        (record.activeProfile as ResumeProfilePayload | null | undefined) ??
+        (record.profile as ResumeProfilePayload | null | undefined) ??
+        null;
+      applyProfileToDraft(activeProfile);
+    },
+    [applyProfileToDraft],
+  );
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const res = await fetch("/api/resume-profile");
+      if (!res.ok) return;
+      const json = await res.json();
+      if (!active) return;
+      hydrateFromResumeApi(json);
     };
     load();
     return () => {
       active = false;
     };
-  }, []);
+  }, [hydrateFromResumeApi]);
 
   useEffect(() => {
     return () => {
@@ -848,6 +914,77 @@ export function ResumeForm() {
     });
   }, [hasAnyContent, previewDraftKey, previewDraftPayload, previewOpen, schedulePreview]);
 
+  const handleCreateProfile = async () => {
+    if (profileCreating || profileSwitching) return;
+    setProfileCreating(true);
+    try {
+      const res = await fetch("/api/resume-profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create" }),
+      });
+      if (!res.ok) {
+        throw new Error("Create profile failed");
+      }
+      const json = await res.json();
+      hydrateFromResumeApi(json);
+      toast({
+        title: "New version created",
+        description: "You can now edit this resume version.",
+      });
+      setPdfUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setPreviewStatus("idle");
+      setPreviewError(null);
+    } catch {
+      toast({
+        title: "Could not create version",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProfileCreating(false);
+    }
+  };
+
+  const handleActivateProfile = async (profileId: string) => {
+    if (!profileId || profileId === activeProfileId || profileSwitching || profileCreating) return;
+    setProfileSwitching(true);
+    try {
+      const res = await fetch("/api/resume-profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "activate", profileId }),
+      });
+      if (!res.ok) {
+        throw new Error("Activate profile failed");
+      }
+      const json = await res.json();
+      hydrateFromResumeApi(json);
+      setPdfUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setPreviewStatus("idle");
+      setPreviewError(null);
+      toast({
+        title: "Switched version",
+        description: "Generation now uses the selected master resume.",
+      });
+    } catch {
+      toast({
+        title: "Could not switch version",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+      setSelectedProfileId(activeProfileId);
+    } finally {
+      setProfileSwitching(false);
+    }
+  };
+
   const handleNext = () => {
     if (!canContinue) return;
     setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -862,7 +999,12 @@ export function ResumeForm() {
     if (!canContinue) return;
     setSaving(true);
     try {
-      const payload = buildPayload("save");
+      const payload = {
+        ...buildPayload("save"),
+        profileId: selectedProfileId ?? undefined,
+        name: profileName.trim() || undefined,
+        setActive: true,
+      };
       const res = await fetch("/api/resume-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -873,9 +1015,11 @@ export function ResumeForm() {
         throw new Error("Save failed");
       }
 
+      const json = await res.json();
+      hydrateFromResumeApi(json);
       toast({
         title: "Saved",
-        description: "Your master resume has been updated.",
+        description: "Your selected master resume version has been updated.",
       });
       markTaskComplete("resume_setup");
       schedulePreview(150);
@@ -1664,6 +1808,59 @@ export function ResumeForm() {
             })}
           </div>
 
+          <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Master resume version</p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <Label htmlFor="resume-profile-select" className="sr-only">
+                Resume version
+              </Label>
+              <select
+                id="resume-profile-select"
+                value={selectedProfileId ?? ""}
+                onChange={(event) => {
+                  const nextId = event.target.value || null;
+                  setSelectedProfileId(nextId);
+                  if (nextId) {
+                    void handleActivateProfile(nextId);
+                  }
+                }}
+                disabled={profileSwitching || profileCreating}
+                className="min-h-11 w-full flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-slate-100"
+              >
+                {profiles.length === 0 ? (
+                  <option value="">Unsaved version</option>
+                ) : null}
+                {profiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name}
+                    {profile.id === activeProfileId ? " (Active)" : ""}
+                  </option>
+                ))}
+              </select>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCreateProfile}
+                disabled={profileCreating || profileSwitching}
+              >
+                {profileCreating ? "Creating..." : "New version"}
+              </Button>
+            </div>
+            <div className="mt-3 space-y-1">
+              <Label htmlFor="resume-profile-name">Version name</Label>
+              <Input
+                id="resume-profile-name"
+                value={profileName}
+                onChange={(event) => setProfileName(event.target.value)}
+                maxLength={80}
+                placeholder="Custom Blank"
+              />
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              The active version is used for CV and cover-letter generation.
+            </p>
+          </div>
+
           <div className="rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Current step</p>
             <div className="mt-1 flex items-center justify-between gap-3">
@@ -1711,13 +1908,13 @@ export function ResumeForm() {
               ) : (
                 <Button
                   onClick={handleSave}
-                  disabled={!canContinue || saving}
+                  disabled={!canContinue || saving || profileSwitching || profileCreating}
                   className={`edu-cta edu-cta--press ${
                     isTaskHighlighted("resume_setup") ? guideHighlightClass : ""
                   }`}
                   data-guide-highlight={isTaskHighlighted("resume_setup") ? "true" : "false"}
                 >
-                  {saving ? "Saving..." : "Save master resume"}
+                  {saving ? "Saving..." : "Save selected resume"}
                 </Button>
               )}
             </div>
