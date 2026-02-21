@@ -1,8 +1,25 @@
 ﻿
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type HTMLAttributes, type ReactNode } from "react";
+import { ChevronDown, ChevronRight, GripVertical, MoveDown, MoveUp, Plus, Trash2 } from "lucide-react";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  type DragEndEvent,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -157,6 +174,55 @@ function normalizeCommaItems(text: string) {
     .filter(Boolean);
 }
 
+type ReorderSection = "experience" | "project" | "education" | "skill";
+
+function toSortableId(section: ReorderSection, index: number) {
+  return `${section}:${index}`;
+}
+
+function toSortableIndex(id: string | number, section: ReorderSection) {
+  const [idSection, indexText] = String(id).split(":");
+  if (idSection !== section) return null;
+  const index = Number(indexText);
+  return Number.isInteger(index) && index >= 0 ? index : null;
+}
+
+function remapFocusedIndex(currentIndex: number, from: number, to: number) {
+  if (currentIndex === from) return to;
+  if (from < to && currentIndex > from && currentIndex <= to) return currentIndex - 1;
+  if (to < from && currentIndex >= to && currentIndex < from) return currentIndex + 1;
+  return currentIndex;
+}
+
+function SortableItem({
+  id,
+  children,
+}: {
+  id: string;
+  children: (args: {
+    dragHandleProps: HTMLAttributes<HTMLButtonElement>;
+    isDragging: boolean;
+  }) => ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={isDragging ? "opacity-75" : undefined}
+    >
+      {children({
+        dragHandleProps: { ...attributes, ...listeners } as HTMLAttributes<HTMLButtonElement>,
+        isDragging,
+      })}
+    </div>
+  );
+}
+
 export function ResumeForm() {
   const { toast } = useToast();
   const { isTaskHighlighted, markTaskComplete } = useGuide();
@@ -192,6 +258,10 @@ export function ResumeForm() {
   const [skills, setSkills] = useState<ResumeSkillGroup[]>([emptySkillGroup()]);
   const [expandedExperienceIndex, setExpandedExperienceIndex] = useState(0);
   const [expandedProjectIndex, setExpandedProjectIndex] = useState(0);
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   const markdownRefs = useRef<
     Record<string, HTMLInputElement | HTMLTextAreaElement | null>
   >({});
@@ -666,6 +736,60 @@ export function ResumeForm() {
   const removeSkillGroup = (index: number) => {
     setSkills((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== index) : prev));
   };
+
+  const moveSectionItem = useCallback(
+    (section: ReorderSection, from: number, to: number) => {
+      if (from === to || from < 0 || to < 0) return;
+      if (section === "experience") {
+        setExperiences((prev) => {
+          if (from >= prev.length || to >= prev.length) return prev;
+          return arrayMove(prev, from, to);
+        });
+        setExpandedExperienceIndex((current) => remapFocusedIndex(current, from, to));
+        return;
+      }
+      if (section === "project") {
+        setProjects((prev) => {
+          if (from >= prev.length || to >= prev.length) return prev;
+          return arrayMove(prev, from, to);
+        });
+        setExpandedProjectIndex((current) => remapFocusedIndex(current, from, to));
+        return;
+      }
+      if (section === "education") {
+        setEducation((prev) => {
+          if (from >= prev.length || to >= prev.length) return prev;
+          return arrayMove(prev, from, to);
+        });
+        return;
+      }
+      setSkills((prev) => {
+        if (from >= prev.length || to >= prev.length) return prev;
+        return arrayMove(prev, from, to);
+      });
+    },
+    [],
+  );
+
+  const moveByStep = useCallback(
+    (section: ReorderSection, index: number, direction: -1 | 1) => {
+      const target = index + direction;
+      moveSectionItem(section, index, target);
+    },
+    [moveSectionItem],
+  );
+
+  const onSectionDragEnd = useCallback(
+    (section: ReorderSection, event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const from = toSortableIndex(active.id, section);
+      const to = toSortableIndex(over.id, section);
+      if (from === null || to === null) return;
+      moveSectionItem(section, from, to);
+    },
+    [moveSectionItem],
+  );
 
   const buildPayload = useCallback(
     (mode: "preview" | "save"): ResumeProfilePayload => {
@@ -1336,47 +1460,99 @@ export function ResumeForm() {
             </Button>
           </div>
           <div className="space-y-5">
-            {experiences.map((entry, index) => (
-              <details
-                key={`exp-${index}`}
-                open={expandedExperienceIndex === index}
-                onToggle={(event) => {
-                  if ((event.currentTarget as HTMLDetailsElement).open) {
-                    setExpandedExperienceIndex(index);
-                  }
-                }}
-                className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+            <DndContext
+              sensors={dndSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(event) => onSectionDragEnd("experience", event)}
+            >
+              <SortableContext
+                items={experiences.map((_, index) => toSortableId("experience", index))}
+                strategy={verticalListSortingStrategy}
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900">Experience {index + 1}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {entry.title || entry.company ? `${entry.title || "Untitled"} · ${entry.company || "Company"}` : "Draft"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {experiences.length > 1 ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="text-xs text-red-600 hover:text-red-600"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          removeExperience(index);
+                {experiences.map((entry, index) => (
+                  <SortableItem key={`exp-${index}`} id={toSortableId("experience", index)}>
+                    {({ dragHandleProps }) => (
+                      <details
+                        open={expandedExperienceIndex === index}
+                        onToggle={(event) => {
+                          if ((event.currentTarget as HTMLDetailsElement).open) {
+                            setExpandedExperienceIndex(index);
+                          }
                         }}
+                        className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
                       >
-                        Remove
-                      </Button>
-                    ) : null}
-                    {expandedExperienceIndex === index ? (
-                      <ChevronDown className="h-4 w-4 text-slate-500" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-slate-500" />
-                    )}
-                  </div>
-                </summary>
-                <div className="space-y-3 pt-3">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-900">Experience {index + 1}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {entry.title || entry.company ? `${entry.title || "Untitled"} · ${entry.company || "Company"}` : "Draft"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Move experience up"
+                              disabled={index === 0}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                moveByStep("experience", index, -1);
+                              }}
+                            >
+                              <MoveUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Move experience down"
+                              disabled={index === experiences.length - 1}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                moveByStep("experience", index, 1);
+                              }}
+                            >
+                              <MoveDown className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Drag to reorder experience"
+                              className="cursor-grab active:cursor-grabbing"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                              }}
+                              {...dragHandleProps}
+                            >
+                              <GripVertical className="h-4 w-4" />
+                            </Button>
+                            {experiences.length > 1 ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="text-xs text-red-600 hover:text-red-600"
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  removeExperience(index);
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            ) : null}
+                            {expandedExperienceIndex === index ? (
+                              <ChevronDown className="h-4 w-4 text-slate-500" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-slate-500" />
+                            )}
+                          </div>
+                        </summary>
+                        <div className="space-y-3 pt-3">
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor={`experience-title-${index}`}>Experience title</Label>
@@ -1468,8 +1644,12 @@ export function ResumeForm() {
                     </div>
                   </div>
                 </div>
-              </details>
-            ))}
+                      </details>
+                    )}
+                  </SortableItem>
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
         </div>
       );
@@ -1488,47 +1668,99 @@ export function ResumeForm() {
             </Button>
           </div>
           <div className="space-y-5">
-            {projects.map((entry, index) => (
-              <details
-                key={`project-${index}`}
-                open={expandedProjectIndex === index}
-                onToggle={(event) => {
-                  if ((event.currentTarget as HTMLDetailsElement).open) {
-                    setExpandedProjectIndex(index);
-                  }
-                }}
-                className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+            <DndContext
+              sensors={dndSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(event) => onSectionDragEnd("project", event)}
+            >
+              <SortableContext
+                items={projects.map((_, index) => toSortableId("project", index))}
+                strategy={verticalListSortingStrategy}
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900">Project {index + 1}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {entry.name ? `${entry.name}${entry.stack ? ` · ${entry.stack}` : ""}` : "Draft"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {projects.length > 1 ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="text-xs text-red-600 hover:text-red-600"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          removeProject(index);
+                {projects.map((entry, index) => (
+                  <SortableItem key={`project-${index}`} id={toSortableId("project", index)}>
+                    {({ dragHandleProps }) => (
+                      <details
+                        open={expandedProjectIndex === index}
+                        onToggle={(event) => {
+                          if ((event.currentTarget as HTMLDetailsElement).open) {
+                            setExpandedProjectIndex(index);
+                          }
                         }}
+                        className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
                       >
-                        Remove
-                      </Button>
-                    ) : null}
-                    {expandedProjectIndex === index ? (
-                      <ChevronDown className="h-4 w-4 text-slate-500" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-slate-500" />
-                    )}
-                  </div>
-                </summary>
-                <div className="space-y-3 pt-3">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-900">Project {index + 1}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {entry.name ? `${entry.name}${entry.stack ? ` · ${entry.stack}` : ""}` : "Draft"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Move project up"
+                              disabled={index === 0}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                moveByStep("project", index, -1);
+                              }}
+                            >
+                              <MoveUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Move project down"
+                              disabled={index === projects.length - 1}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                moveByStep("project", index, 1);
+                              }}
+                            >
+                              <MoveDown className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Drag to reorder project"
+                              className="cursor-grab active:cursor-grabbing"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                              }}
+                              {...dragHandleProps}
+                            >
+                              <GripVertical className="h-4 w-4" />
+                            </Button>
+                            {projects.length > 1 ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="text-xs text-red-600 hover:text-red-600"
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  removeProject(index);
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            ) : null}
+                            {expandedProjectIndex === index ? (
+                              <ChevronDown className="h-4 w-4 text-slate-500" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-slate-500" />
+                            )}
+                          </div>
+                        </summary>
+                        <div className="space-y-3 pt-3">
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor={`project-name-${index}`}>Project name</Label>
@@ -1659,8 +1891,12 @@ export function ResumeForm() {
                     </div>
                   </div>
                 </div>
-              </details>
-            ))}
+                      </details>
+                    )}
+                  </SortableItem>
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
         </div>
       );
@@ -1679,25 +1915,65 @@ export function ResumeForm() {
             </Button>
           </div>
           <div className="space-y-5">
-            {education.map((entry, index) => (
-              <div
-                key={`education-${index}`}
-                className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+            <DndContext
+              sensors={dndSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(event) => onSectionDragEnd("education", event)}
+            >
+              <SortableContext
+                items={education.map((_, index) => toSortableId("education", index))}
+                strategy={verticalListSortingStrategy}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-slate-800">Education {index + 1}</p>
-                  {education.length > 1 ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-xs text-red-600 hover:text-red-600"
-                      onClick={() => removeEducation(index)}
-                    >
-                      Remove
-                    </Button>
-                  ) : null}
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                {education.map((entry, index) => (
+                  <SortableItem key={`education-${index}`} id={toSortableId("education", index)}>
+                    {({ dragHandleProps }) => (
+                      <div className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-slate-800">Education {index + 1}</p>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Move education up"
+                              disabled={index === 0}
+                              onClick={() => moveByStep("education", index, -1)}
+                            >
+                              <MoveUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Move education down"
+                              disabled={index === education.length - 1}
+                              onClick={() => moveByStep("education", index, 1)}
+                            >
+                              <MoveDown className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Drag to reorder education"
+                              className="cursor-grab active:cursor-grabbing"
+                              {...dragHandleProps}
+                            >
+                              <GripVertical className="h-4 w-4" />
+                            </Button>
+                            {education.length > 1 ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="text-xs text-red-600 hover:text-red-600"
+                                onClick={() => removeEducation(index)}
+                              >
+                                Remove
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor={`education-school-${index}`}>School</Label>
                     <Input
@@ -1744,8 +2020,12 @@ export function ResumeForm() {
                     placeholder="WAM 80/100"
                   />
                 </div>
-              </div>
-            ))}
+                      </div>
+                    )}
+                  </SortableItem>
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
         </div>
       );
@@ -1763,44 +2043,88 @@ export function ResumeForm() {
           </Button>
         </div>
         <div className="space-y-5">
-          {skills.map((group, index) => (
-            <div
-              key={`skill-${index}`}
-              className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+          <DndContext
+            sensors={dndSensors}
+            collisionDetection={closestCenter}
+            onDragEnd={(event) => onSectionDragEnd("skill", event)}
+          >
+            <SortableContext
+              items={skills.map((_, index) => toSortableId("skill", index))}
+              strategy={verticalListSortingStrategy}
             >
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium text-slate-800">Group {index + 1}</p>
-                {skills.length > 1 ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="text-xs text-red-600 hover:text-red-600"
-                    onClick={() => removeSkillGroup(index)}
-                  >
-                    Remove
-                  </Button>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`skill-label-${index}`}>Category</Label>
-                <Input
-                  id={`skill-label-${index}`}
-                  value={group.category}
-                  onChange={(event) => updateSkillGroup(index, "category", event.target.value)}
-                  placeholder="Frontend"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`skill-items-${index}`}>Items (comma-separated)</Label>
-                <Input
-                  id={`skill-items-${index}`}
-                  value={group.itemsText}
-                  onChange={(event) => updateSkillGroup(index, "itemsText", event.target.value)}
-                  placeholder="React, Next.js, TypeScript, Tailwind CSS"
-                />
-              </div>
-            </div>
-          ))}
+              {skills.map((group, index) => (
+                <SortableItem key={`skill-${index}`} id={toSortableId("skill", index)}>
+                  {({ dragHandleProps }) => (
+                    <div className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-medium text-slate-800">Group {index + 1}</p>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Move skill group up"
+                            disabled={index === 0}
+                            onClick={() => moveByStep("skill", index, -1)}
+                          >
+                            <MoveUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Move skill group down"
+                            disabled={index === skills.length - 1}
+                            onClick={() => moveByStep("skill", index, 1)}
+                          >
+                            <MoveDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Drag to reorder skill group"
+                            className="cursor-grab active:cursor-grabbing"
+                            {...dragHandleProps}
+                          >
+                            <GripVertical className="h-4 w-4" />
+                          </Button>
+                          {skills.length > 1 ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="text-xs text-red-600 hover:text-red-600"
+                              onClick={() => removeSkillGroup(index)}
+                            >
+                              Remove
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`skill-label-${index}`}>Category</Label>
+                        <Input
+                          id={`skill-label-${index}`}
+                          value={group.category}
+                          onChange={(event) => updateSkillGroup(index, "category", event.target.value)}
+                          placeholder="Frontend"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`skill-items-${index}`}>Items (comma-separated)</Label>
+                        <Input
+                          id={`skill-items-${index}`}
+                          value={group.itemsText}
+                          onChange={(event) => updateSkillGroup(index, "itemsText", event.target.value)}
+                          placeholder="React, Next.js, TypeScript, Tailwind CSS"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
       </div>
     );
