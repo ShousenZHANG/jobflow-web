@@ -35,6 +35,10 @@ export type ResumeProfileInput = {
     dates: string;
     title: string;
     company: string;
+    links?: {
+      label: string;
+      url: string;
+    }[] | null;
     bullets: string[];
   }[] | null;
   projects?: {

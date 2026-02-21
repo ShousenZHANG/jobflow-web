@@ -15,14 +15,6 @@ import {
 
 export const runtime = "nodejs";
 
-const ResumeExperienceSchema = z.object({
-  location: z.string().trim().min(1).max(120),
-  dates: z.string().trim().min(1).max(80),
-  title: z.string().trim().min(1).max(120),
-  company: z.string().trim().min(1).max(120),
-  bullets: z.array(z.string().trim().min(1).max(220)).max(12),
-});
-
 const ResumeBasicsSchema = z.object({
   fullName: z.string().trim().min(1).max(120),
   title: z.string().trim().min(1).max(120),
@@ -34,6 +26,15 @@ const ResumeBasicsSchema = z.object({
 const ResumeLinkSchema = z.object({
   label: z.string().trim().min(1).max(40),
   url: z.string().trim().url().max(300),
+});
+
+const ResumeExperienceSchema = z.object({
+  location: z.string().trim().min(1).max(120),
+  dates: z.string().trim().min(1).max(80),
+  title: z.string().trim().min(1).max(120),
+  company: z.string().trim().min(1).max(120),
+  links: z.array(ResumeLinkSchema).max(2).optional().nullable(),
+  bullets: z.array(z.string().trim().min(1).max(220)).max(12),
 });
 
 const ResumeProjectSchema = z.object({

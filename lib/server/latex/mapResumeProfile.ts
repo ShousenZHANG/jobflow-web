@@ -128,13 +128,32 @@ export function mapResumeProfile(profile: ResumeProfileLike) {
       label: escapeLatex(toStringValue((group as Record<string, unknown>).category) || toStringValue((group as Record<string, unknown>).label)),
       items: asArray(group.items).map((item) => escapeLatex(toStringValue(item))),
     })),
-    experiences: experiences.map((entry) => ({
-      location: escapeLatex(toStringValue(entry.location)),
-      dates: escapeLatex(toStringValue(entry.dates)),
-      title: escapeLatex(toStringValue(entry.title)),
-      company: escapeLatex(toStringValue(entry.company)),
-      bullets: asArray(entry.bullets).map((item) => escapeLatexWithBold(toStringValue(item))),
-    })),
+    experiences: experiences.map((entry) => {
+      const links = asArray(entry.links)
+        .map((item) => {
+          const link = item as Record<string, unknown>;
+          return {
+            label: escapeLatex(toStringValue(link.label)),
+            url: escapeLatex(toStringValue(link.url)),
+          };
+        })
+        .filter((link) => hasText(link.label) && hasText(link.url))
+        .slice(0, 2);
+
+      const legacyLink = escapeLatex(toStringValue(entry.link)).trim();
+      if (!links.length && hasText(legacyLink)) {
+        links.push({ label: "Link", url: legacyLink });
+      }
+
+      return {
+        location: escapeLatex(toStringValue(entry.location)),
+        dates: escapeLatex(toStringValue(entry.dates)),
+        title: escapeLatex(toStringValue(entry.title)),
+        company: escapeLatex(toStringValue(entry.company)),
+        links,
+        bullets: asArray(entry.bullets).map((item) => escapeLatexWithBold(toStringValue(item))),
+      };
+    }),
     projects: projectBlocks,
     education: educationEntries,
   };

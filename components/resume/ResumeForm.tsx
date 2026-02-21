@@ -58,6 +58,7 @@ type ResumeExperience = {
   dates: string;
   title: string;
   company: string;
+  links: ResumeLink[];
   bullets: string[];
 };
 
@@ -124,6 +125,7 @@ const emptyExperience = (): ResumeExperience => ({
   company: "",
   location: "",
   dates: "",
+  links: [{ label: "", url: "" }],
   bullets: [""],
 });
 
@@ -325,13 +327,24 @@ export function ResumeForm() {
 
       if (Array.isArray(profile.experiences) && profile.experiences.length > 0) {
         setExperiences(
-          profile.experiences.map((entry) => ({
-            title: entry.title ?? "",
-            company: entry.company ?? "",
-            location: entry.location ?? "",
-            dates: entry.dates ?? "",
-            bullets: Array.isArray(entry.bullets) && entry.bullets.length > 0 ? entry.bullets : [""],
-          })),
+          profile.experiences.map((entry) => {
+            const source = entry as ResumeExperience & { links?: ResumeLink[] };
+            const normalizedLinks =
+              Array.isArray(source.links) && source.links.length > 0
+                ? source.links.slice(0, 2).map((link) => ({
+                    label: link.label ?? "",
+                    url: link.url ?? "",
+                  }))
+                : [{ label: "", url: "" }];
+            return {
+              title: entry.title ?? "",
+              company: entry.company ?? "",
+              location: entry.location ?? "",
+              dates: entry.dates ?? "",
+              links: normalizedLinks,
+              bullets: Array.isArray(entry.bullets) && entry.bullets.length > 0 ? entry.bullets : [""],
+            };
+          }),
         );
       } else {
         setExperiences([emptyExperience()]);
@@ -737,6 +750,43 @@ export function ResumeForm() {
     setSkills((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== index) : prev));
   };
 
+  const updateExperienceLink = (
+    expIndex: number,
+    linkIndex: number,
+    field: keyof ResumeLink,
+    value: string,
+  ) => {
+    setExperiences((prev) =>
+      prev.map((entry, idx) => {
+        if (idx !== expIndex) return entry;
+        const links = entry.links.map((link, lIdx) =>
+          lIdx === linkIndex ? { ...link, [field]: value } : link,
+        );
+        return { ...entry, links };
+      }),
+    );
+  };
+
+  const addExperienceLink = (expIndex: number) => {
+    setExperiences((prev) =>
+      prev.map((entry, idx) => {
+        if (idx !== expIndex) return entry;
+        if (entry.links.length >= 2) return entry;
+        return { ...entry, links: [...entry.links, { label: "", url: "" }] };
+      }),
+    );
+  };
+
+  const removeExperienceLink = (expIndex: number, linkIndex: number) => {
+    setExperiences((prev) =>
+      prev.map((entry, idx) => {
+        if (idx !== expIndex) return entry;
+        const links = entry.links.filter((_, lIdx) => lIdx !== linkIndex);
+        return { ...entry, links: links.length > 0 ? links : [{ label: "", url: "" }] };
+      }),
+    );
+  };
+
   const moveSectionItem = useCallback(
     (section: ReorderSection, from: number, to: number) => {
       if (from === to || from < 0 || to < 0) return;
@@ -797,10 +847,20 @@ export function ResumeForm() {
         .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
         .filter((link) => link.label || link.url);
 
-      const cleanedExperiences = experiences.map((entry) => ({
-        ...entry,
-        bullets: normalizeBullets(entry.bullets),
-      }));
+      const cleanedExperiences = experiences.map((entry) => {
+        const cleanedExperienceLinks = entry.links
+          .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+          .filter((link) => link.label && link.url)
+          .slice(0, 2);
+        return {
+          title: entry.title.trim(),
+          company: entry.company.trim(),
+          location: entry.location.trim(),
+          dates: entry.dates.trim(),
+          links: cleanedExperienceLinks,
+          bullets: normalizeBullets(entry.bullets),
+        };
+      });
 
       const cleanedProjects = projects.map((entry) => {
         const cleanedLinks = entry.links
@@ -1589,6 +1649,50 @@ export function ResumeForm() {
                         onChange={(event) => updateExperience(index, "dates", event.target.value)}
                         placeholder="2023 - 2025"
                       />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Experience links (optional, max 2)</Label>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => addExperienceLink(index)}
+                        disabled={entry.links.length >= 2}
+                      >
+                        Add link
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {entry.links.map((link, linkIndex) => (
+                        <div
+                          key={`experience-${index}-link-${linkIndex}`}
+                          className="grid gap-2 md:grid-cols-[1fr_2fr_auto]"
+                        >
+                          <Input
+                            value={link.label}
+                            onChange={(event) =>
+                              updateExperienceLink(index, linkIndex, "label", event.target.value)
+                            }
+                            placeholder="GitHub / Demo"
+                          />
+                          <Input
+                            value={link.url}
+                            onChange={(event) =>
+                              updateExperienceLink(index, linkIndex, "url", event.target.value)
+                            }
+                            placeholder="https://"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="text-xs text-slate-500 hover:text-slate-900"
+                            onClick={() => removeExperienceLink(index, linkIndex)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   <div className="space-y-3">

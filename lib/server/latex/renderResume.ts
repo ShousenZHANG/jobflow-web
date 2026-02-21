@@ -24,6 +24,7 @@ type ExperienceEntry = {
   dates: string;
   title: string;
   company: string;
+  links?: ProjectLink[];
   bullets: string[];
 };
 
@@ -103,7 +104,9 @@ function formatExperienceMeta(location: string, dates: string) {
 
 function renderExperienceBlock(entry: ExperienceEntry) {
   const meta = formatExperienceMeta(entry.location, entry.dates);
-  const header = `\\begin{twocolentry}{\n    ${meta}\n}\n  \\textbf{${entry.title}} \\\\\n  ${entry.company}\n\\end{twocolentry}`;
+  const linksLine = renderProjectLinks(entry.links ?? []);
+  const companyLine = linksLine ? `${entry.company} \\;|\\; ${linksLine}` : entry.company;
+  const header = `\\begin{twocolentry}{\n    ${meta}\n}\n  \\textbf{${entry.title}} \\\\\n  ${companyLine}\n\\end{twocolentry}`;
 
   if (entry.bullets.length === 0) {
     return header;
