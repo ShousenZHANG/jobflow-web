@@ -1,0 +1,357 @@
+import type {
+  ApplicationBatchStatus,
+  ApplicationBatchTaskStatus,
+} from "@/lib/generated/prisma";
+import { prisma } from "@/lib/server/prisma";
+import { generateApplicationArtifactsForJob } from "@/lib/server/applications/generateApplicationArtifacts";
+
+const TERMINAL_BATCH_STATUSES: ApplicationBatchStatus[] = ["SUCCEEDED", "FAILED", "CANCELLED"];
+
+const TERMINAL_TASK_STATUSES: ApplicationBatchTaskStatus[] = ["SUCCEEDED", "FAILED", "SKIPPED"];
+
+export class BatchRunnerError extends Error {
+  code: "NOT_FOUND" | "INVALID_STATE";
+
+  constructor(code: "NOT_FOUND" | "INVALID_STATE", message: string) {
+    super(message);
+    this.code = code;
+  }
+}
+
+export type BatchProgress = {
+  pending: number;
+  running: number;
+  succeeded: number;
+  failed: number;
+  skipped: number;
+};
+
+type ClaimResult =
+  | {
+      kind: "claimed";
+      task: {
+        id: string;
+        jobId: string;
+        title: string;
+        company: string | null;
+        jobUrl: string;
+      };
+    }
+  | { kind: "done"; batchStatus: ApplicationBatchStatus; progress: BatchProgress }
+  | { kind: "terminal"; batchStatus: ApplicationBatchStatus }
+  | { kind: "not_found" };
+
+export type RunBatchStepResult =
+  | {
+      outcome: "processed";
+      taskId: string;
+      jobId: string;
+      taskStatus: ApplicationBatchTaskStatus;
+      batchStatus: ApplicationBatchStatus;
+      progress: BatchProgress;
+      error?: string;
+    }
+  | { outcome: "done"; batchStatus: ApplicationBatchStatus; progress: BatchProgress }
+  | { outcome: "terminal"; batchStatus: ApplicationBatchStatus }
+  | { outcome: "not_found" };
+
+function truncateErrorMessage(value: unknown) {
+  if (value instanceof Error && value.message.trim()) return value.message.trim().slice(0, 500);
+  if (typeof value === "string" && value.trim()) return value.trim().slice(0, 500);
+  return "TASK_FAILED";
+}
+
+function toProgress(rows: Array<{ status: ApplicationBatchTaskStatus; _count: { _all: number } }>) {
+  const progress: BatchProgress = {
+    pending: 0,
+    running: 0,
+    succeeded: 0,
+    failed: 0,
+    skipped: 0,
+  };
+  for (const row of rows) {
+    if (row.status === "PENDING") progress.pending = row._count._all;
+    if (row.status === "RUNNING") progress.running = row._count._all;
+    if (row.status === "SUCCEEDED") progress.succeeded = row._count._all;
+    if (row.status === "FAILED") progress.failed = row._count._all;
+    if (row.status === "SKIPPED") progress.skipped = row._count._all;
+  }
+  return progress;
+}
+
+async function reconcileBatchStatus(input: { userId: string; batchId: string }) {
+  const [batch, grouped] = await Promise.all([
+    prisma.applicationBatch.findFirst({
+      where: {
+        id: input.batchId,
+        userId: input.userId,
+      },
+      select: {
+        id: true,
+        status: true,
+        startedAt: true,
+        completedAt: true,
+      },
+    }),
+    prisma.applicationBatchTask.groupBy({
+      by: ["status"],
+      where: {
+        batchId: input.batchId,
+        userId: input.userId,
+      },
+      _count: {
+        _all: true,
+      },
+    }),
+  ]);
+
+  if (!batch) throw new BatchRunnerError("NOT_FOUND", "Batch not found");
+
+  const progress = toProgress(grouped);
+
+  let nextStatus: ApplicationBatchStatus = batch.status;
+  if (progress.pending > 0 || progress.running > 0) {
+    nextStatus = "RUNNING";
+  } else if (progress.failed > 0) {
+    nextStatus = "FAILED";
+  } else if (progress.succeeded > 0 || progress.skipped > 0) {
+    nextStatus = "SUCCEEDED";
+  }
+
+  if (TERMINAL_BATCH_STATUSES.includes(batch.status)) {
+    return { batchStatus: batch.status, progress };
+  }
+
+  const shouldComplete = nextStatus === "SUCCEEDED" || nextStatus === "FAILED";
+  const batchError =
+    nextStatus === "FAILED"
+      ? (
+          await prisma.applicationBatchTask.findFirst({
+            where: {
+              batchId: input.batchId,
+              userId: input.userId,
+              status: "FAILED",
+            },
+            orderBy: {
+              updatedAt: "desc",
+            },
+            select: {
+              error: true,
+            },
+          })
+        )?.error ?? "One or more tasks failed."
+      : null;
+
+  await prisma.applicationBatch.update({
+    where: {
+      id: batch.id,
+    },
+    data: {
+      status: nextStatus,
+      startedAt: batch.startedAt ?? new Date(),
+      completedAt: shouldComplete ? batch.completedAt ?? new Date() : null,
+      error: nextStatus === "FAILED" ? batchError : null,
+    },
+  });
+
+  return { batchStatus: nextStatus, progress };
+}
+
+export async function claimNextBatchTask(input: {
+  userId: string;
+  batchId: string;
+}): Promise<ClaimResult> {
+  const batch = await prisma.applicationBatch.findFirst({
+    where: {
+      id: input.batchId,
+      userId: input.userId,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!batch) return { kind: "not_found" };
+  if (TERMINAL_BATCH_STATUSES.includes(batch.status)) {
+    return { kind: "terminal", batchStatus: batch.status };
+  }
+
+  if (batch.status === "QUEUED") {
+    await prisma.applicationBatch.updateMany({
+      where: {
+        id: batch.id,
+        userId: input.userId,
+        status: "QUEUED",
+      },
+      data: {
+        status: "RUNNING",
+        startedAt: new Date(),
+      },
+    });
+  }
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const candidate = await prisma.applicationBatchTask.findFirst({
+      where: {
+        batchId: input.batchId,
+        userId: input.userId,
+        status: "PENDING",
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      select: {
+        id: true,
+        jobId: true,
+        job: {
+          select: {
+            title: true,
+            company: true,
+            jobUrl: true,
+          },
+        },
+      },
+    });
+
+    if (!candidate) {
+      const reconciled = await reconcileBatchStatus(input);
+      return { kind: "done", batchStatus: reconciled.batchStatus, progress: reconciled.progress };
+    }
+
+    const locked = await prisma.applicationBatchTask.updateMany({
+      where: {
+        id: candidate.id,
+        status: "PENDING",
+      },
+      data: {
+        status: "RUNNING",
+        startedAt: new Date(),
+        error: null,
+      },
+    });
+
+    if (locked.count === 1) {
+      return {
+        kind: "claimed",
+        task: {
+          id: candidate.id,
+          jobId: candidate.jobId,
+          title: candidate.job.title,
+          company: candidate.job.company,
+          jobUrl: candidate.job.jobUrl,
+        },
+      };
+    }
+  }
+
+  const reconciled = await reconcileBatchStatus(input);
+  return { kind: "done", batchStatus: reconciled.batchStatus, progress: reconciled.progress };
+}
+
+export async function completeBatchTask(input: {
+  userId: string;
+  batchId: string;
+  taskId: string;
+  status: Extract<ApplicationBatchTaskStatus, "SUCCEEDED" | "FAILED" | "SKIPPED">;
+  error?: string | null;
+}) {
+  const task = await prisma.applicationBatchTask.findFirst({
+    where: {
+      id: input.taskId,
+      batchId: input.batchId,
+      userId: input.userId,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+  if (!task) throw new BatchRunnerError("NOT_FOUND", "Task not found");
+
+  if (task.status !== "RUNNING") {
+    if (TERMINAL_TASK_STATUSES.includes(task.status) && task.status === input.status) {
+      const reconciled = await reconcileBatchStatus({ userId: input.userId, batchId: input.batchId });
+      return {
+        taskStatus: task.status,
+        batchStatus: reconciled.batchStatus,
+        progress: reconciled.progress,
+      };
+    }
+    throw new BatchRunnerError("INVALID_STATE", "Task is not running");
+  }
+
+  await prisma.applicationBatchTask.update({
+    where: {
+      id: task.id,
+    },
+    data: {
+      status: input.status,
+      error: input.status === "FAILED" ? input.error?.trim() || "TASK_FAILED" : null,
+      completedAt: new Date(),
+    },
+  });
+
+  const reconciled = await reconcileBatchStatus({ userId: input.userId, batchId: input.batchId });
+
+  return {
+    taskStatus: input.status,
+    batchStatus: reconciled.batchStatus,
+    progress: reconciled.progress,
+  };
+}
+
+export async function runBatchStep(input: {
+  userId: string;
+  batchId: string;
+}): Promise<RunBatchStepResult> {
+  const claim = await claimNextBatchTask(input);
+  if (claim.kind === "not_found") return { outcome: "not_found" };
+  if (claim.kind === "terminal") return { outcome: "terminal", batchStatus: claim.batchStatus };
+  if (claim.kind === "done") {
+    return {
+      outcome: "done",
+      batchStatus: claim.batchStatus,
+      progress: claim.progress,
+    };
+  }
+
+  try {
+    await generateApplicationArtifactsForJob({
+      userId: input.userId,
+      jobId: claim.task.jobId,
+    });
+    const completed = await completeBatchTask({
+      userId: input.userId,
+      batchId: input.batchId,
+      taskId: claim.task.id,
+      status: "SUCCEEDED",
+    });
+    return {
+      outcome: "processed",
+      taskId: claim.task.id,
+      jobId: claim.task.jobId,
+      taskStatus: "SUCCEEDED",
+      batchStatus: completed.batchStatus,
+      progress: completed.progress,
+    };
+  } catch (error) {
+    const message = truncateErrorMessage(error);
+    const completed = await completeBatchTask({
+      userId: input.userId,
+      batchId: input.batchId,
+      taskId: claim.task.id,
+      status: "FAILED",
+      error: message,
+    });
+    return {
+      outcome: "processed",
+      taskId: claim.task.id,
+      jobId: claim.task.jobId,
+      taskStatus: "FAILED",
+      batchStatus: completed.batchStatus,
+      progress: completed.progress,
+      error: message,
+    };
+  }
+}
