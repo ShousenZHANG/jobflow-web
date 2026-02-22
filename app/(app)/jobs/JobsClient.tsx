@@ -45,6 +45,7 @@ type JobItem = {
   status: JobStatus;
   resumePdfUrl?: string | null;
   resumePdfName?: string | null;
+  coverPdfUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -934,6 +935,46 @@ export function JobsClient({
     }
   }
 
+  async function runCodexBatchAuto() {
+    if (!codexBatchId) return;
+    setCodexBusy(true);
+    setError(null);
+    try {
+      const pendingLike = (codexProgress?.pending ?? 0) + (codexProgress?.running ?? 0);
+      const maxSteps = Math.max(1, Math.min(pendingLike || 20, 50));
+      const res = await fetch(`/api/application-batches/${codexBatchId}/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ maxSteps }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to run Codex batch automatically");
+      const successCount = typeof json?.execution?.successCount === "number" ? json.execution.successCount : 0;
+      const failedCount = typeof json?.execution?.failedCount === "number" ? json.execution.failedCount : 0;
+      const stopReason = typeof json?.execution?.stopReason === "string" ? json.execution.stopReason : "UNKNOWN";
+      await codexBatchSummaryQuery.refetch();
+      await queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
+      toast({
+        title: "Auto run finished",
+        description: `Succeeded ${successCount}, failed ${failedCount}, stop: ${stopReason}`,
+        duration: 2500,
+        className: "border-slate-200 bg-slate-50 text-slate-900 animate-in fade-in zoom-in-95",
+      });
+    } catch (e) {
+      const message = getErrorMessage(e, "Failed to auto run Codex batch");
+      setError(message);
+      toast({
+        title: "Auto run failed",
+        description: message,
+        variant: "destructive",
+        duration: 2600,
+        className: "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
+      });
+    } finally {
+      setCodexBusy(false);
+    }
+  }
+
   async function retryFailedBatchTasks() {
     if (!codexBatchId) return;
     setCodexBusy(true);
@@ -1554,6 +1595,7 @@ export function JobsClient({
       }
 
       setExternalDialogOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
       toast({
         title: "PDF generated",
         description:
@@ -2136,6 +2178,15 @@ export function JobsClient({
             <Button
               type="button"
               variant="outline"
+              onClick={runCodexBatchAuto}
+              disabled={!codexBatchId || codexBusy}
+              className="h-9 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Run auto
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
               onClick={runCodexBatchOnce}
               disabled={!codexBatchId || codexBusy}
               className="h-9 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
@@ -2418,6 +2469,20 @@ export function JobsClient({
                           onClick={() => markTaskComplete("download_first_pdf")}
                         >
                           Saved CV
+                        </a>
+                      </Button>
+                    ) : null}
+                    {selectedJob.coverPdfUrl ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className={`w-full justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] sm:w-auto ${
+                          isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
+                        }`}
+                      >
+                        <a href={selectedJob.coverPdfUrl} target="_blank" rel="noreferrer">
+                          Saved CL
                         </a>
                       </Button>
                     ) : null}

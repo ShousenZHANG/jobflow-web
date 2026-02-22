@@ -105,5 +105,44 @@ describe("buildJobsListEtag", () => {
 
     expect(after).not.toBe(before);
   });
-});
 
+  it("changes when cover pdf url changes", () => {
+    const before = buildJobsListEtag({
+      userId: "user-1",
+      cursor: null,
+      nextCursor: null,
+      filtersSignature: "q=frontend|status=ALL|sort=newest|limit=10",
+      jobLevels: ["Mid", "Senior"],
+      items: [
+        {
+          id: "job-1",
+          status: "APPLIED",
+          updatedAt: "2026-02-11T12:00:00.000Z",
+          resumePdfUrl: "https://blob.example/job-1-resume.pdf",
+          resumePdfName: "job-1-resume.pdf",
+          coverPdfUrl: null,
+        },
+      ],
+    });
+
+    const after = buildJobsListEtag({
+      userId: "user-1",
+      cursor: null,
+      nextCursor: null,
+      filtersSignature: "q=frontend|status=ALL|sort=newest|limit=10",
+      jobLevels: ["Mid", "Senior"],
+      items: [
+        {
+          id: "job-1",
+          status: "APPLIED",
+          updatedAt: "2026-02-11T12:00:00.000Z",
+          resumePdfUrl: "https://blob.example/job-1-resume.pdf",
+          resumePdfName: "job-1-resume.pdf",
+          coverPdfUrl: "https://blob.example/job-1-cover.pdf",
+        },
+      ],
+    });
+
+    expect(after).not.toBe(before);
+  });
+});

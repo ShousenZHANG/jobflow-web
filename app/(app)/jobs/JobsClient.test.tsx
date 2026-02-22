@@ -456,12 +456,13 @@ describe("JobsClient", () => {
     expect(await screen.findByText("Preferred: 3+ years")).toBeInTheDocument();
   });
 
-  it("keeps Saved CV in the primary actions row and keeps Remove as a trailing secondary action", async () => {
+  it("keeps Saved CV/CL in the primary actions row and keeps Remove as a trailing secondary action", async () => {
     const jobWithSavedCv = {
       ...baseJob,
       id: "22222222-2222-2222-2222-222222222222",
       resumePdfUrl: "https://example.com/resume.pdf",
       resumePdfName: "resume.pdf",
+      coverPdfUrl: "https://example.com/cover.pdf",
     };
 
     renderWithClient(<JobsClient initialItems={[jobWithSavedCv]} initialCursor={null} />);
@@ -478,6 +479,7 @@ describe("JobsClient", () => {
       within(primaryActionsWithSavedCv).getByRole("link", { name: /open job/i }),
     ).toBeInTheDocument();
     const savedCvLink = within(primaryActionsWithSavedCv).getByRole("link", { name: /saved cv/i });
+    expect(within(primaryActionsWithSavedCv).getByRole("link", { name: /saved cl/i })).toBeInTheDocument();
     expect(savedCvLink.querySelector("svg")).toBeNull();
 
     const removeButton = screen.getAllByTestId("job-remove-button")[0];

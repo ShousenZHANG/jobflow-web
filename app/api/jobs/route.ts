@@ -124,7 +124,7 @@ export async function GET(req: Request) {
         createdAt: true,
         updatedAt: true,
         applications: {
-          select: { resumePdfUrl: true, resumePdfName: true },
+          select: { resumePdfUrl: true, resumePdfName: true, coverPdfUrl: true },
         },
       },
     }),
@@ -138,6 +138,7 @@ export async function GET(req: Request) {
       ...rest,
       resumePdfUrl: application?.resumePdfUrl ?? null,
       resumePdfName: application?.resumePdfName ?? null,
+      coverPdfUrl: application?.coverPdfUrl ?? null,
     };
   });
 
@@ -169,6 +170,7 @@ export async function GET(req: Request) {
       updatedAt: job.updatedAt,
       resumePdfUrl: job.resumePdfUrl ?? null,
       resumePdfName: job.resumePdfName ?? null,
+      coverPdfUrl: job.coverPdfUrl ?? null,
     })),
     totalCount,
   });

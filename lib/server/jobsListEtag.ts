@@ -6,6 +6,7 @@ type EtagJobItem = {
   updatedAt: Date | string;
   resumePdfUrl?: string | null;
   resumePdfName?: string | null;
+  coverPdfUrl?: string | null;
 };
 
 type BuildJobsListEtagInput = {
@@ -33,6 +34,7 @@ export function buildJobsListEtag(input: BuildJobsListEtagInput): string {
         toIso(item.updatedAt),
         item.resumePdfUrl ?? "",
         item.resumePdfName ?? "",
+        item.coverPdfUrl ?? "",
       ].join(":"),
     )
     .join("|");

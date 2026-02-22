@@ -28,7 +28,7 @@ export default async function JobsPage() {
       createdAt: true,
       updatedAt: true,
       applications: {
-        select: { resumePdfUrl: true, resumePdfName: true },
+        select: { resumePdfUrl: true, resumePdfName: true, coverPdfUrl: true },
       },
     },
   });
@@ -36,6 +36,7 @@ export default async function JobsPage() {
     ...it,
     resumePdfUrl: applications?.[0]?.resumePdfUrl ?? null,
     resumePdfName: applications?.[0]?.resumePdfName ?? null,
+    coverPdfUrl: applications?.[0]?.coverPdfUrl ?? null,
     createdAt: it.createdAt.toISOString(),
     updatedAt: it.updatedAt.toISOString(),
   }));
@@ -47,4 +48,3 @@ export default async function JobsPage() {
     </main>
   );
 }
-
