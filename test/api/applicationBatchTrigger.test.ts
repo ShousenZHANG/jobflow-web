@@ -1,11 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const runner = vi.hoisted(() => ({
-  runBatchStep: vi.fn(),
-}));
-
-vi.mock("@/lib/server/applicationBatches/runner", () => runner);
-
 vi.mock("@/auth", () => ({
   authOptions: {},
 }));
@@ -22,26 +16,11 @@ const BATCH_ID = "550e8400-e29b-41d4-a716-446655440000";
 describe("application batch trigger api", () => {
   beforeEach(() => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockReset();
-    runner.runBatchStep.mockReset();
   });
 
-  it("runs one batch step and returns latest progress", async () => {
+  it("returns 410 because automatic trigger execution is disabled", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
-    });
-    runner.runBatchStep.mockResolvedValueOnce({
-      outcome: "processed",
-      taskId: "task-1",
-      jobId: "job-1",
-      taskStatus: "SUCCEEDED",
-      batchStatus: "RUNNING",
-      progress: {
-        pending: 3,
-        running: 0,
-        succeeded: 1,
-        failed: 0,
-        skipped: 0,
-      },
     });
 
     const res = await POST(
@@ -52,9 +31,8 @@ describe("application batch trigger api", () => {
     );
     const json = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(json.outcome).toBe("processed");
-    expect(json.taskStatus).toBe("SUCCEEDED");
-    expect(json.progress.pending).toBe(3);
+    expect(res.status).toBe(410);
+    expect(json.error).toBe("TRIGGER_DISABLED");
+    expect(json.batchId).toBe(BATCH_ID);
   });
 });

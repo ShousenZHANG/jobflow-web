@@ -6,7 +6,7 @@ import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { buildResumePdfForJob } from "@/lib/server/applications/buildResumePdf";
 import { LatexRenderError } from "@/lib/server/latex/compilePdf";
-import { put } from "@vercel/blob";
+import { del, put } from "@vercel/blob";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 import { canonicalizeJobUrl } from "@/lib/shared/canonicalizeJobUrl";
@@ -219,14 +219,59 @@ export async function DELETE(
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
 
+  const application = await prisma.application.findUnique({
+    where: { userId_jobId: { userId, jobId: job.id } },
+    select: {
+      resumeTexUrl: true,
+      resumePdfUrl: true,
+      coverTexUrl: true,
+      coverPdfUrl: true,
+    },
+  });
+
+  const canonicalJobUrl = canonicalizeJobUrl(job.jobUrl);
   await prisma.$transaction([
     prisma.deletedJobUrl.upsert({
-      where: { userId_jobUrl: { userId, jobUrl: canonicalizeJobUrl(job.jobUrl) } },
+      where: { userId_jobUrl: { userId, jobUrl: canonicalJobUrl } },
       update: {},
-      create: { userId, jobUrl: canonicalizeJobUrl(job.jobUrl) },
+      create: { userId, jobUrl: canonicalJobUrl },
+    }),
+    prisma.application.deleteMany({
+      where: {
+        userId,
+        jobId: job.id,
+      },
     }),
     prisma.job.delete({ where: { id: job.id } }),
   ]);
 
-  return NextResponse.json({ ok: true });
+  const artifactUrls = Array.from(
+    new Set(
+      [
+        application?.resumeTexUrl,
+        application?.resumePdfUrl,
+        application?.coverTexUrl,
+        application?.coverPdfUrl,
+      ].filter((value): value is string => typeof value === "string" && value.trim().length > 0),
+    ),
+  );
+
+  let blobCleanupFailed = 0;
+  let blobCleanupDeleted = 0;
+  if (process.env.BLOB_READ_WRITE_TOKEN && artifactUrls.length > 0) {
+    const cleanup = await Promise.allSettled(
+      artifactUrls.map((url) => del(url, { token: process.env.BLOB_READ_WRITE_TOKEN })),
+    );
+    blobCleanupDeleted = cleanup.filter((result) => result.status === "fulfilled").length;
+    blobCleanupFailed = cleanup.length - blobCleanupDeleted;
+  }
+
+  return NextResponse.json({
+    ok: true,
+    blobCleanup: {
+      attempted: artifactUrls.length,
+      deleted: blobCleanupDeleted,
+      failed: blobCleanupFailed,
+    },
+  });
 }
