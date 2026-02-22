@@ -74,6 +74,14 @@ Jobflow is built as a real workflow product, not a prompt-only demo.
 6. **PDF Delivery**
 - Resume/Cover LaTeX rendering and PDF download
 - Optional persistent resume PDF storage via Vercel Blob
+- Cover PDF persistence is also supported when blob token is configured
+
+7. **Codex Batch Run (Manual AI Loop)**
+- Create a `NEW`-scope batch from filtered jobs
+- Use `/api/application-batches/:id/codex-run` to claim tasks + prompt context
+- Generate JSON (resume/cover) and import via `/api/applications/manual-generate`
+- Mark task status via `/api/application-batches/:id/tasks/:taskId`
+- Track completion via `/api/application-batches/:id/summary`
 
 ### Key Technology Stack
 
@@ -117,6 +125,9 @@ flowchart LR
   AIPATH --> PDF[LaTeX Render and Compile]
   PDF --> BLOB[Vercel Blob Optional]
   PDF --> DL[PDF Download]
+  FE --> BATCH[Application Batch APIs]
+  BATCH --> CODX[Codex Manual Loop]
+  CODX --> AIPATH
 ```
 
 ### Live Demo
@@ -153,6 +164,19 @@ Open `http://localhost:3000`
 - `npm test` run tests
 - `npm run test:watch` test watch mode
 - `npm run readme:metrics` refresh auto metrics badges
+
+### Codex Batch Workflow
+
+1. Fetch jobs and keep only roles you want as `NEW`.
+2. Create batch: `POST /api/application-batches` (scope `NEW`).
+3. In Codex loop:
+   - call `POST /api/application-batches/:id/codex-run`
+   - for each returned task:
+     - call `POST /api/applications/prompt` (`target=resume|cover`)
+     - generate JSON with your model
+     - call `POST /api/applications/manual-generate`
+     - call `PATCH /api/application-batches/:id/tasks/:taskId` with `SUCCEEDED` or `FAILED`
+4. Check progress/remaining/failed with `GET /api/application-batches/:id/summary`.
 
 ### Environment Variables
 
@@ -193,6 +217,7 @@ Create a `.env` file in the project root.
 - `GITHUB_DISPATCH_FAILED`: check workflow token permissions
 - Low import volume: increase `resultsWanted` / `hoursOld` or relax excludes
 - `PROMPT_META_MISMATCH`: regenerate skill pack and prompt
+- `/api/application-batches/:id/trigger` returns `TRIGGER_DISABLED` by design; use `codex-run` loop
 
 ### License
 

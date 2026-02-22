@@ -832,17 +832,26 @@ export async function POST(req: Request) {
   }
 
   let persistedResumePdfUrl: string | null = null;
-  if (parsed.data.target === "resume" && process.env.BLOB_READ_WRITE_TOKEN) {
+  let persistedCoverPdfUrl: string | null = null;
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
     try {
       const blob = await put(`applications/${userId}/${job.id}/${filename}`, pdf, {
         access: "public",
         contentType: "application/pdf",
         token: process.env.BLOB_READ_WRITE_TOKEN,
       });
-      persistedResumePdfUrl = blob.url;
+      if (parsed.data.target === "resume") {
+        persistedResumePdfUrl = blob.url;
+      } else {
+        persistedCoverPdfUrl = blob.url;
+      }
     } catch {
       // Keep generation successful even if persistence fails.
-      persistedResumePdfUrl = null;
+      if (parsed.data.target === "resume") {
+        persistedResumePdfUrl = null;
+      } else {
+        persistedCoverPdfUrl = null;
+      }
     }
   }
 
@@ -865,6 +874,11 @@ export async function POST(req: Request) {
             resumePdfName: filename,
           }
         : {}),
+      ...(parsed.data.target === "cover" && persistedCoverPdfUrl
+        ? {
+            coverPdfUrl: persistedCoverPdfUrl,
+          }
+        : {}),
     },
     update: {
       resumeProfileId: profile.id,
@@ -874,6 +888,11 @@ export async function POST(req: Request) {
         ? {
             resumePdfUrl: persistedResumePdfUrl,
             resumePdfName: filename,
+          }
+        : {}),
+      ...(parsed.data.target === "cover" && persistedCoverPdfUrl
+        ? {
+            coverPdfUrl: persistedCoverPdfUrl,
           }
         : {}),
     },

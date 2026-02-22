@@ -8,11 +8,19 @@ const applicationStore = vi.hoisted(() => ({
   upsert: vi.fn(),
 }));
 
+const blobStore = vi.hoisted(() => ({
+  put: vi.fn(),
+}));
+
 vi.mock("@/lib/server/prisma", () => ({
   prisma: {
     job: jobStore,
     application: applicationStore,
   },
+}));
+
+vi.mock("@vercel/blob", () => ({
+  put: blobStore.put,
 }));
 
 vi.mock("@/auth", () => ({
@@ -121,6 +129,8 @@ describe("applications manual generate api", () => {
     (renderResumeTex as unknown as ReturnType<typeof vi.fn>).mockReturnValue("\\documentclass{article}");
     jobStore.findFirst.mockReset();
     applicationStore.upsert.mockReset();
+    blobStore.put.mockReset();
+    delete process.env.BLOB_READ_WRITE_TOKEN;
   });
 
   it("returns parse error for invalid model output", async () => {
@@ -716,5 +726,55 @@ describe("applications manual generate api", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("application/pdf");
     expect(res.headers.get("content-disposition")).toContain("Cover_Letter.pdf");
+  });
+
+  it("persists cover pdf url when blob token is configured", async () => {
+    process.env.BLOB_READ_WRITE_TOKEN = "blob-token";
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
+    blobStore.put.mockResolvedValueOnce({
+      url: "https://blob.vercel-storage.com/cover.pdf",
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    const highQualityCoverOutput = JSON.stringify({
+      cover: {
+        paragraphOne: "I am applying for this role.",
+        paragraphTwo: "My experience aligns with your key responsibilities.",
+        paragraphThree: "I am motivated by your product impact.",
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "cover",
+          modelOutput: highQualityCoverOutput,
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(blobStore.put).toHaveBeenCalledTimes(1);
+    expect(applicationStore.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          coverPdfUrl: "https://blob.vercel-storage.com/cover.pdf",
+        }),
+      }),
+    );
   });
 });
