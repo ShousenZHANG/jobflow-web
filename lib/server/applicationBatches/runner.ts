@@ -55,6 +55,23 @@ export type RunBatchStepResult =
   | { outcome: "terminal"; batchStatus: ApplicationBatchStatus }
   | { outcome: "not_found" };
 
+export type RunNextAvailableBatchStepResult =
+  | ({ outcome: "processed" } & RunBatchStepResult & { batchId: string; userId: string })
+  | ({ outcome: "done" } & RunBatchStepResult & { batchId: string; userId: string })
+  | ({ outcome: "terminal" } & RunBatchStepResult & { batchId: string; userId: string })
+  | { outcome: "idle" };
+
+export type RetryBatchResult = {
+  batch: {
+    id: string;
+    scope: "NEW";
+    status: ApplicationBatchStatus;
+    totalCount: number;
+    createdAt: Date;
+  };
+  sourceBatchId: string;
+};
+
 function truncateErrorMessage(value: unknown) {
   if (value instanceof Error && value.message.trim()) return value.message.trim().slice(0, 500);
   if (typeof value === "string" && value.trim()) return value.trim().slice(0, 500);
@@ -77,6 +94,20 @@ function toProgress(rows: Array<{ status: ApplicationBatchTaskStatus; _count: { 
     if (row.status === "SKIPPED") progress.skipped = row._count._all;
   }
   return progress;
+}
+
+export async function getBatchProgress(input: { userId: string; batchId: string }) {
+  const grouped = await prisma.applicationBatchTask.groupBy({
+    by: ["status"],
+    where: {
+      batchId: input.batchId,
+      userId: input.userId,
+    },
+    _count: {
+      _all: true,
+    },
+  });
+  return toProgress(grouped);
 }
 
 async function reconcileBatchStatus(input: { userId: string; batchId: string }) {
@@ -316,6 +347,29 @@ export async function runBatchStep(input: {
     };
   }
 
+  const batchState = await prisma.applicationBatch.findFirst({
+    where: {
+      id: input.batchId,
+      userId: input.userId,
+    },
+    select: {
+      status: true,
+    },
+  });
+  if (!batchState) {
+    return { outcome: "not_found" };
+  }
+  if (batchState.status === "CANCELLED") {
+    await completeBatchTask({
+      userId: input.userId,
+      batchId: input.batchId,
+      taskId: claim.task.id,
+      status: "SKIPPED",
+      error: "Cancelled by user",
+    });
+    return { outcome: "terminal", batchStatus: "CANCELLED" };
+  }
+
   try {
     await generateApplicationArtifactsForJob({
       userId: input.userId,
@@ -354,4 +408,175 @@ export async function runBatchStep(input: {
       error: message,
     };
   }
+}
+
+export async function runNextAvailableBatchStep(): Promise<RunNextAvailableBatchStepResult> {
+  const nextBatch = await prisma.applicationBatch.findFirst({
+    where: {
+      status: {
+        in: ["QUEUED", "RUNNING"],
+      },
+      tasks: {
+        some: {
+          status: "PENDING",
+        },
+      },
+    },
+    orderBy: [{ createdAt: "asc" }, { updatedAt: "asc" }],
+    select: {
+      id: true,
+      userId: true,
+    },
+  });
+
+  if (!nextBatch) return { outcome: "idle" };
+
+  const result = await runBatchStep({
+    userId: nextBatch.userId,
+    batchId: nextBatch.id,
+  });
+
+  if (result.outcome === "not_found") return { outcome: "idle" };
+  return {
+    ...result,
+    batchId: nextBatch.id,
+    userId: nextBatch.userId,
+  };
+}
+
+export async function cancelBatch(input: { userId: string; batchId: string }) {
+  const batch = await prisma.applicationBatch.findFirst({
+    where: {
+      id: input.batchId,
+      userId: input.userId,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!batch) throw new BatchRunnerError("NOT_FOUND", "Batch not found");
+  if (TERMINAL_BATCH_STATUSES.includes(batch.status)) {
+    return {
+      batchStatus: batch.status,
+      progress: await getBatchProgress(input),
+      alreadyTerminal: true,
+    };
+  }
+
+  await prisma.$transaction([
+    prisma.applicationBatch.update({
+      where: { id: batch.id },
+      data: {
+        status: "CANCELLED",
+        error: "Cancelled by user",
+        completedAt: new Date(),
+      },
+    }),
+    prisma.applicationBatchTask.updateMany({
+      where: {
+        batchId: batch.id,
+        userId: input.userId,
+        status: "PENDING",
+      },
+      data: {
+        status: "SKIPPED",
+        error: "Cancelled by user",
+        completedAt: new Date(),
+      },
+    }),
+  ]);
+
+  return {
+    batchStatus: "CANCELLED" as const,
+    progress: await getBatchProgress(input),
+    alreadyTerminal: false,
+  };
+}
+
+export async function createRetryBatchFromFailed(input: {
+  userId: string;
+  sourceBatchId: string;
+  limit?: number;
+}): Promise<RetryBatchResult> {
+  const limit = Math.min(Math.max(input.limit ?? 100, 1), 200);
+
+  const source = await prisma.applicationBatch.findFirst({
+    where: {
+      id: input.sourceBatchId,
+      userId: input.userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+  if (!source) throw new BatchRunnerError("NOT_FOUND", "Batch not found");
+
+  const active = await prisma.applicationBatch.findFirst({
+    where: {
+      userId: input.userId,
+      status: {
+        in: ["QUEUED", "RUNNING"],
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  if (active) throw new BatchRunnerError("INVALID_STATE", "Active batch already exists");
+
+  const failedTasks = await prisma.applicationBatchTask.findMany({
+    where: {
+      batchId: source.id,
+      userId: input.userId,
+      status: "FAILED",
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+    distinct: ["jobId"],
+    take: limit,
+    select: {
+      jobId: true,
+    },
+  });
+  if (failedTasks.length === 0) {
+    throw new BatchRunnerError("INVALID_STATE", "No failed tasks to retry");
+  }
+
+  const batch = await prisma.$transaction(async (tx) => {
+    const created = await tx.applicationBatch.create({
+      data: {
+        userId: input.userId,
+        scope: "NEW",
+        status: "QUEUED",
+        totalCount: failedTasks.length,
+      },
+      select: {
+        id: true,
+        scope: true,
+        status: true,
+        totalCount: true,
+        createdAt: true,
+      },
+    });
+
+    await tx.applicationBatchTask.createMany({
+      data: failedTasks.map((task) => ({
+        batchId: created.id,
+        userId: input.userId,
+        jobId: task.jobId,
+        status: "PENDING",
+      })),
+      skipDuplicates: true,
+    });
+
+    return created;
+  });
+
+  return {
+    batch,
+    sourceBatchId: source.id,
+  };
 }
