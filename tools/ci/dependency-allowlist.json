@@ -2,6 +2,9 @@
   "banned": ["cm", "dk"],
   "allowlist": {
     "dependencies": [
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@dnd-kit/utilities",
       "@neondatabase/serverless",
       "@next-auth/prisma-adapter",
       "@prisma/adapter-neon",
