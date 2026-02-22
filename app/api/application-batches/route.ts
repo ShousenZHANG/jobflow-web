@@ -11,6 +11,7 @@ const ACTIVE_BATCH_STATUSES = ["QUEUED", "RUNNING"] as const;
 const CreateBatchSchema = z.object({
   scope: z.enum(["NEW"]).default("NEW"),
   limit: z.coerce.number().int().min(1).max(200).optional().default(100),
+  selectedJobIds: z.array(z.string().uuid()).min(1).max(200).optional(),
 });
 
 export async function POST(req: Request) {
@@ -52,13 +53,23 @@ export async function POST(req: Request) {
     );
   }
 
+  const selectedJobIds = parsed.data.selectedJobIds
+    ? Array.from(new Set(parsed.data.selectedJobIds))
+    : [];
   const jobs = await prisma.job.findMany({
     where: {
       userId,
       status: "NEW",
+      ...(selectedJobIds.length > 0
+        ? {
+            id: {
+              in: selectedJobIds,
+            },
+          }
+        : {}),
     },
     orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-    take: parsed.data.limit,
+    ...(selectedJobIds.length === 0 ? { take: parsed.data.limit } : {}),
     select: {
       id: true,
       title: true,

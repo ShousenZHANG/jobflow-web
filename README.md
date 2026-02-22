@@ -166,7 +166,8 @@ Open `http://localhost:3000`.
 1. Fetch jobs and keep only target roles as `NEW`.
 2. Create batch: `POST /api/application-batches` with scope `NEW`.
 3. In the Codex loop:
-- Call `POST /api/application-batches/:id/codex-run`
+- Preferred: call `POST /api/application-batches/:id/run-once` (can submit completed tasks and claim next tasks in one request)
+- Or call `POST /api/application-batches/:id/codex-run` (claim-only)
 - For each task, call `POST /api/applications/prompt` (`target=resume|cover`)
 - Generate JSON with your external model
 - Call `POST /api/applications/manual-generate`

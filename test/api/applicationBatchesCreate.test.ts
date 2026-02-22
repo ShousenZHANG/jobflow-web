@@ -118,4 +118,65 @@ describe("application batches create api", () => {
     expect(json.error).toBe("ACTIVE_BATCH_EXISTS");
     expect(json.batchId).toBe("batch-existing");
   });
+
+  it("creates a batch from selected NEW job ids only", async () => {
+    const selectedJobIds = [
+      "770e8400-e29b-41d4-a716-446655440000",
+      "880e8400-e29b-41d4-a716-446655440000",
+    ];
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    applicationBatchStore.findFirst.mockResolvedValueOnce(null);
+    jobStore.findMany.mockResolvedValueOnce([
+      {
+        id: selectedJobIds[0],
+        title: "Software Engineer",
+        company: "Acme",
+        jobUrl: "https://a",
+      },
+    ]);
+    applicationBatchStore.create.mockResolvedValueOnce({
+      id: "batch-selected",
+      scope: "NEW",
+      status: "QUEUED",
+      totalCount: 1,
+      createdAt: new Date("2026-02-23T10:00:00.000Z"),
+    });
+    applicationBatchTaskStore.createMany.mockResolvedValueOnce({ count: 1 });
+
+    const res = await POST(
+      new Request("http://localhost/api/application-batches", {
+        method: "POST",
+        body: JSON.stringify({
+          scope: "NEW",
+          selectedJobIds,
+        }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(201);
+    expect(json.batch.id).toBe("batch-selected");
+    expect(jobStore.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: "user-1",
+          status: "NEW",
+          id: { in: selectedJobIds },
+        }),
+      }),
+    );
+    expect(applicationBatchTaskStore.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: [
+          expect.objectContaining({
+            userId: "user-1",
+            jobId: selectedJobIds[0],
+            status: "PENDING",
+          }),
+        ],
+      }),
+    );
+  });
 });

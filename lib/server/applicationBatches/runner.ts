@@ -7,6 +7,11 @@ import { prisma } from "@/lib/server/prisma";
 const TERMINAL_BATCH_STATUSES: ApplicationBatchStatus[] = ["SUCCEEDED", "FAILED", "CANCELLED"];
 
 const TERMINAL_TASK_STATUSES: ApplicationBatchTaskStatus[] = ["SUCCEEDED", "FAILED", "SKIPPED"];
+const STALE_TASK_TIMEOUT_MS = (() => {
+  const parsed = Number(process.env.APPLICATION_BATCH_TASK_STALE_MS);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 20 * 60 * 1000;
+  return Math.max(parsed, 60_000);
+})();
 
 export class BatchRunnerError extends Error {
   code: "NOT_FOUND" | "INVALID_STATE";
@@ -194,6 +199,27 @@ export async function claimNextBatchTask(input: {
       },
     });
   }
+
+  await prisma.applicationBatchTask.updateMany({
+    where: {
+      batchId: input.batchId,
+      userId: input.userId,
+      status: "RUNNING",
+      completedAt: null,
+      startedAt: {
+        lte: new Date(Date.now() - STALE_TASK_TIMEOUT_MS),
+      },
+    },
+    data: {
+      status: "PENDING",
+      startedAt: null,
+      completedAt: null,
+      error: "Task reclaimed after stale RUNNING timeout",
+      attempt: {
+        increment: 1,
+      },
+    },
+  });
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const candidate = await prisma.applicationBatchTask.findFirst({

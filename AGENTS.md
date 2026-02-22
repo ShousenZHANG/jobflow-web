@@ -16,6 +16,7 @@ Given a filtered set of `NEW` jobs, run a deterministic loop:
 
 - Create batch: `POST /api/application-batches`
 - Claim run context: `POST /api/application-batches/:id/codex-run`
+- Orchestrated run step (complete + claim): `POST /api/application-batches/:id/run-once`
 - Complete task: `PATCH /api/application-batches/:id/tasks/:taskId`
 - Batch summary: `GET /api/application-batches/:id/summary`
 - Prompt for external generation: `POST /api/applications/prompt`
@@ -32,4 +33,3 @@ Given a filtered set of `NEW` jobs, run a deterministic loop:
 ## Deletion Contract
 
 When deleting a job (`DELETE /api/jobs/:id`), related application records and blob artifacts should be cleaned up best-effort.
-
