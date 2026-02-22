@@ -55,12 +55,6 @@ export type RunBatchStepResult =
   | { outcome: "terminal"; batchStatus: ApplicationBatchStatus }
   | { outcome: "not_found" };
 
-export type RunNextAvailableBatchStepResult =
-  | ({ outcome: "processed" } & RunBatchStepResult & { batchId: string; userId: string })
-  | ({ outcome: "done" } & RunBatchStepResult & { batchId: string; userId: string })
-  | ({ outcome: "terminal" } & RunBatchStepResult & { batchId: string; userId: string })
-  | { outcome: "idle" };
-
 export type RetryBatchResult = {
   batch: {
     id: string;
@@ -408,40 +402,6 @@ export async function runBatchStep(input: {
       error: message,
     };
   }
-}
-
-export async function runNextAvailableBatchStep(): Promise<RunNextAvailableBatchStepResult> {
-  const nextBatch = await prisma.applicationBatch.findFirst({
-    where: {
-      status: {
-        in: ["QUEUED", "RUNNING"],
-      },
-      tasks: {
-        some: {
-          status: "PENDING",
-        },
-      },
-    },
-    orderBy: [{ createdAt: "asc" }, { updatedAt: "asc" }],
-    select: {
-      id: true,
-      userId: true,
-    },
-  });
-
-  if (!nextBatch) return { outcome: "idle" };
-
-  const result = await runBatchStep({
-    userId: nextBatch.userId,
-    batchId: nextBatch.id,
-  });
-
-  if (result.outcome === "not_found") return { outcome: "idle" };
-  return {
-    ...result,
-    batchId: nextBatch.id,
-    userId: nextBatch.userId,
-  };
 }
 
 export async function cancelBatch(input: { userId: string; batchId: string }) {
