@@ -88,6 +88,9 @@ type CoverImportOutput = {
 type ExternalPromptMeta = {
   ruleSetId: string;
   resumeSnapshotUpdatedAt: string;
+  promptTemplateVersion?: string;
+  schemaVersion?: string;
+  promptHash?: string;
 };
 
 const SKILL_PACK_META_STORAGE_KEY = "jobflow.skill-pack-meta.v1";
@@ -99,7 +102,11 @@ function isValidPromptMeta(value: unknown): value is ExternalPromptMeta {
     typeof record.ruleSetId === "string" &&
     record.ruleSetId.length > 0 &&
     typeof record.resumeSnapshotUpdatedAt === "string" &&
-    record.resumeSnapshotUpdatedAt.length > 0
+    record.resumeSnapshotUpdatedAt.length > 0 &&
+    (record.promptTemplateVersion === undefined ||
+      typeof record.promptTemplateVersion === "string") &&
+    (record.schemaVersion === undefined || typeof record.schemaVersion === "string") &&
+    (record.promptHash === undefined || typeof record.promptHash === "string")
   );
 }
 
@@ -123,10 +130,20 @@ function writeSavedSkillPackMeta(meta: ExternalPromptMeta) {
 function isSkillPackFresh(required: ExternalPromptMeta | null): boolean {
   if (!required) return false;
   const saved = readSavedSkillPackMeta();
-  return (
-    !!saved &&
+  if (!saved) return false;
+  const baseMatches =
     saved.ruleSetId === required.ruleSetId &&
-    saved.resumeSnapshotUpdatedAt === required.resumeSnapshotUpdatedAt
+    saved.resumeSnapshotUpdatedAt === required.resumeSnapshotUpdatedAt;
+  if (!baseMatches) return false;
+
+  const templateMatches =
+    !required.promptTemplateVersion || saved.promptTemplateVersion === required.promptTemplateVersion;
+  const schemaMatches = !required.schemaVersion || saved.schemaVersion === required.schemaVersion;
+  const hashMatches = !required.promptHash || saved.promptHash === required.promptHash;
+  return (
+    templateMatches &&
+    schemaMatches &&
+    hashMatches
   );
 }
 
@@ -1137,6 +1154,15 @@ export function JobsClient({
         ? {
             ruleSetId: json.promptMeta.ruleSetId,
             resumeSnapshotUpdatedAt: json.promptMeta.resumeSnapshotUpdatedAt,
+            promptTemplateVersion:
+              typeof json.promptMeta.promptTemplateVersion === "string"
+                ? json.promptMeta.promptTemplateVersion
+                : undefined,
+            schemaVersion:
+              typeof json.promptMeta.schemaVersion === "string"
+                ? json.promptMeta.schemaVersion
+                : undefined,
+            promptHash: typeof json.promptMeta.promptHash === "string" ? json.promptMeta.promptHash : undefined,
           }
         : null;
     return { promptText, promptMeta };

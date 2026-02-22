@@ -68,4 +68,14 @@ describe("prompt rules skill pack api", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("application/gzip");
   });
+
+  it("supports redacted skill pack download mode", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      user: { id: "user-1" },
+    });
+    const res = await GET(new Request("http://localhost/api/prompt-rules/skill-pack?redact=true"));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/gzip");
+    expect(res.headers.get("x-skill-pack-redacted")).toBe("1");
+  });
 });

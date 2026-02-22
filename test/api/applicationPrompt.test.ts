@@ -107,6 +107,14 @@ describe("applications prompt api", () => {
     expect(json.expectedJsonShape.cover).toBeUndefined();
     expect(json.promptMeta.ruleSetId).toBe("rules-1");
     expect(json.promptMeta.resumeSnapshotUpdatedAt).toBe("2026-02-06T00:00:00.000Z");
+    expect(typeof json.promptMeta.promptTemplateVersion).toBe("string");
+    expect(json.promptMeta.promptTemplateVersion.length).toBeGreaterThan(0);
+    expect(typeof json.promptMeta.schemaVersion).toBe("string");
+    expect(json.promptMeta.schemaVersion.length).toBeGreaterThan(0);
+    expect(typeof json.promptMeta.promptHash).toBe("string");
+    expect(json.promptMeta.promptHash.length).toBe(64);
+    expect(json.expectedJsonSchema?.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
+    expect(json.expectedJsonSchema?.type).toBe("object");
     expect(json.prompt.userPrompt).not.toContain("Base summary");
     expect(json.prompt.userPrompt).toContain("Top-3 Responsibility Alignment (guidance):");
     expect(json.prompt.userPrompt).toContain("Base latest experience bullets (verbatim, reorder only):");
@@ -145,6 +153,10 @@ describe("applications prompt api", () => {
     expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
     expect(json.expectedJsonShape.cover.salutation).toBe("string (optional)");
     expect(json.expectedJsonShape.cover.subject).toBe("string (optional)");
+    expect(typeof json.promptMeta.promptHash).toBe("string");
+    expect(json.promptMeta.promptHash.length).toBe(64);
+    expect(json.expectedJsonSchema?.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
+    expect(json.expectedJsonSchema?.type).toBe("object");
     expect(json.prompt.userPrompt).not.toContain("Top-3 Responsibility Coverage (must follow):");
     expect(json.prompt.userPrompt).toContain("Top-3 JD responsibilities");
     expect(json.prompt.userPrompt).toContain("Bold all JD-critical keywords");

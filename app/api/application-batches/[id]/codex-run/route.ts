@@ -11,6 +11,7 @@ import {
 } from "@/lib/server/applicationBatches/runner";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
+import { buildPromptMeta } from "@/lib/server/ai/promptContract";
 
 export const runtime = "nodejs";
 
@@ -104,6 +105,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   const rules = await getActivePromptSkillRulesForUser(userId);
   const resumeSnapshotHash = buildResumeSnapshotHash(profile);
+  const resumeSnapshotUpdatedAt = profile.updatedAt.toISOString();
+  const resumePromptMeta = buildPromptMeta({
+    target: "resume",
+    ruleSetId: rules.id,
+    resumeSnapshotUpdatedAt,
+  });
+  const coverPromptMeta = buildPromptMeta({
+    target: "cover",
+    ruleSetId: rules.id,
+    resumeSnapshotUpdatedAt,
+  });
   const maxSteps = parsedBody.data.maxSteps;
   const tasks: Array<{
     taskId: string;
@@ -205,9 +217,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     },
     progress,
     context: {
-      promptMeta: {
-        ruleSetId: rules.id,
-        resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
+      promptMeta: resumePromptMeta,
+      promptMetaByTarget: {
+        resume: resumePromptMeta,
+        cover: coverPromptMeta,
       },
       rules: {
         locale: rules.locale,
@@ -225,4 +238,3 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     },
   });
 }
-

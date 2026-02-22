@@ -1,42 +1,44 @@
 import type { PromptSkillRuleSet } from "@/lib/server/ai/promptSkills";
+import {
+  PROMPT_SCHEMA_VERSION,
+  PROMPT_TEMPLATE_VERSION,
+  getExpectedJsonSchemaForTarget,
+  getExpectedJsonShapeForTarget,
+} from "@/lib/server/ai/promptContract";
 
 type SkillPackContext = {
   resumeSnapshot: unknown;
   resumeSnapshotUpdatedAt: string;
 };
 
-const OUTPUT_SCHEMA_RESUME = {
-  cvSummary: "string",
-  latestExperience: {
-    bullets: ["string"],
-  },
-  skillsFinal: [
-    {
-      label: "string",
-      items: ["string"],
-    },
-  ],
-};
-
-const OUTPUT_SCHEMA_COVER = {
-  cover: {
-    candidateTitle: "string (optional)",
-    subject: "string (optional)",
-    date: "string (optional)",
-    salutation: "string (optional)",
-    paragraphOne: "string",
-    paragraphTwo: "string",
-    paragraphThree: "string",
-    closing: "string (optional)",
-    signatureName: "string (optional)",
-  },
+type SkillPackOptions = {
+  redactContext?: boolean;
 };
 
 function list(items: string[]) {
   return items.map((item, index) => `${index + 1}. ${item}`).join("\n");
 }
 
-function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext) {
+function redactResumeSnapshot(snapshot: unknown) {
+  const record =
+    snapshot && typeof snapshot === "object" ? (snapshot as Record<string, unknown>) : {};
+  return {
+    summary: "[REDACTED]",
+    basics: null,
+    links: [],
+    skills: [],
+    experiences: [],
+    projects: [],
+    education: [],
+    hasSourceData: Object.keys(record).length > 0,
+  };
+}
+
+function buildPromptFiles(
+  rules: PromptSkillRuleSet,
+  context?: SkillPackContext,
+  options?: SkillPackOptions,
+) {
   const hardRules = list(rules.hardConstraints);
   const cvRules = list(rules.cvRules);
   const coverRules = list(rules.coverRules);
@@ -45,7 +47,7 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "Task: Generate role-tailored CV payload only.",
     "",
     "Required JSON shape:",
-    JSON.stringify(OUTPUT_SCHEMA_RESUME, null, 2),
+    JSON.stringify(getExpectedJsonShapeForTarget("resume"), null, 2),
     "",
     "Hard Constraints:",
     hardRules,
@@ -86,7 +88,7 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
     "Task: Generate role-tailored cover payload only.",
     "",
     "Required JSON shape:",
-    JSON.stringify(OUTPUT_SCHEMA_COVER, null, 2),
+    JSON.stringify(getExpectedJsonShapeForTarget("cover"), null, 2),
     "",
     "Hard Constraints:",
     hardRules,
@@ -128,9 +130,13 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
 
   if (!context) return files;
 
+  const snapshot = options?.redactContext
+    ? redactResumeSnapshot(context.resumeSnapshot)
+    : context.resumeSnapshot ?? {};
+
   files.push({
     name: "jobflow-skill-pack/context/resume-snapshot.json",
-    content: JSON.stringify(context.resumeSnapshot ?? {}, null, 2),
+    content: JSON.stringify(snapshot, null, 2),
   });
   files.push({
     name: "jobflow-skill-pack/context/resume-snapshot-updated-at.txt",
@@ -140,7 +146,11 @@ function buildPromptFiles(rules: PromptSkillRuleSet, context?: SkillPackContext)
   return files;
 }
 
-export function buildGlobalSkillPackFiles(rules: PromptSkillRuleSet, context?: SkillPackContext) {
+export function buildGlobalSkillPackFiles(
+  rules: PromptSkillRuleSet,
+  context?: SkillPackContext,
+  options?: SkillPackOptions,
+) {
   const readme = `# Jobflow Global Skill Pack
 
 This pack defines reusable rules and prompt templates for CV/Cover generation.
@@ -159,6 +169,8 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
 ## Notes
 - This is a global template pack, not bound to one specific job.
 - This pack may include your latest resume snapshot and snapshot timestamp file.
+- Prompt template version: ${PROMPT_TEMPLATE_VERSION}
+- Output schema version: ${PROMPT_SCHEMA_VERSION}
 - Prompt generation for each job is done separately in Jobflow UI.
 - Rules version id: ${rules.id}
 - Locale: ${rules.locale}
@@ -228,6 +240,7 @@ ${list(rules.coverRules)}
 ## Output Contracts
 - Resume output must match: \`schema/output-schema.resume.json\`
 - Cover output must match: \`schema/output-schema.cover.json\`
+- Contract metadata: \`meta/prompt-contract.json\`
 
 ## Verification Checklist
 - Output is strict JSON only (no code fence and no markdown prose outside JSON).
@@ -294,14 +307,28 @@ ${list(rules.coverRules)}
     { name: "jobflow-skill-pack/rules/cv-rules.md", content: list(rules.cvRules) },
     { name: "jobflow-skill-pack/rules/cover-rules.md", content: list(rules.coverRules) },
     { name: "jobflow-skill-pack/rules/hard-constraints.md", content: list(rules.hardConstraints) },
-    ...buildPromptFiles(rules, context),
+    ...buildPromptFiles(rules, context, options),
     {
       name: "jobflow-skill-pack/schema/output-schema.resume.json",
-      content: JSON.stringify(OUTPUT_SCHEMA_RESUME, null, 2),
+      content: JSON.stringify(getExpectedJsonSchemaForTarget("resume"), null, 2),
     },
     {
       name: "jobflow-skill-pack/schema/output-schema.cover.json",
-      content: JSON.stringify(OUTPUT_SCHEMA_COVER, null, 2),
+      content: JSON.stringify(getExpectedJsonSchemaForTarget("cover"), null, 2),
+    },
+    {
+      name: "jobflow-skill-pack/meta/prompt-contract.json",
+      content: JSON.stringify(
+        {
+          promptTemplateVersion: PROMPT_TEMPLATE_VERSION,
+          schemaVersion: PROMPT_SCHEMA_VERSION,
+          rulesVersion: rules.id,
+          locale: rules.locale,
+          redactedContext: !!options?.redactContext,
+        },
+        null,
+        2,
+      ),
     },
     { name: "jobflow-skill-pack/examples/output.resume.example.json", content: exampleJson },
     { name: "jobflow-skill-pack/examples/output.cover.example.json", content: coverExampleJson },

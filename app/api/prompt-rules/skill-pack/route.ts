@@ -15,7 +15,6 @@ function safeSegment(value: string) {
 }
 
 export async function GET(req: Request) {
-  void req;
   const requestId = randomUUID();
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -27,6 +26,7 @@ export async function GET(req: Request) {
   }
 
   const rules = await getActivePromptSkillRulesForUser(userId);
+  const redactContext = new URL(req.url).searchParams.get("redact") === "true";
   let context:
     | {
         resumeSnapshot: unknown;
@@ -50,7 +50,9 @@ export async function GET(req: Request) {
     };
   }
 
-  const files = buildGlobalSkillPackFiles(rules, context);
+  const files = buildGlobalSkillPackFiles(rules, context, {
+    redactContext,
+  });
   const tarGz = createTarGz(files);
   const today = new Date().toISOString().slice(0, 10);
   const filename = `jobflow-skill-pack-${safeSegment(rules.id)}-${today}.tar.gz`;
@@ -61,6 +63,7 @@ export async function GET(req: Request) {
       "content-type": "application/gzip",
       "content-disposition": `attachment; filename="${filename}"`,
       "x-request-id": requestId,
+      "x-skill-pack-redacted": redactContext ? "1" : "0",
     },
   });
 }

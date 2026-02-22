@@ -8,6 +8,11 @@ import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { computeTop3Coverage } from "@/lib/server/ai/responsibilityCoverage";
+import {
+  buildPromptMeta,
+  getExpectedJsonSchemaForTarget,
+  getExpectedJsonShapeForTarget,
+} from "@/lib/server/ai/promptContract";
 
 export const runtime = "nodejs";
 
@@ -96,33 +101,11 @@ export async function POST(req: Request) {
     formatRuleBlock("Hard Constraints:", rules.hardConstraints),
   ].join("\n\n");
   const isResumeTarget = parsed.data.target === "resume";
-  const requiredJsonShape = isResumeTarget
-    ? [
-        "{",
-        '  "cvSummary": "string",',
-        '  "latestExperience": {',
-        '    "bullets": ["string", "string"]',
-        "  },",
-        '  "skillsFinal": [',
-        '    { "label": "string", "items": ["string"] }',
-        "  ]",
-        "}",
-      ]
-    : [
-        "{",
-        '  "cover": {',
-        '    "candidateTitle": "string (optional)",',
-        '    "subject": "string (optional)",',
-        '    "date": "string (optional)",',
-        '    "salutation": "string (optional)",',
-        '    "paragraphOne": "string",',
-        '    "paragraphTwo": "string",',
-        '    "paragraphThree": "string",',
-        '    "closing": "string (optional)",',
-        '    "signatureName": "string (optional)"',
-        "  }",
-        "}",
-      ];
+  const requiredJsonShape = JSON.stringify(
+    getExpectedJsonShapeForTarget(parsed.data.target),
+    null,
+    2,
+  ).split("\n");
   const targetTaskLine = isResumeTarget
     ? "Generate role-tailored CV summary using the imported skill pack."
     : "Generate role-tailored Cover Letter content using the imported skill pack.";
@@ -236,32 +219,13 @@ export async function POST(req: Request) {
     `- Job description: ${job.description || ""}`,
   ].join("\n");
 
-  const expectedJsonShape = isResumeTarget
-    ? {
-        cvSummary: "string",
-        latestExperience: {
-          bullets: ["string"],
-        },
-        skillsFinal: [
-          {
-            label: "string",
-            items: ["string"],
-          },
-        ],
-      }
-    : {
-        cover: {
-          candidateTitle: "string (optional)",
-          subject: "string (optional)",
-          date: "string (optional)",
-          salutation: "string (optional)",
-          paragraphOne: "string",
-          paragraphTwo: "string",
-          paragraphThree: "string",
-          closing: "string (optional)",
-          signatureName: "string (optional)",
-        },
-      };
+  const expectedJsonShape = getExpectedJsonShapeForTarget(parsed.data.target);
+  const expectedJsonSchema = getExpectedJsonSchemaForTarget(parsed.data.target);
+  const promptMeta = buildPromptMeta({
+    target: parsed.data.target,
+    ruleSetId: rules.id,
+    resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
+  });
 
   return NextResponse.json({
     requestId,
@@ -269,10 +233,8 @@ export async function POST(req: Request) {
       systemPrompt,
       userPrompt,
     },
-    promptMeta: {
-      ruleSetId: rules.id,
-      resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
-    },
+    promptMeta,
     expectedJsonShape,
+    expectedJsonSchema,
   });
 }

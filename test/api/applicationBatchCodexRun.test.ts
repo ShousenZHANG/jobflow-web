@@ -137,9 +137,13 @@ describe("application batch codex-run api", () => {
     expect(json.tasks[0].job.id).toBe(JOB_ID);
     expect(json.context.promptMeta.ruleSetId).toBe("rules-1");
     expect(json.context.promptMeta.resumeSnapshotUpdatedAt).toBe("2026-02-22T10:00:00.000Z");
+    expect(typeof json.context.promptMeta.promptTemplateVersion).toBe("string");
+    expect(typeof json.context.promptMeta.schemaVersion).toBe("string");
+    expect(typeof json.context.promptMeta.promptHash).toBe("string");
+    expect(json.context.promptMetaByTarget.resume.ruleSetId).toBe("rules-1");
+    expect(json.context.promptMetaByTarget.cover.ruleSetId).toBe("rules-1");
     expect(typeof json.context.resumeSnapshotHash).toBe("string");
     expect(json.context.resumeSnapshotHash.length).toBe(64);
     expect(json.execution.stopReason).toBe("BATCH_COMPLETE");
   });
 });
-

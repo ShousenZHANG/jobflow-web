@@ -15,6 +15,7 @@ import { put } from "@vercel/blob";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 import { buildCoverEvidenceContext } from "@/lib/server/ai/coverContext";
 import { evaluateCoverQuality } from "@/lib/server/ai/coverQuality";
+import { buildPromptMeta } from "@/lib/server/ai/promptContract";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,9 @@ const ManualGenerateSchema = z.object({
     .object({
       ruleSetId: z.string().min(1),
       resumeSnapshotUpdatedAt: z.string().min(1),
+      promptTemplateVersion: z.string().min(1).optional(),
+      schemaVersion: z.string().min(1).optional(),
+      promptHash: z.string().min(1).optional(),
     })
     .optional(),
 });
@@ -614,10 +618,31 @@ export async function POST(req: Request) {
 
   if (parsed.data.promptMeta) {
     const activeRules = await getActivePromptSkillRulesForUser(userId);
-    const ruleSetMatches = parsed.data.promptMeta.ruleSetId === activeRules.id;
+    const expectedPromptMeta = buildPromptMeta({
+      target: parsed.data.target,
+      ruleSetId: activeRules.id,
+      resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
+    });
+    const ruleSetMatches = parsed.data.promptMeta.ruleSetId === expectedPromptMeta.ruleSetId;
     const snapshotMatches =
-      parsed.data.promptMeta.resumeSnapshotUpdatedAt === profile.updatedAt.toISOString();
-    if (!ruleSetMatches || !snapshotMatches) {
+      parsed.data.promptMeta.resumeSnapshotUpdatedAt === expectedPromptMeta.resumeSnapshotUpdatedAt;
+    const templateVersionMatches =
+      !parsed.data.promptMeta.promptTemplateVersion ||
+      parsed.data.promptMeta.promptTemplateVersion === expectedPromptMeta.promptTemplateVersion;
+    const schemaVersionMatches =
+      !parsed.data.promptMeta.schemaVersion ||
+      parsed.data.promptMeta.schemaVersion === expectedPromptMeta.schemaVersion;
+    const promptHashMatches =
+      !parsed.data.promptMeta.promptHash ||
+      parsed.data.promptMeta.promptHash === expectedPromptMeta.promptHash;
+
+    if (
+      !ruleSetMatches ||
+      !snapshotMatches ||
+      !templateVersionMatches ||
+      !schemaVersionMatches ||
+      !promptHashMatches
+    ) {
       return NextResponse.json(
         {
           error: {
@@ -625,10 +650,7 @@ export async function POST(req: Request) {
             message:
               "Prompt/skill pack is out of date. Re-download skill pack and copy a fresh prompt for this job.",
             details: {
-              expected: {
-                ruleSetId: activeRules.id,
-                resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
-              },
+              expected: expectedPromptMeta,
               received: parsed.data.promptMeta,
             },
           },
