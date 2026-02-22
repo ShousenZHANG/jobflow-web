@@ -34,6 +34,16 @@ export type Session = $Result.DefaultSelection<Prisma.$SessionPayload>
  */
 export type Job = $Result.DefaultSelection<Prisma.$JobPayload>
 /**
+ * Model ApplicationBatch
+ * 
+ */
+export type ApplicationBatch = $Result.DefaultSelection<Prisma.$ApplicationBatchPayload>
+/**
+ * Model ApplicationBatchTask
+ * 
+ */
+export type ApplicationBatchTask = $Result.DefaultSelection<Prisma.$ApplicationBatchTaskPayload>
+/**
  * Model DeletedJobUrl
  * 
  */
@@ -105,6 +115,35 @@ export const OnboardingStage: {
 
 export type OnboardingStage = (typeof OnboardingStage)[keyof typeof OnboardingStage]
 
+
+export const ApplicationBatchScope: {
+  NEW: 'NEW'
+};
+
+export type ApplicationBatchScope = (typeof ApplicationBatchScope)[keyof typeof ApplicationBatchScope]
+
+
+export const ApplicationBatchStatus: {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+export type ApplicationBatchStatus = (typeof ApplicationBatchStatus)[keyof typeof ApplicationBatchStatus]
+
+
+export const ApplicationBatchTaskStatus: {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+};
+
+export type ApplicationBatchTaskStatus = (typeof ApplicationBatchTaskStatus)[keyof typeof ApplicationBatchTaskStatus]
+
 }
 
 export type JobStatus = $Enums.JobStatus
@@ -118,6 +157,18 @@ export const FetchRunStatus: typeof $Enums.FetchRunStatus
 export type OnboardingStage = $Enums.OnboardingStage
 
 export const OnboardingStage: typeof $Enums.OnboardingStage
+
+export type ApplicationBatchScope = $Enums.ApplicationBatchScope
+
+export const ApplicationBatchScope: typeof $Enums.ApplicationBatchScope
+
+export type ApplicationBatchStatus = $Enums.ApplicationBatchStatus
+
+export const ApplicationBatchStatus: typeof $Enums.ApplicationBatchStatus
+
+export type ApplicationBatchTaskStatus = $Enums.ApplicationBatchTaskStatus
+
+export const ApplicationBatchTaskStatus: typeof $Enums.ApplicationBatchTaskStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -275,6 +326,26 @@ export class PrismaClient<
     * ```
     */
   get job(): Prisma.JobDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.applicationBatch`: Exposes CRUD operations for the **ApplicationBatch** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ApplicationBatches
+    * const applicationBatches = await prisma.applicationBatch.findMany()
+    * ```
+    */
+  get applicationBatch(): Prisma.ApplicationBatchDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.applicationBatchTask`: Exposes CRUD operations for the **ApplicationBatchTask** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ApplicationBatchTasks
+    * const applicationBatchTasks = await prisma.applicationBatchTask.findMany()
+    * ```
+    */
+  get applicationBatchTask(): Prisma.ApplicationBatchTaskDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.deletedJobUrl`: Exposes CRUD operations for the **DeletedJobUrl** model.
@@ -793,6 +864,8 @@ export namespace Prisma {
     Account: 'Account',
     Session: 'Session',
     Job: 'Job',
+    ApplicationBatch: 'ApplicationBatch',
+    ApplicationBatchTask: 'ApplicationBatchTask',
     DeletedJobUrl: 'DeletedJobUrl',
     DailyCheckin: 'DailyCheckin',
     FetchRun: 'FetchRun',
@@ -816,7 +889,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "activeResumeProfile" | "application" | "promptRuleTemplate" | "onboardingState"
+      modelProps: "user" | "account" | "session" | "job" | "applicationBatch" | "applicationBatchTask" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "activeResumeProfile" | "application" | "promptRuleTemplate" | "onboardingState"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1113,6 +1186,154 @@ export namespace Prisma {
           count: {
             args: Prisma.JobCountArgs<ExtArgs>
             result: $Utils.Optional<JobCountAggregateOutputType> | number
+          }
+        }
+      }
+      ApplicationBatch: {
+        payload: Prisma.$ApplicationBatchPayload<ExtArgs>
+        fields: Prisma.ApplicationBatchFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ApplicationBatchFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ApplicationBatchFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>
+          }
+          findFirst: {
+            args: Prisma.ApplicationBatchFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ApplicationBatchFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>
+          }
+          findMany: {
+            args: Prisma.ApplicationBatchFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>[]
+          }
+          create: {
+            args: Prisma.ApplicationBatchCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>
+          }
+          createMany: {
+            args: Prisma.ApplicationBatchCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ApplicationBatchCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>[]
+          }
+          delete: {
+            args: Prisma.ApplicationBatchDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>
+          }
+          update: {
+            args: Prisma.ApplicationBatchUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>
+          }
+          deleteMany: {
+            args: Prisma.ApplicationBatchDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ApplicationBatchUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ApplicationBatchUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>[]
+          }
+          upsert: {
+            args: Prisma.ApplicationBatchUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchPayload>
+          }
+          aggregate: {
+            args: Prisma.ApplicationBatchAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateApplicationBatch>
+          }
+          groupBy: {
+            args: Prisma.ApplicationBatchGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ApplicationBatchGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ApplicationBatchCountArgs<ExtArgs>
+            result: $Utils.Optional<ApplicationBatchCountAggregateOutputType> | number
+          }
+        }
+      }
+      ApplicationBatchTask: {
+        payload: Prisma.$ApplicationBatchTaskPayload<ExtArgs>
+        fields: Prisma.ApplicationBatchTaskFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ApplicationBatchTaskFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ApplicationBatchTaskFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>
+          }
+          findFirst: {
+            args: Prisma.ApplicationBatchTaskFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ApplicationBatchTaskFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>
+          }
+          findMany: {
+            args: Prisma.ApplicationBatchTaskFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>[]
+          }
+          create: {
+            args: Prisma.ApplicationBatchTaskCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>
+          }
+          createMany: {
+            args: Prisma.ApplicationBatchTaskCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ApplicationBatchTaskCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>[]
+          }
+          delete: {
+            args: Prisma.ApplicationBatchTaskDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>
+          }
+          update: {
+            args: Prisma.ApplicationBatchTaskUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>
+          }
+          deleteMany: {
+            args: Prisma.ApplicationBatchTaskDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ApplicationBatchTaskUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ApplicationBatchTaskUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>[]
+          }
+          upsert: {
+            args: Prisma.ApplicationBatchTaskUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApplicationBatchTaskPayload>
+          }
+          aggregate: {
+            args: Prisma.ApplicationBatchTaskAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateApplicationBatchTask>
+          }
+          groupBy: {
+            args: Prisma.ApplicationBatchTaskGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ApplicationBatchTaskGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ApplicationBatchTaskCountArgs<ExtArgs>
+            result: $Utils.Optional<ApplicationBatchTaskCountAggregateOutputType> | number
           }
         }
       }
@@ -1820,6 +2041,8 @@ export namespace Prisma {
     account?: AccountOmit
     session?: SessionOmit
     job?: JobOmit
+    applicationBatch?: ApplicationBatchOmit
+    applicationBatchTask?: ApplicationBatchTaskOmit
     deletedJobUrl?: DeletedJobUrlOmit
     dailyCheckin?: DailyCheckinOmit
     fetchRun?: FetchRunOmit
@@ -1917,6 +2140,8 @@ export namespace Prisma {
     resumeProfiles: number
     applications: number
     promptRuleTemplates: number
+    applicationBatches: number
+    applicationBatchTasks: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1929,6 +2154,8 @@ export namespace Prisma {
     resumeProfiles?: boolean | UserCountOutputTypeCountResumeProfilesArgs
     applications?: boolean | UserCountOutputTypeCountApplicationsArgs
     promptRuleTemplates?: boolean | UserCountOutputTypeCountPromptRuleTemplatesArgs
+    applicationBatches?: boolean | UserCountOutputTypeCountApplicationBatchesArgs
+    applicationBatchTasks?: boolean | UserCountOutputTypeCountApplicationBatchTasksArgs
   }
 
   // Custom InputTypes
@@ -2005,6 +2232,20 @@ export namespace Prisma {
     where?: PromptRuleTemplateWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountApplicationBatchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApplicationBatchWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountApplicationBatchTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApplicationBatchTaskWhereInput
+  }
+
 
   /**
    * Count Type JobCountOutputType
@@ -2012,10 +2253,12 @@ export namespace Prisma {
 
   export type JobCountOutputType = {
     applications: number
+    applicationBatchTasks: number
   }
 
   export type JobCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     applications?: boolean | JobCountOutputTypeCountApplicationsArgs
+    applicationBatchTasks?: boolean | JobCountOutputTypeCountApplicationBatchTasksArgs
   }
 
   // Custom InputTypes
@@ -2034,6 +2277,44 @@ export namespace Prisma {
    */
   export type JobCountOutputTypeCountApplicationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ApplicationWhereInput
+  }
+
+  /**
+   * JobCountOutputType without action
+   */
+  export type JobCountOutputTypeCountApplicationBatchTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApplicationBatchTaskWhereInput
+  }
+
+
+  /**
+   * Count Type ApplicationBatchCountOutputType
+   */
+
+  export type ApplicationBatchCountOutputType = {
+    tasks: number
+  }
+
+  export type ApplicationBatchCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tasks?: boolean | ApplicationBatchCountOutputTypeCountTasksArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ApplicationBatchCountOutputType without action
+   */
+  export type ApplicationBatchCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchCountOutputType
+     */
+    select?: ApplicationBatchCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ApplicationBatchCountOutputType without action
+   */
+  export type ApplicationBatchCountOutputTypeCountTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApplicationBatchTaskWhereInput
   }
 
 
@@ -2272,6 +2553,8 @@ export namespace Prisma {
     applications?: boolean | User$applicationsArgs<ExtArgs>
     promptRuleTemplates?: boolean | User$promptRuleTemplatesArgs<ExtArgs>
     onboardingState?: boolean | User$onboardingStateArgs<ExtArgs>
+    applicationBatches?: boolean | User$applicationBatchesArgs<ExtArgs>
+    applicationBatchTasks?: boolean | User$applicationBatchTasksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2318,6 +2601,8 @@ export namespace Prisma {
     applications?: boolean | User$applicationsArgs<ExtArgs>
     promptRuleTemplates?: boolean | User$promptRuleTemplatesArgs<ExtArgs>
     onboardingState?: boolean | User$onboardingStateArgs<ExtArgs>
+    applicationBatches?: boolean | User$applicationBatchesArgs<ExtArgs>
+    applicationBatchTasks?: boolean | User$applicationBatchTasksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2337,6 +2622,8 @@ export namespace Prisma {
       applications: Prisma.$ApplicationPayload<ExtArgs>[]
       promptRuleTemplates: Prisma.$PromptRuleTemplatePayload<ExtArgs>[]
       onboardingState: Prisma.$OnboardingStatePayload<ExtArgs> | null
+      applicationBatches: Prisma.$ApplicationBatchPayload<ExtArgs>[]
+      applicationBatchTasks: Prisma.$ApplicationBatchTaskPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2751,6 +3038,8 @@ export namespace Prisma {
     applications<T extends User$applicationsArgs<ExtArgs> = {}>(args?: Subset<T, User$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     promptRuleTemplates<T extends User$promptRuleTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, User$promptRuleTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PromptRuleTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     onboardingState<T extends User$onboardingStateArgs<ExtArgs> = {}>(args?: Subset<T, User$onboardingStateArgs<ExtArgs>>): Prisma__OnboardingStateClient<$Result.GetResult<Prisma.$OnboardingStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    applicationBatches<T extends User$applicationBatchesArgs<ExtArgs> = {}>(args?: Subset<T, User$applicationBatchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    applicationBatchTasks<T extends User$applicationBatchTasksArgs<ExtArgs> = {}>(args?: Subset<T, User$applicationBatchTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3426,6 +3715,54 @@ export namespace Prisma {
      */
     include?: OnboardingStateInclude<ExtArgs> | null
     where?: OnboardingStateWhereInput
+  }
+
+  /**
+   * User.applicationBatches
+   */
+  export type User$applicationBatchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    where?: ApplicationBatchWhereInput
+    orderBy?: ApplicationBatchOrderByWithRelationInput | ApplicationBatchOrderByWithRelationInput[]
+    cursor?: ApplicationBatchWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ApplicationBatchScalarFieldEnum | ApplicationBatchScalarFieldEnum[]
+  }
+
+  /**
+   * User.applicationBatchTasks
+   */
+  export type User$applicationBatchTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    where?: ApplicationBatchTaskWhereInput
+    orderBy?: ApplicationBatchTaskOrderByWithRelationInput | ApplicationBatchTaskOrderByWithRelationInput[]
+    cursor?: ApplicationBatchTaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ApplicationBatchTaskScalarFieldEnum | ApplicationBatchTaskScalarFieldEnum[]
   }
 
   /**
@@ -5949,6 +6286,7 @@ export namespace Prisma {
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     applications?: boolean | Job$applicationsArgs<ExtArgs>
+    applicationBatchTasks?: boolean | Job$applicationBatchTasksArgs<ExtArgs>
     _count?: boolean | JobCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["job"]>
 
@@ -6003,6 +6341,7 @@ export namespace Prisma {
   export type JobInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     applications?: boolean | Job$applicationsArgs<ExtArgs>
+    applicationBatchTasks?: boolean | Job$applicationBatchTasksArgs<ExtArgs>
     _count?: boolean | JobCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type JobIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6017,6 +6356,7 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       applications: Prisma.$ApplicationPayload<ExtArgs>[]
+      applicationBatchTasks: Prisma.$ApplicationBatchTaskPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6427,6 +6767,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     applications<T extends Job$applicationsArgs<ExtArgs> = {}>(args?: Subset<T, Job$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    applicationBatchTasks<T extends Job$applicationBatchTasksArgs<ExtArgs> = {}>(args?: Subset<T, Job$applicationBatchTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6888,6 +7229,30 @@ export namespace Prisma {
   }
 
   /**
+   * Job.applicationBatchTasks
+   */
+  export type Job$applicationBatchTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    where?: ApplicationBatchTaskWhereInput
+    orderBy?: ApplicationBatchTaskOrderByWithRelationInput | ApplicationBatchTaskOrderByWithRelationInput[]
+    cursor?: ApplicationBatchTaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ApplicationBatchTaskScalarFieldEnum | ApplicationBatchTaskScalarFieldEnum[]
+  }
+
+  /**
    * Job without action
    */
   export type JobDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6903,6 +7268,2379 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: JobInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ApplicationBatch
+   */
+
+  export type AggregateApplicationBatch = {
+    _count: ApplicationBatchCountAggregateOutputType | null
+    _avg: ApplicationBatchAvgAggregateOutputType | null
+    _sum: ApplicationBatchSumAggregateOutputType | null
+    _min: ApplicationBatchMinAggregateOutputType | null
+    _max: ApplicationBatchMaxAggregateOutputType | null
+  }
+
+  export type ApplicationBatchAvgAggregateOutputType = {
+    totalCount: number | null
+  }
+
+  export type ApplicationBatchSumAggregateOutputType = {
+    totalCount: number | null
+  }
+
+  export type ApplicationBatchMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    scope: $Enums.ApplicationBatchScope | null
+    status: $Enums.ApplicationBatchStatus | null
+    totalCount: number | null
+    error: string | null
+    startedAt: Date | null
+    completedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ApplicationBatchMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    scope: $Enums.ApplicationBatchScope | null
+    status: $Enums.ApplicationBatchStatus | null
+    totalCount: number | null
+    error: string | null
+    startedAt: Date | null
+    completedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ApplicationBatchCountAggregateOutputType = {
+    id: number
+    userId: number
+    scope: number
+    status: number
+    totalCount: number
+    error: number
+    startedAt: number
+    completedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ApplicationBatchAvgAggregateInputType = {
+    totalCount?: true
+  }
+
+  export type ApplicationBatchSumAggregateInputType = {
+    totalCount?: true
+  }
+
+  export type ApplicationBatchMinAggregateInputType = {
+    id?: true
+    userId?: true
+    scope?: true
+    status?: true
+    totalCount?: true
+    error?: true
+    startedAt?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ApplicationBatchMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    scope?: true
+    status?: true
+    totalCount?: true
+    error?: true
+    startedAt?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ApplicationBatchCountAggregateInputType = {
+    id?: true
+    userId?: true
+    scope?: true
+    status?: true
+    totalCount?: true
+    error?: true
+    startedAt?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ApplicationBatchAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ApplicationBatch to aggregate.
+     */
+    where?: ApplicationBatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatches to fetch.
+     */
+    orderBy?: ApplicationBatchOrderByWithRelationInput | ApplicationBatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ApplicationBatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ApplicationBatches
+    **/
+    _count?: true | ApplicationBatchCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ApplicationBatchAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ApplicationBatchSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ApplicationBatchMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ApplicationBatchMaxAggregateInputType
+  }
+
+  export type GetApplicationBatchAggregateType<T extends ApplicationBatchAggregateArgs> = {
+        [P in keyof T & keyof AggregateApplicationBatch]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateApplicationBatch[P]>
+      : GetScalarType<T[P], AggregateApplicationBatch[P]>
+  }
+
+
+
+
+  export type ApplicationBatchGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApplicationBatchWhereInput
+    orderBy?: ApplicationBatchOrderByWithAggregationInput | ApplicationBatchOrderByWithAggregationInput[]
+    by: ApplicationBatchScalarFieldEnum[] | ApplicationBatchScalarFieldEnum
+    having?: ApplicationBatchScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ApplicationBatchCountAggregateInputType | true
+    _avg?: ApplicationBatchAvgAggregateInputType
+    _sum?: ApplicationBatchSumAggregateInputType
+    _min?: ApplicationBatchMinAggregateInputType
+    _max?: ApplicationBatchMaxAggregateInputType
+  }
+
+  export type ApplicationBatchGroupByOutputType = {
+    id: string
+    userId: string
+    scope: $Enums.ApplicationBatchScope
+    status: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error: string | null
+    startedAt: Date | null
+    completedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ApplicationBatchCountAggregateOutputType | null
+    _avg: ApplicationBatchAvgAggregateOutputType | null
+    _sum: ApplicationBatchSumAggregateOutputType | null
+    _min: ApplicationBatchMinAggregateOutputType | null
+    _max: ApplicationBatchMaxAggregateOutputType | null
+  }
+
+  type GetApplicationBatchGroupByPayload<T extends ApplicationBatchGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ApplicationBatchGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ApplicationBatchGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ApplicationBatchGroupByOutputType[P]>
+            : GetScalarType<T[P], ApplicationBatchGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ApplicationBatchSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    scope?: boolean
+    status?: boolean
+    totalCount?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    tasks?: boolean | ApplicationBatch$tasksArgs<ExtArgs>
+    _count?: boolean | ApplicationBatchCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["applicationBatch"]>
+
+  export type ApplicationBatchSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    scope?: boolean
+    status?: boolean
+    totalCount?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["applicationBatch"]>
+
+  export type ApplicationBatchSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    scope?: boolean
+    status?: boolean
+    totalCount?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["applicationBatch"]>
+
+  export type ApplicationBatchSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    scope?: boolean
+    status?: boolean
+    totalCount?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ApplicationBatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "scope" | "status" | "totalCount" | "error" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["applicationBatch"]>
+  export type ApplicationBatchInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    tasks?: boolean | ApplicationBatch$tasksArgs<ExtArgs>
+    _count?: boolean | ApplicationBatchCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ApplicationBatchIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ApplicationBatchIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ApplicationBatchPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ApplicationBatch"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      tasks: Prisma.$ApplicationBatchTaskPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      scope: $Enums.ApplicationBatchScope
+      status: $Enums.ApplicationBatchStatus
+      totalCount: number
+      error: string | null
+      startedAt: Date | null
+      completedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["applicationBatch"]>
+    composites: {}
+  }
+
+  type ApplicationBatchGetPayload<S extends boolean | null | undefined | ApplicationBatchDefaultArgs> = $Result.GetResult<Prisma.$ApplicationBatchPayload, S>
+
+  type ApplicationBatchCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ApplicationBatchFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ApplicationBatchCountAggregateInputType | true
+    }
+
+  export interface ApplicationBatchDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ApplicationBatch'], meta: { name: 'ApplicationBatch' } }
+    /**
+     * Find zero or one ApplicationBatch that matches the filter.
+     * @param {ApplicationBatchFindUniqueArgs} args - Arguments to find a ApplicationBatch
+     * @example
+     * // Get one ApplicationBatch
+     * const applicationBatch = await prisma.applicationBatch.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ApplicationBatchFindUniqueArgs>(args: SelectSubset<T, ApplicationBatchFindUniqueArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ApplicationBatch that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ApplicationBatchFindUniqueOrThrowArgs} args - Arguments to find a ApplicationBatch
+     * @example
+     * // Get one ApplicationBatch
+     * const applicationBatch = await prisma.applicationBatch.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ApplicationBatchFindUniqueOrThrowArgs>(args: SelectSubset<T, ApplicationBatchFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ApplicationBatch that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchFindFirstArgs} args - Arguments to find a ApplicationBatch
+     * @example
+     * // Get one ApplicationBatch
+     * const applicationBatch = await prisma.applicationBatch.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ApplicationBatchFindFirstArgs>(args?: SelectSubset<T, ApplicationBatchFindFirstArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ApplicationBatch that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchFindFirstOrThrowArgs} args - Arguments to find a ApplicationBatch
+     * @example
+     * // Get one ApplicationBatch
+     * const applicationBatch = await prisma.applicationBatch.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ApplicationBatchFindFirstOrThrowArgs>(args?: SelectSubset<T, ApplicationBatchFindFirstOrThrowArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ApplicationBatches that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ApplicationBatches
+     * const applicationBatches = await prisma.applicationBatch.findMany()
+     * 
+     * // Get first 10 ApplicationBatches
+     * const applicationBatches = await prisma.applicationBatch.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const applicationBatchWithIdOnly = await prisma.applicationBatch.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ApplicationBatchFindManyArgs>(args?: SelectSubset<T, ApplicationBatchFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ApplicationBatch.
+     * @param {ApplicationBatchCreateArgs} args - Arguments to create a ApplicationBatch.
+     * @example
+     * // Create one ApplicationBatch
+     * const ApplicationBatch = await prisma.applicationBatch.create({
+     *   data: {
+     *     // ... data to create a ApplicationBatch
+     *   }
+     * })
+     * 
+     */
+    create<T extends ApplicationBatchCreateArgs>(args: SelectSubset<T, ApplicationBatchCreateArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ApplicationBatches.
+     * @param {ApplicationBatchCreateManyArgs} args - Arguments to create many ApplicationBatches.
+     * @example
+     * // Create many ApplicationBatches
+     * const applicationBatch = await prisma.applicationBatch.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ApplicationBatchCreateManyArgs>(args?: SelectSubset<T, ApplicationBatchCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ApplicationBatches and returns the data saved in the database.
+     * @param {ApplicationBatchCreateManyAndReturnArgs} args - Arguments to create many ApplicationBatches.
+     * @example
+     * // Create many ApplicationBatches
+     * const applicationBatch = await prisma.applicationBatch.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ApplicationBatches and only return the `id`
+     * const applicationBatchWithIdOnly = await prisma.applicationBatch.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ApplicationBatchCreateManyAndReturnArgs>(args?: SelectSubset<T, ApplicationBatchCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ApplicationBatch.
+     * @param {ApplicationBatchDeleteArgs} args - Arguments to delete one ApplicationBatch.
+     * @example
+     * // Delete one ApplicationBatch
+     * const ApplicationBatch = await prisma.applicationBatch.delete({
+     *   where: {
+     *     // ... filter to delete one ApplicationBatch
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ApplicationBatchDeleteArgs>(args: SelectSubset<T, ApplicationBatchDeleteArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ApplicationBatch.
+     * @param {ApplicationBatchUpdateArgs} args - Arguments to update one ApplicationBatch.
+     * @example
+     * // Update one ApplicationBatch
+     * const applicationBatch = await prisma.applicationBatch.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ApplicationBatchUpdateArgs>(args: SelectSubset<T, ApplicationBatchUpdateArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ApplicationBatches.
+     * @param {ApplicationBatchDeleteManyArgs} args - Arguments to filter ApplicationBatches to delete.
+     * @example
+     * // Delete a few ApplicationBatches
+     * const { count } = await prisma.applicationBatch.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ApplicationBatchDeleteManyArgs>(args?: SelectSubset<T, ApplicationBatchDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ApplicationBatches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ApplicationBatches
+     * const applicationBatch = await prisma.applicationBatch.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ApplicationBatchUpdateManyArgs>(args: SelectSubset<T, ApplicationBatchUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ApplicationBatches and returns the data updated in the database.
+     * @param {ApplicationBatchUpdateManyAndReturnArgs} args - Arguments to update many ApplicationBatches.
+     * @example
+     * // Update many ApplicationBatches
+     * const applicationBatch = await prisma.applicationBatch.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ApplicationBatches and only return the `id`
+     * const applicationBatchWithIdOnly = await prisma.applicationBatch.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ApplicationBatchUpdateManyAndReturnArgs>(args: SelectSubset<T, ApplicationBatchUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ApplicationBatch.
+     * @param {ApplicationBatchUpsertArgs} args - Arguments to update or create a ApplicationBatch.
+     * @example
+     * // Update or create a ApplicationBatch
+     * const applicationBatch = await prisma.applicationBatch.upsert({
+     *   create: {
+     *     // ... data to create a ApplicationBatch
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ApplicationBatch we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ApplicationBatchUpsertArgs>(args: SelectSubset<T, ApplicationBatchUpsertArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ApplicationBatches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchCountArgs} args - Arguments to filter ApplicationBatches to count.
+     * @example
+     * // Count the number of ApplicationBatches
+     * const count = await prisma.applicationBatch.count({
+     *   where: {
+     *     // ... the filter for the ApplicationBatches we want to count
+     *   }
+     * })
+    **/
+    count<T extends ApplicationBatchCountArgs>(
+      args?: Subset<T, ApplicationBatchCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ApplicationBatchCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ApplicationBatch.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ApplicationBatchAggregateArgs>(args: Subset<T, ApplicationBatchAggregateArgs>): Prisma.PrismaPromise<GetApplicationBatchAggregateType<T>>
+
+    /**
+     * Group by ApplicationBatch.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ApplicationBatchGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ApplicationBatchGroupByArgs['orderBy'] }
+        : { orderBy?: ApplicationBatchGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ApplicationBatchGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetApplicationBatchGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ApplicationBatch model
+   */
+  readonly fields: ApplicationBatchFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ApplicationBatch.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ApplicationBatchClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    tasks<T extends ApplicationBatch$tasksArgs<ExtArgs> = {}>(args?: Subset<T, ApplicationBatch$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ApplicationBatch model
+   */
+  interface ApplicationBatchFieldRefs {
+    readonly id: FieldRef<"ApplicationBatch", 'String'>
+    readonly userId: FieldRef<"ApplicationBatch", 'String'>
+    readonly scope: FieldRef<"ApplicationBatch", 'ApplicationBatchScope'>
+    readonly status: FieldRef<"ApplicationBatch", 'ApplicationBatchStatus'>
+    readonly totalCount: FieldRef<"ApplicationBatch", 'Int'>
+    readonly error: FieldRef<"ApplicationBatch", 'String'>
+    readonly startedAt: FieldRef<"ApplicationBatch", 'DateTime'>
+    readonly completedAt: FieldRef<"ApplicationBatch", 'DateTime'>
+    readonly createdAt: FieldRef<"ApplicationBatch", 'DateTime'>
+    readonly updatedAt: FieldRef<"ApplicationBatch", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ApplicationBatch findUnique
+   */
+  export type ApplicationBatchFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatch to fetch.
+     */
+    where: ApplicationBatchWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatch findUniqueOrThrow
+   */
+  export type ApplicationBatchFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatch to fetch.
+     */
+    where: ApplicationBatchWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatch findFirst
+   */
+  export type ApplicationBatchFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatch to fetch.
+     */
+    where?: ApplicationBatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatches to fetch.
+     */
+    orderBy?: ApplicationBatchOrderByWithRelationInput | ApplicationBatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ApplicationBatches.
+     */
+    cursor?: ApplicationBatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ApplicationBatches.
+     */
+    distinct?: ApplicationBatchScalarFieldEnum | ApplicationBatchScalarFieldEnum[]
+  }
+
+  /**
+   * ApplicationBatch findFirstOrThrow
+   */
+  export type ApplicationBatchFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatch to fetch.
+     */
+    where?: ApplicationBatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatches to fetch.
+     */
+    orderBy?: ApplicationBatchOrderByWithRelationInput | ApplicationBatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ApplicationBatches.
+     */
+    cursor?: ApplicationBatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ApplicationBatches.
+     */
+    distinct?: ApplicationBatchScalarFieldEnum | ApplicationBatchScalarFieldEnum[]
+  }
+
+  /**
+   * ApplicationBatch findMany
+   */
+  export type ApplicationBatchFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatches to fetch.
+     */
+    where?: ApplicationBatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatches to fetch.
+     */
+    orderBy?: ApplicationBatchOrderByWithRelationInput | ApplicationBatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ApplicationBatches.
+     */
+    cursor?: ApplicationBatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatches.
+     */
+    skip?: number
+    distinct?: ApplicationBatchScalarFieldEnum | ApplicationBatchScalarFieldEnum[]
+  }
+
+  /**
+   * ApplicationBatch create
+   */
+  export type ApplicationBatchCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ApplicationBatch.
+     */
+    data: XOR<ApplicationBatchCreateInput, ApplicationBatchUncheckedCreateInput>
+  }
+
+  /**
+   * ApplicationBatch createMany
+   */
+  export type ApplicationBatchCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ApplicationBatches.
+     */
+    data: ApplicationBatchCreateManyInput | ApplicationBatchCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ApplicationBatch createManyAndReturn
+   */
+  export type ApplicationBatchCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * The data used to create many ApplicationBatches.
+     */
+    data: ApplicationBatchCreateManyInput | ApplicationBatchCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ApplicationBatch update
+   */
+  export type ApplicationBatchUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ApplicationBatch.
+     */
+    data: XOR<ApplicationBatchUpdateInput, ApplicationBatchUncheckedUpdateInput>
+    /**
+     * Choose, which ApplicationBatch to update.
+     */
+    where: ApplicationBatchWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatch updateMany
+   */
+  export type ApplicationBatchUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ApplicationBatches.
+     */
+    data: XOR<ApplicationBatchUpdateManyMutationInput, ApplicationBatchUncheckedUpdateManyInput>
+    /**
+     * Filter which ApplicationBatches to update
+     */
+    where?: ApplicationBatchWhereInput
+    /**
+     * Limit how many ApplicationBatches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ApplicationBatch updateManyAndReturn
+   */
+  export type ApplicationBatchUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * The data used to update ApplicationBatches.
+     */
+    data: XOR<ApplicationBatchUpdateManyMutationInput, ApplicationBatchUncheckedUpdateManyInput>
+    /**
+     * Filter which ApplicationBatches to update
+     */
+    where?: ApplicationBatchWhereInput
+    /**
+     * Limit how many ApplicationBatches to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ApplicationBatch upsert
+   */
+  export type ApplicationBatchUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ApplicationBatch to update in case it exists.
+     */
+    where: ApplicationBatchWhereUniqueInput
+    /**
+     * In case the ApplicationBatch found by the `where` argument doesn't exist, create a new ApplicationBatch with this data.
+     */
+    create: XOR<ApplicationBatchCreateInput, ApplicationBatchUncheckedCreateInput>
+    /**
+     * In case the ApplicationBatch was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ApplicationBatchUpdateInput, ApplicationBatchUncheckedUpdateInput>
+  }
+
+  /**
+   * ApplicationBatch delete
+   */
+  export type ApplicationBatchDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+    /**
+     * Filter which ApplicationBatch to delete.
+     */
+    where: ApplicationBatchWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatch deleteMany
+   */
+  export type ApplicationBatchDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ApplicationBatches to delete
+     */
+    where?: ApplicationBatchWhereInput
+    /**
+     * Limit how many ApplicationBatches to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ApplicationBatch.tasks
+   */
+  export type ApplicationBatch$tasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    where?: ApplicationBatchTaskWhereInput
+    orderBy?: ApplicationBatchTaskOrderByWithRelationInput | ApplicationBatchTaskOrderByWithRelationInput[]
+    cursor?: ApplicationBatchTaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ApplicationBatchTaskScalarFieldEnum | ApplicationBatchTaskScalarFieldEnum[]
+  }
+
+  /**
+   * ApplicationBatch without action
+   */
+  export type ApplicationBatchDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatch
+     */
+    select?: ApplicationBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatch
+     */
+    omit?: ApplicationBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ApplicationBatchTask
+   */
+
+  export type AggregateApplicationBatchTask = {
+    _count: ApplicationBatchTaskCountAggregateOutputType | null
+    _avg: ApplicationBatchTaskAvgAggregateOutputType | null
+    _sum: ApplicationBatchTaskSumAggregateOutputType | null
+    _min: ApplicationBatchTaskMinAggregateOutputType | null
+    _max: ApplicationBatchTaskMaxAggregateOutputType | null
+  }
+
+  export type ApplicationBatchTaskAvgAggregateOutputType = {
+    attempt: number | null
+  }
+
+  export type ApplicationBatchTaskSumAggregateOutputType = {
+    attempt: number | null
+  }
+
+  export type ApplicationBatchTaskMinAggregateOutputType = {
+    id: string | null
+    batchId: string | null
+    userId: string | null
+    jobId: string | null
+    status: $Enums.ApplicationBatchTaskStatus | null
+    error: string | null
+    startedAt: Date | null
+    completedAt: Date | null
+    attempt: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ApplicationBatchTaskMaxAggregateOutputType = {
+    id: string | null
+    batchId: string | null
+    userId: string | null
+    jobId: string | null
+    status: $Enums.ApplicationBatchTaskStatus | null
+    error: string | null
+    startedAt: Date | null
+    completedAt: Date | null
+    attempt: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ApplicationBatchTaskCountAggregateOutputType = {
+    id: number
+    batchId: number
+    userId: number
+    jobId: number
+    status: number
+    error: number
+    startedAt: number
+    completedAt: number
+    attempt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ApplicationBatchTaskAvgAggregateInputType = {
+    attempt?: true
+  }
+
+  export type ApplicationBatchTaskSumAggregateInputType = {
+    attempt?: true
+  }
+
+  export type ApplicationBatchTaskMinAggregateInputType = {
+    id?: true
+    batchId?: true
+    userId?: true
+    jobId?: true
+    status?: true
+    error?: true
+    startedAt?: true
+    completedAt?: true
+    attempt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ApplicationBatchTaskMaxAggregateInputType = {
+    id?: true
+    batchId?: true
+    userId?: true
+    jobId?: true
+    status?: true
+    error?: true
+    startedAt?: true
+    completedAt?: true
+    attempt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ApplicationBatchTaskCountAggregateInputType = {
+    id?: true
+    batchId?: true
+    userId?: true
+    jobId?: true
+    status?: true
+    error?: true
+    startedAt?: true
+    completedAt?: true
+    attempt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ApplicationBatchTaskAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ApplicationBatchTask to aggregate.
+     */
+    where?: ApplicationBatchTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatchTasks to fetch.
+     */
+    orderBy?: ApplicationBatchTaskOrderByWithRelationInput | ApplicationBatchTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ApplicationBatchTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatchTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatchTasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ApplicationBatchTasks
+    **/
+    _count?: true | ApplicationBatchTaskCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ApplicationBatchTaskAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ApplicationBatchTaskSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ApplicationBatchTaskMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ApplicationBatchTaskMaxAggregateInputType
+  }
+
+  export type GetApplicationBatchTaskAggregateType<T extends ApplicationBatchTaskAggregateArgs> = {
+        [P in keyof T & keyof AggregateApplicationBatchTask]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateApplicationBatchTask[P]>
+      : GetScalarType<T[P], AggregateApplicationBatchTask[P]>
+  }
+
+
+
+
+  export type ApplicationBatchTaskGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApplicationBatchTaskWhereInput
+    orderBy?: ApplicationBatchTaskOrderByWithAggregationInput | ApplicationBatchTaskOrderByWithAggregationInput[]
+    by: ApplicationBatchTaskScalarFieldEnum[] | ApplicationBatchTaskScalarFieldEnum
+    having?: ApplicationBatchTaskScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ApplicationBatchTaskCountAggregateInputType | true
+    _avg?: ApplicationBatchTaskAvgAggregateInputType
+    _sum?: ApplicationBatchTaskSumAggregateInputType
+    _min?: ApplicationBatchTaskMinAggregateInputType
+    _max?: ApplicationBatchTaskMaxAggregateInputType
+  }
+
+  export type ApplicationBatchTaskGroupByOutputType = {
+    id: string
+    batchId: string
+    userId: string
+    jobId: string
+    status: $Enums.ApplicationBatchTaskStatus
+    error: string | null
+    startedAt: Date | null
+    completedAt: Date | null
+    attempt: number
+    createdAt: Date
+    updatedAt: Date
+    _count: ApplicationBatchTaskCountAggregateOutputType | null
+    _avg: ApplicationBatchTaskAvgAggregateOutputType | null
+    _sum: ApplicationBatchTaskSumAggregateOutputType | null
+    _min: ApplicationBatchTaskMinAggregateOutputType | null
+    _max: ApplicationBatchTaskMaxAggregateOutputType | null
+  }
+
+  type GetApplicationBatchTaskGroupByPayload<T extends ApplicationBatchTaskGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ApplicationBatchTaskGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ApplicationBatchTaskGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ApplicationBatchTaskGroupByOutputType[P]>
+            : GetScalarType<T[P], ApplicationBatchTaskGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ApplicationBatchTaskSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    batchId?: boolean
+    userId?: boolean
+    jobId?: boolean
+    status?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    attempt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    batch?: boolean | ApplicationBatchDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    job?: boolean | JobDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["applicationBatchTask"]>
+
+  export type ApplicationBatchTaskSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    batchId?: boolean
+    userId?: boolean
+    jobId?: boolean
+    status?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    attempt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    batch?: boolean | ApplicationBatchDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    job?: boolean | JobDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["applicationBatchTask"]>
+
+  export type ApplicationBatchTaskSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    batchId?: boolean
+    userId?: boolean
+    jobId?: boolean
+    status?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    attempt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    batch?: boolean | ApplicationBatchDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    job?: boolean | JobDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["applicationBatchTask"]>
+
+  export type ApplicationBatchTaskSelectScalar = {
+    id?: boolean
+    batchId?: boolean
+    userId?: boolean
+    jobId?: boolean
+    status?: boolean
+    error?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    attempt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ApplicationBatchTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "batchId" | "userId" | "jobId" | "status" | "error" | "startedAt" | "completedAt" | "attempt" | "createdAt" | "updatedAt", ExtArgs["result"]["applicationBatchTask"]>
+  export type ApplicationBatchTaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    batch?: boolean | ApplicationBatchDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    job?: boolean | JobDefaultArgs<ExtArgs>
+  }
+  export type ApplicationBatchTaskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    batch?: boolean | ApplicationBatchDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    job?: boolean | JobDefaultArgs<ExtArgs>
+  }
+  export type ApplicationBatchTaskIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    batch?: boolean | ApplicationBatchDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    job?: boolean | JobDefaultArgs<ExtArgs>
+  }
+
+  export type $ApplicationBatchTaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ApplicationBatchTask"
+    objects: {
+      batch: Prisma.$ApplicationBatchPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+      job: Prisma.$JobPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      batchId: string
+      userId: string
+      jobId: string
+      status: $Enums.ApplicationBatchTaskStatus
+      error: string | null
+      startedAt: Date | null
+      completedAt: Date | null
+      attempt: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["applicationBatchTask"]>
+    composites: {}
+  }
+
+  type ApplicationBatchTaskGetPayload<S extends boolean | null | undefined | ApplicationBatchTaskDefaultArgs> = $Result.GetResult<Prisma.$ApplicationBatchTaskPayload, S>
+
+  type ApplicationBatchTaskCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ApplicationBatchTaskFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ApplicationBatchTaskCountAggregateInputType | true
+    }
+
+  export interface ApplicationBatchTaskDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ApplicationBatchTask'], meta: { name: 'ApplicationBatchTask' } }
+    /**
+     * Find zero or one ApplicationBatchTask that matches the filter.
+     * @param {ApplicationBatchTaskFindUniqueArgs} args - Arguments to find a ApplicationBatchTask
+     * @example
+     * // Get one ApplicationBatchTask
+     * const applicationBatchTask = await prisma.applicationBatchTask.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ApplicationBatchTaskFindUniqueArgs>(args: SelectSubset<T, ApplicationBatchTaskFindUniqueArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ApplicationBatchTask that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ApplicationBatchTaskFindUniqueOrThrowArgs} args - Arguments to find a ApplicationBatchTask
+     * @example
+     * // Get one ApplicationBatchTask
+     * const applicationBatchTask = await prisma.applicationBatchTask.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ApplicationBatchTaskFindUniqueOrThrowArgs>(args: SelectSubset<T, ApplicationBatchTaskFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ApplicationBatchTask that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchTaskFindFirstArgs} args - Arguments to find a ApplicationBatchTask
+     * @example
+     * // Get one ApplicationBatchTask
+     * const applicationBatchTask = await prisma.applicationBatchTask.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ApplicationBatchTaskFindFirstArgs>(args?: SelectSubset<T, ApplicationBatchTaskFindFirstArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ApplicationBatchTask that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchTaskFindFirstOrThrowArgs} args - Arguments to find a ApplicationBatchTask
+     * @example
+     * // Get one ApplicationBatchTask
+     * const applicationBatchTask = await prisma.applicationBatchTask.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ApplicationBatchTaskFindFirstOrThrowArgs>(args?: SelectSubset<T, ApplicationBatchTaskFindFirstOrThrowArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ApplicationBatchTasks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchTaskFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ApplicationBatchTasks
+     * const applicationBatchTasks = await prisma.applicationBatchTask.findMany()
+     * 
+     * // Get first 10 ApplicationBatchTasks
+     * const applicationBatchTasks = await prisma.applicationBatchTask.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const applicationBatchTaskWithIdOnly = await prisma.applicationBatchTask.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ApplicationBatchTaskFindManyArgs>(args?: SelectSubset<T, ApplicationBatchTaskFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ApplicationBatchTask.
+     * @param {ApplicationBatchTaskCreateArgs} args - Arguments to create a ApplicationBatchTask.
+     * @example
+     * // Create one ApplicationBatchTask
+     * const ApplicationBatchTask = await prisma.applicationBatchTask.create({
+     *   data: {
+     *     // ... data to create a ApplicationBatchTask
+     *   }
+     * })
+     * 
+     */
+    create<T extends ApplicationBatchTaskCreateArgs>(args: SelectSubset<T, ApplicationBatchTaskCreateArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ApplicationBatchTasks.
+     * @param {ApplicationBatchTaskCreateManyArgs} args - Arguments to create many ApplicationBatchTasks.
+     * @example
+     * // Create many ApplicationBatchTasks
+     * const applicationBatchTask = await prisma.applicationBatchTask.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ApplicationBatchTaskCreateManyArgs>(args?: SelectSubset<T, ApplicationBatchTaskCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ApplicationBatchTasks and returns the data saved in the database.
+     * @param {ApplicationBatchTaskCreateManyAndReturnArgs} args - Arguments to create many ApplicationBatchTasks.
+     * @example
+     * // Create many ApplicationBatchTasks
+     * const applicationBatchTask = await prisma.applicationBatchTask.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ApplicationBatchTasks and only return the `id`
+     * const applicationBatchTaskWithIdOnly = await prisma.applicationBatchTask.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ApplicationBatchTaskCreateManyAndReturnArgs>(args?: SelectSubset<T, ApplicationBatchTaskCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ApplicationBatchTask.
+     * @param {ApplicationBatchTaskDeleteArgs} args - Arguments to delete one ApplicationBatchTask.
+     * @example
+     * // Delete one ApplicationBatchTask
+     * const ApplicationBatchTask = await prisma.applicationBatchTask.delete({
+     *   where: {
+     *     // ... filter to delete one ApplicationBatchTask
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ApplicationBatchTaskDeleteArgs>(args: SelectSubset<T, ApplicationBatchTaskDeleteArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ApplicationBatchTask.
+     * @param {ApplicationBatchTaskUpdateArgs} args - Arguments to update one ApplicationBatchTask.
+     * @example
+     * // Update one ApplicationBatchTask
+     * const applicationBatchTask = await prisma.applicationBatchTask.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ApplicationBatchTaskUpdateArgs>(args: SelectSubset<T, ApplicationBatchTaskUpdateArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ApplicationBatchTasks.
+     * @param {ApplicationBatchTaskDeleteManyArgs} args - Arguments to filter ApplicationBatchTasks to delete.
+     * @example
+     * // Delete a few ApplicationBatchTasks
+     * const { count } = await prisma.applicationBatchTask.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ApplicationBatchTaskDeleteManyArgs>(args?: SelectSubset<T, ApplicationBatchTaskDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ApplicationBatchTasks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchTaskUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ApplicationBatchTasks
+     * const applicationBatchTask = await prisma.applicationBatchTask.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ApplicationBatchTaskUpdateManyArgs>(args: SelectSubset<T, ApplicationBatchTaskUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ApplicationBatchTasks and returns the data updated in the database.
+     * @param {ApplicationBatchTaskUpdateManyAndReturnArgs} args - Arguments to update many ApplicationBatchTasks.
+     * @example
+     * // Update many ApplicationBatchTasks
+     * const applicationBatchTask = await prisma.applicationBatchTask.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ApplicationBatchTasks and only return the `id`
+     * const applicationBatchTaskWithIdOnly = await prisma.applicationBatchTask.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ApplicationBatchTaskUpdateManyAndReturnArgs>(args: SelectSubset<T, ApplicationBatchTaskUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ApplicationBatchTask.
+     * @param {ApplicationBatchTaskUpsertArgs} args - Arguments to update or create a ApplicationBatchTask.
+     * @example
+     * // Update or create a ApplicationBatchTask
+     * const applicationBatchTask = await prisma.applicationBatchTask.upsert({
+     *   create: {
+     *     // ... data to create a ApplicationBatchTask
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ApplicationBatchTask we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ApplicationBatchTaskUpsertArgs>(args: SelectSubset<T, ApplicationBatchTaskUpsertArgs<ExtArgs>>): Prisma__ApplicationBatchTaskClient<$Result.GetResult<Prisma.$ApplicationBatchTaskPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ApplicationBatchTasks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchTaskCountArgs} args - Arguments to filter ApplicationBatchTasks to count.
+     * @example
+     * // Count the number of ApplicationBatchTasks
+     * const count = await prisma.applicationBatchTask.count({
+     *   where: {
+     *     // ... the filter for the ApplicationBatchTasks we want to count
+     *   }
+     * })
+    **/
+    count<T extends ApplicationBatchTaskCountArgs>(
+      args?: Subset<T, ApplicationBatchTaskCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ApplicationBatchTaskCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ApplicationBatchTask.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchTaskAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ApplicationBatchTaskAggregateArgs>(args: Subset<T, ApplicationBatchTaskAggregateArgs>): Prisma.PrismaPromise<GetApplicationBatchTaskAggregateType<T>>
+
+    /**
+     * Group by ApplicationBatchTask.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApplicationBatchTaskGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ApplicationBatchTaskGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ApplicationBatchTaskGroupByArgs['orderBy'] }
+        : { orderBy?: ApplicationBatchTaskGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ApplicationBatchTaskGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetApplicationBatchTaskGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ApplicationBatchTask model
+   */
+  readonly fields: ApplicationBatchTaskFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ApplicationBatchTask.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ApplicationBatchTaskClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    batch<T extends ApplicationBatchDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ApplicationBatchDefaultArgs<ExtArgs>>): Prisma__ApplicationBatchClient<$Result.GetResult<Prisma.$ApplicationBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    job<T extends JobDefaultArgs<ExtArgs> = {}>(args?: Subset<T, JobDefaultArgs<ExtArgs>>): Prisma__JobClient<$Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ApplicationBatchTask model
+   */
+  interface ApplicationBatchTaskFieldRefs {
+    readonly id: FieldRef<"ApplicationBatchTask", 'String'>
+    readonly batchId: FieldRef<"ApplicationBatchTask", 'String'>
+    readonly userId: FieldRef<"ApplicationBatchTask", 'String'>
+    readonly jobId: FieldRef<"ApplicationBatchTask", 'String'>
+    readonly status: FieldRef<"ApplicationBatchTask", 'ApplicationBatchTaskStatus'>
+    readonly error: FieldRef<"ApplicationBatchTask", 'String'>
+    readonly startedAt: FieldRef<"ApplicationBatchTask", 'DateTime'>
+    readonly completedAt: FieldRef<"ApplicationBatchTask", 'DateTime'>
+    readonly attempt: FieldRef<"ApplicationBatchTask", 'Int'>
+    readonly createdAt: FieldRef<"ApplicationBatchTask", 'DateTime'>
+    readonly updatedAt: FieldRef<"ApplicationBatchTask", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ApplicationBatchTask findUnique
+   */
+  export type ApplicationBatchTaskFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatchTask to fetch.
+     */
+    where: ApplicationBatchTaskWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatchTask findUniqueOrThrow
+   */
+  export type ApplicationBatchTaskFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatchTask to fetch.
+     */
+    where: ApplicationBatchTaskWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatchTask findFirst
+   */
+  export type ApplicationBatchTaskFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatchTask to fetch.
+     */
+    where?: ApplicationBatchTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatchTasks to fetch.
+     */
+    orderBy?: ApplicationBatchTaskOrderByWithRelationInput | ApplicationBatchTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ApplicationBatchTasks.
+     */
+    cursor?: ApplicationBatchTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatchTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatchTasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ApplicationBatchTasks.
+     */
+    distinct?: ApplicationBatchTaskScalarFieldEnum | ApplicationBatchTaskScalarFieldEnum[]
+  }
+
+  /**
+   * ApplicationBatchTask findFirstOrThrow
+   */
+  export type ApplicationBatchTaskFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatchTask to fetch.
+     */
+    where?: ApplicationBatchTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatchTasks to fetch.
+     */
+    orderBy?: ApplicationBatchTaskOrderByWithRelationInput | ApplicationBatchTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ApplicationBatchTasks.
+     */
+    cursor?: ApplicationBatchTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatchTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatchTasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ApplicationBatchTasks.
+     */
+    distinct?: ApplicationBatchTaskScalarFieldEnum | ApplicationBatchTaskScalarFieldEnum[]
+  }
+
+  /**
+   * ApplicationBatchTask findMany
+   */
+  export type ApplicationBatchTaskFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which ApplicationBatchTasks to fetch.
+     */
+    where?: ApplicationBatchTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApplicationBatchTasks to fetch.
+     */
+    orderBy?: ApplicationBatchTaskOrderByWithRelationInput | ApplicationBatchTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ApplicationBatchTasks.
+     */
+    cursor?: ApplicationBatchTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApplicationBatchTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApplicationBatchTasks.
+     */
+    skip?: number
+    distinct?: ApplicationBatchTaskScalarFieldEnum | ApplicationBatchTaskScalarFieldEnum[]
+  }
+
+  /**
+   * ApplicationBatchTask create
+   */
+  export type ApplicationBatchTaskCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ApplicationBatchTask.
+     */
+    data: XOR<ApplicationBatchTaskCreateInput, ApplicationBatchTaskUncheckedCreateInput>
+  }
+
+  /**
+   * ApplicationBatchTask createMany
+   */
+  export type ApplicationBatchTaskCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ApplicationBatchTasks.
+     */
+    data: ApplicationBatchTaskCreateManyInput | ApplicationBatchTaskCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ApplicationBatchTask createManyAndReturn
+   */
+  export type ApplicationBatchTaskCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * The data used to create many ApplicationBatchTasks.
+     */
+    data: ApplicationBatchTaskCreateManyInput | ApplicationBatchTaskCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ApplicationBatchTask update
+   */
+  export type ApplicationBatchTaskUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ApplicationBatchTask.
+     */
+    data: XOR<ApplicationBatchTaskUpdateInput, ApplicationBatchTaskUncheckedUpdateInput>
+    /**
+     * Choose, which ApplicationBatchTask to update.
+     */
+    where: ApplicationBatchTaskWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatchTask updateMany
+   */
+  export type ApplicationBatchTaskUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ApplicationBatchTasks.
+     */
+    data: XOR<ApplicationBatchTaskUpdateManyMutationInput, ApplicationBatchTaskUncheckedUpdateManyInput>
+    /**
+     * Filter which ApplicationBatchTasks to update
+     */
+    where?: ApplicationBatchTaskWhereInput
+    /**
+     * Limit how many ApplicationBatchTasks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ApplicationBatchTask updateManyAndReturn
+   */
+  export type ApplicationBatchTaskUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * The data used to update ApplicationBatchTasks.
+     */
+    data: XOR<ApplicationBatchTaskUpdateManyMutationInput, ApplicationBatchTaskUncheckedUpdateManyInput>
+    /**
+     * Filter which ApplicationBatchTasks to update
+     */
+    where?: ApplicationBatchTaskWhereInput
+    /**
+     * Limit how many ApplicationBatchTasks to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ApplicationBatchTask upsert
+   */
+  export type ApplicationBatchTaskUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ApplicationBatchTask to update in case it exists.
+     */
+    where: ApplicationBatchTaskWhereUniqueInput
+    /**
+     * In case the ApplicationBatchTask found by the `where` argument doesn't exist, create a new ApplicationBatchTask with this data.
+     */
+    create: XOR<ApplicationBatchTaskCreateInput, ApplicationBatchTaskUncheckedCreateInput>
+    /**
+     * In case the ApplicationBatchTask was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ApplicationBatchTaskUpdateInput, ApplicationBatchTaskUncheckedUpdateInput>
+  }
+
+  /**
+   * ApplicationBatchTask delete
+   */
+  export type ApplicationBatchTaskDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
+    /**
+     * Filter which ApplicationBatchTask to delete.
+     */
+    where: ApplicationBatchTaskWhereUniqueInput
+  }
+
+  /**
+   * ApplicationBatchTask deleteMany
+   */
+  export type ApplicationBatchTaskDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ApplicationBatchTasks to delete
+     */
+    where?: ApplicationBatchTaskWhereInput
+    /**
+     * Limit how many ApplicationBatchTasks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ApplicationBatchTask without action
+   */
+  export type ApplicationBatchTaskDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApplicationBatchTask
+     */
+    select?: ApplicationBatchTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApplicationBatchTask
+     */
+    omit?: ApplicationBatchTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApplicationBatchTaskInclude<ExtArgs> | null
   }
 
 
@@ -16036,6 +18774,39 @@ export namespace Prisma {
   export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
 
 
+  export const ApplicationBatchScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    scope: 'scope',
+    status: 'status',
+    totalCount: 'totalCount',
+    error: 'error',
+    startedAt: 'startedAt',
+    completedAt: 'completedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ApplicationBatchScalarFieldEnum = (typeof ApplicationBatchScalarFieldEnum)[keyof typeof ApplicationBatchScalarFieldEnum]
+
+
+  export const ApplicationBatchTaskScalarFieldEnum: {
+    id: 'id',
+    batchId: 'batchId',
+    userId: 'userId',
+    jobId: 'jobId',
+    status: 'status',
+    error: 'error',
+    startedAt: 'startedAt',
+    completedAt: 'completedAt',
+    attempt: 'attempt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ApplicationBatchTaskScalarFieldEnum = (typeof ApplicationBatchTaskScalarFieldEnum)[keyof typeof ApplicationBatchTaskScalarFieldEnum]
+
+
   export const DeletedJobUrlScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -16265,6 +19036,48 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'ApplicationBatchScope'
+   */
+  export type EnumApplicationBatchScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationBatchScope'>
+    
+
+
+  /**
+   * Reference to a field of type 'ApplicationBatchScope[]'
+   */
+  export type ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationBatchScope[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ApplicationBatchStatus'
+   */
+  export type EnumApplicationBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationBatchStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ApplicationBatchStatus[]'
+   */
+  export type ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationBatchStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ApplicationBatchTaskStatus'
+   */
+  export type EnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationBatchTaskStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ApplicationBatchTaskStatus[]'
+   */
+  export type ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationBatchTaskStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'FetchRunStatus'
    */
   export type EnumFetchRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FetchRunStatus'>
@@ -16352,6 +19165,8 @@ export namespace Prisma {
     applications?: ApplicationListRelationFilter
     promptRuleTemplates?: PromptRuleTemplateListRelationFilter
     onboardingState?: XOR<OnboardingStateNullableScalarRelationFilter, OnboardingStateWhereInput> | null
+    applicationBatches?: ApplicationBatchListRelationFilter
+    applicationBatchTasks?: ApplicationBatchTaskListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -16373,6 +19188,8 @@ export namespace Prisma {
     applications?: ApplicationOrderByRelationAggregateInput
     promptRuleTemplates?: PromptRuleTemplateOrderByRelationAggregateInput
     onboardingState?: OnboardingStateOrderByWithRelationInput
+    applicationBatches?: ApplicationBatchOrderByRelationAggregateInput
+    applicationBatchTasks?: ApplicationBatchTaskOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -16397,6 +19214,8 @@ export namespace Prisma {
     applications?: ApplicationListRelationFilter
     promptRuleTemplates?: PromptRuleTemplateListRelationFilter
     onboardingState?: XOR<OnboardingStateNullableScalarRelationFilter, OnboardingStateWhereInput> | null
+    applicationBatches?: ApplicationBatchListRelationFilter
+    applicationBatchTasks?: ApplicationBatchTaskListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -16606,6 +19425,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Job"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     applications?: ApplicationListRelationFilter
+    applicationBatchTasks?: ApplicationBatchTaskListRelationFilter
   }
 
   export type JobOrderByWithRelationInput = {
@@ -16623,6 +19443,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
     applications?: ApplicationOrderByRelationAggregateInput
+    applicationBatchTasks?: ApplicationBatchTaskOrderByRelationAggregateInput
   }
 
   export type JobWhereUniqueInput = Prisma.AtLeast<{
@@ -16644,6 +19465,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Job"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     applications?: ApplicationListRelationFilter
+    applicationBatchTasks?: ApplicationBatchTaskListRelationFilter
   }, "id" | "userId_jobUrl">
 
   export type JobOrderByWithAggregationInput = {
@@ -16680,6 +19502,185 @@ export namespace Prisma {
     status?: EnumJobStatusWithAggregatesFilter<"Job"> | $Enums.JobStatus
     createdAt?: DateTimeWithAggregatesFilter<"Job"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Job"> | Date | string
+  }
+
+  export type ApplicationBatchWhereInput = {
+    AND?: ApplicationBatchWhereInput | ApplicationBatchWhereInput[]
+    OR?: ApplicationBatchWhereInput[]
+    NOT?: ApplicationBatchWhereInput | ApplicationBatchWhereInput[]
+    id?: UuidFilter<"ApplicationBatch"> | string
+    userId?: UuidFilter<"ApplicationBatch"> | string
+    scope?: EnumApplicationBatchScopeFilter<"ApplicationBatch"> | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFilter<"ApplicationBatch"> | $Enums.ApplicationBatchStatus
+    totalCount?: IntFilter<"ApplicationBatch"> | number
+    error?: StringNullableFilter<"ApplicationBatch"> | string | null
+    startedAt?: DateTimeNullableFilter<"ApplicationBatch"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ApplicationBatch"> | Date | string | null
+    createdAt?: DateTimeFilter<"ApplicationBatch"> | Date | string
+    updatedAt?: DateTimeFilter<"ApplicationBatch"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    tasks?: ApplicationBatchTaskListRelationFilter
+  }
+
+  export type ApplicationBatchOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    scope?: SortOrder
+    status?: SortOrder
+    totalCount?: SortOrder
+    error?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    tasks?: ApplicationBatchTaskOrderByRelationAggregateInput
+  }
+
+  export type ApplicationBatchWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ApplicationBatchWhereInput | ApplicationBatchWhereInput[]
+    OR?: ApplicationBatchWhereInput[]
+    NOT?: ApplicationBatchWhereInput | ApplicationBatchWhereInput[]
+    userId?: UuidFilter<"ApplicationBatch"> | string
+    scope?: EnumApplicationBatchScopeFilter<"ApplicationBatch"> | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFilter<"ApplicationBatch"> | $Enums.ApplicationBatchStatus
+    totalCount?: IntFilter<"ApplicationBatch"> | number
+    error?: StringNullableFilter<"ApplicationBatch"> | string | null
+    startedAt?: DateTimeNullableFilter<"ApplicationBatch"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ApplicationBatch"> | Date | string | null
+    createdAt?: DateTimeFilter<"ApplicationBatch"> | Date | string
+    updatedAt?: DateTimeFilter<"ApplicationBatch"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    tasks?: ApplicationBatchTaskListRelationFilter
+  }, "id">
+
+  export type ApplicationBatchOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    scope?: SortOrder
+    status?: SortOrder
+    totalCount?: SortOrder
+    error?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ApplicationBatchCountOrderByAggregateInput
+    _avg?: ApplicationBatchAvgOrderByAggregateInput
+    _max?: ApplicationBatchMaxOrderByAggregateInput
+    _min?: ApplicationBatchMinOrderByAggregateInput
+    _sum?: ApplicationBatchSumOrderByAggregateInput
+  }
+
+  export type ApplicationBatchScalarWhereWithAggregatesInput = {
+    AND?: ApplicationBatchScalarWhereWithAggregatesInput | ApplicationBatchScalarWhereWithAggregatesInput[]
+    OR?: ApplicationBatchScalarWhereWithAggregatesInput[]
+    NOT?: ApplicationBatchScalarWhereWithAggregatesInput | ApplicationBatchScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"ApplicationBatch"> | string
+    userId?: UuidWithAggregatesFilter<"ApplicationBatch"> | string
+    scope?: EnumApplicationBatchScopeWithAggregatesFilter<"ApplicationBatch"> | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusWithAggregatesFilter<"ApplicationBatch"> | $Enums.ApplicationBatchStatus
+    totalCount?: IntWithAggregatesFilter<"ApplicationBatch"> | number
+    error?: StringNullableWithAggregatesFilter<"ApplicationBatch"> | string | null
+    startedAt?: DateTimeNullableWithAggregatesFilter<"ApplicationBatch"> | Date | string | null
+    completedAt?: DateTimeNullableWithAggregatesFilter<"ApplicationBatch"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ApplicationBatch"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ApplicationBatch"> | Date | string
+  }
+
+  export type ApplicationBatchTaskWhereInput = {
+    AND?: ApplicationBatchTaskWhereInput | ApplicationBatchTaskWhereInput[]
+    OR?: ApplicationBatchTaskWhereInput[]
+    NOT?: ApplicationBatchTaskWhereInput | ApplicationBatchTaskWhereInput[]
+    id?: UuidFilter<"ApplicationBatchTask"> | string
+    batchId?: UuidFilter<"ApplicationBatchTask"> | string
+    userId?: UuidFilter<"ApplicationBatchTask"> | string
+    jobId?: UuidFilter<"ApplicationBatchTask"> | string
+    status?: EnumApplicationBatchTaskStatusFilter<"ApplicationBatchTask"> | $Enums.ApplicationBatchTaskStatus
+    error?: StringNullableFilter<"ApplicationBatchTask"> | string | null
+    startedAt?: DateTimeNullableFilter<"ApplicationBatchTask"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ApplicationBatchTask"> | Date | string | null
+    attempt?: IntFilter<"ApplicationBatchTask"> | number
+    createdAt?: DateTimeFilter<"ApplicationBatchTask"> | Date | string
+    updatedAt?: DateTimeFilter<"ApplicationBatchTask"> | Date | string
+    batch?: XOR<ApplicationBatchScalarRelationFilter, ApplicationBatchWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    job?: XOR<JobScalarRelationFilter, JobWhereInput>
+  }
+
+  export type ApplicationBatchTaskOrderByWithRelationInput = {
+    id?: SortOrder
+    batchId?: SortOrder
+    userId?: SortOrder
+    jobId?: SortOrder
+    status?: SortOrder
+    error?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    attempt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    batch?: ApplicationBatchOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+    job?: JobOrderByWithRelationInput
+  }
+
+  export type ApplicationBatchTaskWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    batchId_jobId?: ApplicationBatchTaskBatchIdJobIdCompoundUniqueInput
+    AND?: ApplicationBatchTaskWhereInput | ApplicationBatchTaskWhereInput[]
+    OR?: ApplicationBatchTaskWhereInput[]
+    NOT?: ApplicationBatchTaskWhereInput | ApplicationBatchTaskWhereInput[]
+    batchId?: UuidFilter<"ApplicationBatchTask"> | string
+    userId?: UuidFilter<"ApplicationBatchTask"> | string
+    jobId?: UuidFilter<"ApplicationBatchTask"> | string
+    status?: EnumApplicationBatchTaskStatusFilter<"ApplicationBatchTask"> | $Enums.ApplicationBatchTaskStatus
+    error?: StringNullableFilter<"ApplicationBatchTask"> | string | null
+    startedAt?: DateTimeNullableFilter<"ApplicationBatchTask"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ApplicationBatchTask"> | Date | string | null
+    attempt?: IntFilter<"ApplicationBatchTask"> | number
+    createdAt?: DateTimeFilter<"ApplicationBatchTask"> | Date | string
+    updatedAt?: DateTimeFilter<"ApplicationBatchTask"> | Date | string
+    batch?: XOR<ApplicationBatchScalarRelationFilter, ApplicationBatchWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    job?: XOR<JobScalarRelationFilter, JobWhereInput>
+  }, "id" | "batchId_jobId">
+
+  export type ApplicationBatchTaskOrderByWithAggregationInput = {
+    id?: SortOrder
+    batchId?: SortOrder
+    userId?: SortOrder
+    jobId?: SortOrder
+    status?: SortOrder
+    error?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    attempt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ApplicationBatchTaskCountOrderByAggregateInput
+    _avg?: ApplicationBatchTaskAvgOrderByAggregateInput
+    _max?: ApplicationBatchTaskMaxOrderByAggregateInput
+    _min?: ApplicationBatchTaskMinOrderByAggregateInput
+    _sum?: ApplicationBatchTaskSumOrderByAggregateInput
+  }
+
+  export type ApplicationBatchTaskScalarWhereWithAggregatesInput = {
+    AND?: ApplicationBatchTaskScalarWhereWithAggregatesInput | ApplicationBatchTaskScalarWhereWithAggregatesInput[]
+    OR?: ApplicationBatchTaskScalarWhereWithAggregatesInput[]
+    NOT?: ApplicationBatchTaskScalarWhereWithAggregatesInput | ApplicationBatchTaskScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"ApplicationBatchTask"> | string
+    batchId?: UuidWithAggregatesFilter<"ApplicationBatchTask"> | string
+    userId?: UuidWithAggregatesFilter<"ApplicationBatchTask"> | string
+    jobId?: UuidWithAggregatesFilter<"ApplicationBatchTask"> | string
+    status?: EnumApplicationBatchTaskStatusWithAggregatesFilter<"ApplicationBatchTask"> | $Enums.ApplicationBatchTaskStatus
+    error?: StringNullableWithAggregatesFilter<"ApplicationBatchTask"> | string | null
+    startedAt?: DateTimeNullableWithAggregatesFilter<"ApplicationBatchTask"> | Date | string | null
+    completedAt?: DateTimeNullableWithAggregatesFilter<"ApplicationBatchTask"> | Date | string | null
+    attempt?: IntWithAggregatesFilter<"ApplicationBatchTask"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"ApplicationBatchTask"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ApplicationBatchTask"> | Date | string
   }
 
   export type DeletedJobUrlWhereInput = {
@@ -17321,6 +20322,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -17342,6 +20345,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -17363,6 +20368,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -17384,6 +20391,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -17610,6 +20619,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutJobsInput
     applications?: ApplicationCreateNestedManyWithoutJobInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutJobInput
   }
 
   export type JobUncheckedCreateInput = {
@@ -17626,6 +20636,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutJobInput
   }
 
   export type JobUpdateInput = {
@@ -17642,6 +20653,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutJobsNestedInput
     applications?: ApplicationUpdateManyWithoutJobNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateInput = {
@@ -17658,6 +20670,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutJobNestedInput
   }
 
   export type JobCreateManyInput = {
@@ -17700,6 +20713,195 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchCreateInput = {
+    id?: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutApplicationBatchesInput
+    tasks?: ApplicationBatchTaskCreateNestedManyWithoutBatchInput
+  }
+
+  export type ApplicationBatchUncheckedCreateInput = {
+    id?: string
+    userId: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutBatchInput
+  }
+
+  export type ApplicationBatchUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutApplicationBatchesNestedInput
+    tasks?: ApplicationBatchTaskUpdateManyWithoutBatchNestedInput
+  }
+
+  export type ApplicationBatchUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutBatchNestedInput
+  }
+
+  export type ApplicationBatchCreateManyInput = {
+    id?: string
+    userId: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskCreateInput = {
+    id?: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    batch: ApplicationBatchCreateNestedOneWithoutTasksInput
+    user: UserCreateNestedOneWithoutApplicationBatchTasksInput
+    job: JobCreateNestedOneWithoutApplicationBatchTasksInput
+  }
+
+  export type ApplicationBatchTaskUncheckedCreateInput = {
+    id?: string
+    batchId: string
+    userId: string
+    jobId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    batch?: ApplicationBatchUpdateOneRequiredWithoutTasksNestedInput
+    user?: UserUpdateOneRequiredWithoutApplicationBatchTasksNestedInput
+    job?: JobUpdateOneRequiredWithoutApplicationBatchTasksNestedInput
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    jobId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskCreateManyInput = {
+    id?: string
+    batchId: string
+    userId: string
+    jobId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    jobId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -18479,6 +21681,18 @@ export namespace Prisma {
     isNot?: OnboardingStateWhereInput | null
   }
 
+  export type ApplicationBatchListRelationFilter = {
+    every?: ApplicationBatchWhereInput
+    some?: ApplicationBatchWhereInput
+    none?: ApplicationBatchWhereInput
+  }
+
+  export type ApplicationBatchTaskListRelationFilter = {
+    every?: ApplicationBatchTaskWhereInput
+    some?: ApplicationBatchTaskWhereInput
+    none?: ApplicationBatchTaskWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -18517,6 +21731,14 @@ export namespace Prisma {
   }
 
   export type PromptRuleTemplateOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ApplicationBatchOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ApplicationBatchTaskOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -18834,6 +22056,196 @@ export namespace Prisma {
     _max?: NestedEnumJobStatusFilter<$PrismaModel>
   }
 
+  export type EnumApplicationBatchScopeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchScope | EnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchScopeFilter<$PrismaModel> | $Enums.ApplicationBatchScope
+  }
+
+  export type EnumApplicationBatchStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchStatus | EnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchStatusFilter<$PrismaModel> | $Enums.ApplicationBatchStatus
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type ApplicationBatchCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    scope?: SortOrder
+    status?: SortOrder
+    totalCount?: SortOrder
+    error?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApplicationBatchAvgOrderByAggregateInput = {
+    totalCount?: SortOrder
+  }
+
+  export type ApplicationBatchMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    scope?: SortOrder
+    status?: SortOrder
+    totalCount?: SortOrder
+    error?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApplicationBatchMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    scope?: SortOrder
+    status?: SortOrder
+    totalCount?: SortOrder
+    error?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApplicationBatchSumOrderByAggregateInput = {
+    totalCount?: SortOrder
+  }
+
+  export type EnumApplicationBatchScopeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchScope | EnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchScopeWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationBatchScope
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumApplicationBatchScopeFilter<$PrismaModel>
+    _max?: NestedEnumApplicationBatchScopeFilter<$PrismaModel>
+  }
+
+  export type EnumApplicationBatchStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchStatus | EnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchStatusWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationBatchStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumApplicationBatchStatusFilter<$PrismaModel>
+    _max?: NestedEnumApplicationBatchStatusFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type EnumApplicationBatchTaskStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchTaskStatus | EnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchTaskStatusFilter<$PrismaModel> | $Enums.ApplicationBatchTaskStatus
+  }
+
+  export type ApplicationBatchScalarRelationFilter = {
+    is?: ApplicationBatchWhereInput
+    isNot?: ApplicationBatchWhereInput
+  }
+
+  export type JobScalarRelationFilter = {
+    is?: JobWhereInput
+    isNot?: JobWhereInput
+  }
+
+  export type ApplicationBatchTaskBatchIdJobIdCompoundUniqueInput = {
+    batchId: string
+    jobId: string
+  }
+
+  export type ApplicationBatchTaskCountOrderByAggregateInput = {
+    id?: SortOrder
+    batchId?: SortOrder
+    userId?: SortOrder
+    jobId?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    attempt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApplicationBatchTaskAvgOrderByAggregateInput = {
+    attempt?: SortOrder
+  }
+
+  export type ApplicationBatchTaskMaxOrderByAggregateInput = {
+    id?: SortOrder
+    batchId?: SortOrder
+    userId?: SortOrder
+    jobId?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    attempt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApplicationBatchTaskMinOrderByAggregateInput = {
+    id?: SortOrder
+    batchId?: SortOrder
+    userId?: SortOrder
+    jobId?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    attempt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApplicationBatchTaskSumOrderByAggregateInput = {
+    attempt?: SortOrder
+  }
+
+  export type EnumApplicationBatchTaskStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchTaskStatus | EnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchTaskStatusWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationBatchTaskStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumApplicationBatchTaskStatusFilter<$PrismaModel>
+    _max?: NestedEnumApplicationBatchTaskStatusFilter<$PrismaModel>
+  }
+
   export type DeletedJobUrlUserIdJobUrlCompoundUniqueInput = {
     userId: string
     jobUrl: string
@@ -18891,17 +22303,6 @@ export namespace Prisma {
     in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumFetchRunStatusFilter<$PrismaModel> | $Enums.FetchRunStatus
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
   export type JsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -19001,22 +22402,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumFetchRunStatusFilter<$PrismaModel>
     _max?: NestedEnumFetchRunStatusFilter<$PrismaModel>
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
   export type JsonWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -19444,6 +22829,20 @@ export namespace Prisma {
     connect?: OnboardingStateWhereUniqueInput
   }
 
+  export type ApplicationBatchCreateNestedManyWithoutUserInput = {
+    create?: XOR<ApplicationBatchCreateWithoutUserInput, ApplicationBatchUncheckedCreateWithoutUserInput> | ApplicationBatchCreateWithoutUserInput[] | ApplicationBatchUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchCreateOrConnectWithoutUserInput | ApplicationBatchCreateOrConnectWithoutUserInput[]
+    createMany?: ApplicationBatchCreateManyUserInputEnvelope
+    connect?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+  }
+
+  export type ApplicationBatchTaskCreateNestedManyWithoutUserInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutUserInput, ApplicationBatchTaskUncheckedCreateWithoutUserInput> | ApplicationBatchTaskCreateWithoutUserInput[] | ApplicationBatchTaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutUserInput | ApplicationBatchTaskCreateOrConnectWithoutUserInput[]
+    createMany?: ApplicationBatchTaskCreateManyUserInputEnvelope
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -19517,6 +22916,20 @@ export namespace Prisma {
     create?: XOR<OnboardingStateCreateWithoutUserInput, OnboardingStateUncheckedCreateWithoutUserInput>
     connectOrCreate?: OnboardingStateCreateOrConnectWithoutUserInput
     connect?: OnboardingStateWhereUniqueInput
+  }
+
+  export type ApplicationBatchUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ApplicationBatchCreateWithoutUserInput, ApplicationBatchUncheckedCreateWithoutUserInput> | ApplicationBatchCreateWithoutUserInput[] | ApplicationBatchUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchCreateOrConnectWithoutUserInput | ApplicationBatchCreateOrConnectWithoutUserInput[]
+    createMany?: ApplicationBatchCreateManyUserInputEnvelope
+    connect?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+  }
+
+  export type ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutUserInput, ApplicationBatchTaskUncheckedCreateWithoutUserInput> | ApplicationBatchTaskCreateWithoutUserInput[] | ApplicationBatchTaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutUserInput | ApplicationBatchTaskCreateOrConnectWithoutUserInput[]
+    createMany?: ApplicationBatchTaskCreateManyUserInputEnvelope
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -19681,6 +23094,34 @@ export namespace Prisma {
     update?: XOR<XOR<OnboardingStateUpdateToOneWithWhereWithoutUserInput, OnboardingStateUpdateWithoutUserInput>, OnboardingStateUncheckedUpdateWithoutUserInput>
   }
 
+  export type ApplicationBatchUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ApplicationBatchCreateWithoutUserInput, ApplicationBatchUncheckedCreateWithoutUserInput> | ApplicationBatchCreateWithoutUserInput[] | ApplicationBatchUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchCreateOrConnectWithoutUserInput | ApplicationBatchCreateOrConnectWithoutUserInput[]
+    upsert?: ApplicationBatchUpsertWithWhereUniqueWithoutUserInput | ApplicationBatchUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ApplicationBatchCreateManyUserInputEnvelope
+    set?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    disconnect?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    delete?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    connect?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    update?: ApplicationBatchUpdateWithWhereUniqueWithoutUserInput | ApplicationBatchUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ApplicationBatchUpdateManyWithWhereWithoutUserInput | ApplicationBatchUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ApplicationBatchScalarWhereInput | ApplicationBatchScalarWhereInput[]
+  }
+
+  export type ApplicationBatchTaskUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutUserInput, ApplicationBatchTaskUncheckedCreateWithoutUserInput> | ApplicationBatchTaskCreateWithoutUserInput[] | ApplicationBatchTaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutUserInput | ApplicationBatchTaskCreateOrConnectWithoutUserInput[]
+    upsert?: ApplicationBatchTaskUpsertWithWhereUniqueWithoutUserInput | ApplicationBatchTaskUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ApplicationBatchTaskCreateManyUserInputEnvelope
+    set?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    disconnect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    delete?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    update?: ApplicationBatchTaskUpdateWithWhereUniqueWithoutUserInput | ApplicationBatchTaskUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ApplicationBatchTaskUpdateManyWithWhereWithoutUserInput | ApplicationBatchTaskUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -19827,6 +23268,34 @@ export namespace Prisma {
     update?: XOR<XOR<OnboardingStateUpdateToOneWithWhereWithoutUserInput, OnboardingStateUpdateWithoutUserInput>, OnboardingStateUncheckedUpdateWithoutUserInput>
   }
 
+  export type ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ApplicationBatchCreateWithoutUserInput, ApplicationBatchUncheckedCreateWithoutUserInput> | ApplicationBatchCreateWithoutUserInput[] | ApplicationBatchUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchCreateOrConnectWithoutUserInput | ApplicationBatchCreateOrConnectWithoutUserInput[]
+    upsert?: ApplicationBatchUpsertWithWhereUniqueWithoutUserInput | ApplicationBatchUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ApplicationBatchCreateManyUserInputEnvelope
+    set?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    disconnect?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    delete?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    connect?: ApplicationBatchWhereUniqueInput | ApplicationBatchWhereUniqueInput[]
+    update?: ApplicationBatchUpdateWithWhereUniqueWithoutUserInput | ApplicationBatchUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ApplicationBatchUpdateManyWithWhereWithoutUserInput | ApplicationBatchUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ApplicationBatchScalarWhereInput | ApplicationBatchScalarWhereInput[]
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutUserInput, ApplicationBatchTaskUncheckedCreateWithoutUserInput> | ApplicationBatchTaskCreateWithoutUserInput[] | ApplicationBatchTaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutUserInput | ApplicationBatchTaskCreateOrConnectWithoutUserInput[]
+    upsert?: ApplicationBatchTaskUpsertWithWhereUniqueWithoutUserInput | ApplicationBatchTaskUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ApplicationBatchTaskCreateManyUserInputEnvelope
+    set?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    disconnect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    delete?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    update?: ApplicationBatchTaskUpdateWithWhereUniqueWithoutUserInput | ApplicationBatchTaskUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ApplicationBatchTaskUpdateManyWithWhereWithoutUserInput | ApplicationBatchTaskUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -19876,11 +23345,25 @@ export namespace Prisma {
     connect?: ApplicationWhereUniqueInput | ApplicationWhereUniqueInput[]
   }
 
+  export type ApplicationBatchTaskCreateNestedManyWithoutJobInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutJobInput, ApplicationBatchTaskUncheckedCreateWithoutJobInput> | ApplicationBatchTaskCreateWithoutJobInput[] | ApplicationBatchTaskUncheckedCreateWithoutJobInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutJobInput | ApplicationBatchTaskCreateOrConnectWithoutJobInput[]
+    createMany?: ApplicationBatchTaskCreateManyJobInputEnvelope
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+  }
+
   export type ApplicationUncheckedCreateNestedManyWithoutJobInput = {
     create?: XOR<ApplicationCreateWithoutJobInput, ApplicationUncheckedCreateWithoutJobInput> | ApplicationCreateWithoutJobInput[] | ApplicationUncheckedCreateWithoutJobInput[]
     connectOrCreate?: ApplicationCreateOrConnectWithoutJobInput | ApplicationCreateOrConnectWithoutJobInput[]
     createMany?: ApplicationCreateManyJobInputEnvelope
     connect?: ApplicationWhereUniqueInput | ApplicationWhereUniqueInput[]
+  }
+
+  export type ApplicationBatchTaskUncheckedCreateNestedManyWithoutJobInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutJobInput, ApplicationBatchTaskUncheckedCreateWithoutJobInput> | ApplicationBatchTaskCreateWithoutJobInput[] | ApplicationBatchTaskUncheckedCreateWithoutJobInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutJobInput | ApplicationBatchTaskCreateOrConnectWithoutJobInput[]
+    createMany?: ApplicationBatchTaskCreateManyJobInputEnvelope
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
   }
 
   export type EnumJobStatusFieldUpdateOperationsInput = {
@@ -19909,6 +23392,20 @@ export namespace Prisma {
     deleteMany?: ApplicationScalarWhereInput | ApplicationScalarWhereInput[]
   }
 
+  export type ApplicationBatchTaskUpdateManyWithoutJobNestedInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutJobInput, ApplicationBatchTaskUncheckedCreateWithoutJobInput> | ApplicationBatchTaskCreateWithoutJobInput[] | ApplicationBatchTaskUncheckedCreateWithoutJobInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutJobInput | ApplicationBatchTaskCreateOrConnectWithoutJobInput[]
+    upsert?: ApplicationBatchTaskUpsertWithWhereUniqueWithoutJobInput | ApplicationBatchTaskUpsertWithWhereUniqueWithoutJobInput[]
+    createMany?: ApplicationBatchTaskCreateManyJobInputEnvelope
+    set?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    disconnect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    delete?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    update?: ApplicationBatchTaskUpdateWithWhereUniqueWithoutJobInput | ApplicationBatchTaskUpdateWithWhereUniqueWithoutJobInput[]
+    updateMany?: ApplicationBatchTaskUpdateManyWithWhereWithoutJobInput | ApplicationBatchTaskUpdateManyWithWhereWithoutJobInput[]
+    deleteMany?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+  }
+
   export type ApplicationUncheckedUpdateManyWithoutJobNestedInput = {
     create?: XOR<ApplicationCreateWithoutJobInput, ApplicationUncheckedCreateWithoutJobInput> | ApplicationCreateWithoutJobInput[] | ApplicationUncheckedCreateWithoutJobInput[]
     connectOrCreate?: ApplicationCreateOrConnectWithoutJobInput | ApplicationCreateOrConnectWithoutJobInput[]
@@ -19921,6 +23418,138 @@ export namespace Prisma {
     update?: ApplicationUpdateWithWhereUniqueWithoutJobInput | ApplicationUpdateWithWhereUniqueWithoutJobInput[]
     updateMany?: ApplicationUpdateManyWithWhereWithoutJobInput | ApplicationUpdateManyWithWhereWithoutJobInput[]
     deleteMany?: ApplicationScalarWhereInput | ApplicationScalarWhereInput[]
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateManyWithoutJobNestedInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutJobInput, ApplicationBatchTaskUncheckedCreateWithoutJobInput> | ApplicationBatchTaskCreateWithoutJobInput[] | ApplicationBatchTaskUncheckedCreateWithoutJobInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutJobInput | ApplicationBatchTaskCreateOrConnectWithoutJobInput[]
+    upsert?: ApplicationBatchTaskUpsertWithWhereUniqueWithoutJobInput | ApplicationBatchTaskUpsertWithWhereUniqueWithoutJobInput[]
+    createMany?: ApplicationBatchTaskCreateManyJobInputEnvelope
+    set?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    disconnect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    delete?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    update?: ApplicationBatchTaskUpdateWithWhereUniqueWithoutJobInput | ApplicationBatchTaskUpdateWithWhereUniqueWithoutJobInput[]
+    updateMany?: ApplicationBatchTaskUpdateManyWithWhereWithoutJobInput | ApplicationBatchTaskUpdateManyWithWhereWithoutJobInput[]
+    deleteMany?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutApplicationBatchesInput = {
+    create?: XOR<UserCreateWithoutApplicationBatchesInput, UserUncheckedCreateWithoutApplicationBatchesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApplicationBatchesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ApplicationBatchTaskCreateNestedManyWithoutBatchInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutBatchInput, ApplicationBatchTaskUncheckedCreateWithoutBatchInput> | ApplicationBatchTaskCreateWithoutBatchInput[] | ApplicationBatchTaskUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutBatchInput | ApplicationBatchTaskCreateOrConnectWithoutBatchInput[]
+    createMany?: ApplicationBatchTaskCreateManyBatchInputEnvelope
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+  }
+
+  export type ApplicationBatchTaskUncheckedCreateNestedManyWithoutBatchInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutBatchInput, ApplicationBatchTaskUncheckedCreateWithoutBatchInput> | ApplicationBatchTaskCreateWithoutBatchInput[] | ApplicationBatchTaskUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutBatchInput | ApplicationBatchTaskCreateOrConnectWithoutBatchInput[]
+    createMany?: ApplicationBatchTaskCreateManyBatchInputEnvelope
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+  }
+
+  export type EnumApplicationBatchScopeFieldUpdateOperationsInput = {
+    set?: $Enums.ApplicationBatchScope
+  }
+
+  export type EnumApplicationBatchStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ApplicationBatchStatus
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type UserUpdateOneRequiredWithoutApplicationBatchesNestedInput = {
+    create?: XOR<UserCreateWithoutApplicationBatchesInput, UserUncheckedCreateWithoutApplicationBatchesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApplicationBatchesInput
+    upsert?: UserUpsertWithoutApplicationBatchesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutApplicationBatchesInput, UserUpdateWithoutApplicationBatchesInput>, UserUncheckedUpdateWithoutApplicationBatchesInput>
+  }
+
+  export type ApplicationBatchTaskUpdateManyWithoutBatchNestedInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutBatchInput, ApplicationBatchTaskUncheckedCreateWithoutBatchInput> | ApplicationBatchTaskCreateWithoutBatchInput[] | ApplicationBatchTaskUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutBatchInput | ApplicationBatchTaskCreateOrConnectWithoutBatchInput[]
+    upsert?: ApplicationBatchTaskUpsertWithWhereUniqueWithoutBatchInput | ApplicationBatchTaskUpsertWithWhereUniqueWithoutBatchInput[]
+    createMany?: ApplicationBatchTaskCreateManyBatchInputEnvelope
+    set?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    disconnect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    delete?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    update?: ApplicationBatchTaskUpdateWithWhereUniqueWithoutBatchInput | ApplicationBatchTaskUpdateWithWhereUniqueWithoutBatchInput[]
+    updateMany?: ApplicationBatchTaskUpdateManyWithWhereWithoutBatchInput | ApplicationBatchTaskUpdateManyWithWhereWithoutBatchInput[]
+    deleteMany?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateManyWithoutBatchNestedInput = {
+    create?: XOR<ApplicationBatchTaskCreateWithoutBatchInput, ApplicationBatchTaskUncheckedCreateWithoutBatchInput> | ApplicationBatchTaskCreateWithoutBatchInput[] | ApplicationBatchTaskUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: ApplicationBatchTaskCreateOrConnectWithoutBatchInput | ApplicationBatchTaskCreateOrConnectWithoutBatchInput[]
+    upsert?: ApplicationBatchTaskUpsertWithWhereUniqueWithoutBatchInput | ApplicationBatchTaskUpsertWithWhereUniqueWithoutBatchInput[]
+    createMany?: ApplicationBatchTaskCreateManyBatchInputEnvelope
+    set?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    disconnect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    delete?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    connect?: ApplicationBatchTaskWhereUniqueInput | ApplicationBatchTaskWhereUniqueInput[]
+    update?: ApplicationBatchTaskUpdateWithWhereUniqueWithoutBatchInput | ApplicationBatchTaskUpdateWithWhereUniqueWithoutBatchInput[]
+    updateMany?: ApplicationBatchTaskUpdateManyWithWhereWithoutBatchInput | ApplicationBatchTaskUpdateManyWithWhereWithoutBatchInput[]
+    deleteMany?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+  }
+
+  export type ApplicationBatchCreateNestedOneWithoutTasksInput = {
+    create?: XOR<ApplicationBatchCreateWithoutTasksInput, ApplicationBatchUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: ApplicationBatchCreateOrConnectWithoutTasksInput
+    connect?: ApplicationBatchWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutApplicationBatchTasksInput = {
+    create?: XOR<UserCreateWithoutApplicationBatchTasksInput, UserUncheckedCreateWithoutApplicationBatchTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApplicationBatchTasksInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type JobCreateNestedOneWithoutApplicationBatchTasksInput = {
+    create?: XOR<JobCreateWithoutApplicationBatchTasksInput, JobUncheckedCreateWithoutApplicationBatchTasksInput>
+    connectOrCreate?: JobCreateOrConnectWithoutApplicationBatchTasksInput
+    connect?: JobWhereUniqueInput
+  }
+
+  export type EnumApplicationBatchTaskStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ApplicationBatchTaskStatus
+  }
+
+  export type ApplicationBatchUpdateOneRequiredWithoutTasksNestedInput = {
+    create?: XOR<ApplicationBatchCreateWithoutTasksInput, ApplicationBatchUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: ApplicationBatchCreateOrConnectWithoutTasksInput
+    upsert?: ApplicationBatchUpsertWithoutTasksInput
+    connect?: ApplicationBatchWhereUniqueInput
+    update?: XOR<XOR<ApplicationBatchUpdateToOneWithWhereWithoutTasksInput, ApplicationBatchUpdateWithoutTasksInput>, ApplicationBatchUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutApplicationBatchTasksNestedInput = {
+    create?: XOR<UserCreateWithoutApplicationBatchTasksInput, UserUncheckedCreateWithoutApplicationBatchTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApplicationBatchTasksInput
+    upsert?: UserUpsertWithoutApplicationBatchTasksInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutApplicationBatchTasksInput, UserUpdateWithoutApplicationBatchTasksInput>, UserUncheckedUpdateWithoutApplicationBatchTasksInput>
+  }
+
+  export type JobUpdateOneRequiredWithoutApplicationBatchTasksNestedInput = {
+    create?: XOR<JobCreateWithoutApplicationBatchTasksInput, JobUncheckedCreateWithoutApplicationBatchTasksInput>
+    connectOrCreate?: JobCreateOrConnectWithoutApplicationBatchTasksInput
+    upsert?: JobUpsertWithoutApplicationBatchTasksInput
+    connect?: JobWhereUniqueInput
+    update?: XOR<XOR<JobUpdateToOneWithWhereWithoutApplicationBatchTasksInput, JobUpdateWithoutApplicationBatchTasksInput>, JobUncheckedUpdateWithoutApplicationBatchTasksInput>
   }
 
   export type UserCreateNestedOneWithoutDeletedJobUrlsInput = {
@@ -19959,14 +23588,6 @@ export namespace Prisma {
 
   export type EnumFetchRunStatusFieldUpdateOperationsInput = {
     set?: $Enums.FetchRunStatus
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -20388,26 +24009,38 @@ export namespace Prisma {
     _max?: NestedEnumJobStatusFilter<$PrismaModel>
   }
 
-  export type NestedEnumFetchRunStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumFetchRunStatusFilter<$PrismaModel> | $Enums.FetchRunStatus
+  export type NestedEnumApplicationBatchScopeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchScope | EnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchScopeFilter<$PrismaModel> | $Enums.ApplicationBatchScope
   }
 
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+  export type NestedEnumApplicationBatchStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchStatus | EnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchStatusFilter<$PrismaModel> | $Enums.ApplicationBatchStatus
   }
 
-  export type NestedEnumFetchRunStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumFetchRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.FetchRunStatus
+  export type NestedEnumApplicationBatchScopeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchScope | EnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchScope[] | ListEnumApplicationBatchScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchScopeWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationBatchScope
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumFetchRunStatusFilter<$PrismaModel>
-    _max?: NestedEnumFetchRunStatusFilter<$PrismaModel>
+    _min?: NestedEnumApplicationBatchScopeFilter<$PrismaModel>
+    _max?: NestedEnumApplicationBatchScopeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumApplicationBatchStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchStatus | EnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchStatus[] | ListEnumApplicationBatchStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchStatusWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationBatchStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumApplicationBatchStatusFilter<$PrismaModel>
+    _max?: NestedEnumApplicationBatchStatusFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -20435,6 +24068,45 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedEnumApplicationBatchTaskStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchTaskStatus | EnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchTaskStatusFilter<$PrismaModel> | $Enums.ApplicationBatchTaskStatus
+  }
+
+  export type NestedEnumApplicationBatchTaskStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationBatchTaskStatus | EnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationBatchTaskStatus[] | ListEnumApplicationBatchTaskStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationBatchTaskStatusWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationBatchTaskStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumApplicationBatchTaskStatusFilter<$PrismaModel>
+    _max?: NestedEnumApplicationBatchTaskStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumFetchRunStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFetchRunStatusFilter<$PrismaModel> | $Enums.FetchRunStatus
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedEnumFetchRunStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FetchRunStatus | EnumFetchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FetchRunStatus[] | ListEnumFetchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFetchRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.FetchRunStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFetchRunStatusFilter<$PrismaModel>
+    _max?: NestedEnumFetchRunStatusFilter<$PrismaModel>
   }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -20614,6 +24286,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationCreateNestedManyWithoutJobInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutJobInput
   }
 
   export type JobUncheckedCreateWithoutUserInput = {
@@ -20629,6 +24302,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutJobInput
   }
 
   export type JobCreateOrConnectWithoutUserInput = {
@@ -20887,6 +24561,78 @@ export namespace Prisma {
   export type OnboardingStateCreateOrConnectWithoutUserInput = {
     where: OnboardingStateWhereUniqueInput
     create: XOR<OnboardingStateCreateWithoutUserInput, OnboardingStateUncheckedCreateWithoutUserInput>
+  }
+
+  export type ApplicationBatchCreateWithoutUserInput = {
+    id?: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tasks?: ApplicationBatchTaskCreateNestedManyWithoutBatchInput
+  }
+
+  export type ApplicationBatchUncheckedCreateWithoutUserInput = {
+    id?: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutBatchInput
+  }
+
+  export type ApplicationBatchCreateOrConnectWithoutUserInput = {
+    where: ApplicationBatchWhereUniqueInput
+    create: XOR<ApplicationBatchCreateWithoutUserInput, ApplicationBatchUncheckedCreateWithoutUserInput>
+  }
+
+  export type ApplicationBatchCreateManyUserInputEnvelope = {
+    data: ApplicationBatchCreateManyUserInput | ApplicationBatchCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ApplicationBatchTaskCreateWithoutUserInput = {
+    id?: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    batch: ApplicationBatchCreateNestedOneWithoutTasksInput
+    job: JobCreateNestedOneWithoutApplicationBatchTasksInput
+  }
+
+  export type ApplicationBatchTaskUncheckedCreateWithoutUserInput = {
+    id?: string
+    batchId: string
+    jobId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskCreateOrConnectWithoutUserInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    create: XOR<ApplicationBatchTaskCreateWithoutUserInput, ApplicationBatchTaskUncheckedCreateWithoutUserInput>
+  }
+
+  export type ApplicationBatchTaskCreateManyUserInputEnvelope = {
+    data: ApplicationBatchTaskCreateManyUserInput | ApplicationBatchTaskCreateManyUserInput[]
+    skipDuplicates?: boolean
   }
 
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
@@ -21232,6 +24978,71 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ApplicationBatchUpsertWithWhereUniqueWithoutUserInput = {
+    where: ApplicationBatchWhereUniqueInput
+    update: XOR<ApplicationBatchUpdateWithoutUserInput, ApplicationBatchUncheckedUpdateWithoutUserInput>
+    create: XOR<ApplicationBatchCreateWithoutUserInput, ApplicationBatchUncheckedCreateWithoutUserInput>
+  }
+
+  export type ApplicationBatchUpdateWithWhereUniqueWithoutUserInput = {
+    where: ApplicationBatchWhereUniqueInput
+    data: XOR<ApplicationBatchUpdateWithoutUserInput, ApplicationBatchUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ApplicationBatchUpdateManyWithWhereWithoutUserInput = {
+    where: ApplicationBatchScalarWhereInput
+    data: XOR<ApplicationBatchUpdateManyMutationInput, ApplicationBatchUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ApplicationBatchScalarWhereInput = {
+    AND?: ApplicationBatchScalarWhereInput | ApplicationBatchScalarWhereInput[]
+    OR?: ApplicationBatchScalarWhereInput[]
+    NOT?: ApplicationBatchScalarWhereInput | ApplicationBatchScalarWhereInput[]
+    id?: UuidFilter<"ApplicationBatch"> | string
+    userId?: UuidFilter<"ApplicationBatch"> | string
+    scope?: EnumApplicationBatchScopeFilter<"ApplicationBatch"> | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFilter<"ApplicationBatch"> | $Enums.ApplicationBatchStatus
+    totalCount?: IntFilter<"ApplicationBatch"> | number
+    error?: StringNullableFilter<"ApplicationBatch"> | string | null
+    startedAt?: DateTimeNullableFilter<"ApplicationBatch"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ApplicationBatch"> | Date | string | null
+    createdAt?: DateTimeFilter<"ApplicationBatch"> | Date | string
+    updatedAt?: DateTimeFilter<"ApplicationBatch"> | Date | string
+  }
+
+  export type ApplicationBatchTaskUpsertWithWhereUniqueWithoutUserInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    update: XOR<ApplicationBatchTaskUpdateWithoutUserInput, ApplicationBatchTaskUncheckedUpdateWithoutUserInput>
+    create: XOR<ApplicationBatchTaskCreateWithoutUserInput, ApplicationBatchTaskUncheckedCreateWithoutUserInput>
+  }
+
+  export type ApplicationBatchTaskUpdateWithWhereUniqueWithoutUserInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    data: XOR<ApplicationBatchTaskUpdateWithoutUserInput, ApplicationBatchTaskUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ApplicationBatchTaskUpdateManyWithWhereWithoutUserInput = {
+    where: ApplicationBatchTaskScalarWhereInput
+    data: XOR<ApplicationBatchTaskUpdateManyMutationInput, ApplicationBatchTaskUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ApplicationBatchTaskScalarWhereInput = {
+    AND?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+    OR?: ApplicationBatchTaskScalarWhereInput[]
+    NOT?: ApplicationBatchTaskScalarWhereInput | ApplicationBatchTaskScalarWhereInput[]
+    id?: UuidFilter<"ApplicationBatchTask"> | string
+    batchId?: UuidFilter<"ApplicationBatchTask"> | string
+    userId?: UuidFilter<"ApplicationBatchTask"> | string
+    jobId?: UuidFilter<"ApplicationBatchTask"> | string
+    status?: EnumApplicationBatchTaskStatusFilter<"ApplicationBatchTask"> | $Enums.ApplicationBatchTaskStatus
+    error?: StringNullableFilter<"ApplicationBatchTask"> | string | null
+    startedAt?: DateTimeNullableFilter<"ApplicationBatchTask"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ApplicationBatchTask"> | Date | string | null
+    attempt?: IntFilter<"ApplicationBatchTask"> | number
+    createdAt?: DateTimeFilter<"ApplicationBatchTask"> | Date | string
+    updatedAt?: DateTimeFilter<"ApplicationBatchTask"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email?: string | null
@@ -21250,6 +25061,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -21270,6 +25083,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -21306,6 +25121,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -21326,6 +25143,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -21346,6 +25165,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -21366,6 +25187,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -21402,6 +25225,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -21422,6 +25247,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutJobsInput = {
@@ -21442,6 +25269,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJobsInput = {
@@ -21462,6 +25291,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJobsInput = {
@@ -21509,6 +25340,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ApplicationBatchTaskCreateWithoutJobInput = {
+    id?: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    batch: ApplicationBatchCreateNestedOneWithoutTasksInput
+    user: UserCreateNestedOneWithoutApplicationBatchTasksInput
+  }
+
+  export type ApplicationBatchTaskUncheckedCreateWithoutJobInput = {
+    id?: string
+    batchId: string
+    userId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskCreateOrConnectWithoutJobInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    create: XOR<ApplicationBatchTaskCreateWithoutJobInput, ApplicationBatchTaskUncheckedCreateWithoutJobInput>
+  }
+
+  export type ApplicationBatchTaskCreateManyJobInputEnvelope = {
+    data: ApplicationBatchTaskCreateManyJobInput | ApplicationBatchTaskCreateManyJobInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutJobsInput = {
     update: XOR<UserUpdateWithoutJobsInput, UserUncheckedUpdateWithoutJobsInput>
     create: XOR<UserCreateWithoutJobsInput, UserUncheckedCreateWithoutJobsInput>
@@ -21538,6 +25405,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJobsInput = {
@@ -21558,6 +25427,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ApplicationUpsertWithWhereUniqueWithoutJobInput = {
@@ -21574,6 +25445,430 @@ export namespace Prisma {
   export type ApplicationUpdateManyWithWhereWithoutJobInput = {
     where: ApplicationScalarWhereInput
     data: XOR<ApplicationUpdateManyMutationInput, ApplicationUncheckedUpdateManyWithoutJobInput>
+  }
+
+  export type ApplicationBatchTaskUpsertWithWhereUniqueWithoutJobInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    update: XOR<ApplicationBatchTaskUpdateWithoutJobInput, ApplicationBatchTaskUncheckedUpdateWithoutJobInput>
+    create: XOR<ApplicationBatchTaskCreateWithoutJobInput, ApplicationBatchTaskUncheckedCreateWithoutJobInput>
+  }
+
+  export type ApplicationBatchTaskUpdateWithWhereUniqueWithoutJobInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    data: XOR<ApplicationBatchTaskUpdateWithoutJobInput, ApplicationBatchTaskUncheckedUpdateWithoutJobInput>
+  }
+
+  export type ApplicationBatchTaskUpdateManyWithWhereWithoutJobInput = {
+    where: ApplicationBatchTaskScalarWhereInput
+    data: XOR<ApplicationBatchTaskUpdateManyMutationInput, ApplicationBatchTaskUncheckedUpdateManyWithoutJobInput>
+  }
+
+  export type UserCreateWithoutApplicationBatchesInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    jobs?: JobCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
+    activeResumeProfile?: ActiveResumeProfileCreateNestedOneWithoutUserInput
+    applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
+    onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutApplicationBatchesInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
+    activeResumeProfile?: ActiveResumeProfileUncheckedCreateNestedOneWithoutUserInput
+    applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
+    onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutApplicationBatchesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutApplicationBatchesInput, UserUncheckedCreateWithoutApplicationBatchesInput>
+  }
+
+  export type ApplicationBatchTaskCreateWithoutBatchInput = {
+    id?: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutApplicationBatchTasksInput
+    job: JobCreateNestedOneWithoutApplicationBatchTasksInput
+  }
+
+  export type ApplicationBatchTaskUncheckedCreateWithoutBatchInput = {
+    id?: string
+    userId: string
+    jobId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskCreateOrConnectWithoutBatchInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    create: XOR<ApplicationBatchTaskCreateWithoutBatchInput, ApplicationBatchTaskUncheckedCreateWithoutBatchInput>
+  }
+
+  export type ApplicationBatchTaskCreateManyBatchInputEnvelope = {
+    data: ApplicationBatchTaskCreateManyBatchInput | ApplicationBatchTaskCreateManyBatchInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutApplicationBatchesInput = {
+    update: XOR<UserUpdateWithoutApplicationBatchesInput, UserUncheckedUpdateWithoutApplicationBatchesInput>
+    create: XOR<UserCreateWithoutApplicationBatchesInput, UserUncheckedCreateWithoutApplicationBatchesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutApplicationBatchesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutApplicationBatchesInput, UserUncheckedUpdateWithoutApplicationBatchesInput>
+  }
+
+  export type UserUpdateWithoutApplicationBatchesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    jobs?: JobUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
+    activeResumeProfile?: ActiveResumeProfileUpdateOneWithoutUserNestedInput
+    applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
+    onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutApplicationBatchesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
+    activeResumeProfile?: ActiveResumeProfileUncheckedUpdateOneWithoutUserNestedInput
+    applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
+    onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type ApplicationBatchTaskUpsertWithWhereUniqueWithoutBatchInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    update: XOR<ApplicationBatchTaskUpdateWithoutBatchInput, ApplicationBatchTaskUncheckedUpdateWithoutBatchInput>
+    create: XOR<ApplicationBatchTaskCreateWithoutBatchInput, ApplicationBatchTaskUncheckedCreateWithoutBatchInput>
+  }
+
+  export type ApplicationBatchTaskUpdateWithWhereUniqueWithoutBatchInput = {
+    where: ApplicationBatchTaskWhereUniqueInput
+    data: XOR<ApplicationBatchTaskUpdateWithoutBatchInput, ApplicationBatchTaskUncheckedUpdateWithoutBatchInput>
+  }
+
+  export type ApplicationBatchTaskUpdateManyWithWhereWithoutBatchInput = {
+    where: ApplicationBatchTaskScalarWhereInput
+    data: XOR<ApplicationBatchTaskUpdateManyMutationInput, ApplicationBatchTaskUncheckedUpdateManyWithoutBatchInput>
+  }
+
+  export type ApplicationBatchCreateWithoutTasksInput = {
+    id?: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutApplicationBatchesInput
+  }
+
+  export type ApplicationBatchUncheckedCreateWithoutTasksInput = {
+    id?: string
+    userId: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchCreateOrConnectWithoutTasksInput = {
+    where: ApplicationBatchWhereUniqueInput
+    create: XOR<ApplicationBatchCreateWithoutTasksInput, ApplicationBatchUncheckedCreateWithoutTasksInput>
+  }
+
+  export type UserCreateWithoutApplicationBatchTasksInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    jobs?: JobCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileCreateNestedManyWithoutUserInput
+    activeResumeProfile?: ActiveResumeProfileCreateNestedOneWithoutUserInput
+    applications?: ApplicationCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
+    onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutApplicationBatchTasksInput = {
+    id?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+    emailVerified?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    jobs?: JobUncheckedCreateNestedManyWithoutUserInput
+    fetchRuns?: FetchRunUncheckedCreateNestedManyWithoutUserInput
+    deletedJobUrls?: DeletedJobUrlUncheckedCreateNestedManyWithoutUserInput
+    dailyCheckins?: DailyCheckinUncheckedCreateNestedManyWithoutUserInput
+    resumeProfiles?: ResumeProfileUncheckedCreateNestedManyWithoutUserInput
+    activeResumeProfile?: ActiveResumeProfileUncheckedCreateNestedOneWithoutUserInput
+    applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
+    onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutApplicationBatchTasksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutApplicationBatchTasksInput, UserUncheckedCreateWithoutApplicationBatchTasksInput>
+  }
+
+  export type JobCreateWithoutApplicationBatchTasksInput = {
+    id?: string
+    jobUrl: string
+    title: string
+    company?: string | null
+    location?: string | null
+    jobType?: string | null
+    jobLevel?: string | null
+    description?: string | null
+    status?: $Enums.JobStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutJobsInput
+    applications?: ApplicationCreateNestedManyWithoutJobInput
+  }
+
+  export type JobUncheckedCreateWithoutApplicationBatchTasksInput = {
+    id?: string
+    userId: string
+    jobUrl: string
+    title: string
+    company?: string | null
+    location?: string | null
+    jobType?: string | null
+    jobLevel?: string | null
+    description?: string | null
+    status?: $Enums.JobStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
+  }
+
+  export type JobCreateOrConnectWithoutApplicationBatchTasksInput = {
+    where: JobWhereUniqueInput
+    create: XOR<JobCreateWithoutApplicationBatchTasksInput, JobUncheckedCreateWithoutApplicationBatchTasksInput>
+  }
+
+  export type ApplicationBatchUpsertWithoutTasksInput = {
+    update: XOR<ApplicationBatchUpdateWithoutTasksInput, ApplicationBatchUncheckedUpdateWithoutTasksInput>
+    create: XOR<ApplicationBatchCreateWithoutTasksInput, ApplicationBatchUncheckedCreateWithoutTasksInput>
+    where?: ApplicationBatchWhereInput
+  }
+
+  export type ApplicationBatchUpdateToOneWithWhereWithoutTasksInput = {
+    where?: ApplicationBatchWhereInput
+    data: XOR<ApplicationBatchUpdateWithoutTasksInput, ApplicationBatchUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type ApplicationBatchUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutApplicationBatchesNestedInput
+  }
+
+  export type ApplicationBatchUncheckedUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutApplicationBatchTasksInput = {
+    update: XOR<UserUpdateWithoutApplicationBatchTasksInput, UserUncheckedUpdateWithoutApplicationBatchTasksInput>
+    create: XOR<UserCreateWithoutApplicationBatchTasksInput, UserUncheckedCreateWithoutApplicationBatchTasksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutApplicationBatchTasksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutApplicationBatchTasksInput, UserUncheckedUpdateWithoutApplicationBatchTasksInput>
+  }
+
+  export type UserUpdateWithoutApplicationBatchTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    jobs?: JobUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUpdateManyWithoutUserNestedInput
+    activeResumeProfile?: ActiveResumeProfileUpdateOneWithoutUserNestedInput
+    applications?: ApplicationUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
+    onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutApplicationBatchTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    jobs?: JobUncheckedUpdateManyWithoutUserNestedInput
+    fetchRuns?: FetchRunUncheckedUpdateManyWithoutUserNestedInput
+    deletedJobUrls?: DeletedJobUrlUncheckedUpdateManyWithoutUserNestedInput
+    dailyCheckins?: DailyCheckinUncheckedUpdateManyWithoutUserNestedInput
+    resumeProfiles?: ResumeProfileUncheckedUpdateManyWithoutUserNestedInput
+    activeResumeProfile?: ActiveResumeProfileUncheckedUpdateOneWithoutUserNestedInput
+    applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
+    promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
+    onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type JobUpsertWithoutApplicationBatchTasksInput = {
+    update: XOR<JobUpdateWithoutApplicationBatchTasksInput, JobUncheckedUpdateWithoutApplicationBatchTasksInput>
+    create: XOR<JobCreateWithoutApplicationBatchTasksInput, JobUncheckedCreateWithoutApplicationBatchTasksInput>
+    where?: JobWhereInput
+  }
+
+  export type JobUpdateToOneWithWhereWithoutApplicationBatchTasksInput = {
+    where?: JobWhereInput
+    data: XOR<JobUpdateWithoutApplicationBatchTasksInput, JobUncheckedUpdateWithoutApplicationBatchTasksInput>
+  }
+
+  export type JobUpdateWithoutApplicationBatchTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutJobsNestedInput
+    applications?: ApplicationUpdateManyWithoutJobNestedInput
+  }
+
+  export type JobUncheckedUpdateWithoutApplicationBatchTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    jobUrl?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
   }
 
   export type UserCreateWithoutDeletedJobUrlsInput = {
@@ -21594,6 +25889,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDeletedJobUrlsInput = {
@@ -21614,6 +25911,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDeletedJobUrlsInput = {
@@ -21650,6 +25949,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDeletedJobUrlsInput = {
@@ -21670,6 +25971,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDailyCheckinsInput = {
@@ -21690,6 +25993,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDailyCheckinsInput = {
@@ -21710,6 +26015,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDailyCheckinsInput = {
@@ -21746,6 +26053,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDailyCheckinsInput = {
@@ -21766,6 +26075,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFetchRunsInput = {
@@ -21786,6 +26097,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFetchRunsInput = {
@@ -21806,6 +26119,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFetchRunsInput = {
@@ -21842,6 +26157,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFetchRunsInput = {
@@ -21862,6 +26179,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutResumeProfilesInput = {
@@ -21882,6 +26201,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutResumeProfilesInput = {
@@ -21902,6 +26223,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutResumeProfilesInput = {
@@ -22000,6 +26323,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutResumeProfilesInput = {
@@ -22020,6 +26345,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ApplicationUpsertWithWhereUniqueWithoutResumeProfileInput = {
@@ -22082,6 +26409,8 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutActiveResumeProfileInput = {
@@ -22102,6 +26431,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutActiveResumeProfileInput = {
@@ -22177,6 +26508,8 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActiveResumeProfileInput = {
@@ -22197,6 +26530,8 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ResumeProfileUpsertWithoutActiveSelectionsInput = {
@@ -22262,6 +26597,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileCreateNestedOneWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutApplicationsInput = {
@@ -22282,6 +26619,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUncheckedCreateNestedOneWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutApplicationsInput = {
@@ -22302,6 +26641,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutJobsInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutJobInput
   }
 
   export type JobUncheckedCreateWithoutApplicationsInput = {
@@ -22317,6 +26657,7 @@ export namespace Prisma {
     status?: $Enums.JobStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutJobInput
   }
 
   export type JobCreateOrConnectWithoutApplicationsInput = {
@@ -22392,6 +26733,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUpdateOneWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutApplicationsInput = {
@@ -22412,6 +26755,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUncheckedUpdateOneWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type JobUpsertWithoutApplicationsInput = {
@@ -22438,6 +26783,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutJobsNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateWithoutApplicationsInput = {
@@ -22453,6 +26799,7 @@ export namespace Prisma {
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutJobNestedInput
   }
 
   export type ResumeProfileUpsertWithoutApplicationsInput = {
@@ -22518,6 +26865,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPromptRuleTemplatesInput = {
@@ -22538,6 +26887,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     onboardingState?: OnboardingStateUncheckedCreateNestedOneWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPromptRuleTemplatesInput = {
@@ -22574,6 +26925,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPromptRuleTemplatesInput = {
@@ -22594,6 +26947,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     onboardingState?: OnboardingStateUncheckedUpdateOneWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutOnboardingStateInput = {
@@ -22614,6 +26969,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileCreateNestedOneWithoutUserInput
     applications?: ApplicationCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateCreateNestedManyWithoutUserInput
+    applicationBatches?: ApplicationBatchCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOnboardingStateInput = {
@@ -22634,6 +26991,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUncheckedCreateNestedOneWithoutUserInput
     applications?: ApplicationUncheckedCreateNestedManyWithoutUserInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedCreateNestedManyWithoutUserInput
+    applicationBatches?: ApplicationBatchUncheckedCreateNestedManyWithoutUserInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOnboardingStateInput = {
@@ -22670,6 +27029,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUpdateOneWithoutUserNestedInput
     applications?: ApplicationUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUpdateManyWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOnboardingStateInput = {
@@ -22690,6 +27051,8 @@ export namespace Prisma {
     activeResumeProfile?: ActiveResumeProfileUncheckedUpdateOneWithoutUserNestedInput
     applications?: ApplicationUncheckedUpdateManyWithoutUserNestedInput
     promptRuleTemplates?: PromptRuleTemplateUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatches?: ApplicationBatchUncheckedUpdateManyWithoutUserNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -22801,6 +27164,31 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type ApplicationBatchCreateManyUserInput = {
+    id?: string
+    scope?: $Enums.ApplicationBatchScope
+    status?: $Enums.ApplicationBatchStatus
+    totalCount: number
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskCreateManyUserInput = {
+    id?: string
+    batchId: string
+    jobId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type AccountUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -22886,6 +27274,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUpdateManyWithoutJobNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateWithoutUserInput = {
@@ -22901,6 +27290,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
+    applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutJobNestedInput
   }
 
   export type JobUncheckedUpdateManyWithoutUserInput = {
@@ -23134,6 +27524,83 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ApplicationBatchUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: ApplicationBatchTaskUpdateManyWithoutBatchNestedInput
+  }
+
+  export type ApplicationBatchUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutBatchNestedInput
+  }
+
+  export type ApplicationBatchUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scope?: EnumApplicationBatchScopeFieldUpdateOperationsInput | $Enums.ApplicationBatchScope
+    status?: EnumApplicationBatchStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchStatus
+    totalCount?: IntFieldUpdateOperationsInput | number
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    batch?: ApplicationBatchUpdateOneRequiredWithoutTasksNestedInput
+    job?: JobUpdateOneRequiredWithoutApplicationBatchTasksNestedInput
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    jobId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    jobId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ApplicationCreateManyJobInput = {
     id?: string
     userId: string
@@ -23145,6 +27612,19 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskCreateManyJobInput = {
+    id?: string
+    batchId: string
+    userId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -23190,6 +27670,97 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskUpdateWithoutJobInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    batch?: ApplicationBatchUpdateOneRequiredWithoutTasksNestedInput
+    user?: UserUpdateOneRequiredWithoutApplicationBatchTasksNestedInput
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateWithoutJobInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateManyWithoutJobInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskCreateManyBatchInput = {
+    id?: string
+    userId: string
+    jobId: string
+    status?: $Enums.ApplicationBatchTaskStatus
+    error?: string | null
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    attempt?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApplicationBatchTaskUpdateWithoutBatchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutApplicationBatchTasksNestedInput
+    job?: JobUpdateOneRequiredWithoutApplicationBatchTasksNestedInput
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateWithoutBatchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    jobId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApplicationBatchTaskUncheckedUpdateManyWithoutBatchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    jobId?: StringFieldUpdateOperationsInput | string
+    status?: EnumApplicationBatchTaskStatusFieldUpdateOperationsInput | $Enums.ApplicationBatchTaskStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attempt?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

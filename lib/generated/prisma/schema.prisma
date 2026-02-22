@@ -34,6 +34,26 @@ enum OnboardingStage {
   RETURNING_USER
 }
 
+enum ApplicationBatchScope {
+  NEW
+}
+
+enum ApplicationBatchStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum ApplicationBatchTaskStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
 model User {
   id            String    @id @default(uuid()) @db.Uuid
   email         String?   @unique
@@ -46,15 +66,17 @@ model User {
   accounts Account[]
   sessions Session[]
 
-  jobs                Job[]
-  fetchRuns           FetchRun[]
-  deletedJobUrls      DeletedJobUrl[]
-  dailyCheckins       DailyCheckin[]
-  resumeProfiles      ResumeProfile[]
-  activeResumeProfile ActiveResumeProfile?
-  applications        Application[]
-  promptRuleTemplates PromptRuleTemplate[]
-  onboardingState     OnboardingState?
+  jobs                  Job[]
+  fetchRuns             FetchRun[]
+  deletedJobUrls        DeletedJobUrl[]
+  dailyCheckins         DailyCheckin[]
+  resumeProfiles        ResumeProfile[]
+  activeResumeProfile   ActiveResumeProfile?
+  applications          Application[]
+  promptRuleTemplates   PromptRuleTemplate[]
+  onboardingState       OnboardingState?
+  applicationBatches    ApplicationBatch[]
+  applicationBatchTasks ApplicationBatchTask[]
 }
 
 model Account {
@@ -111,12 +133,57 @@ model Job {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  applications Application[]
+  applications          Application[]
+  applicationBatchTasks ApplicationBatchTask[]
 
   @@unique([userId, jobUrl])
   @@index([userId, createdAt])
   @@index([userId, updatedAt])
   @@index([userId, status])
+}
+
+model ApplicationBatch {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  scope       ApplicationBatchScope  @default(NEW)
+  status      ApplicationBatchStatus @default(QUEUED)
+  totalCount  Int
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks ApplicationBatchTask[]
+
+  @@index([userId, createdAt])
+  @@index([userId, status, updatedAt])
+}
+
+model ApplicationBatchTask {
+  id      String           @id @default(uuid()) @db.Uuid
+  batchId String           @db.Uuid
+  batch   ApplicationBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  userId  String           @db.Uuid
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId   String           @db.Uuid
+  job     Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  status      ApplicationBatchTaskStatus @default(PENDING)
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  attempt     Int                        @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([batchId, jobId])
+  @@index([batchId, status, createdAt])
+  @@index([userId, status, createdAt])
 }
 
 model DeletedJobUrl {
