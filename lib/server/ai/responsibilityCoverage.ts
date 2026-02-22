@@ -39,8 +39,6 @@ const RESPONSIBILITY_STOPWORDS = new Set([
   "familiarity",
   "support",
   "supporting",
-  "deliver",
-  "delivering",
   "work",
   "working",
   "team",
@@ -57,13 +55,32 @@ const RESPONSIBILITY_STOPWORDS = new Set([
   "would",
 ]);
 
+type SectionKind = "responsibility" | "requirement" | "narrative" | "neutral";
+
 const RESPONSIBILITY_HEADER_RE =
-  /(responsibilit(?:y|ies)|what you'll do|what you will do|in this role|key duties|you will)/i;
-const NON_RESPONSIBILITY_HEADER_RE =
-  /(qualifications|requirements|benefits|about us|about the company|nice to have)/i;
-const BULLET_PREFIX_RE = /^(\d+[.)]|[-*?])\s+/;
+  /(responsibilit(?:y|ies)|what you'll do|what you will do|in this role|key duties|key responsibilities|what you will own)/i;
+const REQUIREMENT_HEADER_RE =
+  /(requirements|qualifications|what you'll bring|what you will bring|must have|nice to have)/i;
+const NARRATIVE_HEADER_RE =
+  /(about us|about the company|about aircall|who we are|company overview|benefits|culture|our mission|why join)/i;
+
+const BULLET_PREFIX_RE = /^(\d+[.)]|[-*•·])\s+/;
 const ACTION_VERB_RE =
-  /\b(build|design|develop|deliver|own|lead|collaborat|improv|optimi[sz]e|maintain|mentor|automate|ship|drive|manage|architect|implement|support)\b/i;
+  /\b(build|design|develop|implement|integrat|automate|architect|deploy|operationaliz|lead|own|maintain|improv|optimi[sz]e|collaborat|monitor|troubleshoot|mentor|deliver|translate)\b/i;
+const TASK_OBJECT_RE =
+  /\b(api|apis|workflow|workflows|integration|integrations|platform|platforms|system|systems|pipeline|pipelines|deployment|deployments|incident|incidents|monitoring|observability|solution|solutions|automation|process|processes|delivery|rollout|crm|crms|help[\s-]?desk|ticketing|customer|customers|project|projects)\b/i;
+const TECH_SIGNAL_RE =
+  /\b(java|python|javascript|typescript|react|node|sql|postgres|aws|azure|gcp|docker|kubernetes|terraform|graphql|rest|oauth|github actions|ci\/cd|llm|ai)\b/i;
+const REQUIREMENT_SIGNAL_RE = /\b(must|required|requirement|expected to|you'll|you will)\b/i;
+const NARRATIVE_PHRASE_RE =
+  /\b(unicorn|headquartered|offices|worldwide|investors|funding|mission|customer-obsessed|company in motion|strong presence|backed by|our momentum)\b/i;
+
+type Candidate = {
+  text: string;
+  index: number;
+  section: SectionKind;
+  score: number;
+};
 
 function normalizeTextForMatch(value: string) {
   return value
@@ -77,25 +94,137 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function dedupeKeepOrder(items: string[]) {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const item of items) {
-    const key = normalizeTextForMatch(item);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    out.push(item);
-  }
-  return out;
+function cleanLine(line: string) {
+  return line.replace(BULLET_PREFIX_RE, "").trim();
 }
 
-function looksLikeResponsibility(line: string) {
-  const cleaned = line.replace(BULLET_PREFIX_RE, "").trim();
-  if (cleaned.length < 12) return false;
-  if (NON_RESPONSIBILITY_HEADER_RE.test(cleaned)) return false;
-  if (ACTION_VERB_RE.test(cleaned)) return true;
-  if (/responsibilit/.test(cleaned.toLowerCase())) return true;
-  return cleaned.length > 45;
+function detectSectionHeader(line: string): SectionKind | null {
+  const cleaned = line.replace(/:+$/, "").trim();
+  if (!cleaned) return null;
+  const looksLikeHeader =
+    line.endsWith(":") ||
+    cleaned.length <= 60 ||
+    /^[A-Z][A-Za-z\s/&-]+$/.test(cleaned);
+  if (!looksLikeHeader) return null;
+  if (NARRATIVE_HEADER_RE.test(cleaned)) return "narrative";
+  if (RESPONSIBILITY_HEADER_RE.test(cleaned)) return "responsibility";
+  if (REQUIREMENT_HEADER_RE.test(cleaned)) return "requirement";
+  return null;
+}
+
+function hasNarrativeSignals(text: string) {
+  return NARRATIVE_PHRASE_RE.test(text);
+}
+
+function looksLikeResponsibility(
+  line: string,
+  section: SectionKind,
+  isBullet: boolean,
+) {
+  if (!line || line.length < 18 || line.length > 260) return false;
+  if (line.endsWith(":")) return false;
+  if (section === "narrative") return false;
+  if (hasNarrativeSignals(line)) return false;
+
+  const hasAction = ACTION_VERB_RE.test(line);
+  const hasTaskObject = TASK_OBJECT_RE.test(line);
+  const requirementSignal = REQUIREMENT_SIGNAL_RE.test(line);
+
+  if (!hasAction) return false;
+
+  if (section === "responsibility") {
+    return hasTaskObject || isBullet || requirementSignal;
+  }
+  if (section === "requirement") {
+    return hasTaskObject;
+  }
+  return isBullet && hasTaskObject;
+}
+
+function scoreCandidate(
+  line: string,
+  section: SectionKind,
+  isBullet: boolean,
+) {
+  const sectionWeight =
+    section === "responsibility" ? 1 : section === "requirement" ? 0.7 : section === "neutral" ? 0.35 : 0;
+  const actionHits = (line.match(new RegExp(ACTION_VERB_RE.source, "gi")) ?? []).length;
+  const taskHits = (line.match(new RegExp(TASK_OBJECT_RE.source, "gi")) ?? []).length;
+  const techHits = (line.match(new RegExp(TECH_SIGNAL_RE.source, "gi")) ?? []).length;
+  const requirementSignal = REQUIREMENT_SIGNAL_RE.test(line) ? 1 : 0;
+  const narrativePenalty = hasNarrativeSignals(line) ? 0.75 : 0;
+  const lengthPenalty = line.length > 220 ? 0.1 : 0;
+
+  return (
+    sectionWeight +
+    (isBullet ? 0.2 : 0) +
+    Math.min(actionHits * 0.06, 0.18) +
+    Math.min(taskHits * 0.05, 0.15) +
+    Math.min(techHits * 0.04, 0.12) +
+    requirementSignal * 0.05 -
+    narrativePenalty -
+    lengthPenalty
+  );
+}
+
+function dedupeRanked(items: Candidate[]) {
+  const best = new Map<string, Candidate>();
+  for (const item of items) {
+    const key = normalizeTextForMatch(item.text);
+    if (!key) continue;
+    const existing = best.get(key);
+    if (!existing || item.score > existing.score) {
+      best.set(key, item);
+    }
+  }
+  return Array.from(best.values()).sort((a, b) => {
+    if (b.score === a.score) return a.index - b.index;
+    return b.score - a.score;
+  });
+}
+
+function parseLineCandidates(lines: string[]) {
+  const candidates: Candidate[] = [];
+  let section: SectionKind = "neutral";
+
+  lines.forEach((raw, index) => {
+    const header = detectSectionHeader(raw);
+    if (header) {
+      section = header;
+      return;
+    }
+    const isBullet = BULLET_PREFIX_RE.test(raw);
+    const cleaned = cleanLine(raw);
+    if (!cleaned) return;
+    if (!looksLikeResponsibility(cleaned, section, isBullet)) return;
+
+    candidates.push({
+      text: cleaned,
+      index,
+      section,
+      score: scoreCandidate(cleaned, section, isBullet),
+    });
+  });
+
+  return candidates;
+}
+
+function parseSentenceCandidates(text: string) {
+  const sentences = text
+    .split(/[.!?]\s+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return sentences
+    .map((sentence, index) => {
+      if (!looksLikeResponsibility(sentence, "neutral", true)) return null;
+      return {
+        text: sentence,
+        index,
+        section: "neutral" as const,
+        score: scoreCandidate(sentence, "neutral", true),
+      };
+    })
+    .filter((item) => item !== null) as Candidate[];
 }
 
 export function extractResponsibilities(
@@ -110,44 +239,16 @@ export function extractResponsibilities(
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const candidates: string[] = [];
-  let inResponsibilityBlock = false;
+  const lineCandidates = parseLineCandidates(lines);
+  const ranked =
+    lineCandidates.length > 0
+      ? dedupeRanked(lineCandidates)
+      : dedupeRanked(parseSentenceCandidates(text));
 
-  for (const line of lines) {
-    if (RESPONSIBILITY_HEADER_RE.test(line)) {
-      inResponsibilityBlock = true;
-      continue;
-    }
-    if (NON_RESPONSIBILITY_HEADER_RE.test(line) && line.endsWith(":")) {
-      inResponsibilityBlock = false;
-      continue;
-    }
-
-    if (BULLET_PREFIX_RE.test(line)) {
-      const cleaned = line.replace(BULLET_PREFIX_RE, "").trim();
-      if (looksLikeResponsibility(cleaned)) candidates.push(cleaned);
-      continue;
-    }
-
-    if (inResponsibilityBlock && looksLikeResponsibility(line)) {
-      candidates.push(line);
-      continue;
-    }
-
-    if (looksLikeResponsibility(line) && line.length > 35) {
-      candidates.push(line);
-    }
-  }
-
-  if (candidates.length === 0) {
-    const sentenceCandidates = text
-      .split(/[.!?]\s+/)
-      .map((line) => line.trim())
-      .filter((line) => looksLikeResponsibility(line));
-    return dedupeKeepOrder(sentenceCandidates).slice(0, limit);
-  }
-
-  return dedupeKeepOrder(candidates).slice(0, limit);
+  return ranked
+    .filter((item) => item.score >= 0.4)
+    .slice(0, limit)
+    .map((item) => item.text);
 }
 
 export function extractTopResponsibilities(description: string | null | undefined) {

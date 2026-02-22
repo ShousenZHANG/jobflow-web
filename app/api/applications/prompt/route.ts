@@ -118,6 +118,7 @@ export async function POST(req: Request) {
   const resumeCoverageBlock = isResumeTarget
     ? [
         "Top-3 Responsibility Alignment (guidance):",
+        "Only candidate-owned execution responsibilities are included below. Company intro, mission, funding, and office/location narrative are excluded.",
         ...(coverage.topResponsibilities.length
           ? coverage.topResponsibilities.map((item, index) => `${index + 1}. ${item}`)
           : ["1. (none parsed from JD)"]),

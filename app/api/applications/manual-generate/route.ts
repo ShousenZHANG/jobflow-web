@@ -457,7 +457,9 @@ function isGroundedAddedBullet(addedBullet: string, baseBullets: string[]) {
   // We only need lightweight evidence that the new bullet is consistent with the
   // user's latest experience. If there's zero meaningful overlap, treat it as likely
   // fabrication and drop it.
-  return bestSharedTokens >= 1 || bestScore >= 0.18;
+  // Use stricter grounding for newly added bullets:
+  // either strong lexical overlap or high semantic proximity to base bullets.
+  return bestSharedTokens >= 2 || bestScore >= 0.28;
 }
 
 function canonicalizeLatestBullets(baseBullets: string[], incomingBullets: string[]) {
