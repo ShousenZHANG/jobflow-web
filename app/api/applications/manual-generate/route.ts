@@ -367,6 +367,57 @@ function tokenizeBulletForSimilarity(value: string) {
   );
 }
 
+const BULLET_KEYWORD_STOPWORDS = new Set([
+  "built",
+  "build",
+  "design",
+  "designed",
+  "develop",
+  "developed",
+  "deliver",
+  "delivered",
+  "lead",
+  "led",
+  "manage",
+  "managed",
+  "maintain",
+  "maintained",
+  "improve",
+  "improved",
+  "optimize",
+  "optimized",
+  "collaborate",
+  "collaborated",
+  "support",
+  "supported",
+  "work",
+  "worked",
+  "own",
+  "owned",
+  "drive",
+  "drove",
+  "using",
+  "with",
+  "for",
+  "and",
+  "the",
+  "a",
+  "an",
+  "to",
+  "of",
+  "in",
+  "on",
+  "by",
+]);
+
+function extractMeaningfulKeywords(value: string) {
+  return new Set(
+    Array.from(tokenizeBulletForSimilarity(value)).filter(
+      (token) => token.length >= 4 && !BULLET_KEYWORD_STOPWORDS.has(token),
+    ),
+  );
+}
+
 function bulletSimilarityScore(a: string, b: string) {
   const ta = tokenizeBulletForSimilarity(a);
   const tb = tokenizeBulletForSimilarity(b);
@@ -387,52 +438,9 @@ function isGroundedAddedBullet(addedBullet: string, baseBullets: string[]) {
   let bestScore = 0;
   let bestSharedTokens = 0;
 
-  const groundingStopwords = new Set([
-    "built",
-    "build",
-    "design",
-    "designed",
-    "develop",
-    "developed",
-    "deliver",
-    "delivered",
-    "lead",
-    "led",
-    "manage",
-    "managed",
-    "maintain",
-    "maintained",
-    "improve",
-    "improved",
-    "optimize",
-    "optimized",
-    "collaborate",
-    "collaborated",
-    "support",
-    "supported",
-    "work",
-    "worked",
-    "own",
-    "owned",
-    "drive",
-    "drove",
-    "using",
-    "with",
-    "for",
-    "and",
-    "the",
-    "a",
-    "an",
-    "to",
-    "of",
-    "in",
-    "on",
-    "by",
-  ]);
-
   const addedTokens = new Set(
     Array.from(tokenizeBulletForSimilarity(addedBullet)).filter(
-      (token) => !groundingStopwords.has(token),
+      (token) => !BULLET_KEYWORD_STOPWORDS.has(token),
     ),
   );
   if (addedTokens.size === 0) return false;
@@ -441,7 +449,7 @@ function isGroundedAddedBullet(addedBullet: string, baseBullets: string[]) {
     bestScore = Math.max(bestScore, bulletSimilarityScore(addedBullet, baseBullet));
     const baseTokens = new Set(
       Array.from(tokenizeBulletForSimilarity(baseBullet)).filter(
-        (token) => !groundingStopwords.has(token),
+        (token) => !BULLET_KEYWORD_STOPWORDS.has(token),
       ),
     );
     let shared = 0;
@@ -460,6 +468,41 @@ function isGroundedAddedBullet(addedBullet: string, baseBullets: string[]) {
   // Use stricter grounding for newly added bullets:
   // either strong lexical overlap or high semantic proximity to base bullets.
   return bestSharedTokens >= 2 || bestScore >= 0.28;
+}
+
+function isNonRedundantAddedBullet(
+  addedBullet: string,
+  baseBullets: string[],
+  acceptedAddedBullets: string[],
+) {
+  const compareBullets = [...baseBullets, ...acceptedAddedBullets];
+  if (compareBullets.length === 0) return true;
+
+  // Content-level duplicate guard: near-duplicate bullets are removed.
+  for (const existing of compareBullets) {
+    if (bulletSimilarityScore(addedBullet, existing) >= 0.62) {
+      return false;
+    }
+  }
+
+  // Keyword-level novelty guard: added bullet must bring at least one meaningful new keyword.
+  const baseKeywords = new Set<string>();
+  for (const existing of compareBullets) {
+    for (const kw of extractMeaningfulKeywords(existing)) {
+      baseKeywords.add(kw);
+    }
+  }
+
+  const addedKeywords = extractMeaningfulKeywords(addedBullet);
+  if (addedKeywords.size === 0) return false;
+
+  let novelCount = 0;
+  for (const kw of addedKeywords) {
+    if (!baseKeywords.has(kw)) novelCount += 1;
+  }
+
+  const noveltyRatio = novelCount / addedKeywords.size;
+  return novelCount >= 1 && noveltyRatio >= 0.25;
 }
 
 function canonicalizeLatestBullets(baseBullets: string[], incomingBullets: string[]) {
@@ -715,14 +758,23 @@ export async function POST(req: Request) {
           baseBulletsForMatch,
           incomingBullets,
         );
-        const disallowed = addedBullets.filter(
-          (bullet) => !isGroundedAddedBullet(bullet, baseBulletsForMatch),
-        );
-        const disallowedKeys = new Set(disallowed.map(normalizeBulletForCompare));
+        const addedKeys = new Set(addedBullets.map(normalizeBulletForCompare));
+        const allowedAddedKeys = new Set<string>();
+        const acceptedAddedBullets: string[] = [];
+        for (const bullet of addedBullets) {
+          if (!isGroundedAddedBullet(bullet, baseBulletsForMatch)) continue;
+          if (!isNonRedundantAddedBullet(bullet, baseBulletsForMatch, acceptedAddedBullets)) continue;
+          acceptedAddedBullets.push(bullet);
+          allowedAddedKeys.add(normalizeBulletForCompare(bullet));
+        }
         const filteredCanonical =
-          disallowedKeys.size > 0
+          addedKeys.size > 0
             ? canonicalBullets.filter(
-                (bullet) => !disallowedKeys.has(normalizeBulletForCompare(bullet)),
+                (bullet) => {
+                  const key = normalizeBulletForCompare(bullet);
+                  if (!addedKeys.has(key)) return true;
+                  return allowedAddedKeys.has(key);
+                },
               )
             : canonicalBullets;
 

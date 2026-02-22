@@ -158,6 +158,7 @@ export async function POST(req: Request) {
         "3a) Keep markdown bold markers clean: **keyword** (no spaces inside markers).",
         "3b) In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.",
         "4) For added bullets, avoid repeating the same primary tech stack already present in base bullets; use complementary JD-required skills where possible.",
+        "4a) Added bullets must introduce at least one meaningful new JD-relevant keyword; if not, do not add that bullet.",
         "5) If evidence is insufficient, keep bullets conservative and avoid fabrication.",
         "5a) Keep new bullets consistent with latest-experience timeframe and realistic scope.",
         "6) Resume target output must NOT include cover payload.",

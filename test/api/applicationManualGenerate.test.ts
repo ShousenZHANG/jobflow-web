@@ -287,7 +287,7 @@ describe("applications manual generate api", () => {
         bullets: [
           "Maintained CI/CD pipelines on Linux.",
           "Built Java services for internal APIs.",
-          "Improved Java API reliability by automating CI/CD checks on Linux.",
+          "Built internal developer tooling that reduced rollback risk across Linux service deployments.",
         ],
       },
       skillsFinal: [
@@ -317,7 +317,6 @@ describe("applications manual generate api", () => {
     expect(renderCallArg.experiences[0].bullets).toEqual([
       "Maintained CI/CD pipelines on Linux.",
       "Built Java services for internal APIs.",
-      "Improved Java API reliability by automating CI/CD checks on Linux.",
     ]);
     expect(renderCallArg.skills).toEqual([
       { label: "Backend", items: ["Java", "Spring Boot"] },
@@ -494,7 +493,10 @@ describe("applications manual generate api", () => {
     const patch = JSON.stringify({
       cvSummary: "Focused on **Java** delivery with reliable pipelines.",
       latestExperience: {
-        bullets: ["Maintained deployment pipelines for services.", "Built **Docker** deployment pipeline."],
+        bullets: [
+          "Maintained deployment pipelines for services.",
+          "Improved deployment pipelines for services with **Docker** rollback safety checks.",
+        ],
       },
     });
 
@@ -595,6 +597,85 @@ describe("applications manual generate api", () => {
     expect(renderCallArg.experiences[0].bullets).toEqual([
       "Built Java APIs.",
       "Maintained CI/CD pipelines.",
+    ]);
+  });
+
+  it("drops redundant added latest-experience bullets that only repeat existing keywords", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+      experiences: [
+        {
+          title: "Engineer",
+          company: "Example",
+          bullets: ["Built Java APIs.", "Maintained CI/CD pipelines on Linux."],
+        },
+      ],
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    (mapResumeProfile as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      candidate: {
+        name: "Jane Doe",
+        title: "Software Engineer",
+        email: "jane@example.com",
+        phone: "+1 555 0100",
+      },
+      summary: "Base summary",
+      skills: [],
+      experiences: [
+        {
+          location: "Sydney, AU",
+          dates: "2022-2023",
+          title: "Engineer",
+          company: "Example",
+          bullets: ["Built Java APIs.", "Maintained CI/CD pipelines on Linux."],
+        },
+      ],
+      projects: [],
+      education: [],
+    });
+
+    const patch = JSON.stringify({
+      cvSummary: "Tailored summary",
+      latestExperience: {
+        bullets: [
+          "Built Java APIs.",
+          "Maintained CI/CD pipelines on Linux.",
+          "Built Java APIs and maintained CI/CD pipelines on Linux.",
+        ],
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "resume",
+          modelOutput: patch,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    const renderCallArg = (renderResumeTex as unknown as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[0];
+    expect(renderCallArg.experiences[0].bullets).toEqual([
+      "Built Java APIs.",
+      "Maintained CI/CD pipelines on Linux.",
     ]);
   });
 
