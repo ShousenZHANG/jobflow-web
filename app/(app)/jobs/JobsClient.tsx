@@ -492,6 +492,7 @@ export function JobsClient({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null);
   const [batchStatusOpen, setBatchStatusOpen] = useState(false);
+  const autoOpenedBatchIdsRef = useRef<Set<string>>(new Set());
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
@@ -794,12 +795,16 @@ export function JobsClient({
       if (!res.ok) throw new Error(json?.error || "Failed to load active batch");
       return json as BatchActiveResponse;
     },
-    enabled: batchStatusOpen,
+    enabled: true,
     refetchOnWindowFocus: false,
-    refetchInterval: batchStatusOpen ? 5000 : false,
+    refetchInterval: (query) => {
+      const status = (query.state.data as BatchActiveResponse | undefined)?.status;
+      return status === "QUEUED" || status === "RUNNING" ? 2000 : 8000;
+    },
   });
 
   const activeBatchId = codexActiveBatchQuery.data?.batchId ?? null;
+  const activeBatchStatus = codexActiveBatchQuery.data?.status ?? null;
 
   const codexBatchSummaryQuery = useQuery({
     queryKey: ["application-batch-summary", activeBatchId],
@@ -821,6 +826,14 @@ export function JobsClient({
       return batch.status === "QUEUED" || batch.status === "RUNNING" ? 2000 : false;
     },
   });
+
+  useEffect(() => {
+    if (!activeBatchId) return;
+    if (!(activeBatchStatus === "QUEUED" || activeBatchStatus === "RUNNING")) return;
+    if (autoOpenedBatchIdsRef.current.has(activeBatchId)) return;
+    autoOpenedBatchIdsRef.current.add(activeBatchId);
+    setBatchStatusOpen(true);
+  }, [activeBatchId, activeBatchStatus]);
 
   const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
   const totalCount = jobsQuery.data?.totalCount;

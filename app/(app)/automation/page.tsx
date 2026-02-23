@@ -31,10 +31,12 @@ const PROMPT_RUN = `Use Playwright MCP with my signed-in session:
    5a) POST /api/application-batches/{batchId}/run-once with body {"maxSteps":1,"completedTasks": completedTasks}
    5b) Reset completedTasks = []
    5c) For each task in response.tasks:
-      - Build resume prompt: POST /api/applications/prompt with body {"jobId":"<task.jobId>","target":"resume"}
+      - Build resume prompt: POST /api/applications/prompt with body {"jobId":"<task.jobId>","target":"resume"}.
+      - Treat this response as the single source of truth for this job. Do not reuse static/local template text.
       - Generate strict JSON from the returned prompt, then import it:
         POST /api/applications/manual-generate with body {"jobId":"<task.jobId>","target":"resume","modelOutput":"<JSON string>","promptMeta":<resume promptMeta>}
-      - Build cover prompt: POST /api/applications/prompt with body {"jobId":"<task.jobId>","target":"cover"}
+      - Build cover prompt: POST /api/applications/prompt with body {"jobId":"<task.jobId>","target":"cover"}.
+      - Treat this response as the single source of truth for this job. Do not reuse static/local template text.
       - Generate strict JSON from the returned prompt, then import it:
         POST /api/applications/manual-generate with body {"jobId":"<task.jobId>","target":"cover","modelOutput":"<JSON string>","promptMeta":<cover promptMeta>}
       - If both imports succeed, push {"taskId":"<taskId>","status":"SUCCEEDED"} into completedTasks
