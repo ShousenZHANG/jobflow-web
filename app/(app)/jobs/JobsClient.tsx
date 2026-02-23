@@ -60,65 +60,6 @@ type JobsResponse = {
   };
 };
 
-type ApplicationBatchStatus =
-  | "QUEUED"
-  | "RUNNING"
-  | "SUCCEEDED"
-  | "FAILED"
-  | "CANCELLED";
-
-type BatchProgress = {
-  pending: number;
-  running: number;
-  succeeded: number;
-  failed: number;
-  skipped: number;
-};
-
-type BatchSummaryResponse = {
-  batch: {
-    id: string;
-    scope: "NEW";
-    status: ApplicationBatchStatus;
-    totalCount: number;
-    error: string | null;
-    createdAt: string;
-    updatedAt: string;
-    startedAt: string | null;
-    completedAt: string | null;
-  };
-  progress: BatchProgress;
-  remainingCount: number;
-  failed: Array<{
-    taskId: string;
-    jobId: string;
-    jobTitle: string;
-    company: string | null;
-    jobUrl: string;
-    attempt: number;
-    error: string;
-    updatedAt: string;
-  }>;
-  succeeded: Array<{
-    taskId: string;
-    jobId: string;
-    jobTitle: string;
-    company: string | null;
-    jobUrl: string;
-    completedAt: string;
-    artifacts: {
-      resumePdfUrl: string | null;
-      coverPdfUrl: string | null;
-    };
-  }>;
-};
-
-type BatchActiveResponse = {
-  batchId: string | null;
-  status: ApplicationBatchStatus | null;
-  updatedAt: string | null;
-};
-
 type JobsQueryRollbackPatch = {
   queryHash: string;
   queryKey: readonly unknown[];
@@ -491,8 +432,6 @@ export function JobsClient({
   const [externalSkillPackFresh, setExternalSkillPackFresh] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null);
-  const [batchStatusOpen, setBatchStatusOpen] = useState(false);
-  const autoOpenedBatchIdsRef = useRef<Set<string>>(new Set());
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
@@ -784,57 +723,6 @@ export function JobsClient({
     },
   });
 
-  const codexActiveBatchQuery = useQuery({
-    queryKey: ["application-batch-active"],
-    queryFn: async ({ signal }): Promise<BatchActiveResponse> => {
-      const res = await fetch("/api/application-batches/latest", {
-        signal,
-        cache: "no-store",
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to load active batch");
-      return json as BatchActiveResponse;
-    },
-    enabled: true,
-    refetchOnWindowFocus: false,
-    refetchInterval: (query) => {
-      const status = (query.state.data as BatchActiveResponse | undefined)?.status;
-      return status === "QUEUED" || status === "RUNNING" ? 2000 : 8000;
-    },
-  });
-
-  const activeBatchId = codexActiveBatchQuery.data?.batchId ?? null;
-  const activeBatchStatus = codexActiveBatchQuery.data?.status ?? null;
-
-  const codexBatchSummaryQuery = useQuery({
-    queryKey: ["application-batch-summary", activeBatchId],
-    queryFn: async ({ signal }): Promise<BatchSummaryResponse> => {
-      const res = await fetch(`/api/application-batches/${activeBatchId}/summary`, {
-        signal,
-        cache: "no-store",
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to load batch summary");
-      return json as BatchSummaryResponse;
-    },
-    enabled: batchStatusOpen && Boolean(activeBatchId),
-    refetchOnWindowFocus: false,
-    refetchInterval: (query) => {
-      if (!batchStatusOpen) return false;
-      const batch = (query.state.data as BatchSummaryResponse | undefined)?.batch;
-      if (!batch) return false;
-      return batch.status === "QUEUED" || batch.status === "RUNNING" ? 2000 : false;
-    },
-  });
-
-  useEffect(() => {
-    if (!activeBatchId) return;
-    if (!(activeBatchStatus === "QUEUED" || activeBatchStatus === "RUNNING")) return;
-    if (autoOpenedBatchIdsRef.current.has(activeBatchId)) return;
-    autoOpenedBatchIdsRef.current.add(activeBatchId);
-    setBatchStatusOpen(true);
-  }, [activeBatchId, activeBatchStatus]);
-
   const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
   const totalCount = jobsQuery.data?.totalCount;
   const nextCursor = jobsQuery.data?.nextCursor ?? null;
@@ -847,23 +735,6 @@ export function JobsClient({
     : null;
 
   const activeError = error ?? queryError;
-  const batchSummaryError = codexBatchSummaryQuery.error || codexActiveBatchQuery.error
-    ? getErrorMessage(codexBatchSummaryQuery.error || codexActiveBatchQuery.error, "Failed to load batch summary")
-    : null;
-  const codexBatchSummary = codexBatchSummaryQuery.data;
-  const codexBatch = codexBatchSummary?.batch;
-  const codexProgress = codexBatchSummary?.progress;
-  const codexCompletedCount =
-    (codexProgress?.succeeded ?? 0) + (codexProgress?.failed ?? 0) + (codexProgress?.skipped ?? 0);
-  const codexTotalCount = codexBatch?.totalCount ?? 0;
-  const codexProgressPercent =
-    codexTotalCount > 0 ? Math.min(100, Math.round((codexCompletedCount / codexTotalCount) * 100)) : 0;
-  const codexStatusTone =
-    codexBatch?.status === "RUNNING" || codexBatch?.status === "QUEUED"
-      ? "text-emerald-700"
-      : codexBatch?.status === "FAILED" || codexBatch?.status === "CANCELLED"
-        ? "text-rose-700"
-        : "text-slate-700";
   const prevDisabled = loading || pageIndex === 0;
   const nextDisabled = loading || !nextCursor;
 
@@ -1623,77 +1494,6 @@ export function JobsClient({
 
   return (
     <>
-      <Dialog open={batchStatusOpen} onOpenChange={setBatchStatusOpen}>
-        <DialogContent className="w-[min(95vw,560px)] rounded-2xl border-slate-200">
-          <DialogHeader>
-            <DialogTitle>Batch progress</DialogTitle>
-            <DialogDescription>
-              Read-only status for Codex automation. Manual controls are hidden for regular users.
-            </DialogDescription>
-          </DialogHeader>
-          {batchSummaryError ? (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              {batchSummaryError}
-            </div>
-          ) : null}
-          {codexBatch ? (
-            <div className="space-y-3">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                  <div className="text-[11px] uppercase tracking-wide text-slate-500">Status</div>
-                  <div className={`mt-0.5 text-sm font-semibold ${codexStatusTone}`}>{codexBatch.status}</div>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                  <div className="text-[11px] uppercase tracking-wide text-slate-500">Progress</div>
-                  <div className="mt-0.5 text-sm font-semibold text-slate-900">
-                    {codexCompletedCount}/{codexTotalCount} ({codexProgressPercent}%)
-                  </div>
-                </div>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-                  style={{ width: `${codexProgressPercent}%` }}
-                />
-              </div>
-              <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-4">
-                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
-                  Pending: <span className="font-semibold text-slate-900">{codexProgress?.pending ?? 0}</span>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
-                  Running: <span className="font-semibold text-slate-900">{codexProgress?.running ?? 0}</span>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
-                  Succeeded: <span className="font-semibold text-slate-900">{codexProgress?.succeeded ?? 0}</span>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
-                  Failed: <span className="font-semibold text-slate-900">{codexProgress?.failed ?? 0}</span>
-                </div>
-              </div>
-              {activeBatchId ? (
-                <div className="text-[11px] text-slate-500">
-                  Batch ID: <span className="font-mono text-slate-700">{activeBatchId}</span>
-                </div>
-              ) : null}
-              <div className="pt-1">
-                <Button asChild variant="outline" size="sm" className="h-8 rounded-lg">
-                  <Link href="/automation">Open setup guide</Link>
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600">
-              No active batch. Codex starts and drives batch execution in the background.
-              <div className="mt-2">
-                <Button asChild variant="outline" size="sm" className="h-8 rounded-lg">
-                  <Link href="/automation">Open setup guide</Link>
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       <Dialog open={externalDialogOpen} onOpenChange={setExternalDialogOpen}>
         <DialogContent className="flex h-[min(88vh,760px)] w-[min(96vw,860px)] max-w-[860px] flex-col overflow-hidden">
           <DialogHeader>
@@ -2081,25 +1881,6 @@ export function JobsClient({
             >
               <Search className="mr-1.5 h-4 w-4" />
               Search
-            </Button>
-            <Button
-              asChild
-              type="button"
-              variant="outline"
-              className="h-10 w-full rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 lg:w-auto"
-            >
-              <Link href="/automation">Setup</Link>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setBatchStatusOpen(true)}
-              className="h-10 w-full rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 lg:w-auto"
-            >
-              <span className="mr-2">Batch progress</span>
-              <span className={`text-xs font-semibold ${codexStatusTone}`}>
-                {codexBatch ? `${codexProgressPercent}%` : "Idle"}
-              </span>
             </Button>
           </div>
         </div>

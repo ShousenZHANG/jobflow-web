@@ -143,84 +143,15 @@ describe("JobsClient", () => {
     expect(within(toolbar).getByTestId("jobs-sort")).toBeInTheDocument();
   });
 
-  it("keeps codex batch UI read-only for regular users", async () => {
+  it("hides setup and batch progress controls on jobs toolbar", async () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
-    expect(await screen.findByRole("button", { name: /batch progress/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /setup/i })).toBeInTheDocument();
+    await screen.findAllByText("Frontend Engineer");
+    expect(screen.queryByRole("button", { name: /batch progress/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /setup/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /create batch/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /run auto/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /run once/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /retry failed/i })).not.toBeInTheDocument();
-  });
-
-  it("auto-opens batch progress dialog when latest batch is running", async () => {
-    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url.startsWith("/api/application-batches/latest")) {
-        return new Response(
-          JSON.stringify({
-            batchId: "22222222-2222-2222-2222-222222222222",
-            status: "RUNNING",
-            updatedAt: new Date().toISOString(),
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        );
-      }
-      if (url.startsWith("/api/application-batches/22222222-2222-2222-2222-222222222222/summary")) {
-        return new Response(
-          JSON.stringify({
-            batch: {
-              id: "22222222-2222-2222-2222-222222222222",
-              scope: "NEW",
-              status: "RUNNING",
-              totalCount: 5,
-              error: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              startedAt: new Date().toISOString(),
-              completedAt: null,
-            },
-            progress: { pending: 3, running: 1, succeeded: 1, failed: 0, skipped: 0 },
-            remainingCount: 4,
-            failed: [],
-            succeeded: [],
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        );
-      }
-      if (url.startsWith("/api/jobs?limit=50")) {
-        return new Response(
-          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        );
-      }
-      if (url.startsWith("/api/jobs?")) {
-        return new Response(
-          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        );
-      }
-      if (url.startsWith("/api/jobs/") && init?.method === "DELETE") {
-        return new Response(JSON.stringify({ ok: true }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
-        return new Response(
-          JSON.stringify({ id: baseJob.id, description: "Job description" }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        );
-      }
-      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
-    });
-    vi.stubGlobal("fetch", mockFetch);
-
-    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/read-only status for codex automation/i)).toBeInTheDocument();
-    });
   });
 
   it("renders scroll areas for results and details", () => {
