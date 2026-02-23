@@ -35,6 +35,7 @@ function buildResumeCoverageBlock(input: ResumePromptInput) {
   const { baseLatestBullets, coverage } = input;
   return [
     "Top-3 Responsibility Alignment (guidance):",
+    "Extraction priority: action bullets under headings such as Responsibilities, What You'll Do, What You'll Be Doing, What You Could Work On, Key Responsibilities, Your Responsibilities, Required Skills, What You'll Bring, What You Offer, About You, and Your Profile.",
     "Only candidate-owned execution responsibilities are included below. Company intro, mission, funding, and office/location narrative are excluded.",
     ...(coverage.topResponsibilities.length
       ? coverage.topResponsibilities.map((item, index) => `${index + 1}. ${item}`)

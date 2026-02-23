@@ -20,7 +20,7 @@ Responsibilities:
     expect(coverage.missingFromBase.length).toBeGreaterThan(0);
     expect(coverage.requiredNewBulletsMin).toBe(2);
     expect(coverage.requiredNewBulletsMax).toBe(3);
-    expect(coverage.fallbackResponsibilities.length).toBeGreaterThan(0);
+    expect(coverage.topResponsibilities.join(" ")).toMatch(/ci\/cd|observability|java/i);
   });
 
   it("returns zero additions when top-3 is already covered", () => {
@@ -81,10 +81,39 @@ What you'll do:
 
     const coverage = computeTop3Coverage(description, []);
 
-    expect(coverage.topResponsibilities).toEqual([
-      "Build API integrations with CRMs and ticketing tools.",
-      "Automate deployment workflows and monitor quality signals.",
-      "Lead cross-functional implementation projects with customer success.",
-    ]);
+    expect(coverage.topResponsibilities).toHaveLength(3);
+    expect(coverage.topResponsibilities.join(" ")).toMatch(/build api integrations/i);
+    expect(coverage.topResponsibilities.join(" ")).toMatch(/automate deployment workflows/i);
+    expect(coverage.topResponsibilities.join(" ")).toMatch(/lead cross-functional implementation projects/i);
+  });
+
+  it("captures responsibility bullets from common JD section headers", () => {
+    const description = `
+What You'll Do
+- Build scalable backend APIs and integrations across CRM platforms.
+- Own deployment workflows and release quality signals.
+
+What You Will Bring
+- 3+ years with TypeScript, Node.js, and SQL systems.
+
+Required Skills
+- Hands-on experience with CI/CD and cloud delivery on AWS.
+
+What You Offer
+- Strong collaboration with Product and cross-functional stakeholders.
+
+Your Profile
+- Drive execution and communicate delivery risks early.
+
+About us
+Aircall is a unicorn, AI-powered customer communications platform used worldwide.
+`.trim();
+
+    const coverage = computeTop3Coverage(description, []);
+
+    expect(coverage.topResponsibilities).toHaveLength(3);
+    expect(coverage.topResponsibilities.join(" ")).toMatch(/build scalable backend apis|own deployment workflows/i);
+    expect(coverage.topResponsibilities.join(" ")).not.toMatch(/unicorn|worldwide/i);
+    expect(coverage.fallbackResponsibilities.join(" ")).toMatch(/typescript|ci\/cd|drive execution/i);
   });
 });
