@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FetchClient } from "./FetchClient";
 
@@ -105,8 +105,11 @@ describe("FetchClient", () => {
     render(<FetchClient />);
 
     const titleInput = screen.getAllByPlaceholderText(/e\.g\. software engineer/i)[0];
-    await user.clear(titleInput);
-    await user.type(titleInput, "Software Engineer, Frontend Engineer | Backend Engineer");
+    fireEvent.change(titleInput, {
+      target: {
+        value: "Software Engineer, Frontend Engineer | Backend Engineer",
+      },
+    });
     await user.click(screen.getByRole("button", { name: /start fetch/i }));
 
     await waitFor(() => {
