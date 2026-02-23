@@ -112,6 +112,12 @@ type BatchSummaryResponse = {
   }>;
 };
 
+type BatchActiveResponse = {
+  batchId: string | null;
+  status: ApplicationBatchStatus | null;
+  updatedAt: string | null;
+};
+
 type JobsQueryRollbackPatch = {
   queryHash: string;
   queryKey: readonly unknown[];
@@ -484,8 +490,7 @@ export function JobsClient({
   const [externalSkillPackFresh, setExternalSkillPackFresh] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null);
-  const [codexBatchId, setCodexBatchId] = useState<string | null>(null);
-  const [codexBusy, setCodexBusy] = useState(false);
+  const [batchStatusOpen, setBatchStatusOpen] = useState(false);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
@@ -777,10 +782,28 @@ export function JobsClient({
     },
   });
 
+  const codexActiveBatchQuery = useQuery({
+    queryKey: ["application-batch-active"],
+    queryFn: async ({ signal }): Promise<BatchActiveResponse> => {
+      const res = await fetch("/api/application-batches/active", {
+        signal,
+        cache: "no-store",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to load active batch");
+      return json as BatchActiveResponse;
+    },
+    enabled: batchStatusOpen,
+    refetchOnWindowFocus: false,
+    refetchInterval: batchStatusOpen ? 5000 : false,
+  });
+
+  const activeBatchId = codexActiveBatchQuery.data?.batchId ?? null;
+
   const codexBatchSummaryQuery = useQuery({
-    queryKey: ["application-batch-summary", codexBatchId],
+    queryKey: ["application-batch-summary", activeBatchId],
     queryFn: async ({ signal }): Promise<BatchSummaryResponse> => {
-      const res = await fetch(`/api/application-batches/${codexBatchId}/summary`, {
+      const res = await fetch(`/api/application-batches/${activeBatchId}/summary`, {
         signal,
         cache: "no-store",
       });
@@ -788,9 +811,10 @@ export function JobsClient({
       if (!res.ok) throw new Error(json?.error || "Failed to load batch summary");
       return json as BatchSummaryResponse;
     },
-    enabled: Boolean(codexBatchId),
+    enabled: batchStatusOpen && Boolean(activeBatchId),
     refetchOnWindowFocus: false,
     refetchInterval: (query) => {
+      if (!batchStatusOpen) return false;
       const batch = (query.state.data as BatchSummaryResponse | undefined)?.batch;
       if (!batch) return false;
       return batch.status === "QUEUED" || batch.status === "RUNNING" ? 2000 : false;
@@ -809,12 +833,23 @@ export function JobsClient({
     : null;
 
   const activeError = error ?? queryError;
-  const batchSummaryError = codexBatchSummaryQuery.error
-    ? getErrorMessage(codexBatchSummaryQuery.error, "Failed to load batch summary")
+  const batchSummaryError = codexBatchSummaryQuery.error || codexActiveBatchQuery.error
+    ? getErrorMessage(codexBatchSummaryQuery.error || codexActiveBatchQuery.error, "Failed to load batch summary")
     : null;
   const codexBatchSummary = codexBatchSummaryQuery.data;
   const codexBatch = codexBatchSummary?.batch;
   const codexProgress = codexBatchSummary?.progress;
+  const codexCompletedCount =
+    (codexProgress?.succeeded ?? 0) + (codexProgress?.failed ?? 0) + (codexProgress?.skipped ?? 0);
+  const codexTotalCount = codexBatch?.totalCount ?? 0;
+  const codexProgressPercent =
+    codexTotalCount > 0 ? Math.min(100, Math.round((codexCompletedCount / codexTotalCount) * 100)) : 0;
+  const codexStatusTone =
+    codexBatch?.status === "RUNNING" || codexBatch?.status === "QUEUED"
+      ? "text-emerald-700"
+      : codexBatch?.status === "FAILED" || codexBatch?.status === "CANCELLED"
+        ? "text-rose-700"
+        : "text-slate-700";
   const prevDisabled = loading || pageIndex === 0;
   const nextDisabled = loading || !nextCursor;
 
@@ -840,193 +875,6 @@ export function JobsClient({
   function triggerSearch() {
     resetPagination();
     queryClient.invalidateQueries({ queryKey: ["jobs"] });
-  }
-
-  async function createCodexBatch() {
-    setCodexBusy(true);
-    setError(null);
-    try {
-      const selectedIds = items.filter((job) => job.status === "NEW").map((job) => job.id);
-      const requestBody =
-        selectedIds.length > 0
-          ? { scope: "NEW", selectedJobIds: selectedIds }
-          : { scope: "NEW", limit: 100 };
-      const res = await fetch("/api/application-batches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (json?.error === "ACTIVE_BATCH_EXISTS" && typeof json?.batchId === "string") {
-          setCodexBatchId(json.batchId);
-          toast({
-            title: "Existing batch reused",
-            description: `Batch ${json.batchId} is already active.`,
-            duration: 2200,
-            className: "border-slate-200 bg-slate-50 text-slate-900 animate-in fade-in zoom-in-95",
-          });
-          return;
-        }
-        throw new Error(json?.error || "Failed to create Codex batch");
-      }
-      const batchId = typeof json?.batch?.id === "string" ? json.batch.id : null;
-      if (!batchId) throw new Error("Failed to create Codex batch");
-      setCodexBatchId(batchId);
-      await codexBatchSummaryQuery.refetch();
-      toast({
-        title: "Codex batch created",
-        description: `Batch ${batchId} is ready.`,
-        duration: 2200,
-        className:
-          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
-      });
-    } catch (e) {
-      const message = getErrorMessage(e, "Failed to create Codex batch");
-      setError(message);
-      toast({
-        title: "Batch create failed",
-        description: message,
-        variant: "destructive",
-        duration: 2600,
-        className: "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
-      });
-    } finally {
-      setCodexBusy(false);
-    }
-  }
-
-  async function runCodexBatchOnce() {
-    if (!codexBatchId) return;
-    setCodexBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/application-batches/${codexBatchId}/run-once`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ maxSteps: 1 }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to run Codex batch");
-      const claimedCount = typeof json?.execution?.claimedCount === "number" ? json.execution.claimedCount : 0;
-      const stopReason = typeof json?.execution?.stopReason === "string" ? json.execution.stopReason : "UNKNOWN";
-      await codexBatchSummaryQuery.refetch();
-      toast({
-        title: claimedCount > 0 ? "Task claimed" : "No pending task",
-        description:
-          claimedCount > 0
-            ? `Claimed ${claimedCount} task(s). Continue in Codex using batch ${codexBatchId}.`
-            : `Stop reason: ${stopReason}`,
-        duration: 2300,
-        className: "border-slate-200 bg-slate-50 text-slate-900 animate-in fade-in zoom-in-95",
-      });
-    } catch (e) {
-      const message = getErrorMessage(e, "Failed to run Codex batch");
-      setError(message);
-      toast({
-        title: "Run once failed",
-        description: message,
-        variant: "destructive",
-        duration: 2600,
-        className: "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
-      });
-    } finally {
-      setCodexBusy(false);
-    }
-  }
-
-  async function runCodexBatchAuto() {
-    if (!codexBatchId) return;
-    setCodexBusy(true);
-    setError(null);
-    try {
-      const pendingLike = (codexProgress?.pending ?? 0) + (codexProgress?.running ?? 0);
-      const maxSteps = Math.max(1, Math.min(pendingLike || 20, 50));
-      const res = await fetch(`/api/application-batches/${codexBatchId}/execute`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ maxSteps }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to run Codex batch automatically");
-      const successCount = typeof json?.execution?.successCount === "number" ? json.execution.successCount : 0;
-      const failedCount = typeof json?.execution?.failedCount === "number" ? json.execution.failedCount : 0;
-      const stopReason = typeof json?.execution?.stopReason === "string" ? json.execution.stopReason : "UNKNOWN";
-      await codexBatchSummaryQuery.refetch();
-      await queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
-      toast({
-        title: "Auto run finished",
-        description: `Succeeded ${successCount}, failed ${failedCount}, stop: ${stopReason}`,
-        duration: 2500,
-        className: "border-slate-200 bg-slate-50 text-slate-900 animate-in fade-in zoom-in-95",
-      });
-    } catch (e) {
-      const message = getErrorMessage(e, "Failed to auto run Codex batch");
-      setError(message);
-      toast({
-        title: "Auto run failed",
-        description: message,
-        variant: "destructive",
-        duration: 2600,
-        className: "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
-      });
-    } finally {
-      setCodexBusy(false);
-    }
-  }
-
-  async function retryFailedBatchTasks() {
-    if (!codexBatchId) return;
-    setCodexBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/application-batches/${codexBatchId}/retry-failed`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ limit: 100 }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to retry failed tasks");
-      const nextBatchId = typeof json?.batch?.id === "string" ? json.batch.id : null;
-      if (nextBatchId) {
-        setCodexBatchId(nextBatchId);
-        await codexBatchSummaryQuery.refetch();
-      }
-      toast({
-        title: "Retry batch created",
-        description: nextBatchId
-          ? `Switched to batch ${nextBatchId}.`
-          : "Failed tasks moved to a new batch.",
-        duration: 2200,
-        className:
-          "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
-      });
-    } catch (e) {
-      const message = getErrorMessage(e, "Failed to retry failed tasks");
-      setError(message);
-      toast({
-        title: "Retry failed",
-        description: message,
-        variant: "destructive",
-        duration: 2600,
-        className: "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
-      });
-    } finally {
-      setCodexBusy(false);
-    }
-  }
-
-  async function copyCodexBatchId() {
-    if (!codexBatchId) return;
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(codexBatchId);
-      toast({
-        title: "Batch ID copied",
-        description: codexBatchId,
-        duration: 1800,
-        className: "border-slate-200 bg-slate-50 text-slate-900 animate-in fade-in zoom-in-95",
-      });
-    }
   }
 
   const resetPagination = useMemo(
@@ -1761,6 +1609,67 @@ export function JobsClient({
 
   return (
     <>
+      <Dialog open={batchStatusOpen} onOpenChange={setBatchStatusOpen}>
+        <DialogContent className="w-[min(95vw,560px)] rounded-2xl border-slate-200">
+          <DialogHeader>
+            <DialogTitle>Batch progress</DialogTitle>
+            <DialogDescription>
+              Read-only status for Codex automation. Manual controls are hidden for regular users.
+            </DialogDescription>
+          </DialogHeader>
+          {batchSummaryError ? (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+              {batchSummaryError}
+            </div>
+          ) : null}
+          {codexBatch ? (
+            <div className="space-y-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500">Status</div>
+                  <div className={`mt-0.5 text-sm font-semibold ${codexStatusTone}`}>{codexBatch.status}</div>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500">Progress</div>
+                  <div className="mt-0.5 text-sm font-semibold text-slate-900">
+                    {codexCompletedCount}/{codexTotalCount} ({codexProgressPercent}%)
+                  </div>
+                </div>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                  style={{ width: `${codexProgressPercent}%` }}
+                />
+              </div>
+              <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-4">
+                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+                  Pending: <span className="font-semibold text-slate-900">{codexProgress?.pending ?? 0}</span>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+                  Running: <span className="font-semibold text-slate-900">{codexProgress?.running ?? 0}</span>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+                  Succeeded: <span className="font-semibold text-slate-900">{codexProgress?.succeeded ?? 0}</span>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+                  Failed: <span className="font-semibold text-slate-900">{codexProgress?.failed ?? 0}</span>
+                </div>
+              </div>
+              {activeBatchId ? (
+                <div className="text-[11px] text-slate-500">
+                  Batch ID: <span className="font-mono text-slate-700">{activeBatchId}</span>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600">
+              No active batch. Codex starts and drives batch execution in the background.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={externalDialogOpen} onOpenChange={setExternalDialogOpen}>
         <DialogContent className="flex h-[min(88vh,760px)] w-[min(96vw,860px)] max-w-[860px] flex-col overflow-hidden">
           <DialogHeader>
@@ -2140,7 +2049,7 @@ export function JobsClient({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-2">
             <Button
               onClick={triggerSearch}
               disabled={loading}
@@ -2149,98 +2058,19 @@ export function JobsClient({
               <Search className="mr-1.5 h-4 w-4" />
               Search
             </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border-2 border-slate-900/10 bg-white/80 p-4 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.3)] backdrop-blur">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="text-sm font-semibold text-slate-900">Codex Batch</div>
-            <p className="text-xs text-slate-600">
-              Create a deterministic run set and execute each step from Codex.
-            </p>
-            {codexBatchId ? (
-              <div className="mt-1.5 text-xs text-slate-600">
-                Batch: <span className="font-mono text-[11px] text-slate-800">{codexBatchId}</span>
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              onClick={createCodexBatch}
-              disabled={codexBusy}
-              className="h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 active:translate-y-[1px] disabled:opacity-50"
-            >
-              Create batch
-            </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={runCodexBatchAuto}
-              disabled={!codexBatchId || codexBusy}
-              className="h-9 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+              onClick={() => setBatchStatusOpen(true)}
+              className="h-10 w-full rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 lg:w-auto"
             >
-              Run auto
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={runCodexBatchOnce}
-              disabled={!codexBatchId || codexBusy}
-              className="h-9 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
-            >
-              Run once
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={copyCodexBatchId}
-              disabled={!codexBatchId}
-              className="h-9 rounded-xl border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
-            >
-              <Copy className="mr-1.5 h-3.5 w-3.5" />
-              Copy ID
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={retryFailedBatchTasks}
-              disabled={!codexBatchId || codexBusy}
-              className="h-9 rounded-xl border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
-            >
-              Retry failed
+              <span className="mr-2">Batch progress</span>
+              <span className={`text-xs font-semibold ${codexStatusTone}`}>
+                {codexBatch ? `${codexProgressPercent}%` : "Idle"}
+              </span>
             </Button>
           </div>
         </div>
-        {codexBatch ? (
-          <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-5">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-slate-500">Status</div>
-              <div className="mt-0.5 font-semibold text-slate-900">{codexBatch.status}</div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-slate-500">Pending</div>
-              <div className="mt-0.5 font-semibold text-slate-900">{codexProgress?.pending ?? 0}</div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-slate-500">Running</div>
-              <div className="mt-0.5 font-semibold text-slate-900">{codexProgress?.running ?? 0}</div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-slate-500">Succeeded</div>
-              <div className="mt-0.5 font-semibold text-slate-900">{codexProgress?.succeeded ?? 0}</div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-slate-500">Failed</div>
-              <div className="mt-0.5 font-semibold text-slate-900">{codexProgress?.failed ?? 0}</div>
-            </div>
-          </div>
-        ) : null}
-        {batchSummaryError ? (
-          <div className="mt-2 text-xs text-rose-700">{batchSummaryError}</div>
-        ) : null}
       </div>
 
       {activeError ? (

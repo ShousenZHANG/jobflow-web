@@ -74,6 +74,12 @@ beforeEach(() => {
   }
   const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.url;
+    if (url.startsWith("/api/application-batches/active")) {
+      return new Response(JSON.stringify({ batchId: null, status: null, updatedAt: null }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     if (url.startsWith("/api/jobs?limit=50")) {
       return new Response(
         JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
@@ -135,6 +141,15 @@ describe("JobsClient", () => {
 
     const toolbar = screen.getAllByTestId("jobs-toolbar")[0];
     expect(within(toolbar).getByTestId("jobs-sort")).toBeInTheDocument();
+  });
+
+  it("keeps codex batch UI read-only for regular users", async () => {
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+    expect(await screen.findByRole("button", { name: /batch progress/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /create batch/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /run auto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /run once/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /retry failed/i })).not.toBeInTheDocument();
   });
 
   it("renders scroll areas for results and details", () => {
