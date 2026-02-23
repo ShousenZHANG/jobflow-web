@@ -24,6 +24,7 @@ export function TopNav() {
     { href: "/jobs", label: "Jobs" },
     { href: "/fetch", label: "Fetch" },
     { href: "/resume", label: "Resume" },
+    { href: "/automation", label: "Automation" },
   ];
   const email = data?.user?.email ?? "";
 
@@ -62,7 +63,7 @@ export function TopNav() {
             </nav>
           </div>
           <nav
-            className="grid grid-cols-3 gap-2 md:hidden"
+            className="grid grid-cols-4 gap-2 md:hidden"
             data-testid="mobile-tab-nav"
             aria-label="Primary"
           >

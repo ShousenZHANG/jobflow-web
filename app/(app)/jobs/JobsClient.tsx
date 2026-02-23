@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
@@ -1661,10 +1662,20 @@ export function JobsClient({
                   Batch ID: <span className="font-mono text-slate-700">{activeBatchId}</span>
                 </div>
               ) : null}
+              <div className="pt-1">
+                <Button asChild variant="outline" size="sm" className="h-8 rounded-lg">
+                  <Link href="/automation">Open setup guide</Link>
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600">
               No active batch. Codex starts and drives batch execution in the background.
+              <div className="mt-2">
+                <Button asChild variant="outline" size="sm" className="h-8 rounded-lg">
+                  <Link href="/automation">Open setup guide</Link>
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -2057,6 +2068,14 @@ export function JobsClient({
             >
               <Search className="mr-1.5 h-4 w-4" />
               Search
+            </Button>
+            <Button
+              asChild
+              type="button"
+              variant="outline"
+              className="h-10 w-full rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 lg:w-auto"
+            >
+              <Link href="/automation">Setup</Link>
             </Button>
             <Button
               type="button"

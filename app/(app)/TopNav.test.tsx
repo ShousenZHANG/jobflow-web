@@ -28,6 +28,7 @@ describe("TopNav", () => {
   it("does not render duplicate route progress element", () => {
     const { container } = render(<TopNav />);
     expect(screen.getAllByRole("link", { name: "Jobs" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Automation" }).length).toBeGreaterThan(0);
     expect(container.querySelector(".edu-route-progress")).toBeNull();
   });
 
@@ -39,5 +40,6 @@ describe("TopNav", () => {
     expect(screen.getAllByTestId("mobile-tab-jobs")[0]).toBeInTheDocument();
     expect(screen.getAllByTestId("mobile-tab-fetch")[0]).toBeInTheDocument();
     expect(screen.getAllByTestId("mobile-tab-resume")[0]).toBeInTheDocument();
+    expect(screen.getAllByTestId("mobile-tab-automation")[0]).toBeInTheDocument();
   });
 });

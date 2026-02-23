@@ -146,6 +146,7 @@ describe("JobsClient", () => {
   it("keeps codex batch UI read-only for regular users", async () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
     expect(await screen.findByRole("button", { name: /batch progress/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /setup/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /create batch/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /run auto/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /run once/i })).not.toBeInTheDocument();
