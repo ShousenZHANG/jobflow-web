@@ -5,6 +5,7 @@ const jobStore = vi.hoisted(() => ({
 }));
 
 const applicationStore = vi.hoisted(() => ({
+  findUnique: vi.fn(),
   upsert: vi.fn(),
 }));
 
@@ -128,9 +129,11 @@ describe("applications manual generate api", () => {
     });
     (renderResumeTex as unknown as ReturnType<typeof vi.fn>).mockReturnValue("\\documentclass{article}");
     jobStore.findFirst.mockReset();
+    applicationStore.findUnique.mockReset();
     applicationStore.upsert.mockReset();
     blobStore.put.mockReset();
     delete process.env.BLOB_READ_WRITE_TOKEN;
+    applicationStore.findUnique.mockResolvedValue(null);
   });
 
   it("returns parse error for invalid model output", async () => {
@@ -887,6 +890,15 @@ describe("applications manual generate api", () => {
 
     expect(res.status).toBe(200);
     expect(blobStore.put).toHaveBeenCalledTimes(1);
+    expect(blobStore.put).toHaveBeenCalledWith(
+      `applications/user-1/${VALID_JOB_ID}/cover.latest.pdf`,
+      expect.anything(),
+      expect.objectContaining({
+        allowOverwrite: true,
+        addRandomSuffix: false,
+        token: "blob-token",
+      }),
+    );
     expect(applicationStore.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         update: expect.objectContaining({

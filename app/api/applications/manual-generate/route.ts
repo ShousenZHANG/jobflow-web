@@ -11,8 +11,12 @@ import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
-import { put } from "@vercel/blob";
+import { del, put } from "@vercel/blob";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
+import {
+  APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+  buildApplicationArtifactBlobPath,
+} from "@/lib/server/files/applicationArtifactBlob";
 import { buildCoverEvidenceContext } from "@/lib/server/ai/coverContext";
 import { evaluateCoverQuality } from "@/lib/server/ai/coverQuality";
 import { buildPromptMeta } from "@/lib/server/ai/promptContract";
@@ -661,6 +665,19 @@ export async function POST(req: Request) {
     );
   }
 
+  const existingApplication = await prisma.application.findUnique({
+    where: {
+      userId_jobId: {
+        userId,
+        jobId: job.id,
+      },
+    },
+    select: {
+      resumePdfUrl: true,
+      coverPdfUrl: true,
+    },
+  });
+
   if (parsed.data.promptMeta) {
     const activeRules = await getActivePromptSkillRulesForUser(userId);
     const expectedPromptMeta = buildPromptMeta({
@@ -911,11 +928,20 @@ export async function POST(req: Request) {
   let persistedCoverPdfUrl: string | null = null;
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     try {
-      const blob = await put(`applications/${userId}/${job.id}/${filename}`, pdf, {
-        access: "public",
-        contentType: "application/pdf",
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
+      const blob = await put(
+        buildApplicationArtifactBlobPath({
+          userId,
+          jobId: job.id,
+          target: parsed.data.target,
+        }),
+        pdf,
+        {
+          access: "public",
+          contentType: "application/pdf",
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+          ...APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+        },
+      );
       if (parsed.data.target === "resume") {
         persistedResumePdfUrl = blob.url;
       } else {
@@ -976,6 +1002,21 @@ export async function POST(req: Request) {
       id: true,
     },
   });
+
+  const previousArtifactUrl =
+    parsed.data.target === "resume"
+      ? existingApplication?.resumePdfUrl ?? null
+      : existingApplication?.coverPdfUrl ?? null;
+  const currentArtifactUrl =
+    parsed.data.target === "resume" ? persistedResumePdfUrl : persistedCoverPdfUrl;
+  if (
+    process.env.BLOB_READ_WRITE_TOKEN &&
+    previousArtifactUrl &&
+    currentArtifactUrl &&
+    previousArtifactUrl !== currentArtifactUrl
+  ) {
+    await del(previousArtifactUrl, { token: process.env.BLOB_READ_WRITE_TOKEN }).catch(() => undefined);
+  }
 
   return new NextResponse(new Uint8Array(pdf), {
     status: 200,

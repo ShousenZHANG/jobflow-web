@@ -5,7 +5,11 @@ import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { tailorApplicationContent } from "@/lib/server/ai/tailorApplication";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
-import { put } from "@vercel/blob";
+import {
+  APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+  buildApplicationArtifactBlobPath,
+} from "@/lib/server/files/applicationArtifactBlob";
+import { del, put } from "@vercel/blob";
 
 type GenerateArtifactsInput = {
   userId: string;
@@ -24,15 +28,24 @@ type GenerateArtifactsResult = {
 async function uploadPdfToBlob(input: {
   userId: string;
   jobId: string;
-  filename: string;
+  target: "resume" | "cover";
   pdf: Buffer;
 }) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
-  const blob = await put(`applications/${input.userId}/${input.jobId}/${input.filename}`, input.pdf, {
-    access: "public",
-    contentType: "application/pdf",
-    token: process.env.BLOB_READ_WRITE_TOKEN,
-  });
+  const blob = await put(
+    buildApplicationArtifactBlobPath({
+      userId: input.userId,
+      jobId: input.jobId,
+      target: input.target,
+    }),
+    input.pdf,
+    {
+      access: "public",
+      contentType: "application/pdf",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      ...APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+    },
+  );
   return blob.url;
 }
 
@@ -53,6 +66,19 @@ export async function generateApplicationArtifactsForJob(input: GenerateArtifact
     throw new Error("JOB_NOT_FOUND");
   }
 
+  const existingApplication = await prisma.application.findUnique({
+    where: {
+      userId_jobId: {
+        userId: input.userId,
+        jobId: job.id,
+      },
+    },
+    select: {
+      resumePdfUrl: true,
+      coverPdfUrl: true,
+    },
+  });
+
   const profile = await getResumeProfile(input.userId);
   if (!profile) {
     throw new Error("NO_PROFILE");
@@ -67,7 +93,7 @@ export async function generateApplicationArtifactsForJob(input: GenerateArtifact
   const resumePdfUrl = await uploadPdfToBlob({
     userId: input.userId,
     jobId: job.id,
-    filename: resumePdfName,
+    target: "resume",
     pdf: resumeResult.pdf,
   }).catch(() => null);
 
@@ -114,7 +140,7 @@ export async function generateApplicationArtifactsForJob(input: GenerateArtifact
   const coverPdfUrl = await uploadPdfToBlob({
     userId: input.userId,
     jobId: job.id,
-    filename: coverPdfName,
+    target: "cover",
     pdf: coverPdf,
   }).catch(() => null);
 
@@ -172,5 +198,23 @@ export async function generateApplicationArtifactsForJob(input: GenerateArtifact
     coverPdfUrl,
     coverPdfName,
   };
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const staleUrls = [
+      existingApplication?.resumePdfUrl && resumePdfUrl && existingApplication.resumePdfUrl !== resumePdfUrl
+        ? existingApplication.resumePdfUrl
+        : null,
+      existingApplication?.coverPdfUrl && coverPdfUrl && existingApplication.coverPdfUrl !== coverPdfUrl
+        ? existingApplication.coverPdfUrl
+        : null,
+    ].filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+
+    if (staleUrls.length > 0) {
+      await Promise.allSettled(
+        staleUrls.map((url) => del(url, { token: process.env.BLOB_READ_WRITE_TOKEN })),
+      );
+    }
+  }
+
   return result;
 }

@@ -9,6 +9,10 @@ import { LatexRenderError } from "@/lib/server/latex/compilePdf";
 import { del, put } from "@vercel/blob";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
+import {
+  APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+  buildApplicationArtifactBlobPath,
+} from "@/lib/server/files/applicationArtifactBlob";
 import { canonicalizeJobUrl } from "@/lib/shared/canonicalizeJobUrl";
 
 export const runtime = "nodejs";
@@ -109,12 +113,17 @@ export async function PATCH(
         const mapped = mapResumeProfile(profile);
         const filename = buildPdfFilename(mapped.candidate.name, job.title);
         const blob = await put(
-          `applications/${userId}/${job.id}/${filename}`,
+          buildApplicationArtifactBlobPath({
+            userId,
+            jobId: job.id,
+            target: "resume",
+          }),
           pdfResult.pdf,
           {
             access: "public",
             contentType: "application/pdf",
             token: process.env.BLOB_READ_WRITE_TOKEN,
+            ...APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
           },
         );
 
