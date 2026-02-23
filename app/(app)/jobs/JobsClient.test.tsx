@@ -594,6 +594,98 @@ describe("JobsClient", () => {
     expect(revokeObjectUrlSpy).toHaveBeenCalled();
   });
 
+  it("reuses the downloaded skill pack between CV and CL when version is unchanged", async () => {
+    const user = userEvent.setup();
+    localStorage.clear();
+    const createObjectUrlSpy = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:skill-pack");
+    const revokeObjectUrlSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+    const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.startsWith("/api/jobs?limit=50")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs?")) {
+        return new Response(
+          JSON.stringify({ items: [baseJob], nextCursor: null, facets: { jobLevels: ["Mid"] } }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/jobs/") && (!init || init.method === "GET")) {
+        return new Response(
+          JSON.stringify({ id: baseJob.id, description: "Job description" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/applications/prompt")) {
+        const target =
+          init?.body && typeof init.body === "string"
+            ? (JSON.parse(init.body) as { target?: "resume" | "cover" }).target
+            : undefined;
+        const promptHash = target === "cover" ? "b".repeat(64) : "a".repeat(64);
+        return new Response(
+          JSON.stringify({
+            prompt: {
+              systemPrompt: "system",
+              userPrompt: "user",
+            },
+            expectedJsonShape: target === "cover" ? { cover: { paragraphOne: "string" } } : { cvSummary: "string" },
+            promptMeta: {
+              ruleSetId: "rules-1",
+              resumeSnapshotUpdatedAt: "2026-02-08T00:00:00.000Z",
+              promptTemplateVersion: "2026.02.v1",
+              schemaVersion: "2026-02-22",
+              skillPackVersion: "spv-1",
+              promptHash,
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.startsWith("/api/prompt-rules/skill-pack")) {
+        return new Response(new Blob(["skill-pack"]), {
+          status: 200,
+          headers: {
+            "content-disposition": 'attachment; filename="jobflow-skill-pack.tar.gz"',
+            "x-skill-pack-version": "spv-1",
+          },
+        });
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
+
+    const generateCvButton = (await screen.findAllByRole("button", { name: /generate cv/i }))[0];
+    await user.click(generateCvButton);
+
+    const downloadButton = await screen.findByRole("button", { name: /download skill pack/i });
+    await waitFor(() => {
+      expect(downloadButton).toBeEnabled();
+    });
+    await user.click(downloadButton);
+    expect(await screen.findByText(/copy prompt and paste it/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /cancel/i }));
+
+    const generateCoverButton = (await screen.findAllByRole("button", { name: /generate cl/i }))[0];
+    await user.click(generateCoverButton);
+    expect(await screen.findByText(/copy prompt and paste it/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /download skill pack/i })).not.toBeInTheDocument();
+
+    const downloadCalls = mockFetch.mock.calls.filter(([request]) => {
+      const requestUrl = typeof request === "string" ? request : request.url;
+      return requestUrl.startsWith("/api/prompt-rules/skill-pack");
+    });
+    expect(downloadCalls).toHaveLength(1);
+    expect(createObjectUrlSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectUrlSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("restores filtered query cache item when status update fails", async () => {
     const user = userEvent.setup();
     const client = new QueryClient({

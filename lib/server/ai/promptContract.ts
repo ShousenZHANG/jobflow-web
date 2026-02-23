@@ -10,6 +10,7 @@ export type PromptMeta = {
   resumeSnapshotUpdatedAt: string;
   promptTemplateVersion: string;
   schemaVersion: string;
+  skillPackVersion: string;
   promptHash: string;
 };
 
@@ -179,6 +180,22 @@ export function buildPromptHash(input: {
     .digest("hex");
 }
 
+export function buildSkillPackVersion(input: {
+  ruleSetId: string;
+  resumeSnapshotUpdatedAt: string;
+}) {
+  return createHash("sha256")
+    .update(
+      JSON.stringify({
+        ruleSetId: input.ruleSetId,
+        resumeSnapshotUpdatedAt: input.resumeSnapshotUpdatedAt,
+        promptTemplateVersion: PROMPT_TEMPLATE_VERSION,
+        schemaVersion: PROMPT_SCHEMA_VERSION,
+      }),
+    )
+    .digest("hex");
+}
+
 export function buildPromptMeta(input: {
   target: PromptTarget;
   ruleSetId: string;
@@ -189,7 +206,7 @@ export function buildPromptMeta(input: {
     resumeSnapshotUpdatedAt: input.resumeSnapshotUpdatedAt,
     promptTemplateVersion: PROMPT_TEMPLATE_VERSION,
     schemaVersion: PROMPT_SCHEMA_VERSION,
+    skillPackVersion: buildSkillPackVersion(input),
     promptHash: buildPromptHash(input),
   };
 }
-

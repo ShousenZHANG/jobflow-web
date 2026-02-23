@@ -6,6 +6,7 @@ import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplat
 import { buildGlobalSkillPackFiles } from "@/lib/server/ai/skillPack";
 import { createTarGz } from "@/lib/server/archive/tar";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
+import { buildSkillPackVersion } from "@/lib/server/ai/promptContract";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,11 @@ export async function GET(req: Request) {
       resumeSnapshotUpdatedAt: profile.updatedAt.toISOString(),
     };
   }
+  const resumeSnapshotUpdatedAt = context?.resumeSnapshotUpdatedAt ?? "missing-profile";
+  const skillPackVersion = buildSkillPackVersion({
+    ruleSetId: rules.id,
+    resumeSnapshotUpdatedAt,
+  });
 
   const files = buildGlobalSkillPackFiles(rules, context, {
     redactContext,
@@ -64,6 +70,7 @@ export async function GET(req: Request) {
       "content-disposition": `attachment; filename="${filename}"`,
       "x-request-id": requestId,
       "x-skill-pack-redacted": redactContext ? "1" : "0",
+      "x-skill-pack-version": skillPackVersion,
     },
   });
 }

@@ -112,6 +112,8 @@ describe("applications prompt api", () => {
     expect(json.promptMeta.promptTemplateVersion.length).toBeGreaterThan(0);
     expect(typeof json.promptMeta.schemaVersion).toBe("string");
     expect(json.promptMeta.schemaVersion.length).toBeGreaterThan(0);
+    expect(typeof json.promptMeta.skillPackVersion).toBe("string");
+    expect(json.promptMeta.skillPackVersion.length).toBe(64);
     expect(typeof json.promptMeta.promptHash).toBe("string");
     expect(json.promptMeta.promptHash.length).toBe(64);
     expect(json.expectedJsonSchema?.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
@@ -154,6 +156,8 @@ describe("applications prompt api", () => {
     expect(json.expectedJsonShape.cover.paragraphOne).toBe("string");
     expect(json.expectedJsonShape.cover.salutation).toBe("string (optional)");
     expect(json.expectedJsonShape.cover.subject).toBe("string (optional)");
+    expect(typeof json.promptMeta.skillPackVersion).toBe("string");
+    expect(json.promptMeta.skillPackVersion.length).toBe(64);
     expect(typeof json.promptMeta.promptHash).toBe("string");
     expect(json.promptMeta.promptHash.length).toBe(64);
     expect(json.expectedJsonSchema?.$schema).toBe("https://json-schema.org/draft/2020-12/schema");

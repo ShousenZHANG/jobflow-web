@@ -91,6 +91,7 @@ type ExternalPromptMeta = {
   resumeSnapshotUpdatedAt: string;
   promptTemplateVersion?: string;
   schemaVersion?: string;
+  skillPackVersion?: string;
   promptHash?: string;
 };
 
@@ -107,6 +108,7 @@ function isValidPromptMeta(value: unknown): value is ExternalPromptMeta {
     (record.promptTemplateVersion === undefined ||
       typeof record.promptTemplateVersion === "string") &&
     (record.schemaVersion === undefined || typeof record.schemaVersion === "string") &&
+    (record.skillPackVersion === undefined || typeof record.skillPackVersion === "string") &&
     (record.promptHash === undefined || typeof record.promptHash === "string")
   );
 }
@@ -132,6 +134,9 @@ function isSkillPackFresh(required: ExternalPromptMeta | null): boolean {
   if (!required) return false;
   const saved = readSavedSkillPackMeta();
   if (!saved) return false;
+  if (required.skillPackVersion && saved.skillPackVersion) {
+    return saved.skillPackVersion === required.skillPackVersion;
+  }
   const baseMatches =
     saved.ruleSetId === required.ruleSetId &&
     saved.resumeSnapshotUpdatedAt === required.resumeSnapshotUpdatedAt;
@@ -140,12 +145,7 @@ function isSkillPackFresh(required: ExternalPromptMeta | null): boolean {
   const templateMatches =
     !required.promptTemplateVersion || saved.promptTemplateVersion === required.promptTemplateVersion;
   const schemaMatches = !required.schemaVersion || saved.schemaVersion === required.schemaVersion;
-  const hashMatches = !required.promptHash || saved.promptHash === required.promptHash;
-  return (
-    templateMatches &&
-    schemaMatches &&
-    hashMatches
-  );
+  return templateMatches && schemaMatches;
 }
 
 const HIGHLIGHT_KEYWORDS = [
@@ -1162,6 +1162,10 @@ export function JobsClient({
             schemaVersion:
               typeof json.promptMeta.schemaVersion === "string"
                 ? json.promptMeta.schemaVersion
+                : undefined,
+            skillPackVersion:
+              typeof json.promptMeta.skillPackVersion === "string"
+                ? json.promptMeta.skillPackVersion
                 : undefined,
             promptHash: typeof json.promptMeta.promptHash === "string" ? json.promptMeta.promptHash : undefined,
           }
