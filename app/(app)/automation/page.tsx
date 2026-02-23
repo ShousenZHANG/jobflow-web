@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import PromptBlock from "./PromptBlock";
+import SkillPackDownloadButton from "./SkillPackDownloadButton";
 
 const MCP_CONFIG = `{
   "mcpServers": {
@@ -93,12 +92,7 @@ export default async function AutomationPage() {
               workspace, then run all generation with that package as the source of truth.
             </p>
             <div className="mt-3">
-              <Button asChild size="sm">
-                <a href="/api/prompt-rules/skill-pack" download>
-                  <Download className="h-4 w-4" />
-                  Download Skill Pack
-                </a>
-              </Button>
+              <SkillPackDownloadButton />
             </div>
           </section>
 
