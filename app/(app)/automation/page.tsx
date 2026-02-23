@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PromptBlock from "./PromptBlock";
 
 const MCP_CONFIG = `{
@@ -90,6 +92,14 @@ export default async function AutomationPage() {
               Download from <code>/api/prompt-rules/skill-pack</code>, import the package into your Cursor/Codex
               workspace, then run all generation with that package as the source of truth.
             </p>
+            <div className="mt-3">
+              <Button asChild size="sm">
+                <a href="/api/prompt-rules/skill-pack" download>
+                  <Download className="h-4 w-4" />
+                  Download Skill Pack
+                </a>
+              </Button>
+            </div>
           </section>
 
           <PromptBlock title="Slash Command Presets" content={COMMAND_PRESET} copyLabel="Copy command presets" />

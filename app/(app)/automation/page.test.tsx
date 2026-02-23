@@ -28,6 +28,9 @@ describe("AutomationPage", () => {
     expect(screen.getByText(/do NOT use \/api\/application-batches\/\{batchId\}\/execute/i)).toBeInTheDocument();
     expect(screen.getByText(/Download and Import Skill Pack/i)).toBeInTheDocument();
     expect(screen.getByText(/\/api\/prompt-rules\/skill-pack/)).toBeInTheDocument();
+    const downloadLink = screen.getByRole("link", { name: /download skill pack/i });
+    expect(downloadLink).toBeInTheDocument();
+    expect(downloadLink).toHaveAttribute("href", "/api/prompt-rules/skill-pack");
     expect(screen.getByText(/\/jobflow-run/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /copy prompt a/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /copy prompt b/i })).toBeInTheDocument();
