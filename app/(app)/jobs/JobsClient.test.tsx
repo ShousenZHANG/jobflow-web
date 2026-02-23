@@ -74,7 +74,7 @@ beforeEach(() => {
   }
   const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.url;
-    if (url.startsWith("/api/application-batches/active")) {
+    if (url.startsWith("/api/application-batches/latest")) {
       return new Response(JSON.stringify({ batchId: null, status: null, updatedAt: null }), {
         status: 200,
         headers: { "Content-Type": "application/json" },

@@ -29,9 +29,9 @@ const PROMPT_RUN = `Use Playwright MCP with my signed-in session:
 3) If response is ACTIVE_BATCH_EXISTS, reuse returned batchId
 4) Initialize completedTasks as []
 5) Loop:
-   5a) POST /api/application-batches/{batchId}/codex-run with body {"maxSteps":1,"completedTasks": completedTasks}
+   5a) POST /api/application-batches/{batchId}/run-once with body {"maxSteps":1,"completedTasks": completedTasks}
    5b) Reset completedTasks = []
-   5c) For each claimed task:
+   5c) For each task in response.tasks:
       - Build resume prompt: POST /api/applications/prompt with body {"jobId":"<task.jobId>","target":"resume"}
       - Generate strict JSON from the returned prompt, then import it:
         POST /api/applications/manual-generate with body {"jobId":"<task.jobId>","target":"resume","modelOutput":"<JSON string>","promptMeta":<resume promptMeta>}
@@ -51,7 +51,7 @@ Do not click unrelated UI. Prefer API-first execution.`;
 const PROMPT_RETRY = `Use Playwright MCP to retry failed tasks:
 1) Read current active batch from GET /api/application-batches/active
 2) POST /api/application-batches/{batchId}/retry-failed with body {"limit":100}
-3) Use the same codex-run + applications/prompt + manual-generate loop strategy from Prompt B (do not use /execute)
+3) Use the same run-once + applications/prompt + manual-generate loop strategy from Prompt B (do not use /execute)
 4) Return final failed list only`;
 
 const COMMAND_PRESET = `Recommended Cursor/Codex command aliases:

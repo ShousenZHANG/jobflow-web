@@ -5,8 +5,6 @@ import { prisma } from "@/lib/server/prisma";
 
 export const runtime = "nodejs";
 
-const ACTIVE_BATCH_STATUSES = ["QUEUED", "RUNNING"] as const;
-
 export async function GET() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -15,12 +13,7 @@ export async function GET() {
   }
 
   const batch = await prisma.applicationBatch.findFirst({
-    where: {
-      userId,
-      status: {
-        in: [...ACTIVE_BATCH_STATUSES],
-      },
-    },
+    where: { userId },
     orderBy: [{ updatedAt: "desc" }],
     select: {
       id: true,
@@ -43,3 +36,4 @@ export async function GET() {
     updatedAt: batch.updatedAt.toISOString(),
   });
 }
+

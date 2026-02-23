@@ -786,7 +786,7 @@ export function JobsClient({
   const codexActiveBatchQuery = useQuery({
     queryKey: ["application-batch-active"],
     queryFn: async ({ signal }): Promise<BatchActiveResponse> => {
-      const res = await fetch("/api/application-batches/active", {
+      const res = await fetch("/api/application-batches/latest", {
         signal,
         cache: "no-store",
       });

@@ -27,7 +27,7 @@ describe("application batch active api", () => {
     applicationBatchStore.findFirst.mockReset();
   });
 
-  it("returns latest batch id for current user", async () => {
+  it("returns active batch id for current user", async () => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: { id: "user-1" },
     });
@@ -44,5 +44,30 @@ describe("application batch active api", () => {
     expect(json.batchId).toBe("550e8400-e29b-41d4-a716-446655440000");
     expect(json.status).toBe("RUNNING");
     expect(typeof json.updatedAt).toBe("string");
+    expect(applicationBatchStore.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: "user-1",
+          status: { in: ["QUEUED", "RUNNING"] },
+        }),
+      }),
+    );
+  });
+
+  it("returns null payload when no active batch exists", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    applicationBatchStore.findFirst.mockResolvedValueOnce(null);
+
+    const res = await GET(new Request("http://localhost/api/application-batches/active"));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toEqual({
+      batchId: null,
+      status: null,
+      updatedAt: null,
+    });
   });
 });
