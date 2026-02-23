@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
+import PromptBlock from "./PromptBlock";
 
 const MCP_CONFIG = `{
   "mcpServers": {
@@ -58,17 +59,6 @@ const COMMAND_PRESET = `Recommended Cursor/Codex command aliases:
 
 Store these aliases in your local command snippets so users can run a single slash command daily.`;
 
-function PromptBlock({ title, content }: { title: string; content: string }) {
-  return (
-    <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
-      <pre className="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-6 text-slate-700">
-        {content}
-      </pre>
-    </section>
-  );
-}
-
 export default async function AutomationPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login?callbackUrl=/automation");
@@ -91,10 +81,8 @@ export default async function AutomationPage() {
               Install the Playwright MCP browser extension, copy your extension token, and paste this server config in
               Cursor MCP settings.
             </p>
-            <pre className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white p-3 text-xs leading-6 text-slate-700">
-              {MCP_CONFIG}
-            </pre>
           </section>
+          <PromptBlock title="Playwright MCP Config JSON" content={MCP_CONFIG} copyLabel="Copy MCP config JSON" />
 
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
             <h2 className="text-sm font-semibold text-slate-900">Step 2: Download and Import Skill Pack</h2>
@@ -104,13 +92,17 @@ export default async function AutomationPage() {
             </p>
           </section>
 
-          <PromptBlock title="Slash Command Presets" content={COMMAND_PRESET} />
+          <PromptBlock title="Slash Command Presets" content={COMMAND_PRESET} copyLabel="Copy command presets" />
 
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
             <h2 className="text-sm font-semibold text-slate-900">Step 3: Verify Connection</h2>
             <p className="mt-1 text-xs text-slate-600">In a blank Codex chat, run this exact prompt first.</p>
           </section>
-          <PromptBlock title="Prompt A - Setup Verification" content={PROMPT_VERIFY} />
+          <PromptBlock
+            title="Prompt A - Setup Verification"
+            content={PROMPT_VERIFY}
+            copyLabel="Copy Prompt A"
+          />
 
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
             <h2 className="text-sm font-semibold text-slate-900">Step 4: Run Full Batch</h2>
@@ -118,7 +110,11 @@ export default async function AutomationPage() {
               Use this as the main daily command after you finish manual filtering.
             </p>
           </section>
-          <PromptBlock title="Prompt B - Full Batch Execution" content={PROMPT_RUN} />
+          <PromptBlock
+            title="Prompt B - Full Batch Execution"
+            content={PROMPT_RUN}
+            copyLabel="Copy Prompt B"
+          />
 
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
             <h2 className="text-sm font-semibold text-slate-900">Step 5: Retry Failed Tasks</h2>
@@ -126,7 +122,7 @@ export default async function AutomationPage() {
               Use this when summary reports failures.
             </p>
           </section>
-          <PromptBlock title="Prompt C - Retry Failed" content={PROMPT_RETRY} />
+          <PromptBlock title="Prompt C - Retry Failed" content={PROMPT_RETRY} copyLabel="Copy Prompt C" />
         </div>
       </section>
     </main>

@@ -29,5 +29,8 @@ describe("AutomationPage", () => {
     expect(screen.getByText(/Download and Import Skill Pack/i)).toBeInTheDocument();
     expect(screen.getByText(/\/api\/prompt-rules\/skill-pack/)).toBeInTheDocument();
     expect(screen.getByText(/\/jobflow-run/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /copy prompt a/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /copy prompt b/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /copy prompt c/i })).toBeInTheDocument();
   });
 });
