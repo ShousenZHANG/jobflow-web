@@ -39,12 +39,31 @@ const JOB_ID = "770e8400-e29b-41d4-a716-446655440000";
 
 describe("application batch execute api", () => {
   beforeEach(() => {
+    process.env.ENABLE_BATCH_EXECUTE_AUTOGEN = "1";
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockReset();
     applicationBatchStore.findFirst.mockReset();
     runner.claimNextBatchTask.mockReset();
     runner.completeBatchTask.mockReset();
     runner.getBatchProgress.mockReset();
     artifacts.generateApplicationArtifactsForJob.mockReset();
+  });
+
+  it("returns EXECUTE_DISABLED when server-side auto execute is disabled", async () => {
+    process.env.ENABLE_BATCH_EXECUTE_AUTOGEN = "0";
+
+    const res = await POST(
+      new Request(`http://localhost/api/application-batches/${BATCH_ID}/execute`, {
+        method: "POST",
+        body: JSON.stringify({ maxSteps: 5 }),
+      }),
+      { params: Promise.resolve({ id: BATCH_ID }) },
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(410);
+    expect(json.error).toBe("EXECUTE_DISABLED");
+    expect(runner.claimNextBatchTask).not.toHaveBeenCalled();
+    expect(artifacts.generateApplicationArtifactsForJob).not.toHaveBeenCalled();
   });
 
   it("claims tasks, generates artifacts, and completes them", async () => {

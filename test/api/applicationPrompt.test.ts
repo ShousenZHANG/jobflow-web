@@ -98,6 +98,7 @@ describe("applications prompt api", () => {
     expect(res.status).toBe(200);
     expect(typeof json.prompt.systemPrompt).toBe("string");
     expect(typeof json.prompt.userPrompt).toBe("string");
+    expect(json.prompt.systemPrompt).toContain("Use the imported skill package as the single source of truth.");
     expect(json.prompt.systemPrompt).toContain(
       "Markdown bold markers inside JSON strings are allowed when explicitly requested.",
     );

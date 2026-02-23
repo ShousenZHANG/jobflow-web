@@ -14,6 +14,10 @@ import { generateApplicationArtifactsForJob } from "@/lib/server/applications/ge
 
 export const runtime = "nodejs";
 
+function isAutoExecuteEnabled() {
+  return process.env.ENABLE_BATCH_EXECUTE_AUTOGEN === "1";
+}
+
 const ParamsSchema = z.object({
   id: z.string().uuid(),
 });
@@ -51,6 +55,17 @@ function toTaskErrorMessage(error: unknown) {
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  if (!isAutoExecuteEnabled()) {
+    return NextResponse.json(
+      {
+        error: "EXECUTE_DISABLED",
+        message:
+          "Server-side auto execute is disabled. Use /codex-run with /applications/prompt and /applications/manual-generate.",
+      },
+      { status: 410 },
+    );
+  }
+
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

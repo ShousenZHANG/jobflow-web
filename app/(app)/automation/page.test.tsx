@@ -24,5 +24,10 @@ describe("AutomationPage", () => {
     expect(screen.getByText("Prompt B - Full Batch Execution")).toBeInTheDocument();
     expect(screen.getByText("Prompt C - Retry Failed")).toBeInTheDocument();
     expect(screen.getByText(/PLAYWRIGHT_MCP_EXTENSION_TOKEN/)).toBeInTheDocument();
+    expect(screen.getByText(/\/api\/application-batches\/\{batchId\}\/codex-run/)).toBeInTheDocument();
+    expect(screen.getByText(/do NOT use \/api\/application-batches\/\{batchId\}\/execute/i)).toBeInTheDocument();
+    expect(screen.getByText(/Download and Import Skill Pack/i)).toBeInTheDocument();
+    expect(screen.getByText(/\/api\/prompt-rules\/skill-pack/)).toBeInTheDocument();
+    expect(screen.getByText(/\/jobflow-run/)).toBeInTheDocument();
   });
 });
