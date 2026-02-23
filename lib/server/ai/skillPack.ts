@@ -3,8 +3,12 @@ import {
   PROMPT_SCHEMA_VERSION,
   PROMPT_TEMPLATE_VERSION,
   getExpectedJsonSchemaForTarget,
-  getExpectedJsonShapeForTarget,
 } from "@/lib/server/ai/promptContract";
+import {
+  buildApplicationSystemPrompt,
+  buildApplicationUserPrompt,
+  getTemplateResumePromptInput,
+} from "@/lib/server/ai/applicationPromptBuilder";
 
 type SkillPackContext = {
   resumeSnapshot: unknown;
@@ -34,96 +38,45 @@ function redactResumeSnapshot(snapshot: unknown) {
   };
 }
 
+function extractLatestExperienceBullets(snapshot: unknown) {
+  if (!snapshot || typeof snapshot !== "object") return [] as string[];
+  const record = snapshot as Record<string, unknown>;
+  const experiences = Array.isArray(record.experiences) ? record.experiences : [];
+  const latest = experiences[0];
+  if (!latest || typeof latest !== "object") return [] as string[];
+  const latestRecord = latest as Record<string, unknown>;
+  const bullets = Array.isArray(latestRecord.bullets) ? latestRecord.bullets : [];
+  return bullets.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
 function buildPromptFiles(
   rules: PromptSkillRuleSet,
   context?: SkillPackContext,
   options?: SkillPackOptions,
 ) {
-  const hardRules = list(rules.hardConstraints);
-  const cvRules = list(rules.cvRules);
-  const coverRules = list(rules.coverRules);
-
-  const resumePromptTemplate = [
-    "Task: Generate role-tailored CV payload only.",
-    "",
-    "Required JSON shape:",
-    JSON.stringify(getExpectedJsonShapeForTarget("resume"), null, 2),
-    "",
-    "Hard Constraints:",
-    hardRules,
-    "",
-    "CV Rules:",
-    cvRules,
-    "",
-    "CV summary checklist:",
-    "- In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.",
-    "- Keep bolding readable: emphasize key terms, avoid bolding full sentences.",
-    "",
-    "Skills output policy:",
-    "- JSON-only requirement applies to outer output structure; markdown bold markers are allowed inside JSON string values when requested.",
-    "- Return skillsFinal as complete final skills list (not delta).",
-    "- skillsFinal max 5 major categories, each as { label, items }.",
-    "- Prefer existing categories from resume snapshot and merge related skills.",
-    "- Prioritize JD must-have skills for ATS matching when grounded in base resume context.",
-    "- If a JD must-have has no grounded evidence, do not claim direct ownership; use only factually supportable adjacent skills.",
-    "- Order skillsFinal by JD priority and keep content factual (no fabrication).",
-    "- Do NOT return skillsAdditions. Return skillsFinal only.",
-    "- Resume target JSON keys allowed: cvSummary, latestExperience, skillsFinal.",
-    "- When top-3 JD responsibilities are under-covered and evidence exists, target 2-3 new bullets.",
-    "- Prioritize uncovered top-3 responsibilities first for new bullets.",
-    "- If top-3 needs unsupported tech, do not fabricate; use fallback JD responsibilities or adjacent proven technologies to complete the first 2 additions when possible.",
-    "- For newly added bullets, bold at least one JD-critical keyword using clean markdown **keyword** format.",
-    "- Markdown bold markers must be clean: **keyword** (no spaces inside markers).",
-    "- New bullets must stay consistent with latest-experience timeframe and realistic scope.",
-    "- Read base context from jobflow-skill-pack/context/resume-snapshot.json (summary, experiences, skills).",
-    "- Do not output file/path diagnostics or process notes in JSON.",
-    "",
-    "Job Input:",
-    "- Job title: {{JOB_TITLE}}",
-    "- Company: {{COMPANY}}",
-    "- Job description: {{JOB_DESCRIPTION}}",
-  ].join("\n");
-
-  const coverPromptTemplate = [
-    "Task: Generate role-tailored cover payload only.",
-    "",
-    "Required JSON shape:",
-    JSON.stringify(getExpectedJsonShapeForTarget("cover"), null, 2),
-    "",
-    "Hard Constraints:",
-    hardRules,
-    "",
-    "Cover Rules:",
-    coverRules,
-    "",
-    "Cover structure checklist (must follow):",
-    "- JSON-only requirement applies to outer output structure; markdown bold markers are allowed inside JSON string values when requested.",
-    "- candidateTitle (optional): role-aligned title for letter header.",
-    "- subject: role-specific and concise (prefer 'Application for <Role>' only, no candidate name).",
-    "- date: current/provided date string.",
-    "- salutation: addressee text only (no leading 'Dear', no trailing comma).",
-    "- paragraphOne: application intent + role-fit summary from real resume facts (can be multi-sentence).",
-    "- paragraphTwo: map to JD responsibilities in priority order with concrete evidence and delivery outcomes.",
-    "- Top-3 JD responsibilities must be covered first with explicit, grounded evidence points.",
-    "- If direct evidence is missing for a JD point, do not claim it; use only adjacent proven evidence that is factually supportable.",
-    "- paragraphThree: motivation for this role/company in natural first-person candidate voice (specific, non-generic).",
-    "- Bold all JD-critical keywords that appear in the cover output using clean markdown **keyword** markers.",
-    "- Keep bolding readable: emphasize critical terms without turning full sentences into bold text.",
-    "- closing + signatureName: include when possible.",
-    "- Keep voice professional but natural, with subtle personality (lightly engaging but still formal).",
-    "- Use a strong candidate narrative; avoid recruiter boilerplate.",
-    "- Never fabricate facts, tools, metrics, or domain exposure.",
-    "- Cover target JSON keys allowed: cover only (no resume keys).",
-    "- Read base context from jobflow-skill-pack/context/resume-snapshot.json (summary, experiences, skills).",
-    "- Do not output file/path diagnostics or process notes in JSON.",
-    "",
-    "Job Input:",
-    "- Job title: {{JOB_TITLE}}",
-    "- Company: {{COMPANY}}",
-    "- Job description: {{JOB_DESCRIPTION}}",
-  ].join("\n");
+  const systemPromptTemplate = buildApplicationSystemPrompt(rules);
+  const jobTemplateInput = {
+    title: "{{JOB_TITLE}}",
+    company: "{{COMPANY}}",
+    description: "{{JOB_DESCRIPTION}}",
+  };
+  const resumeTemplateInput = getTemplateResumePromptInput(
+    extractLatestExperienceBullets(context?.resumeSnapshot),
+  );
+  const resumePromptTemplate = buildApplicationUserPrompt({
+    target: "resume",
+    rules,
+    job: jobTemplateInput,
+    resume: resumeTemplateInput,
+  });
+  const coverPromptTemplate = buildApplicationUserPrompt({
+    target: "cover",
+    rules,
+    job: jobTemplateInput,
+  });
 
   const files = [
+    { name: "jobflow-skill-pack/prompts/system-prompt-template.txt", content: systemPromptTemplate },
     { name: "jobflow-skill-pack/prompts/resume-user-prompt-template.txt", content: resumePromptTemplate },
     { name: "jobflow-skill-pack/prompts/cover-user-prompt-template.txt", content: coverPromptTemplate },
   ];
@@ -163,8 +116,9 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
    - {{JOB_TITLE}}
    - {{COMPANY}}
    - {{JOB_DESCRIPTION}}
-4. Use \`schema/output-schema.resume.json\` for CV or \`schema/output-schema.cover.json\` for cover.
-5. Paste target JSON back into Jobflow via Generate CV / Generate Cover Letter.
+4. Use \`prompts/system-prompt-template.txt\` as system prompt and the target user prompt template.
+5. Use \`schema/output-schema.resume.json\` for CV or \`schema/output-schema.cover.json\` for cover.
+6. Paste target JSON back into Jobflow via Generate CV / Generate Cover Letter.
 
 ## Notes
 - This is a global template pack, not bound to one specific job.
@@ -172,6 +126,7 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
 - Prompt template version: ${PROMPT_TEMPLATE_VERSION}
 - Output schema version: ${PROMPT_SCHEMA_VERSION}
 - Prompt generation for each job is done separately in Jobflow UI.
+- Prompt templates in this pack are generated from the same builder used by \`/api/applications/prompt\`.
 - Rules version id: ${rules.id}
 - Locale: ${rules.locale}
 `;
