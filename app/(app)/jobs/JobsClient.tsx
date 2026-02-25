@@ -450,7 +450,6 @@ export function JobsClient({
   const [locationFilter, setLocationFilter] = useState("ALL");
   const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [timeZone] = useState<string | null>(() => getUserTimeZone() || null);
   const [isPending, startTransition] = useTransition();
   const resultsScrollRef = useRef<HTMLDivElement | null>(null);
@@ -1475,13 +1474,10 @@ export function JobsClient({
     ? getErrorMessage(detailQuery.error, "Failed to load details")
     : null;
   const detailLoading = detailQuery.isFetching && !detailQuery.data;
-  const isLongDescription = selectedDescription.length > 600;
   const experienceSignals = useMemo(
     () => parseExperienceGate(selectedDescription),
     [selectedDescription],
   );
-  const isExpanded =
-    selectedJob && expandedDescriptions[selectedJob.id] ? true : false;
   const highlightRegex = useMemo(() => {
     const patterns = HIGHLIGHT_KEYWORDS.map((keyword) => {
       const escaped = escapeRegExp(keyword);
@@ -2218,11 +2214,7 @@ export function JobsClient({
                   <div className="rounded-lg border border-dashed border-slate-900/10 bg-transparent p-5">
                     {selectedDescription ? (
                       <div className="space-y-3">
-                        <div
-                          className={`relative space-y-4 ${
-                            !isExpanded ? "max-h-56 overflow-hidden" : ""
-                          }`}
-                        >
+                        <div className="space-y-4">
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeHighlight]}
@@ -2280,24 +2272,7 @@ export function JobsClient({
                           >
                             {selectedDescription}
                           </ReactMarkdown>
-                          {!isExpanded && isLongDescription ? (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-muted/60 to-transparent" />
-                          ) : null}
                         </div>
-                        {isLongDescription ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setExpandedDescriptions((prev) => ({
-                                ...prev,
-                                [selectedJob.id]: !isExpanded,
-                              }))
-                            }
-                          >
-                            {isExpanded ? "Show less" : "Show more"}
-                          </Button>
-                        ) : null}
                       </div>
                     ) : (
                       <div className="text-sm text-muted-foreground">
