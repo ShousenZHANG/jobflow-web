@@ -919,26 +919,63 @@ body {
   overflow: hidden;
 }
 
+.jobs-scroll-area {
+  --jobs-scroll-track: rgba(148, 163, 184, 0.14);
+  --jobs-scroll-track-hover: rgba(148, 163, 184, 0.22);
+  --jobs-scroll-thumb: rgba(100, 116, 139, 0.5);
+  --jobs-scroll-thumb-hover: rgba(71, 85, 105, 0.68);
+}
+
+.dark .jobs-scroll-area {
+  --jobs-scroll-track: rgba(148, 163, 184, 0.2);
+  --jobs-scroll-track-hover: rgba(148, 163, 184, 0.3);
+  --jobs-scroll-thumb: rgba(148, 163, 184, 0.56);
+  --jobs-scroll-thumb-hover: rgba(203, 213, 225, 0.7);
+}
+
 .jobs-scroll-area [data-radix-scroll-area-viewport] {
-  scrollbar-width: auto;
-  scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--jobs-scroll-thumb) transparent;
 }
 
 .jobs-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar {
-  width: 10px;
+  width: 11px;
+}
+
+.jobs-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .jobs-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.45);
+  background-color: var(--jobs-scroll-thumb);
+  border: 3px solid transparent;
   border-radius: 999px;
+  background-clip: content-box;
+}
+
+.jobs-scroll-area:hover [data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
+  background-color: var(--jobs-scroll-thumb-hover);
 }
 
 .jobs-scroll-area .scroll-area-scrollbar[data-orientation="vertical"] {
   width: 12px;
   padding: 2px;
-  background: rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  background: transparent;
+  transition: background-color 180ms ease, opacity 180ms ease;
+}
+
+.jobs-scroll-area:hover .scroll-area-scrollbar[data-orientation="vertical"] {
+  background: var(--jobs-scroll-track-hover);
 }
 
 .jobs-scroll-area .scroll-area-thumb {
-  background: rgba(100, 116, 139, 0.62);
+  min-height: 36px;
+  border-radius: 999px;
+  background: var(--jobs-scroll-thumb);
+  transition: background-color 180ms ease;
+}
+
+.jobs-scroll-area .scroll-area-thumb:hover {
+  background: var(--jobs-scroll-thumb-hover);
 }
