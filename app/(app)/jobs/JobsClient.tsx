@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -11,7 +11,6 @@ import { Copy, Download, ExternalLink, FileText, MapPin, Search, Trash2 } from "
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +30,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useGuide } from "@/app/GuideContext";
 import { useFetchStatus, type FetchRunStatus } from "@/app/FetchStatusContext";
+
+const INFINITE_SCROLL_TRIGGER_RATIO = 0.8;
 
 type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
@@ -434,9 +435,7 @@ export function JobsClient({
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
-  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
-  const [pageIndex, setPageIndex] = useState(0);
-  const [cursor, setCursor] = useState<string | null>(null);
+  const [loadedCursors, setLoadedCursors] = useState<(string | null)[]>([null]);
   const lastSeenImportRef = useRef<{
     runId: string | null;
     status: FetchRunStatus | null;
@@ -646,14 +645,13 @@ export function JobsClient({
   }
   const didHydrateInitialRef = useRef(false);
 
-  // Force SSR-provided initialItems into the React Query cache for the default "page 1" view,
-  // even if a fresh cache entry already exists (e.g. navigating back within staleTime).
+  // Force SSR-provided initialItems into the first-page cache entry for this query.
   useLayoutEffect(() => {
     if (didHydrateInitialRef.current) return;
     const shouldUseInitial =
       initialItems.length > 0 &&
-      cursor === null &&
-      pageIndex === 0 &&
+      loadedCursors.length === 1 &&
+      loadedCursors[0] === null &&
       initialQueryRef.current === queryString;
     if (!shouldUseInitial) return;
 
@@ -677,84 +675,97 @@ export function JobsClient({
       totalCount: old?.totalCount,
     }));
     didHydrateInitialRef.current = true;
-  }, [cursor, initialCursor, initialItems, pageIndex, queryClient, queryString]);
+  }, [initialCursor, initialItems, loadedCursors, queryClient, queryString]);
 
-  const jobsQuery = useQuery({
-    queryKey: ["jobs", queryString, cursor],
-    queryFn: async ({ signal }): Promise<JobsResponse> => {
-      const sp = new URLSearchParams(queryString);
-      if (cursor) sp.set("cursor", cursor);
-      const res = await fetch(`/api/jobs?${sp.toString()}`, { signal });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to load jobs");
-      return {
-        items: json.items ?? [],
-        nextCursor: json.nextCursor ?? null,
-        totalCount: typeof json.totalCount === "number" ? json.totalCount : undefined,
-        facets: json.facets ?? undefined,
-      };
-    },
-    enabled: Boolean(queryString),
-    placeholderData: (prev) => prev,
-    refetchOnWindowFocus: false,
-    staleTime: 30_000,
-    initialData: (): JobsResponse | undefined => {
-      const shouldUseInitial =
-        initialItems.length > 0 &&
-        cursor === null &&
-        pageIndex === 0 &&
-        initialQueryRef.current === queryString;
-      if (!shouldUseInitial) return undefined;
-      const initialLevels = Array.from(
-        new Set(
-          initialItems
-            .map((item) => item.jobLevel)
-            .filter((level): level is string => Boolean(level)),
-        ),
-      );
-      return {
-        items: initialItems,
-        nextCursor: initialCursor ?? null,
-        facets: {
-          jobLevels: initialLevels,
-        },
-      };
-    },
+  const pageQueries = useQueries({
+    queries: loadedCursors.map((loadedCursor, pageIndex) => ({
+      queryKey: ["jobs", queryString, loadedCursor] as const,
+      queryFn: async ({ signal }): Promise<JobsResponse> => {
+        const sp = new URLSearchParams(queryString);
+        if (loadedCursor) sp.set("cursor", loadedCursor);
+        const res = await fetch(`/api/jobs?${sp.toString()}`, { signal });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.error || "Failed to load jobs");
+        return {
+          items: json.items ?? [],
+          nextCursor: json.nextCursor ?? null,
+          totalCount: typeof json.totalCount === "number" ? json.totalCount : undefined,
+          facets: json.facets ?? undefined,
+        };
+      },
+      enabled: Boolean(queryString),
+      placeholderData: (prev: JobsResponse | undefined) => prev,
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+      initialData: (): JobsResponse | undefined => {
+        const shouldUseInitial =
+          pageIndex === 0 &&
+          initialItems.length > 0 &&
+          loadedCursor === null &&
+          loadedCursors.length === 1 &&
+          initialQueryRef.current === queryString;
+        if (!shouldUseInitial) return undefined;
+        const initialLevels = Array.from(
+          new Set(
+            initialItems
+              .map((item) => item.jobLevel)
+              .filter((level): level is string => Boolean(level)),
+          ),
+        );
+        return {
+          items: initialItems,
+          nextCursor: initialCursor ?? null,
+          facets: {
+            jobLevels: initialLevels,
+          },
+        };
+      },
+    })),
   });
 
-  const items = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
-  const totalCount = jobsQuery.data?.totalCount;
-  const nextCursor = jobsQuery.data?.nextCursor ?? null;
-  const loading = jobsQuery.isFetching;
+  const pageResponses = useMemo(
+    () =>
+      pageQueries
+        .map((query) => query.data)
+        .filter((data): data is JobsResponse => Boolean(data)),
+    [pageQueries],
+  );
+
+  const items = useMemo(() => {
+    const merged: JobItem[] = [];
+    const seenIds = new Set<string>();
+    for (const page of pageResponses) {
+      for (const item of page.items ?? []) {
+        if (seenIds.has(item.id)) continue;
+        seenIds.add(item.id);
+        merged.push(item);
+      }
+    }
+    return merged;
+  }, [pageResponses]);
+
+  const totalCount = pageResponses[0]?.totalCount;
+  const nextCursor = pageResponses.length
+    ? pageResponses[pageResponses.length - 1]?.nextCursor ?? null
+    : null;
+  const loading = pageQueries.some((query) => query.isFetching);
+  const loadingInitial = pageQueries.some((query) => query.isLoading) && items.length === 0;
   const delayedLoading = useDebouncedValue(loading, 160);
   const showLoadingOverlay = (loading ? delayedLoading : false) || isPending;
   const listOpacityClass = showLoadingOverlay ? "opacity-70" : "opacity-100";
-  const queryError = jobsQuery.error
-    ? getErrorMessage(jobsQuery.error, "Failed to load jobs")
+  const firstQueryError = pageQueries.find((query) => query.error)?.error;
+  const queryError = firstQueryError
+    ? getErrorMessage(firstQueryError, "Failed to load jobs")
     : null;
-
   const activeError = error ?? queryError;
-  const prevDisabled = loading || pageIndex === 0;
-  const nextDisabled = loading || !nextCursor;
 
   const jobLevelOptions = useMemo(() => {
     const fromItems = items
       .map((item) => item.jobLevel)
       .filter((level): level is string => Boolean(level));
-    const fromFacets = jobsQuery.data?.facets?.jobLevels ?? [];
+    const fromFacets = pageResponses[0]?.facets?.jobLevels ?? [];
     return Array.from(new Set([...fromFacets, ...fromItems]));
-  }, [items, jobsQuery.data?.facets?.jobLevels]);
-
-
-  function scrollToTop() {
-    if (typeof window === "undefined") return;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    // Also reset the ScrollArea viewport so the list starts from the top.
-    const viewport = resultsScrollRef.current?.querySelector(
-      "[data-radix-scroll-area-viewport]",
-    );
-    if (viewport) viewport.scrollTop = 0;
-  }
+  }, [items, pageResponses]);
 
   function triggerSearch() {
     resetPagination();
@@ -763,12 +774,41 @@ export function JobsClient({
 
   const resetPagination = useMemo(
     () => () => {
-      setCursorStack([null]);
-      setPageIndex(0);
-      setCursor(null);
+      setLoadedCursors([null]);
     },
     [],
   );
+
+  useEffect(() => {
+    const root = resultsScrollRef.current;
+    if (!root) return;
+    const viewport = root.querySelector<HTMLElement>("[data-radix-scroll-area-viewport]");
+    if (!viewport) return;
+
+    const tryLoadMore = () => {
+      if (loading || !nextCursor) return;
+      const viewportBottom = viewport.scrollTop + viewport.clientHeight;
+      const triggerPoint = viewport.scrollHeight * INFINITE_SCROLL_TRIGGER_RATIO;
+      const isNearBottom =
+        viewportBottom >= triggerPoint || viewport.scrollHeight <= viewport.clientHeight + 1;
+      if (!isNearBottom) return;
+      setLoadedCursors((prev) => {
+        if (prev.includes(nextCursor)) return prev;
+        return [...prev, nextCursor];
+      });
+    };
+
+    const onScroll = () => {
+      tryLoadMore();
+    };
+
+    viewport.addEventListener("scroll", onScroll, { passive: true });
+    const rafId = window.requestAnimationFrame(tryLoadMore);
+    return () => {
+      viewport.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(rafId);
+    };
+  }, [loading, nextCursor]);
 
   // If a Fetch Run imports new jobs, refresh the jobs list to surface the newest data quickly.
   // Terminal state: always reset to page 1 and refresh.
@@ -791,7 +831,7 @@ export function JobsClient({
     const isTerminal = current.status === "SUCCEEDED" || current.status === "FAILED";
     const wasTerminal = previous.status === "SUCCEEDED" || previous.status === "FAILED";
     const justBecameTerminal = isTerminal && !wasTerminal;
-    const isFirstPage = pageIndex === 0 && cursor === null;
+    const isFirstPage = loadedCursors.length === 1 && loadedCursors[0] === null;
     const inProgress = current.status === "RUNNING" || current.status === "QUEUED";
 
     if (!justBecameTerminal && !(inProgress && isFirstPage)) return;
@@ -815,11 +855,10 @@ export function JobsClient({
       });
     }
   }, [
-    cursor,
     fetchImportedCount,
     fetchRunId,
     fetchStatus,
-    pageIndex,
+    loadedCursors,
     queryClient,
     resetPagination,
     toast,
@@ -832,10 +871,6 @@ export function JobsClient({
       return statusParam;
     }
     return "ALL";
-  }
-
-  function isSameJobsQueryKey(a: readonly unknown[], b: readonly unknown[]) {
-    return a.length === b.length && a.every((value, index) => value === b[index]);
   }
 
   function restorePatchedJob(old: JobsResponse | undefined, patch: JobsQueryRollbackPatch) {
@@ -1009,9 +1044,11 @@ export function JobsClient({
       setError(null);
       setDeletingIds((prev) => new Set(prev).add(id));
       await queryClient.cancelQueries({ queryKey: ["jobs"] });
-      const activeQueryKey = ["jobs", queryString, cursor] as const;
       const previousSelectedId = selectedId;
       let nextSelectedId = selectedId;
+      if (selectedId === id) {
+        nextSelectedId = items.find((it) => it.id !== id)?.id ?? null;
+      }
       const rollbackByQueryHash = new Map<string, JobsQueryRollbackPatch>();
 
       const queryCache = queryClient.getQueryCache().findAll({ queryKey: ["jobs"] });
@@ -1037,9 +1074,6 @@ export function JobsClient({
           }
 
           const nextItems = old.items.filter((it) => it.id !== id);
-          if (selectedId === id && isSameJobsQueryKey(key, activeQueryKey)) {
-            nextSelectedId = nextItems[0]?.id ?? null;
-          }
 
           return {
             ...old,
@@ -1760,9 +1794,9 @@ export function JobsClient({
 
       <div
         data-testid="jobs-shell"
-        className="edu-page-enter relative flex h-full flex-1 min-h-0 flex-col gap-6 text-foreground"
+        className="edu-page-enter relative flex h-full flex-1 min-h-0 flex-col overflow-hidden gap-2 text-foreground"
       >
-      <div className="flex h-full min-h-0 flex-1 flex-col gap-6">
+      <div className="flex h-full min-h-0 flex-1 flex-col gap-2 overflow-hidden">
         <div
         data-testid="jobs-toolbar"
         className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]"
@@ -1895,9 +1929,9 @@ export function JobsClient({
         </div>
       ) : null}
 
-        <section className="relative grid flex-1 min-h-0 gap-4 lg:max-h-[calc(100vh-260px)] lg:grid-cols-[380px_1fr] lg:items-stretch">
+        <section className="relative grid flex-1 min-h-0 gap-3 lg:grid-cols-[380px_1fr] lg:items-stretch">
         {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
-        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0 lg:max-h-[calc(100vh-260px)]">
+        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>
               Results
@@ -1907,16 +1941,17 @@ export function JobsClient({
                 </span>
               ) : null}
             </span>
-            <span className="text-xs text-muted-foreground">Page {pageIndex + 1}</span>
+            <span className="text-xs text-muted-foreground">{items.length} loaded</span>
           </div>
           <ScrollArea
             ref={resultsScrollRef}
+            type="always"
             data-testid="jobs-results-scroll"
             data-loading={showLoadingOverlay ? "true" : "false"}
             data-virtual="false"
-            className={`max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
+            className={`jobs-scroll-area max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
           >
-            {loading && items.length === 0 ? (
+            {loadingInitial ? (
               <div className="space-y-3 p-3">
                 {Array.from({ length: 6 }).map((_, idx) => (
                   <div key={`s-${idx}`} className="rounded-lg border p-3">
@@ -1971,54 +2006,12 @@ export function JobsClient({
               </div>
             ) : null}
           </ScrollArea>
-          <div className="border-t px-4 py-3">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => {
-                      if (pageIndex > 0) {
-                        scrollToTop();
-                        const prevCursor = cursorStack[pageIndex - 1] ?? null;
-                        setPageIndex(pageIndex - 1);
-                        setCursor(prevCursor);
-                      }
-                    }}
-                    aria-disabled={prevDisabled}
-                    className={
-                      prevDisabled
-                        ? "pointer-events-none cursor-not-allowed opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => {
-                      if (loading || !nextCursor) return;
-                      scrollToTop();
-                      setCursorStack((prev) => {
-                        const copy = [...prev];
-                        copy[pageIndex + 1] = nextCursor;
-                        return copy;
-                      });
-                      setPageIndex(pageIndex + 1);
-                      setCursor(nextCursor);
-                    }}
-                    aria-disabled={nextDisabled}
-                    className={
-                      nextDisabled
-                        ? "pointer-events-none cursor-not-allowed opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+          <div className="border-t px-4 py-2 text-xs text-muted-foreground">
+            {nextCursor ? (loading ? "Loading more jobs..." : "Scroll down to load more") : "End of results"}
           </div>
         </div>
 
-        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0 lg:max-h-[calc(100vh-260px)] lg:sticky lg:top-24">
+        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0">
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="relative flex flex-wrap items-start justify-between gap-3">
@@ -2167,9 +2160,10 @@ export function JobsClient({
             )}
           </div>
           <ScrollArea
+            type="always"
             data-testid="jobs-details-scroll"
             data-loading={showLoadingOverlay ? "true" : "false"}
-            className={`max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
+            className={`jobs-scroll-area max-h-full flex-1 min-h-0 transition-opacity duration-200 ease-out ${listOpacityClass}`}
           >
             <div key={effectiveSelectedId ?? "empty"} ref={detailsScrollRef} className="p-4">
             {selectedJob ? (

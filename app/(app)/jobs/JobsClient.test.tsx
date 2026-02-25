@@ -312,9 +312,7 @@ describe("JobsClient", () => {
     expect(screen.queryByText("Old cached job")).not.toBeInTheDocument();
   });
 
-  it("resets to page 1 and refetches jobs when a fetch run finishes with imports", async () => {
-    const user = userEvent.setup();
-
+  it("keeps infinite scrolling and resets to the first loaded page when a fetch run finishes", async () => {
     const page1Job = { ...baseJob };
     const page2Job = { ...baseJob, id: "44444444-4444-4444-4444-444444444444", title: "Page 2 job" };
 
@@ -361,12 +359,10 @@ describe("JobsClient", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByText(/Page 1/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Frontend Engineer").length).toBeGreaterThan(0);
     });
 
-    await user.click(screen.getByLabelText("Go to next page"));
     await waitFor(() => {
-      expect(screen.getAllByText(/Page 2/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText("Page 2 job").length).toBeGreaterThan(0);
     });
 
@@ -376,7 +372,8 @@ describe("JobsClient", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByText(/Page 1/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Frontend Engineer").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Page 2 job")).not.toBeInTheDocument();
     });
 
     const calls = (global.fetch as unknown as { mock: { calls: Array<[RequestInfo, RequestInit | undefined]> } }).mock.calls;

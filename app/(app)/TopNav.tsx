@@ -30,7 +30,7 @@ export function TopNav() {
 
   return (
     <div className="sticky top-0 z-40">
-      <div className="relative app-frame py-3">
+      <div className="relative app-frame py-2">
         <div className="edu-nav edu-nav--press flex-col items-stretch gap-3 md:flex-row md:items-center">
           <div className="flex items-center justify-between gap-4 md:justify-start">
             <div className="flex items-center gap-3">

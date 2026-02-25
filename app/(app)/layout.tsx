@@ -25,7 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="edu-blob edu-blob--peach" />
       <GuideProvider>
         <TopNav />
-        <div className="relative z-10 app-frame app-shell flex min-h-0 flex-col py-4 sm:py-6 md:py-8">
+        <div className="relative z-10 app-frame app-shell flex min-h-0 flex-col py-2 sm:py-3 md:py-4">
           <RouteTransition>{children}</RouteTransition>
         </div>
       </GuideProvider>
