@@ -915,6 +915,10 @@ body {
   scrollbar-gutter: stable;
 }
 
+.app-shell.jobs-scroll-lock {
+  overflow: hidden;
+}
+
 .jobs-scroll-area [data-radix-scroll-area-viewport] {
   scrollbar-width: auto;
   scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
@@ -927,4 +931,14 @@ body {
 .jobs-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
   background: rgba(100, 116, 139, 0.45);
   border-radius: 999px;
+}
+
+.jobs-scroll-area .scroll-area-scrollbar[data-orientation="vertical"] {
+  width: 12px;
+  padding: 2px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.jobs-scroll-area .scroll-area-thumb {
+  background: rgba(100, 116, 139, 0.62);
 }

@@ -455,6 +455,16 @@ export function JobsClient({
   const [isPending, startTransition] = useTransition();
   const resultsScrollRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const appShell = document.querySelector<HTMLElement>(".app-shell");
+    if (!appShell) return;
+    appShell.classList.add("jobs-scroll-lock");
+    return () => {
+      appShell.classList.remove("jobs-scroll-lock");
+    };
+  }, []);
+
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
     if (typeof err === "string") return err;
