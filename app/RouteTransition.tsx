@@ -29,7 +29,7 @@ export function RouteTransition({ children }: { children: React.ReactNode }) {
         exit={reduce ? {} : { opacity: 0, scale: 1.005 }}
         transition={transition}
         data-route-transition="fade"
-        className="flex min-h-0 flex-1 flex-col origin-top [will-change:transform,opacity]"
+        className="flex h-full min-h-0 flex-1 flex-col origin-top [will-change:transform,opacity]"
       >
         {children}
       </motion.div>
