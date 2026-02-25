@@ -43,7 +43,7 @@ export default async function JobsPage() {
   const nextCursor = items.length ? items[items.length - 1].id : null;
 
   return (
-    <main className="flex h-full min-h-0 flex-1 flex-col overflow-hidden gap-2">
+    <main className="flex min-h-0 flex-1 flex-col gap-2 lg:h-full lg:overflow-hidden">
       <JobsClient initialItems={items} initialCursor={nextCursor} />
     </main>
   );

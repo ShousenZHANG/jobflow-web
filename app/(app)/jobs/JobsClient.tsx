@@ -1800,9 +1800,9 @@ export function JobsClient({
 
       <div
         data-testid="jobs-shell"
-        className="edu-page-enter relative flex h-full flex-1 min-h-0 flex-col overflow-hidden gap-2 text-foreground"
+        className="edu-page-enter relative flex flex-1 min-h-0 flex-col gap-2 text-foreground lg:h-full lg:overflow-hidden"
       >
-      <div className="flex h-full min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 lg:h-full lg:overflow-hidden">
         <div
         data-testid="jobs-toolbar"
         className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]"
@@ -1935,7 +1935,7 @@ export function JobsClient({
         </div>
       ) : null}
 
-        <section className="relative grid h-full flex-1 min-h-0 gap-3 lg:grid-cols-[380px_1fr] lg:items-stretch">
+        <section className="relative grid flex-1 min-h-0 gap-3 lg:h-full lg:grid-cols-[380px_1fr] lg:items-stretch">
         {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
         <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0">
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">

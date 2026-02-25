@@ -919,6 +919,12 @@ body {
   overflow: hidden;
 }
 
+@media (max-width: 1023px) {
+  .app-shell.jobs-scroll-lock {
+    overflow-y: auto;
+  }
+}
+
 .jobs-scroll-area {
   --jobs-scroll-track: rgba(148, 163, 184, 0.14);
   --jobs-scroll-track-hover: rgba(148, 163, 184, 0.22);
