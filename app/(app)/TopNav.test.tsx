@@ -3,9 +3,11 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { TopNav } from "./TopNav";
 
 const openGuideMock = vi.fn();
+const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/jobs",
+  useRouter: () => ({ push: pushMock }),
 }));
 
 vi.mock("next-auth/react", () => ({
@@ -32,14 +34,11 @@ describe("TopNav", () => {
     expect(container.querySelector(".edu-route-progress")).toBeNull();
   });
 
-  it("renders a dedicated mobile tab navigation fallback", () => {
+  it("renders a dedicated mobile route dropdown", () => {
     render(<TopNav />);
 
-    const mobileTabs = screen.getAllByTestId("mobile-tab-nav")[0];
-    expect(mobileTabs).toBeInTheDocument();
-    expect(screen.getAllByTestId("mobile-tab-jobs")[0]).toBeInTheDocument();
-    expect(screen.getAllByTestId("mobile-tab-fetch")[0]).toBeInTheDocument();
-    expect(screen.getAllByTestId("mobile-tab-resume")[0]).toBeInTheDocument();
-    expect(screen.getAllByTestId("mobile-tab-automation")[0]).toBeInTheDocument();
+    expect(screen.getAllByTestId("mobile-route-select-wrap")[0]).toBeInTheDocument();
+    expect(screen.getAllByTestId("mobile-route-select")[0]).toBeInTheDocument();
+    expect(screen.queryByTestId("mobile-tab-nav")).not.toBeInTheDocument();
   });
 });

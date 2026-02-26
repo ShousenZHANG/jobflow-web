@@ -437,31 +437,6 @@ body {
   color: #14532d;
 }
 
-.edu-nav-mobile-tabs {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.edu-nav-mobile-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.edu-nav-mobile-tabs__row {
-  display: flex;
-  min-width: max-content;
-  align-items: center;
-  gap: 0.5rem;
-  padding-bottom: 2px;
-}
-
-.edu-nav-mobile-pill {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  line-height: 1.1;
-}
-
 @media (max-width: 767px) {
   .edu-nav {
     border-radius: 2rem;

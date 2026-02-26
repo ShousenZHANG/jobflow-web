@@ -508,26 +508,21 @@ describe("JobsClient", () => {
     expect(actionRows[0]).toHaveClass("grid", "grid-cols-1", "sm:grid-cols-2");
   });
 
-  it("uses a mobile pane switcher so JD stays reachable on small screens", async () => {
+  it("keeps results and details panels both visible on mobile layouts", async () => {
     const user = userEvent.setup();
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     const resultsPanel = screen.getAllByTestId("jobs-results-panel")[0];
     const detailsPanel = screen.getAllByTestId("jobs-details-panel")[0];
-    const switcher = screen.getAllByTestId("jobs-mobile-pane-switch")[0];
-    expect(switcher).toBeInTheDocument();
+    expect(screen.queryByTestId("jobs-mobile-pane-switch")).not.toBeInTheDocument();
     expect(resultsPanel.className).toContain("flex");
-    expect(detailsPanel.className).toContain("hidden");
+    expect(detailsPanel.className).toContain("flex");
 
     const jobButton = (await screen.findAllByRole("button", { name: /Frontend Engineer/i }))[0];
     await user.click(jobButton);
 
-    expect(resultsPanel.className).toContain("hidden");
-    expect(detailsPanel.className).toContain("flex");
-
-    const resultsSwitch = screen.getAllByTestId("jobs-mobile-pane-results")[0];
-    await user.click(resultsSwitch);
     expect(resultsPanel.className).toContain("flex");
+    expect(detailsPanel.className).toContain("flex");
   });
 
   it("disables skill pack download until prompt meta is ready, then advances to Copy Prompt with one click", async () => {
