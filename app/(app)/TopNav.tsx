@@ -63,28 +63,30 @@ export function TopNav() {
             </nav>
           </div>
           <nav
-            className="grid grid-cols-4 gap-2 md:hidden"
+            className="edu-nav-mobile-tabs md:hidden"
             data-testid="mobile-tab-nav"
             aria-label="Primary"
           >
-            {links.map((link) => {
-              const active = pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={`mobile-${link.href}`}
-                  href={link.href}
-                  onClick={prepareRouteChange}
-                  data-testid={`mobile-tab-${link.label.toLowerCase()}`}
-                  className={`edu-nav-link edu-nav-pill justify-center text-sm ${
-                    active ? "edu-nav-pill--active" : ""
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+            <div className="edu-nav-mobile-tabs__row">
+              {links.map((link) => {
+                const active = pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={`mobile-${link.href}`}
+                    href={link.href}
+                    onClick={prepareRouteChange}
+                    data-testid={`mobile-tab-${link.label.toLowerCase()}`}
+                    className={`edu-nav-link edu-nav-pill edu-nav-mobile-pill ${
+                      active ? "edu-nav-pill--active" : ""
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
-          <div className="flex items-center justify-end gap-2 text-sm sm:gap-3">
+          <div className="flex w-full items-center justify-end gap-2 text-sm sm:gap-3 md:w-auto">
             {email ? (
               <a
                 href={`mailto:${email}`}
@@ -96,7 +98,7 @@ export function TopNav() {
             <Button
               variant="outline"
               size="sm"
-              className="edu-outline edu-cta--press edu-outline--compact h-9 px-3 text-xs"
+              className="edu-outline edu-cta--press edu-outline--compact h-9 flex-1 px-3 text-xs sm:flex-none"
               onClick={openGuide}
             >
               <CircleHelp className="mr-1 h-3.5 w-3.5" />
@@ -110,7 +112,7 @@ export function TopNav() {
             <Button
               variant="outline"
               size="sm"
-              className="edu-outline edu-cta--press edu-outline--compact h-9 px-3 text-xs"
+              className="edu-outline edu-cta--press edu-outline--compact h-9 flex-1 px-3 text-xs sm:flex-none"
               onClick={() => signOut({ callbackUrl: "/login" })}
             >
               Sign out

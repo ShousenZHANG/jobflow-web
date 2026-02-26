@@ -450,6 +450,7 @@ export function JobsClient({
   const [locationFilter, setLocationFilter] = useState("ALL");
   const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
+  const [mobilePane, setMobilePane] = useState<"results" | "details">("results");
   const [timeZone] = useState<string | null>(() => getUserTimeZone() || null);
   const [isPending, startTransition] = useTransition();
   const resultsScrollRef = useRef<HTMLDivElement | null>(null);
@@ -463,6 +464,12 @@ export function JobsClient({
       appShell.classList.remove("jobs-scroll-lock");
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setMobilePane("results");
+    }
+  }, [selectedId]);
 
   function getErrorMessage(err: unknown, fallback = "Failed") {
     if (err instanceof Error) return err.message;
@@ -777,6 +784,7 @@ export function JobsClient({
   }, [items, pageResponses]);
 
   function triggerSearch() {
+    setMobilePane("results");
     resetPagination();
     queryClient.invalidateQueries({ queryKey: ["jobs"] });
   }
@@ -1800,7 +1808,7 @@ export function JobsClient({
 
       <div
         data-testid="jobs-shell"
-        className="edu-page-enter relative flex flex-1 min-h-0 flex-col gap-2 text-foreground lg:h-full lg:overflow-hidden"
+        className="edu-page-enter relative flex flex-1 min-h-0 flex-col gap-2 pb-24 text-foreground lg:h-full lg:overflow-hidden lg:pb-0"
       >
       <div className="flex min-h-0 flex-1 flex-col gap-2 lg:h-full lg:overflow-hidden">
         <div
@@ -1937,7 +1945,10 @@ export function JobsClient({
 
         <section className="relative grid flex-1 min-h-0 gap-3 lg:h-full lg:grid-cols-[380px_1fr] lg:items-stretch">
         {showLoadingOverlay ? <div className="edu-loading-bar" aria-hidden /> : null}
-        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0">
+        <div
+          data-testid="jobs-results-panel"
+          className={`${mobilePane === "results" ? "flex" : "hidden"} relative min-h-[320px] h-[56dvh] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] sm:h-[62dvh] lg:flex lg:h-auto lg:min-h-0`}
+        >
           <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
             <span>
               Results
@@ -1978,6 +1989,7 @@ export function JobsClient({
                       type="button"
                       onClick={() => {
                         setSelectedId(it.id);
+                        setMobilePane("details");
                       }}
                       data-perf="cv-auto"
                       className={`jobflow-list-item w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
@@ -2017,7 +2029,10 @@ export function JobsClient({
           </div>
         </div>
 
-        <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] lg:min-h-0">
+        <div
+          data-testid="jobs-details-panel"
+          className={`${mobilePane === "details" ? "flex" : "hidden"} relative min-h-[320px] h-[56dvh] flex-1 flex-col overflow-hidden rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_24px_50px_-36px_rgba(15,23,42,0.38)] sm:h-[62dvh] lg:flex lg:h-auto lg:min-h-0`}
+        >
           <div className="border-b px-4 py-3">
             {selectedJob ? (
               <div className="relative flex flex-wrap items-start justify-between gap-3">
@@ -2291,6 +2306,42 @@ export function JobsClient({
           </ScrollArea>
         </div>
         </section>
+        <div
+          data-testid="jobs-mobile-pane-switch"
+          className="fixed inset-x-0 bottom-[max(0.65rem,env(safe-area-inset-bottom))] z-30 px-3 lg:hidden"
+        >
+          <div className="mx-auto grid w-full max-w-[520px] grid-cols-2 rounded-2xl border border-slate-900/10 bg-white/95 p-1 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.55)] backdrop-blur">
+            <Button
+              type="button"
+              size="sm"
+              data-testid="jobs-mobile-pane-results"
+              variant={mobilePane === "results" ? "default" : "ghost"}
+              className={
+                mobilePane === "results"
+                  ? "h-9 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600"
+                  : "h-9 rounded-xl text-slate-600 hover:text-slate-800"
+              }
+              onClick={() => setMobilePane("results")}
+            >
+              Results
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              data-testid="jobs-mobile-pane-details"
+              variant={mobilePane === "details" ? "default" : "ghost"}
+              className={
+                mobilePane === "details"
+                  ? "h-9 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600"
+                  : "h-9 rounded-xl text-slate-600 hover:text-slate-800"
+              }
+              disabled={!selectedJob}
+              onClick={() => setMobilePane("details")}
+            >
+              Details
+            </Button>
+          </div>
+        </div>
       </div>
       </div>
       <AlertDialog
