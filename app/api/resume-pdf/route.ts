@@ -5,8 +5,10 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
+import { renderResumeCNTex } from "@/lib/server/latex/renderResumeCN";
 import { LatexRenderError, compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
+import { mapResumeProfileCN } from "@/lib/server/latex/mapResumeProfileCN";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 
 export const runtime = "nodejs";
@@ -107,8 +109,25 @@ export async function POST(req: Request) {
     );
   }
 
-  const input = mapResumeProfile(sourceProfile);
-  const tex = renderResumeTex(input);
+  const profileRecord = sourceProfile as Record<string, unknown>;
+  const locale = typeof profileRecord.locale === "string" ? profileRecord.locale : "en-AU";
+
+  let tex: string;
+  let candidateName: string;
+  let candidateTitle: string;
+
+  if (locale === "zh-CN") {
+    const input = mapResumeProfileCN(sourceProfile);
+    tex = renderResumeCNTex(input);
+    candidateName = input.candidate.name;
+    candidateTitle = input.candidate.title;
+  } else {
+    const input = mapResumeProfile(sourceProfile);
+    tex = renderResumeTex(input);
+    candidateName = input.candidate.name;
+    candidateTitle = input.candidate.title;
+  }
+
   let pdf: Buffer;
   try {
     pdf = await compileLatexToPdf(tex);
@@ -132,7 +151,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const filename = buildPdfFilename(input.candidate.name, input.candidate.title);
+  const filename = buildPdfFilename(candidateName, candidateTitle);
 
   const body = new Uint8Array(pdf);
   return new NextResponse(body, {
