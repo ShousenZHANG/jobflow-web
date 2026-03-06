@@ -60,7 +60,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
   const run = await prisma.fetchRun.findFirst({
     where: { id: parsed.data.id, userId },
-    select: { id: true, status: true, queries: true, updatedAt: true },
+    select: { id: true, status: true, market: true, queries: true, updatedAt: true },
   });
   if (!run) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   if (run.status !== "QUEUED") {
@@ -76,7 +76,10 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   const owner = envOrThrow("GITHUB_OWNER");
   const repo = envOrThrow("GITHUB_REPO");
   const token = envOrThrow("GITHUB_TOKEN");
-  const workflow = process.env.GITHUB_WORKFLOW_FILE || "jobspy-fetch.yml";
+  const workflow =
+    run.market === "CN"
+      ? process.env.GITHUB_CN_WORKFLOW_FILE || "cn-fetch.yml"
+      : process.env.GITHUB_WORKFLOW_FILE || "jobspy-fetch.yml";
   const ref = process.env.GITHUB_REF || "master";
 
   // Take a short-lived lock to prevent double-dispatch. We keep status=QUEUED until the worker reports RUNNING.

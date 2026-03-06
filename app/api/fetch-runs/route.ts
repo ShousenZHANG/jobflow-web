@@ -24,24 +24,26 @@ const DESC_EXCLUDE_ALLOWED = new Set([
   "sponsorship_unavailable",
 ]);
 
-const CreateSchema = z
+const queriesField = z
+  .union([z.array(z.string().min(1)), z.string().min(1)])
+  .optional()
+  .transform((v) => {
+    if (!v) return [];
+    if (typeof v === "string") {
+      return v
+        .split("|")
+        .flatMap((chunk) => chunk.split(","))
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    return v.map((s) => s.trim()).filter(Boolean);
+  });
+
+const AUSchema = z
   .object({
+    market: z.literal("AU").optional().default("AU"),
     title: z.string().trim().min(1).optional(),
-    queries: z
-      .union([z.array(z.string().min(1)), z.string().min(1)])
-      .optional()
-      .transform((v) => {
-        if (!v) return [];
-        if (typeof v === "string") {
-          // allow "a, b | c" style input
-          return v
-            .split("|")
-            .flatMap((chunk) => chunk.split(","))
-            .map((s) => s.trim())
-            .filter(Boolean);
-        }
-        return v.map((s) => s.trim()).filter(Boolean);
-      }),
+    queries: queriesField,
     location: z.string().trim().min(1).optional(),
     hoursOld: z.coerce.number().int().min(1).max(24 * 30).optional(),
     smartExpand: z.coerce.boolean().optional().default(true),
@@ -59,6 +61,18 @@ const CreateSchema = z
     path: ["title"],
   });
 
+const CNSchema = z.object({
+  market: z.literal("CN"),
+  queries: z.array(z.string().min(1)).min(1),
+  city: z.string().min(1),
+  platforms: z
+    .array(z.enum(["boss", "lagou", "liepin", "zhilian"]))
+    .min(1),
+  excludeKeywords: z.array(z.string()).optional().default([]),
+  salaryMin: z.coerce.number().optional(),
+  salaryMax: z.coerce.number().optional(),
+});
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -68,7 +82,47 @@ export async function POST(req: Request) {
   }
 
   const json = await req.json().catch(() => null);
-  const parsed = CreateSchema.safeParse(json);
+  const marketHint =
+    json && typeof json === "object" && "market" in json ? json.market : "AU";
+
+  if (marketHint === "CN") {
+    const parsed = CNSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "INVALID_BODY", details: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
+    const d = parsed.data;
+    const title = d.queries[0] ?? "";
+    const run = await prisma.fetchRun.create({
+      data: {
+        userId,
+        userEmail: userEmail.toLowerCase(),
+        status: "QUEUED",
+        market: "CN",
+        importedCount: 0,
+        queries: {
+          title,
+          queries: d.queries,
+          city: d.city,
+          platforms: d.platforms,
+          excludeKeywords: d.excludeKeywords,
+          salaryMin: d.salaryMin,
+          salaryMax: d.salaryMax,
+        },
+        location: d.city,
+        hoursOld: null,
+        resultsWanted: null,
+        includeFromQueries: false,
+        filterDescription: false,
+      },
+      select: { id: true },
+    });
+    return NextResponse.json({ id: run.id }, { status: 201 });
+  }
+
+  const parsed = AUSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "INVALID_BODY", details: parsed.error.flatten() },

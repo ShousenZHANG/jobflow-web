@@ -57,6 +57,30 @@ const COMMON_TITLES = [
   "Platform Engineer",
 ];
 
+const CN_CITIES = ["北京", "上海", "深圳", "杭州", "成都", "南京", "广州", "武汉", "西安", "苏州", "长沙", "郑州", "天津", "重庆"];
+
+const CN_PLATFORMS = [
+  { value: "boss", label: "Boss直聘" },
+  { value: "lagou", label: "拉勾" },
+  { value: "liepin", label: "猎聘" },
+  { value: "zhilian", label: "智联招聘" },
+];
+
+const CN_COMMON_TITLES = [
+  "前端开发工程师",
+  "后端开发工程师",
+  "全栈开发工程师",
+  "Java开发工程师",
+  "Python开发工程师",
+  "React开发工程师",
+  "移动端开发工程师",
+  "测试开发工程师",
+  "运维工程师",
+  "数据工程师",
+  "算法工程师",
+  "产品经理",
+];
+
 export function FetchClient() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -64,6 +88,10 @@ export function FetchClient() {
   const [jobTitle, setJobTitle] = useState("Software Engineer");
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [market, setMarket] = useState<"AU" | "CN">("AU");
+  const [cnCity, setCnCity] = useState("上海");
+  const [cnPlatforms, setCnPlatforms] = useState<string[]>(["boss", "lagou", "liepin", "zhilian"]);
+  const [cnExcludeKeywords, setCnExcludeKeywords] = useState("");
   const [hoursOld, setHoursOld] = useState(48);
   const [smartExpand, setSmartExpand] = useState(true);
   const [applyExcludes, setApplyExcludes] = useState(true);
@@ -108,13 +136,14 @@ export function FetchClient() {
   }, [jobTitle]);
   const suggestionMode = suggestionQuery.length < 2 ? "Popular" : "Suggestions";
   const suggestions = useMemo(() => {
+    const titles = market === "CN" ? CN_COMMON_TITLES : COMMON_TITLES;
     if (suggestionQuery.length < 2) {
-      return COMMON_TITLES.slice(0, 12);
+      return titles.slice(0, 12);
     }
-    return COMMON_TITLES.filter((title) =>
+    return titles.filter((title) =>
       title.toLowerCase().includes(suggestionQuery),
     ).slice(0, 12);
-  }, [suggestionQuery]);
+  }, [suggestionQuery, market]);
 
   useEffect(() => {
     const prev = prevUserIdRef.current;
@@ -163,19 +192,33 @@ export function FetchClient() {
   }
 
   async function createRun() {
+    const body = market === "CN"
+      ? {
+          market: "CN",
+          queries,
+          city: cnCity,
+          platforms: cnPlatforms,
+          excludeKeywords: cnExcludeKeywords
+            .split(/[,，]/)
+            .map((s) => s.trim())
+            .filter(Boolean),
+        }
+      : {
+          market: "AU",
+          title: queries[0] ?? jobTitle.trim(),
+          queries,
+          location,
+          hoursOld,
+          smartExpand,
+          applyExcludes,
+          excludeTitleTerms,
+          excludeDescriptionRules,
+        };
+
     const res = await fetch("/api/fetch-runs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: queries[0] ?? jobTitle.trim(),
-        queries,
-        location,
-        hoursOld,
-        smartExpand,
-        applyExcludes,
-        excludeTitleTerms,
-        excludeDescriptionRules,
-      }),
+      body: JSON.stringify(body),
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json?.error || "Failed to create run");
@@ -217,12 +260,32 @@ export function FetchClient() {
         <h1 className="text-2xl font-semibold text-foreground">Search roles</h1>
       </div>
 
+      <div className="flex gap-2">
+        <Button
+          variant={market === "AU" ? "default" : "outline"}
+          size="sm"
+          className="rounded-full"
+          onClick={() => setMarket("AU")}
+        >
+          🌏 海外
+        </Button>
+        <Button
+          variant={market === "CN" ? "default" : "outline"}
+          size="sm"
+          className="rounded-full"
+          onClick={() => setMarket("CN")}
+        >
+          🇨🇳 国内
+        </Button>
+      </div>
+
       {activeError ? (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
           {activeError}
         </div>
       ) : null}
 
+      {market === "AU" && (
       <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
         <CardContent className="grid gap-4 p-5 md:grid-cols-3">
           <div className="space-y-2">
@@ -296,7 +359,107 @@ export function FetchClient() {
           </div>
         </CardContent>
       </Card>
+      )}
 
+      {market === "CN" && (
+      <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
+        <CardContent className="grid gap-4 p-5 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>职位名称</Label>
+            <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
+              <PopoverAnchor asChild>
+                <Input
+                  placeholder="例如 前端开发工程师"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  onFocus={() => {
+                    setSuggestionsOpen(true);
+                  }}
+                  onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
+                />
+              </PopoverAnchor>
+              <PopoverContent
+                align="start"
+                className="w-[var(--radix-popover-trigger-width)] p-0"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <Command shouldFilter={false}>
+                  <CommandList className="max-h-64 p-1">
+                    {suggestions.length ? (
+                      <CommandGroup heading={suggestionMode}>
+                        {suggestions.map((item) => (
+                          <CommandItem
+                            key={item}
+                            value={item}
+                            onSelect={(value) => {
+                              const segments = jobTitle.split(/[\n,|]/);
+                              const prefix = segments.slice(0, -1).map((part) => part.trim()).filter(Boolean);
+                              setJobTitle([...prefix, value].join(", "));
+                              setSuggestionsOpen(false);
+                            }}
+                          >
+                            {item}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    ) : (
+                      <CommandEmpty>No suggestions found.</CommandEmpty>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="space-y-2">
+            <Label>城市</Label>
+            <Select value={cnCity} onValueChange={setCnCity}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CN_CITIES.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>平台</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-10 w-full justify-between rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-none">
+                  {cnPlatforms.length ? `已选 (${cnPlatforms.length})` : "选择平台"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                {CN_PLATFORMS.map((p) => (
+                  <DropdownMenuCheckboxItem
+                    key={p.value}
+                    checked={cnPlatforms.includes(p.value)}
+                    onSelect={(e) => e.preventDefault()}
+                    onCheckedChange={(checked) => {
+                      setCnPlatforms((prev) =>
+                        checked ? [...prev, p.value] : prev.filter((v) => v !== p.value)
+                      );
+                    }}
+                  >
+                    {p.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="space-y-2">
+            <Label>排除关键词</Label>
+            <Input
+              placeholder="逗号分隔，例如 实习,兼职"
+              value={cnExcludeKeywords}
+              onChange={(e) => setCnExcludeKeywords(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      )}
+
+      {market === "AU" && (
       <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Filters</CardTitle>
@@ -412,6 +575,7 @@ export function FetchClient() {
           </div>
         </CardContent>
       </Card>
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center" data-testid="fetch-actions">
         <Button
