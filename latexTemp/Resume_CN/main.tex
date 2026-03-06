@@ -1,0 +1,69 @@
+\documentclass[10pt, a4paper]{article}
+
+\usepackage[left=1.8cm, right=1.8cm, top=1.5cm, bottom=1.5cm]{geometry}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{ifthen}
+\usepackage{tabularx}
+\usepackage{array}
+
+% Chinese font setup
+\setCJKmainfont{Noto Sans CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setmainfont{Noto Sans}
+
+% Colors
+\definecolor{primaryColor}{RGB}{0, 79, 144}
+\definecolor{grayText}{RGB}{100, 100, 100}
+
+% Section formatting — ruled section headers
+\titleformat{\section}{\large\bfseries\color{primaryColor}}{}{0em}{}[\vspace{0.2pt}\titlerule]
+\titlespacing*{\section}{0pt}{8pt}{4pt}
+
+% Remove page numbers
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+% Hyperlink styling
+\hypersetup{colorlinks=true, linkcolor=primaryColor, urlcolor=primaryColor}
+
+% List styling
+\setlist[itemize]{nosep, leftmargin=12pt, itemsep=1pt, topsep=2pt}
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$}
+
+\begin{document}
+
+% === HEADER ===
+\begin{center}
+{{PHOTO_BLOCK}}
+{\LARGE\bfseries {{CANDIDATE_NAME}}} \quad {\large\color{grayText} {{CANDIDATE_TITLE}}} \\[4pt]
+{{CANDIDATE_PHONE}} \enspace $|$ \enspace {{CANDIDATE_EMAIL}} {{LINKS_LINE}} \\[2pt]
+{\small\color{grayText} {{PERSONAL_INFO_LINE}}}
+\end{center}
+\vspace{2pt}
+
+% === OBJECTIVE (if present) ===
+{{OBJECTIVE_SECTION}}
+
+% === SKILLS ===
+\section{专业技能}
+\vspace{0.08cm}
+{{SKILLS}}
+
+% === EXPERIENCE ===
+\section{工作经历}
+\vspace{0.1cm}
+{{EXPERIENCE_SECTION}}
+
+% === PROJECTS ===
+{{PROJECTS_SECTION}}
+
+% === EDUCATION ===
+{{EDUCATION_SECTION}}
+
+\end{document}
