@@ -25,6 +25,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -46,6 +53,15 @@ type ResumeBasics = {
   title: string;
   email: string;
   phone: string;
+  photoUrl?: string;
+  gender?: string;
+  birthDate?: string;
+  nativePlace?: string;
+  politicalStatus?: string;
+  maritalStatus?: string;
+  expectedSalary?: string;
+  availableDate?: string;
+  workYears?: string;
 };
 
 type ResumeLink = {
@@ -111,7 +127,8 @@ type ResumeProfileSummary = {
   revision?: number;
 };
 
-const steps = ["Personal info", "Summary", "Experience", "Projects", "Education", "Skills"] as const;
+const stepsEN = ["Personal info", "Summary", "Experience", "Projects", "Education", "Skills"] as const;
+const stepsCN = ["个人信息", "自我评价", "工作经历", "项目经历", "教育背景", "专业技能"] as const;
 
 const emptyBasics: ResumeBasics = {
   fullName: "",
@@ -251,6 +268,9 @@ export function ResumeForm() {
   const [profileCreating, setProfileCreating] = useState(false);
   const [profileDeleting, setProfileDeleting] = useState(false);
 
+  const [locale, setLocale] = useState<string>("en-AU");
+  const steps = locale === "zh-CN" ? stepsCN : stepsEN;
+
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
   const [links, setLinks] = useState<ResumeLink[]>(defaultLinks);
   const [summary, setSummary] = useState("");
@@ -321,6 +341,10 @@ export function ResumeForm() {
         return;
       }
 
+      const profileRecord = profile as ResumeProfilePayload & { locale?: string };
+      if (profileRecord.locale) {
+        setLocale(profileRecord.locale);
+      }
       setBasics(profile.basics ?? emptyBasics);
       setLinks(Array.isArray(profile.links) && profile.links.length > 0 ? profile.links : defaultLinks);
       setSummary(profile.summary ?? "");
@@ -921,6 +945,7 @@ export function ResumeForm() {
           : cleanedSkills;
 
       return {
+        locale,
         basics,
         links: cleanedLinks.length > 0 ? cleanedLinks : null,
         summary: summary.trim() || null,
@@ -930,7 +955,7 @@ export function ResumeForm() {
         skills: previewSkills,
       };
     },
-    [basics, links, summary, experiences, projects, education, skills],
+    [locale, basics, links, summary, experiences, projects, education, skills],
   );
 
   const hasAnyContent = useMemo(() => {
@@ -1420,6 +1445,116 @@ export function ResumeForm() {
               />
             </div>
           </div>
+
+          {locale === "zh-CN" && (
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="resume-photo-url">证件照链接</Label>
+                <Input
+                  id="resume-photo-url"
+                  value={basics.photoUrl ?? ""}
+                  onChange={(event) => updateBasics("photoUrl" as keyof ResumeBasics, event.target.value)}
+                  placeholder="https://example.com/photo.jpg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-gender">性别</Label>
+                <Select
+                  value={basics.gender ?? ""}
+                  onValueChange={(value) => updateBasics("gender" as keyof ResumeBasics, value)}
+                >
+                  <SelectTrigger id="resume-gender" className="w-full">
+                    <SelectValue placeholder="请选择" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="男">男</SelectItem>
+                    <SelectItem value="女">女</SelectItem>
+                    <SelectItem value="其他">其他</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-birth-date">出生年月</Label>
+                <Input
+                  id="resume-birth-date"
+                  value={basics.birthDate ?? ""}
+                  onChange={(event) => updateBasics("birthDate" as keyof ResumeBasics, event.target.value)}
+                  placeholder="如: 1995-06"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-native-place">籍贯</Label>
+                <Input
+                  id="resume-native-place"
+                  value={basics.nativePlace ?? ""}
+                  onChange={(event) => updateBasics("nativePlace" as keyof ResumeBasics, event.target.value)}
+                  placeholder="如: 浙江杭州"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-political-status">政治面貌</Label>
+                <Select
+                  value={basics.politicalStatus ?? ""}
+                  onValueChange={(value) => updateBasics("politicalStatus" as keyof ResumeBasics, value)}
+                >
+                  <SelectTrigger id="resume-political-status" className="w-full">
+                    <SelectValue placeholder="请选择" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="群众">群众</SelectItem>
+                    <SelectItem value="中共党员">中共党员</SelectItem>
+                    <SelectItem value="共青团员">共青团员</SelectItem>
+                    <SelectItem value="民主党派">民主党派</SelectItem>
+                    <SelectItem value="无党派人士">无党派人士</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-marital-status">婚姻状况</Label>
+                <Select
+                  value={basics.maritalStatus ?? ""}
+                  onValueChange={(value) => updateBasics("maritalStatus" as keyof ResumeBasics, value)}
+                >
+                  <SelectTrigger id="resume-marital-status" className="w-full">
+                    <SelectValue placeholder="请选择" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="未婚">未婚</SelectItem>
+                    <SelectItem value="已婚">已婚</SelectItem>
+                    <SelectItem value="保密">保密</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-expected-salary">期望薪资</Label>
+                <Input
+                  id="resume-expected-salary"
+                  value={basics.expectedSalary ?? ""}
+                  onChange={(event) => updateBasics("expectedSalary" as keyof ResumeBasics, event.target.value)}
+                  placeholder="如: 25-40K"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-available-date">到岗时间</Label>
+                <Input
+                  id="resume-available-date"
+                  value={basics.availableDate ?? ""}
+                  onChange={(event) => updateBasics("availableDate" as keyof ResumeBasics, event.target.value)}
+                  placeholder="如: 随时到岗"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-work-years">工作年限</Label>
+                <Input
+                  id="resume-work-years"
+                  value={basics.workYears ?? ""}
+                  onChange={(event) => updateBasics("workYears" as keyof ResumeBasics, event.target.value)}
+                  placeholder="如: 5年"
+                />
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -2407,6 +2542,36 @@ export function ResumeForm() {
             <p className="mt-2 text-xs text-slate-500">
               New version clones the active resume by default. Active version drives CV and CL generation.
             </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Locale / 语言</p>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setLocale("en-AU")}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                    locale === "en-AU"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocale("zh-CN")}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                    locale === "zh-CN"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
+                  }`}
+                >
+                  中文
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-3">
