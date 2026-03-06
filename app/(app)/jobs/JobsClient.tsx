@@ -450,6 +450,7 @@ export function JobsClient({
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [locationFilter, setLocationFilter] = useState("ALL");
   const [jobLevelFilter, setJobLevelFilter] = useState("ALL");
+  const [marketFilter, setMarketFilter] = useState<"" | "AU" | "CN">("");
   const [selectedId, setSelectedId] = useState<string | null>(initialItems[0]?.id ?? null);
   const [timeZone] = useState<string | null>(() => getUserTimeZone() || null);
   const [isPending, startTransition] = useTransition();
@@ -624,10 +625,11 @@ export function JobsClient({
       statusFilter,
       locationFilter,
       jobLevelFilter,
+      marketFilter,
       sortOrder,
       pageSize,
     }),
-    [debouncedQ, statusFilter, locationFilter, jobLevelFilter, sortOrder, pageSize],
+    [debouncedQ, statusFilter, locationFilter, jobLevelFilter, marketFilter, sortOrder, pageSize],
   );
 
   useEffect(() => {
@@ -645,6 +647,7 @@ export function JobsClient({
     if (debouncedFilters.q.trim()) sp.set("q", debouncedFilters.q.trim());
     if (debouncedFilters.locationFilter !== "ALL") sp.set("location", debouncedFilters.locationFilter);
     if (debouncedFilters.jobLevelFilter !== "ALL") sp.set("jobLevel", debouncedFilters.jobLevelFilter);
+    if (debouncedFilters.marketFilter) sp.set("market", debouncedFilters.marketFilter);
     sp.set("sort", debouncedFilters.sortOrder);
     return sp.toString();
   }, [debouncedFilters]);
@@ -1831,6 +1834,31 @@ export function JobsClient({
         data-testid="jobs-toolbar"
         className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-5 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]"
       >
+        <div className="mb-3 flex gap-1">
+          {([
+            { value: "", label: "All" },
+            { value: "AU", label: "🌏 海外" },
+            { value: "CN", label: "🇨🇳 国内" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                startTransition(() => {
+                  resetPagination();
+                  setMarketFilter(opt.value as "" | "AU" | "CN");
+                });
+              }}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                marketFilter === opt.value
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_0.9fr_auto] lg:items-end">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Title or Keywords</div>
