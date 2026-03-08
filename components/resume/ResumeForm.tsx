@@ -109,6 +109,7 @@ type ResumeSkillPayload = {
 type ResumeProfilePayload = {
   id?: string;
   name?: string;
+  locale?: string;
   basics?: ResumeBasics | null;
   links?: ResumeLink[] | null;
   summary?: string | null;

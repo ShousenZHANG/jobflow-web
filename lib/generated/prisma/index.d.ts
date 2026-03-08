@@ -101,7 +101,8 @@ export const FetchRunStatus: {
   QUEUED: 'QUEUED',
   RUNNING: 'RUNNING',
   SUCCEEDED: 'SUCCEEDED',
-  FAILED: 'FAILED'
+  FAILED: 'FAILED',
+  PARTIAL: 'PARTIAL'
 };
 
 export type FetchRunStatus = (typeof FetchRunStatus)[keyof typeof FetchRunStatus]
@@ -6085,6 +6086,7 @@ export namespace Prisma {
     jobLevel: string | null
     description: string | null
     status: $Enums.JobStatus | null
+    market: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6100,6 +6102,7 @@ export namespace Prisma {
     jobLevel: string | null
     description: string | null
     status: $Enums.JobStatus | null
+    market: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6115,6 +6118,7 @@ export namespace Prisma {
     jobLevel: number
     description: number
     status: number
+    market: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6132,6 +6136,7 @@ export namespace Prisma {
     jobLevel?: true
     description?: true
     status?: true
+    market?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6147,6 +6152,7 @@ export namespace Prisma {
     jobLevel?: true
     description?: true
     status?: true
+    market?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6162,6 +6168,7 @@ export namespace Prisma {
     jobLevel?: true
     description?: true
     status?: true
+    market?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -6250,6 +6257,7 @@ export namespace Prisma {
     jobLevel: string | null
     description: string | null
     status: $Enums.JobStatus
+    market: string
     createdAt: Date
     updatedAt: Date
     _count: JobCountAggregateOutputType | null
@@ -6282,6 +6290,7 @@ export namespace Prisma {
     jobLevel?: boolean
     description?: boolean
     status?: boolean
+    market?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -6301,6 +6310,7 @@ export namespace Prisma {
     jobLevel?: boolean
     description?: boolean
     status?: boolean
+    market?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -6317,6 +6327,7 @@ export namespace Prisma {
     jobLevel?: boolean
     description?: boolean
     status?: boolean
+    market?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -6333,11 +6344,12 @@ export namespace Prisma {
     jobLevel?: boolean
     description?: boolean
     status?: boolean
+    market?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type JobOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobUrl" | "title" | "company" | "location" | "jobType" | "jobLevel" | "description" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["job"]>
+  export type JobOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobUrl" | "title" | "company" | "location" | "jobType" | "jobLevel" | "description" | "status" | "market" | "createdAt" | "updatedAt", ExtArgs["result"]["job"]>
   export type JobInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     applications?: boolean | Job$applicationsArgs<ExtArgs>
@@ -6369,6 +6381,7 @@ export namespace Prisma {
       jobLevel: string | null
       description: string | null
       status: $Enums.JobStatus
+      market: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["job"]>
@@ -6807,6 +6820,7 @@ export namespace Prisma {
     readonly jobLevel: FieldRef<"Job", 'String'>
     readonly description: FieldRef<"Job", 'String'>
     readonly status: FieldRef<"Job", 'JobStatus'>
+    readonly market: FieldRef<"Job", 'String'>
     readonly createdAt: FieldRef<"Job", 'DateTime'>
     readonly updatedAt: FieldRef<"Job", 'DateTime'>
   }
@@ -11762,6 +11776,7 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     userEmail: string | null
+    market: string | null
     status: $Enums.FetchRunStatus | null
     error: string | null
     importedCount: number | null
@@ -11778,6 +11793,7 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     userEmail: string | null
+    market: string | null
     status: $Enums.FetchRunStatus | null
     error: string | null
     importedCount: number | null
@@ -11794,6 +11810,7 @@ export namespace Prisma {
     id: number
     userId: number
     userEmail: number
+    market: number
     status: number
     error: number
     importedCount: number
@@ -11825,6 +11842,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     userEmail?: true
+    market?: true
     status?: true
     error?: true
     importedCount?: true
@@ -11841,6 +11859,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     userEmail?: true
+    market?: true
     status?: true
     error?: true
     importedCount?: true
@@ -11857,6 +11876,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     userEmail?: true
+    market?: true
     status?: true
     error?: true
     importedCount?: true
@@ -11961,6 +11981,7 @@ export namespace Prisma {
     id: string
     userId: string
     userEmail: string
+    market: string
     status: $Enums.FetchRunStatus
     error: string | null
     importedCount: number
@@ -11997,6 +12018,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     userEmail?: boolean
+    market?: boolean
     status?: boolean
     error?: boolean
     importedCount?: boolean
@@ -12015,6 +12037,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     userEmail?: boolean
+    market?: boolean
     status?: boolean
     error?: boolean
     importedCount?: boolean
@@ -12033,6 +12056,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     userEmail?: boolean
+    market?: boolean
     status?: boolean
     error?: boolean
     importedCount?: boolean
@@ -12051,6 +12075,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     userEmail?: boolean
+    market?: boolean
     status?: boolean
     error?: boolean
     importedCount?: boolean
@@ -12064,7 +12089,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type FetchRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "userEmail" | "status" | "error" | "importedCount" | "queries" | "location" | "hoursOld" | "resultsWanted" | "includeFromQueries" | "filterDescription" | "createdAt" | "updatedAt", ExtArgs["result"]["fetchRun"]>
+  export type FetchRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "userEmail" | "market" | "status" | "error" | "importedCount" | "queries" | "location" | "hoursOld" | "resultsWanted" | "includeFromQueries" | "filterDescription" | "createdAt" | "updatedAt", ExtArgs["result"]["fetchRun"]>
   export type FetchRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -12084,6 +12109,7 @@ export namespace Prisma {
       id: string
       userId: string
       userEmail: string
+      market: string
       status: $Enums.FetchRunStatus
       error: string | null
       importedCount: number
@@ -12522,6 +12548,7 @@ export namespace Prisma {
     readonly id: FieldRef<"FetchRun", 'String'>
     readonly userId: FieldRef<"FetchRun", 'String'>
     readonly userEmail: FieldRef<"FetchRun", 'String'>
+    readonly market: FieldRef<"FetchRun", 'String'>
     readonly status: FieldRef<"FetchRun", 'FetchRunStatus'>
     readonly error: FieldRef<"FetchRun", 'String'>
     readonly importedCount: FieldRef<"FetchRun", 'Int'>
@@ -12972,6 +12999,7 @@ export namespace Prisma {
     userId: string | null
     name: string | null
     revision: number | null
+    locale: string | null
     summary: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -12982,6 +13010,7 @@ export namespace Prisma {
     userId: string | null
     name: string | null
     revision: number | null
+    locale: string | null
     summary: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -12992,6 +13021,7 @@ export namespace Prisma {
     userId: number
     name: number
     revision: number
+    locale: number
     summary: number
     basics: number
     links: number
@@ -13018,6 +13048,7 @@ export namespace Prisma {
     userId?: true
     name?: true
     revision?: true
+    locale?: true
     summary?: true
     createdAt?: true
     updatedAt?: true
@@ -13028,6 +13059,7 @@ export namespace Prisma {
     userId?: true
     name?: true
     revision?: true
+    locale?: true
     summary?: true
     createdAt?: true
     updatedAt?: true
@@ -13038,6 +13070,7 @@ export namespace Prisma {
     userId?: true
     name?: true
     revision?: true
+    locale?: true
     summary?: true
     basics?: true
     links?: true
@@ -13141,6 +13174,7 @@ export namespace Prisma {
     userId: string
     name: string
     revision: number
+    locale: string
     summary: string | null
     basics: JsonValue | null
     links: JsonValue | null
@@ -13176,6 +13210,7 @@ export namespace Prisma {
     userId?: boolean
     name?: boolean
     revision?: boolean
+    locale?: boolean
     summary?: boolean
     basics?: boolean
     links?: boolean
@@ -13196,6 +13231,7 @@ export namespace Prisma {
     userId?: boolean
     name?: boolean
     revision?: boolean
+    locale?: boolean
     summary?: boolean
     basics?: boolean
     links?: boolean
@@ -13213,6 +13249,7 @@ export namespace Prisma {
     userId?: boolean
     name?: boolean
     revision?: boolean
+    locale?: boolean
     summary?: boolean
     basics?: boolean
     links?: boolean
@@ -13230,6 +13267,7 @@ export namespace Prisma {
     userId?: boolean
     name?: boolean
     revision?: boolean
+    locale?: boolean
     summary?: boolean
     basics?: boolean
     links?: boolean
@@ -13241,7 +13279,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ResumeProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "revision" | "summary" | "basics" | "links" | "skills" | "experiences" | "projects" | "education" | "createdAt" | "updatedAt", ExtArgs["result"]["resumeProfile"]>
+  export type ResumeProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "revision" | "locale" | "summary" | "basics" | "links" | "skills" | "experiences" | "projects" | "education" | "createdAt" | "updatedAt", ExtArgs["result"]["resumeProfile"]>
   export type ResumeProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     applications?: boolean | ResumeProfile$applicationsArgs<ExtArgs>
@@ -13267,6 +13305,7 @@ export namespace Prisma {
       userId: string
       name: string
       revision: number
+      locale: string
       summary: string | null
       basics: Prisma.JsonValue | null
       links: Prisma.JsonValue | null
@@ -13706,6 +13745,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"ResumeProfile", 'String'>
     readonly name: FieldRef<"ResumeProfile", 'String'>
     readonly revision: FieldRef<"ResumeProfile", 'Int'>
+    readonly locale: FieldRef<"ResumeProfile", 'String'>
     readonly summary: FieldRef<"ResumeProfile", 'String'>
     readonly basics: FieldRef<"ResumeProfile", 'Json'>
     readonly links: FieldRef<"ResumeProfile", 'Json'>
@@ -18767,6 +18807,7 @@ export namespace Prisma {
     jobLevel: 'jobLevel',
     description: 'description',
     status: 'status',
+    market: 'market',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -18831,6 +18872,7 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     userEmail: 'userEmail',
+    market: 'market',
     status: 'status',
     error: 'error',
     importedCount: 'importedCount',
@@ -18852,6 +18894,7 @@ export namespace Prisma {
     userId: 'userId',
     name: 'name',
     revision: 'revision',
+    locale: 'locale',
     summary: 'summary',
     basics: 'basics',
     links: 'links',
@@ -19421,6 +19464,7 @@ export namespace Prisma {
     jobLevel?: StringNullableFilter<"Job"> | string | null
     description?: StringNullableFilter<"Job"> | string | null
     status?: EnumJobStatusFilter<"Job"> | $Enums.JobStatus
+    market?: StringFilter<"Job"> | string
     createdAt?: DateTimeFilter<"Job"> | Date | string
     updatedAt?: DateTimeFilter<"Job"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -19439,6 +19483,7 @@ export namespace Prisma {
     jobLevel?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
     status?: SortOrder
+    market?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -19461,6 +19506,7 @@ export namespace Prisma {
     jobLevel?: StringNullableFilter<"Job"> | string | null
     description?: StringNullableFilter<"Job"> | string | null
     status?: EnumJobStatusFilter<"Job"> | $Enums.JobStatus
+    market?: StringFilter<"Job"> | string
     createdAt?: DateTimeFilter<"Job"> | Date | string
     updatedAt?: DateTimeFilter<"Job"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -19479,6 +19525,7 @@ export namespace Prisma {
     jobLevel?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
     status?: SortOrder
+    market?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: JobCountOrderByAggregateInput
@@ -19500,6 +19547,7 @@ export namespace Prisma {
     jobLevel?: StringNullableWithAggregatesFilter<"Job"> | string | null
     description?: StringNullableWithAggregatesFilter<"Job"> | string | null
     status?: EnumJobStatusWithAggregatesFilter<"Job"> | $Enums.JobStatus
+    market?: StringWithAggregatesFilter<"Job"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Job"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Job"> | Date | string
   }
@@ -19792,6 +19840,7 @@ export namespace Prisma {
     id?: UuidFilter<"FetchRun"> | string
     userId?: UuidFilter<"FetchRun"> | string
     userEmail?: StringFilter<"FetchRun"> | string
+    market?: StringFilter<"FetchRun"> | string
     status?: EnumFetchRunStatusFilter<"FetchRun"> | $Enums.FetchRunStatus
     error?: StringNullableFilter<"FetchRun"> | string | null
     importedCount?: IntFilter<"FetchRun"> | number
@@ -19810,6 +19859,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     userEmail?: SortOrder
+    market?: SortOrder
     status?: SortOrder
     error?: SortOrderInput | SortOrder
     importedCount?: SortOrder
@@ -19831,6 +19881,7 @@ export namespace Prisma {
     NOT?: FetchRunWhereInput | FetchRunWhereInput[]
     userId?: UuidFilter<"FetchRun"> | string
     userEmail?: StringFilter<"FetchRun"> | string
+    market?: StringFilter<"FetchRun"> | string
     status?: EnumFetchRunStatusFilter<"FetchRun"> | $Enums.FetchRunStatus
     error?: StringNullableFilter<"FetchRun"> | string | null
     importedCount?: IntFilter<"FetchRun"> | number
@@ -19849,6 +19900,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     userEmail?: SortOrder
+    market?: SortOrder
     status?: SortOrder
     error?: SortOrderInput | SortOrder
     importedCount?: SortOrder
@@ -19874,6 +19926,7 @@ export namespace Prisma {
     id?: UuidWithAggregatesFilter<"FetchRun"> | string
     userId?: UuidWithAggregatesFilter<"FetchRun"> | string
     userEmail?: StringWithAggregatesFilter<"FetchRun"> | string
+    market?: StringWithAggregatesFilter<"FetchRun"> | string
     status?: EnumFetchRunStatusWithAggregatesFilter<"FetchRun"> | $Enums.FetchRunStatus
     error?: StringNullableWithAggregatesFilter<"FetchRun"> | string | null
     importedCount?: IntWithAggregatesFilter<"FetchRun"> | number
@@ -19895,6 +19948,7 @@ export namespace Prisma {
     userId?: UuidFilter<"ResumeProfile"> | string
     name?: StringFilter<"ResumeProfile"> | string
     revision?: IntFilter<"ResumeProfile"> | number
+    locale?: StringFilter<"ResumeProfile"> | string
     summary?: StringNullableFilter<"ResumeProfile"> | string | null
     basics?: JsonNullableFilter<"ResumeProfile">
     links?: JsonNullableFilter<"ResumeProfile">
@@ -19914,6 +19968,7 @@ export namespace Prisma {
     userId?: SortOrder
     name?: SortOrder
     revision?: SortOrder
+    locale?: SortOrder
     summary?: SortOrderInput | SortOrder
     basics?: SortOrderInput | SortOrder
     links?: SortOrderInput | SortOrder
@@ -19936,6 +19991,7 @@ export namespace Prisma {
     userId?: UuidFilter<"ResumeProfile"> | string
     name?: StringFilter<"ResumeProfile"> | string
     revision?: IntFilter<"ResumeProfile"> | number
+    locale?: StringFilter<"ResumeProfile"> | string
     summary?: StringNullableFilter<"ResumeProfile"> | string | null
     basics?: JsonNullableFilter<"ResumeProfile">
     links?: JsonNullableFilter<"ResumeProfile">
@@ -19955,6 +20011,7 @@ export namespace Prisma {
     userId?: SortOrder
     name?: SortOrder
     revision?: SortOrder
+    locale?: SortOrder
     summary?: SortOrderInput | SortOrder
     basics?: SortOrderInput | SortOrder
     links?: SortOrderInput | SortOrder
@@ -19979,6 +20036,7 @@ export namespace Prisma {
     userId?: UuidWithAggregatesFilter<"ResumeProfile"> | string
     name?: StringWithAggregatesFilter<"ResumeProfile"> | string
     revision?: IntWithAggregatesFilter<"ResumeProfile"> | number
+    locale?: StringWithAggregatesFilter<"ResumeProfile"> | string
     summary?: StringNullableWithAggregatesFilter<"ResumeProfile"> | string | null
     basics?: JsonNullableWithAggregatesFilter<"ResumeProfile">
     links?: JsonNullableWithAggregatesFilter<"ResumeProfile">
@@ -20615,6 +20673,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutJobsInput
@@ -20633,6 +20692,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
@@ -20649,6 +20709,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutJobsNestedInput
@@ -20667,6 +20728,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
@@ -20684,6 +20746,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -20698,6 +20761,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -20713,6 +20777,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -21005,6 +21070,7 @@ export namespace Prisma {
   export type FetchRunCreateInput = {
     id?: string
     userEmail: string
+    market?: string
     status?: $Enums.FetchRunStatus
     error?: string | null
     importedCount?: number
@@ -21023,6 +21089,7 @@ export namespace Prisma {
     id?: string
     userId: string
     userEmail: string
+    market?: string
     status?: $Enums.FetchRunStatus
     error?: string | null
     importedCount?: number
@@ -21039,6 +21106,7 @@ export namespace Prisma {
   export type FetchRunUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userEmail?: StringFieldUpdateOperationsInput | string
+    market?: StringFieldUpdateOperationsInput | string
     status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
     error?: NullableStringFieldUpdateOperationsInput | string | null
     importedCount?: IntFieldUpdateOperationsInput | number
@@ -21057,6 +21125,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     userEmail?: StringFieldUpdateOperationsInput | string
+    market?: StringFieldUpdateOperationsInput | string
     status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
     error?: NullableStringFieldUpdateOperationsInput | string | null
     importedCount?: IntFieldUpdateOperationsInput | number
@@ -21074,6 +21143,7 @@ export namespace Prisma {
     id?: string
     userId: string
     userEmail: string
+    market?: string
     status?: $Enums.FetchRunStatus
     error?: string | null
     importedCount?: number
@@ -21090,6 +21160,7 @@ export namespace Prisma {
   export type FetchRunUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     userEmail?: StringFieldUpdateOperationsInput | string
+    market?: StringFieldUpdateOperationsInput | string
     status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
     error?: NullableStringFieldUpdateOperationsInput | string | null
     importedCount?: IntFieldUpdateOperationsInput | number
@@ -21107,6 +21178,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     userEmail?: StringFieldUpdateOperationsInput | string
+    market?: StringFieldUpdateOperationsInput | string
     status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
     error?: NullableStringFieldUpdateOperationsInput | string | null
     importedCount?: IntFieldUpdateOperationsInput | number
@@ -21124,6 +21196,7 @@ export namespace Prisma {
     id?: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -21143,6 +21216,7 @@ export namespace Prisma {
     userId: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -21160,6 +21234,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -21179,6 +21254,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -21197,6 +21273,7 @@ export namespace Prisma {
     userId: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -21212,6 +21289,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -21228,6 +21306,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -22012,6 +22091,7 @@ export namespace Prisma {
     jobLevel?: SortOrder
     description?: SortOrder
     status?: SortOrder
+    market?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22027,6 +22107,7 @@ export namespace Prisma {
     jobLevel?: SortOrder
     description?: SortOrder
     status?: SortOrder
+    market?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22042,6 +22123,7 @@ export namespace Prisma {
     jobLevel?: SortOrder
     description?: SortOrder
     status?: SortOrder
+    market?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22337,6 +22419,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     userEmail?: SortOrder
+    market?: SortOrder
     status?: SortOrder
     error?: SortOrder
     importedCount?: SortOrder
@@ -22360,6 +22443,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     userEmail?: SortOrder
+    market?: SortOrder
     status?: SortOrder
     error?: SortOrder
     importedCount?: SortOrder
@@ -22376,6 +22460,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     userEmail?: SortOrder
+    market?: SortOrder
     status?: SortOrder
     error?: SortOrder
     importedCount?: SortOrder
@@ -22476,6 +22561,7 @@ export namespace Prisma {
     userId?: SortOrder
     name?: SortOrder
     revision?: SortOrder
+    locale?: SortOrder
     summary?: SortOrder
     basics?: SortOrder
     links?: SortOrder
@@ -22496,6 +22582,7 @@ export namespace Prisma {
     userId?: SortOrder
     name?: SortOrder
     revision?: SortOrder
+    locale?: SortOrder
     summary?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -22506,6 +22593,7 @@ export namespace Prisma {
     userId?: SortOrder
     name?: SortOrder
     revision?: SortOrder
+    locale?: SortOrder
     summary?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -24283,6 +24371,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationCreateNestedManyWithoutJobInput
@@ -24299,6 +24388,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
@@ -24318,6 +24408,7 @@ export namespace Prisma {
   export type FetchRunCreateWithoutUserInput = {
     id?: string
     userEmail: string
+    market?: string
     status?: $Enums.FetchRunStatus
     error?: string | null
     importedCount?: number
@@ -24334,6 +24425,7 @@ export namespace Prisma {
   export type FetchRunUncheckedCreateWithoutUserInput = {
     id?: string
     userEmail: string
+    market?: string
     status?: $Enums.FetchRunStatus
     error?: string | null
     importedCount?: number
@@ -24405,6 +24497,7 @@ export namespace Prisma {
     id?: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -24422,6 +24515,7 @@ export namespace Prisma {
     id?: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -24729,6 +24823,7 @@ export namespace Prisma {
     jobLevel?: StringNullableFilter<"Job"> | string | null
     description?: StringNullableFilter<"Job"> | string | null
     status?: EnumJobStatusFilter<"Job"> | $Enums.JobStatus
+    market?: StringFilter<"Job"> | string
     createdAt?: DateTimeFilter<"Job"> | Date | string
     updatedAt?: DateTimeFilter<"Job"> | Date | string
   }
@@ -24756,6 +24851,7 @@ export namespace Prisma {
     id?: UuidFilter<"FetchRun"> | string
     userId?: UuidFilter<"FetchRun"> | string
     userEmail?: StringFilter<"FetchRun"> | string
+    market?: StringFilter<"FetchRun"> | string
     status?: EnumFetchRunStatusFilter<"FetchRun"> | $Enums.FetchRunStatus
     error?: StringNullableFilter<"FetchRun"> | string | null
     importedCount?: IntFilter<"FetchRun"> | number
@@ -24845,6 +24941,7 @@ export namespace Prisma {
     userId?: UuidFilter<"ResumeProfile"> | string
     name?: StringFilter<"ResumeProfile"> | string
     revision?: IntFilter<"ResumeProfile"> | number
+    locale?: StringFilter<"ResumeProfile"> | string
     summary?: StringNullableFilter<"ResumeProfile"> | string | null
     basics?: JsonNullableFilter<"ResumeProfile">
     links?: JsonNullableFilter<"ResumeProfile">
@@ -25709,6 +25806,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutJobsInput
@@ -25726,6 +25824,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutJobInput
@@ -25849,6 +25948,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutJobsNestedInput
@@ -25866,6 +25966,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
@@ -26444,6 +26545,7 @@ export namespace Prisma {
     id?: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -26462,6 +26564,7 @@ export namespace Prisma {
     userId: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -26549,6 +26652,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -26567,6 +26671,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -26638,6 +26743,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutJobsInput
@@ -26655,6 +26761,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     applicationBatchTasks?: ApplicationBatchTaskUncheckedCreateNestedManyWithoutJobInput
@@ -26669,6 +26776,7 @@ export namespace Prisma {
     id?: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -26687,6 +26795,7 @@ export namespace Prisma {
     userId: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -26780,6 +26889,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutJobsNestedInput
@@ -26797,6 +26907,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applicationBatchTasks?: ApplicationBatchTaskUncheckedUpdateManyWithoutJobNestedInput
@@ -26817,6 +26928,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -26835,6 +26947,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -27089,6 +27202,7 @@ export namespace Prisma {
     jobLevel?: string | null
     description?: string | null
     status?: $Enums.JobStatus
+    market?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -27096,6 +27210,7 @@ export namespace Prisma {
   export type FetchRunCreateManyUserInput = {
     id?: string
     userEmail: string
+    market?: string
     status?: $Enums.FetchRunStatus
     error?: string | null
     importedCount?: number
@@ -27125,6 +27240,7 @@ export namespace Prisma {
     id?: string
     name?: string
     revision?: number
+    locale?: string
     summary?: string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -27271,6 +27387,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUpdateManyWithoutJobNestedInput
@@ -27287,6 +27404,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutJobNestedInput
@@ -27303,6 +27421,7 @@ export namespace Prisma {
     jobLevel?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    market?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27310,6 +27429,7 @@ export namespace Prisma {
   export type FetchRunUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     userEmail?: StringFieldUpdateOperationsInput | string
+    market?: StringFieldUpdateOperationsInput | string
     status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
     error?: NullableStringFieldUpdateOperationsInput | string | null
     importedCount?: IntFieldUpdateOperationsInput | number
@@ -27326,6 +27446,7 @@ export namespace Prisma {
   export type FetchRunUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     userEmail?: StringFieldUpdateOperationsInput | string
+    market?: StringFieldUpdateOperationsInput | string
     status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
     error?: NullableStringFieldUpdateOperationsInput | string | null
     importedCount?: IntFieldUpdateOperationsInput | number
@@ -27342,6 +27463,7 @@ export namespace Prisma {
   export type FetchRunUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     userEmail?: StringFieldUpdateOperationsInput | string
+    market?: StringFieldUpdateOperationsInput | string
     status?: EnumFetchRunStatusFieldUpdateOperationsInput | $Enums.FetchRunStatus
     error?: NullableStringFieldUpdateOperationsInput | string | null
     importedCount?: IntFieldUpdateOperationsInput | number
@@ -27395,6 +27517,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -27412,6 +27535,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
@@ -27429,6 +27553,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     revision?: IntFieldUpdateOperationsInput | number
+    locale?: StringFieldUpdateOperationsInput | string
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     basics?: NullableJsonNullValueInput | InputJsonValue
     links?: NullableJsonNullValueInput | InputJsonValue
