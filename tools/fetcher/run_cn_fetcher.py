@@ -121,23 +121,46 @@ def main():
     t0 = time.time()
     all_jobs: List[Dict[str, Any]] = []
 
+    # Determine which platforms use Bing proxy vs direct API.
+    # Boss and Lagou block overseas IPs aggressively, so we route them
+    # through Bing search by default. Liepin and Zhilian work directly.
+    BING_PROXY_PLATFORMS = {"boss", "lagou"}
+    use_direct = os.environ.get("CN_FORCE_DIRECT", "").strip().lower() == "true"
+
+    bing_sites = [p for p in platforms if p in BING_PROXY_PLATFORMS] if not use_direct else []
+    direct_platforms = [p for p in platforms if p not in BING_PROXY_PLATFORMS or use_direct]
+
     # Import platform modules dynamically
     platform_fetchers = {}
-    if "boss" in platforms:
+    if "boss" in direct_platforms:
         from cn_platforms.boss import fetch_boss
         platform_fetchers["boss"] = fetch_boss
-    if "lagou" in platforms:
+    if "lagou" in direct_platforms:
         from cn_platforms.lagou import fetch_lagou
         platform_fetchers["lagou"] = fetch_lagou
-    if "liepin" in platforms:
+    if "liepin" in direct_platforms:
         from cn_platforms.liepin import fetch_liepin
         platform_fetchers["liepin"] = fetch_liepin
-    if "zhilian" in platforms:
+    if "zhilian" in direct_platforms:
         from cn_platforms.zhilian import fetch_zhilian
         platform_fetchers["zhilian"] = fetch_zhilian
 
     partial_failures: List[str] = []
 
+    # Layer 1: Bing search proxy for boss/lagou (works from any IP)
+    if bing_sites:
+        abort_if_cancelled(base, run_id, headers=fetch_headers, stage="before_bing")
+        try:
+            from cn_platforms.bing_search import fetch_bing
+            logger.info("Bing proxy for %s: queries=%s city=%s", bing_sites, queries, city)
+            bing_jobs = fetch_bing(queries, city, sites=bing_sites, salary_range=salary_range or None)
+            logger.info("Bing proxy returned %d jobs", len(bing_jobs))
+            all_jobs.extend(bing_jobs)
+        except Exception as e:
+            logger.error("Bing proxy failed: %s", e)
+            partial_failures.append(f"bing_proxy: {e}")
+
+    # Layer 2: Direct API for liepin/zhilian (and boss/lagou if CN_FORCE_DIRECT)
     for name, fetcher in platform_fetchers.items():
         abort_if_cancelled(base, run_id, headers=fetch_headers, stage=f"before_{name}")
         try:

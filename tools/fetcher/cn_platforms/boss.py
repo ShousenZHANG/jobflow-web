@@ -2,9 +2,12 @@
 
 Requires BOSS_COOKIE env var for authentication.
 Uses requests with cookie-based session to avoid heavy Playwright dependency.
+Note: This module needs domestic (CN) IP to work reliably.
+For overseas IPs, use bing_search.py as proxy instead.
 """
 import logging
 import os
+import random
 import re
 import time
 import json
@@ -14,6 +17,12 @@ from urllib.parse import quote
 import requests
 
 logger = logging.getLogger(__name__)
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+]
 
 # Boss API endpoint for job search
 BOSS_API = "https://www.zhipin.com/wapi/zpgeek/search/joblist.json"
@@ -44,7 +53,7 @@ def _build_session() -> requests.Session:
     cookie = os.environ.get("BOSS_COOKIE", "").strip()
     s = requests.Session()
     s.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": random.choice(USER_AGENTS),
         "Referer": "https://www.zhipin.com/",
     })
     if cookie:

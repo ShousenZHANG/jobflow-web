@@ -1,11 +1,18 @@
 """猎聘网 (liepin.com) job scraper."""
 import logging
+import random
 import time
 from typing import Any, Dict, List, Optional
 
 import requests
 
 logger = logging.getLogger(__name__)
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+]
 
 LIEPIN_API = "https://api-c.liepin.com/api/com.liepin.searchfront4c.pc-search-job"
 
@@ -21,7 +28,7 @@ def fetch_liepin(
     """Scrape 猎聘 job listings."""
     session = requests.Session()
     session.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User-Agent": random.choice(USER_AGENTS),
         "Content-Type": "application/json;charset=UTF-8",
         "Origin": "https://www.liepin.com",
     })
