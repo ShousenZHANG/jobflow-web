@@ -1,5 +1,6 @@
 "use client";
 
+import { useOptimistic, useTransition } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 
@@ -11,12 +12,17 @@ const options = [
 export function LocaleSwitcher() {
   const locale = useLocale();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [optimisticLocale, setOptimisticLocale] = useOptimistic(locale);
 
   function switchLocale(newLocale: string) {
-    if (newLocale === locale) return;
+    if (newLocale === optimisticLocale) return;
     localStorage.setItem("locale", newLocale);
     document.cookie = `locale=${newLocale};path=/;max-age=31536000;SameSite=Lax`;
-    router.refresh();
+    startTransition(() => {
+      setOptimisticLocale(newLocale);
+      router.refresh();
+    });
   }
 
   return (
@@ -27,10 +33,10 @@ export function LocaleSwitcher() {
           type="button"
           onClick={() => switchLocale(opt.value)}
           className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide transition-all duration-200 ${
-            locale === opt.value
+            optimisticLocale === opt.value
               ? "bg-slate-900 text-white shadow-sm"
               : "text-slate-500 hover:text-slate-700"
-          }`}
+          }${isPending ? " opacity-70" : ""}`}
         >
           {opt.label}
         </button>

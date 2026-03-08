@@ -270,16 +270,16 @@ const AU_LOCATION_OPTIONS = [
 ];
 
 const CN_LOCATION_OPTIONS = [
-  { value: "Beijing", label: "Beijing" },
-  { value: "Shanghai", label: "Shanghai" },
-  { value: "Shenzhen", label: "Shenzhen" },
-  { value: "Guangzhou", label: "Guangzhou" },
-  { value: "Hangzhou", label: "Hangzhou" },
-  { value: "Chengdu", label: "Chengdu" },
-  { value: "Nanjing", label: "Nanjing" },
-  { value: "Wuhan", label: "Wuhan" },
-  { value: "Suzhou", label: "Suzhou" },
-  { value: "Xi'an", label: "Xi'an" },
+  { value: "Beijing", label: "北京" },
+  { value: "Shanghai", label: "上海" },
+  { value: "Shenzhen", label: "深圳" },
+  { value: "Guangzhou", label: "广州" },
+  { value: "Hangzhou", label: "杭州" },
+  { value: "Chengdu", label: "成都" },
+  { value: "Nanjing", label: "南京" },
+  { value: "Wuhan", label: "武汉" },
+  { value: "Suzhou", label: "苏州" },
+  { value: "Xi'an", label: "西安" },
 ];
 
 function escapeRegExp(value: string) {
