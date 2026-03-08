@@ -53,7 +53,7 @@ export type RenderResumeCNInput = {
   candidate: CandidateInfo;
   photoBlock: string;
   personalInfoLine: string;
-  objective: string;
+  contactExtraLine: string;
   linksLine: string;
   summary: string;
   skills: SkillsGroup[];
@@ -195,11 +195,6 @@ function sanitizeRendered(tex: string) {
 export function renderResumeCNTex(input: RenderResumeCNInput) {
   const template = readTemplate();
 
-  const objectiveSection =
-    input.objective.trim().length > 0
-      ? `\\section{求职意向}\n\\vspace{0.08cm}\n${input.objective}`
-      : "";
-
   const projectsSection =
     input.projects.length > 0
       ? `\\section{项目经历}\n\\vspace{0.1cm}\n\n${renderProjects(input.projects)}`
@@ -217,8 +212,8 @@ export function renderResumeCNTex(input: RenderResumeCNInput) {
     CANDIDATE_PHONE: input.candidate.phone,
     PHOTO_BLOCK: input.photoBlock,
     PERSONAL_INFO_LINE: input.personalInfoLine,
+    CONTACT_EXTRA_LINE: input.contactExtraLine,
     LINKS_LINE: input.linksLine,
-    OBJECTIVE_SECTION: objectiveSection,
     SKILLS: renderSkills(input.skills),
     EXPERIENCE_SECTION: renderExperiences(input.experiences),
     PROJECTS_SECTION: projectsSection,

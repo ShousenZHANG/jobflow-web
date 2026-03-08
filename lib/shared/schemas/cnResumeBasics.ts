@@ -11,13 +11,10 @@ export const CnResumeBasicsSchema = z.object({
   // CN-specific optional fields
   photoUrl: z.union([z.string().url(), z.literal("")]).optional().nullable(),
   gender: z.string().max(10).optional().nullable(),
-  birthDate: z.string().max(20).optional().nullable(),
-  nativePlace: z.string().max(60).optional().nullable(),
-  politicalStatus: z.string().max(20).optional().nullable(),
-  maritalStatus: z.string().max(20).optional().nullable(),
-  expectedSalary: z.string().max(40).optional().nullable(),
-  availableDate: z.string().max(40).optional().nullable(),
-  workYears: z.string().max(20).optional().nullable(),
+  age: z.string().max(20).optional().nullable(),
+  identity: z.string().max(60).optional().nullable(),
+  wechat: z.string().max(40).optional().nullable(),
+  qq: z.string().max(20).optional().nullable(),
 });
 
 export type CnResumeBasics = z.infer<typeof CnResumeBasicsSchema>;

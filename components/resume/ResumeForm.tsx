@@ -56,13 +56,10 @@ type ResumeBasics = {
   phone: string;
   photoUrl?: string;
   gender?: string;
-  birthDate?: string;
-  nativePlace?: string;
-  politicalStatus?: string;
-  maritalStatus?: string;
-  expectedSalary?: string;
-  availableDate?: string;
-  workYears?: string;
+  age?: string;
+  identity?: string;
+  wechat?: string;
+  qq?: string;
 };
 
 type ResumeLink = {
@@ -1477,82 +1474,39 @@ export function ResumeForm() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="resume-birth-date">出生年月</Label>
+                <Label htmlFor="resume-age">年龄</Label>
                 <Input
-                  id="resume-birth-date"
-                  value={basics.birthDate ?? ""}
-                  onChange={(event) => updateBasics("birthDate" as keyof ResumeBasics, event.target.value)}
-                  placeholder="如: 1995-06"
+                  id="resume-age"
+                  value={basics.age ?? ""}
+                  onChange={(event) => updateBasics("age" as keyof ResumeBasics, event.target.value)}
+                  placeholder="如: 23"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="resume-native-place">籍贯</Label>
+                <Label htmlFor="resume-identity">身份</Label>
                 <Input
-                  id="resume-native-place"
-                  value={basics.nativePlace ?? ""}
-                  onChange={(event) => updateBasics("nativePlace" as keyof ResumeBasics, event.target.value)}
-                  placeholder="如: 浙江杭州"
+                  id="resume-identity"
+                  value={basics.identity ?? ""}
+                  onChange={(event) => updateBasics("identity" as keyof ResumeBasics, event.target.value)}
+                  placeholder="如: 大四学生 / 3年经验"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="resume-political-status">政治面貌</Label>
-                <Select
-                  value={basics.politicalStatus ?? ""}
-                  onValueChange={(value) => updateBasics("politicalStatus" as keyof ResumeBasics, value)}
-                >
-                  <SelectTrigger id="resume-political-status" className="w-full">
-                    <SelectValue placeholder="请选择" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="群众">群众</SelectItem>
-                    <SelectItem value="中共党员">中共党员</SelectItem>
-                    <SelectItem value="共青团员">共青团员</SelectItem>
-                    <SelectItem value="民主党派">民主党派</SelectItem>
-                    <SelectItem value="无党派人士">无党派人士</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="resume-marital-status">婚姻状况</Label>
-                <Select
-                  value={basics.maritalStatus ?? ""}
-                  onValueChange={(value) => updateBasics("maritalStatus" as keyof ResumeBasics, value)}
-                >
-                  <SelectTrigger id="resume-marital-status" className="w-full">
-                    <SelectValue placeholder="请选择" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="未婚">未婚</SelectItem>
-                    <SelectItem value="已婚">已婚</SelectItem>
-                    <SelectItem value="保密">保密</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="resume-expected-salary">期望薪资</Label>
+                <Label htmlFor="resume-wechat">微信</Label>
                 <Input
-                  id="resume-expected-salary"
-                  value={basics.expectedSalary ?? ""}
-                  onChange={(event) => updateBasics("expectedSalary" as keyof ResumeBasics, event.target.value)}
-                  placeholder="如: 25-40K"
+                  id="resume-wechat"
+                  value={basics.wechat ?? ""}
+                  onChange={(event) => updateBasics("wechat" as keyof ResumeBasics, event.target.value)}
+                  placeholder="微信号"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="resume-available-date">到岗时间</Label>
+                <Label htmlFor="resume-qq">QQ</Label>
                 <Input
-                  id="resume-available-date"
-                  value={basics.availableDate ?? ""}
-                  onChange={(event) => updateBasics("availableDate" as keyof ResumeBasics, event.target.value)}
-                  placeholder="如: 随时到岗"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="resume-work-years">工作年限</Label>
-                <Input
-                  id="resume-work-years"
-                  value={basics.workYears ?? ""}
-                  onChange={(event) => updateBasics("workYears" as keyof ResumeBasics, event.target.value)}
-                  placeholder="如: 5年"
+                  id="resume-qq"
+                  value={basics.qq ?? ""}
+                  onChange={(event) => updateBasics("qq" as keyof ResumeBasics, event.target.value)}
+                  placeholder="QQ号"
                 />
               </div>
             </div>

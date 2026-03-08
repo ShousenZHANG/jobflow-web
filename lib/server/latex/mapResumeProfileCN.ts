@@ -55,11 +55,10 @@ export function mapResumeProfileCN(profile: ResumeProfileLike) {
 
   // --- CN-specific header fields ---
   const gender = toStringValue(basics.gender).trim();
-  const birthDate = toStringValue(basics.birthDate).trim();
-  const workYears = toStringValue(basics.workYears).trim();
-  const availableDate = toStringValue(basics.availableDate).trim();
+  const age = toStringValue(basics.age).trim();
+  const identity = toStringValue(basics.identity).trim();
 
-  const personalParts = [gender, birthDate, workYears, availableDate].filter(
+  const personalParts = [gender, age, identity].filter(
     (v) => v.length > 0,
   );
   const personalInfoLine =
@@ -73,12 +72,15 @@ export function mapResumeProfileCN(profile: ResumeProfileLike) {
       ? `\\includegraphics[width=2.5cm]{${escapeLatex(photoUrl)}}\\\\[4pt]`
       : "";
 
-  const title = toStringValue(basics.title).trim();
-  const expectedSalary = toStringValue(basics.expectedSalary).trim();
-  const objective =
-    expectedSalary.length > 0
-      ? escapeLatex(`${title} · ${expectedSalary}`)
-      : "";
+  // --- Contact extras (WeChat / QQ) ---
+  const wechat = toStringValue(basics.wechat).trim();
+  const qq = toStringValue(basics.qq).trim();
+  const contactExtraParts: string[] = [];
+  if (wechat) contactExtraParts.push(`微信: ${escapeLatex(wechat)}`);
+  if (qq) contactExtraParts.push(`QQ: ${escapeLatex(qq)}`);
+  const contactExtraLine = contactExtraParts.length > 0
+    ? contactExtraParts.map((p) => ` \\enspace $|$ \\enspace ${p}`).join("")
+    : "";
 
   // --- Links line for header ---
   const linkEntries: string[] = [];
@@ -217,7 +219,7 @@ export function mapResumeProfileCN(profile: ResumeProfileLike) {
     },
     photoBlock,
     personalInfoLine,
-    objective,
+    contactExtraLine,
     linksLine,
     summary: escapeLatexWithBold(toStringValue(profile.summary)),
     skills: skillGroups,
