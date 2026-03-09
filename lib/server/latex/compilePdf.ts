@@ -17,7 +17,13 @@ export class LatexRenderError extends Error {
   }
 }
 
-export async function compileLatexToPdf(tex: string, timeoutMs = 20000) {
+export type CompileFile = {
+  name: string;
+  base64: string;
+};
+
+export async function compileLatexToPdf(tex: string, options?: { files?: CompileFile[]; timeoutMs?: number }) {
+  const timeoutMs = options?.timeoutMs ?? 20000;
   const url = process.env.LATEX_RENDER_URL;
   const token = process.env.LATEX_RENDER_TOKEN;
   if (!url || !token) {
@@ -32,6 +38,11 @@ export async function compileLatexToPdf(tex: string, timeoutMs = 20000) {
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   let res: Response;
 
+  const body: Record<string, unknown> = { tex };
+  if (options?.files?.length) {
+    body.files = options.files;
+  }
+
   try {
     res = await fetch(url, {
       method: "POST",
@@ -39,7 +50,7 @@ export async function compileLatexToPdf(tex: string, timeoutMs = 20000) {
         "content-type": "application/json",
         "x-api-key": token,
       },
-      body: JSON.stringify({ tex }),
+      body: JSON.stringify(body),
       signal: controller.signal,
     });
   } catch (err) {

@@ -14,7 +14,7 @@ const fullInput: RenderResumeCNInput = {
     linkedinUrl: "https://linkedin.com/in/zhangsan",
     linkedinText: "LinkedIn",
   },
-  photoBlock: "\\includegraphics[width=2.5cm]{https://example.com/photo.jpg}\\\\[4pt]",
+  photoBlock: "\\includegraphics[width=2.5cm]{photo}\\\\[4pt]",
   personalInfoLine: "男 $|$ 28 $|$ 5年经验",
   contactExtraLine: " \\enspace $|$ \\enspace 微信: zhangsan\\_wx \\enspace $|$ \\enspace QQ: 123456789",
   linksLine: " $|$ \\href{https://linkedin.com/in/zhangsan}{LinkedIn}",

@@ -1449,13 +1449,61 @@ export function ResumeForm() {
           {locale === "zh-CN" && (
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="resume-photo-url">证件照链接</Label>
-                <Input
-                  id="resume-photo-url"
-                  value={basics.photoUrl ?? ""}
-                  onChange={(event) => updateBasics("photoUrl" as keyof ResumeBasics, event.target.value)}
-                  placeholder="https://example.com/photo.jpg"
-                />
+                <Label>证件照</Label>
+                <div className="flex items-center gap-2">
+                  {basics.photoUrl ? (
+                    <>
+                      <img
+                        src={basics.photoUrl}
+                        alt="证件照"
+                        className="h-16 w-12 rounded border object-cover"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          fetch(`/api/resume-photo?url=${encodeURIComponent(basics.photoUrl!)}`, {
+                            method: "DELETE",
+                          });
+                          updateBasics("photoUrl" as keyof ResumeBasics, "");
+                        }}
+                      >
+                        删除
+                      </Button>
+                    </>
+                  ) : (
+                    <label className="cursor-pointer rounded-md border border-dashed px-4 py-2 text-sm text-muted-foreground hover:bg-muted/50">
+                      点击上传
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={async (event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 2 * 1024 * 1024) {
+                            toast({ title: "照片不能超过 2 MB", variant: "destructive" });
+                            return;
+                          }
+                          try {
+                            const res = await fetch("/api/resume-photo", {
+                              method: "POST",
+                              headers: { "content-type": file.type },
+                              body: file,
+                            });
+                            if (!res.ok) throw new Error("upload failed");
+                            const json = await res.json();
+                            updateBasics("photoUrl" as keyof ResumeBasics, json.url);
+                          } catch {
+                            toast({ title: "上传失败，请重试", variant: "destructive" });
+                          }
+                          event.target.value = "";
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="resume-gender">性别</Label>

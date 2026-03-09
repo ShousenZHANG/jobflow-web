@@ -68,7 +68,7 @@ describe("mapResumeProfileCN", () => {
 
     // CN-specific fields
     expect(mapped.photoBlock).toContain("includegraphics");
-    expect(mapped.photoBlock).toContain("photo.jpg");
+    expect(mapped.photoBlock).toContain("photo");
     expect(mapped.personalInfoLine).toContain("男");
     expect(mapped.personalInfoLine).toContain("28");
     expect(mapped.personalInfoLine).toContain("5年经验");
