@@ -1,6 +1,6 @@
 ﻿\documentclass[10pt, a4paper]{article}
 
-\usepackage[left=1.8cm, right=1.8cm, top=1.5cm, bottom=1.5cm]{geometry}
+\usepackage[left=1.5cm, right=1.5cm, top=1.2cm, bottom=1.2cm]{geometry}
 \usepackage{xeCJK}
 \usepackage{fontspec}
 \usepackage{titlesec}
@@ -19,48 +19,50 @@
 
 % Colors
 \definecolor{primaryColor}{RGB}{0, 79, 144}
-\definecolor{grayText}{RGB}{80, 80, 80}
+\definecolor{grayText}{RGB}{100, 100, 100}
+\definecolor{ruleColor}{RGB}{180, 195, 210}
 
-% Section formatting
-\titleformat{\section}{\large\bfseries\color{primaryColor}}{}{0em}{}[\vspace{0.2pt}\titlerule]
-\titlespacing*{\section}{0pt}{8pt}{4pt}
+% Section formatting — compact ruled headers
+\titleformat{\section}{\normalsize\bfseries\color{primaryColor}}{}{0em}{}[\vspace{-2pt}{\color{ruleColor}\hrule height 0.6pt}]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
 
 % Remove page numbers
 \pagestyle{empty}
 \setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
 
 % Hyperlink styling
 \hypersetup{colorlinks=true, linkcolor=primaryColor, urlcolor=primaryColor}
 
-% List styling
-\setlist[itemize]{nosep, leftmargin=12pt, itemsep=1pt, topsep=2pt}
-\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$}
+% List styling — tight and compact
+\setlist[itemize]{nosep, leftmargin=14pt, itemsep=0.5pt, topsep=1pt, parsep=0pt}
+\renewcommand\labelitemi{\textcolor{primaryColor}{$\vcenter{\hbox{\footnotesize$\bullet$}}$}}
 
 \begin{document}
 
 % === PHOTO OVERLAY (absolute position, top-right) ===
 {{PHOTO_BLOCK}}
 
-% === HEADER (full-width centered) ===
+% === HEADER (full-width centered, compact) ===
 \begin{center}
-{\huge\bfseries {{CANDIDATE_NAME}}} \\[8pt]
-{{CANDIDATE_PHONE}} \enspace $\cdot$ \enspace {{CANDIDATE_EMAIL}} {{CONTACT_EXTRA_LINE}} {{LINKS_LINE}} \\[4pt]
-{\small 求职意向：\textbf{{{CANDIDATE_TITLE}}}} \enspace $\cdot$ \enspace {\small\color{grayText} {{PERSONAL_INFO_LINE}}}
+{\LARGE\bfseries {{CANDIDATE_NAME}}} \\[4pt]
+{\small {{CANDIDATE_PHONE}} \enspace $\cdot$ \enspace {{CANDIDATE_EMAIL}} {{CONTACT_EXTRA_LINE}} {{LINKS_LINE}}} \\[2pt]
+{\small 求职意向：\textbf{{{CANDIDATE_TITLE}}}} \enspace {\small\color{grayText} {{PERSONAL_INFO_LINE}}}
 \end{center}
 
-\vspace{6pt}
+\vspace{2pt}
 
 % === EDUCATION ===
 {{EDUCATION_SECTION}}
 
 % === SKILLS ===
 \section{专业技能}
-\vspace{0.08cm}
+\vspace{-1pt}
 {{SKILLS}}
 
 % === EXPERIENCE ===
 \section{工作经历}
-\vspace{0.1cm}
+\vspace{-1pt}
 {{EXPERIENCE_SECTION}}
 
 % === PROJECTS ===
