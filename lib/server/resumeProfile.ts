@@ -21,6 +21,11 @@ export type ResumeProfileInput = {
     email: string;
     phone: string;
     location?: string | null;
+    // CN-specific optional fields
+    photoUrl?: string | null;
+    gender?: string | null;
+    age?: string | null;
+    identity?: string | null;
   } | null;
   links?: {
     label: string;
