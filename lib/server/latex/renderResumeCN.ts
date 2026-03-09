@@ -120,7 +120,7 @@ function renderExperienceBlock(entry: ExperienceEntry) {
     `\\noindent\\textbf{${entry.title}} \\hfill ${entry.dates} \\\\`,
   ];
   if (secondLine) {
-    lines.push(`${secondLine} \\\\[2pt]`);
+    lines.push(`${secondLine} \\\\`);
   }
 
   if (entry.bullets.length > 0) {
@@ -129,7 +129,7 @@ function renderExperienceBlock(entry: ExperienceEntry) {
     lines.push("\\end{itemize}");
   }
 
-  lines.push("\\vspace{0.04cm}");
+  lines.push("\\vspace{0.12cm}");
   return lines.join("\n");
 }
 
@@ -168,7 +168,7 @@ function renderProjectBlock(entry: ProjectEntry) {
     `\\noindent\\textbf{${entry.name}} \\hfill ${entry.dates} \\\\`,
   ];
   if (stackLine) {
-    lines.push(`${stackLine} \\\\[2pt]`);
+    lines.push(`${stackLine} \\\\`);
   }
 
   if (entry.bullets.length > 0) {
@@ -177,7 +177,7 @@ function renderProjectBlock(entry: ProjectEntry) {
     lines.push("\\end{itemize}");
   }
 
-  lines.push("\\vspace{0.04cm}");
+  lines.push("\\vspace{0.12cm}");
   return lines.join("\n");
 }
 
