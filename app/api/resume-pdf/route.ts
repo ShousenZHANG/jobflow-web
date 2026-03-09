@@ -20,6 +20,12 @@ const ResumeBasicsSchema = z.object({
   email: z.string().trim().email().max(160),
   phone: z.string().trim().min(3).max(40),
   location: z.string().trim().min(1).max(120).optional().nullable(),
+  photoUrl: z.string().trim().url().max(500).optional().nullable(),
+  gender: z.string().trim().max(10).optional().nullable(),
+  age: z.string().trim().max(20).optional().nullable(),
+  identity: z.string().trim().max(60).optional().nullable(),
+  wechat: z.string().trim().max(60).optional().nullable(),
+  qq: z.string().trim().max(20).optional().nullable(),
 });
 
 const ResumeLinkSchema = z.object({
