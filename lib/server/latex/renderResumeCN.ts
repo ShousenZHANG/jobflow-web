@@ -92,7 +92,7 @@ function renderSkills(groups: SkillsGroup[]) {
       const items = group.items.join(", ");
       return `\\textbf{${group.label}:} ${items} \\\\`;
     })
-    .join("\n");
+    .join("\n") + "\n\\vspace{0.25cm}";
 }
 
 function renderBullets(items: string[]) {
@@ -129,7 +129,7 @@ function renderExperienceBlock(entry: ExperienceEntry) {
     lines.push("\\end{itemize}");
   }
 
-  lines.push("\\vspace{0.12cm}");
+  lines.push("\\vspace{0.25cm}");
   return lines.join("\n");
 }
 
@@ -177,7 +177,7 @@ function renderProjectBlock(entry: ProjectEntry) {
     lines.push("\\end{itemize}");
   }
 
-  lines.push("\\vspace{0.12cm}");
+  lines.push("\\vspace{0.25cm}");
   return lines.join("\n");
 }
 
