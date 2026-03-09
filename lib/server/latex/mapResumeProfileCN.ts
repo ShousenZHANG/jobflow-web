@@ -1,4 +1,4 @@
-import { escapeLatex, escapeLatexWithBold } from "./escapeLatex";
+﻿import { escapeLatex, escapeLatexWithBold } from "./escapeLatex";
 
 type ResumeProfileLike = {
   summary?: string | null;
@@ -30,7 +30,7 @@ function hasText(value: string) {
 function formatSchoolDegree(schoolRaw: unknown, degreeRaw: unknown) {
   const school = escapeLatex(toStringValue(schoolRaw)).trim();
   const degree = escapeLatex(toStringValue(degreeRaw)).trim();
-  if (school && degree) return `${school} -- ${degree}`;
+  if (school && degree) return `${school} \\enspace $|$ \\enspace ${degree}`;
   return school || degree || "";
 }
 

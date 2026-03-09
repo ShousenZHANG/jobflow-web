@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import path from "node:path";
 
 type CandidateInfo = {
@@ -143,7 +143,7 @@ function renderEducationBlock(entry: EducationEntry) {
   ];
   
   const detailStr = entry.detail?.trim() ? `\\hspace*{14pt}${entry.detail.trim()}` : "";
-  lines.push(`${detailStr} \\hfill ${entry.dates}`);
+  lines.push(`${detailStr} \\hfill ${entry.dates} \\par`);
 
   lines.push("\\vspace{0.02cm}");
   return lines.join("\n");
