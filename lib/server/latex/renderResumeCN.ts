@@ -139,14 +139,12 @@ function renderExperiences(entries: ExperienceEntry[]) {
 
 function renderEducationBlock(entry: EducationEntry) {
   const lines = [
-    `\\noindent\\textbf{${entry.schoolDegree}} \\hfill ${entry.dates} \\\\`,
+    `\\noindent\\textbf{${entry.schoolDegree}} \\hfill ${entry.location?.trim() ?? ""} \\\\`,
   ];
-  if (entry.location?.trim()) {
-    lines.push(entry.location);
-  }
-  if (entry.detail?.trim()) {
-    lines.push(`\\textit{${entry.detail}}`);
-  }
+  
+  const detailStr = entry.detail?.trim() ? `\\hspace*{14pt}${entry.detail.trim()}` : "";
+  lines.push(`${detailStr} \\hfill ${entry.dates}`);
+
   lines.push("\\vspace{0.02cm}");
   return lines.join("\n");
 }
