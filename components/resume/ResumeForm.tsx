@@ -552,7 +552,7 @@ export function ResumeForm() {
           )
         );
       }
-      if (stepName === "Skills" || stepName === "专业技能") {
+      if (stepName === "Skills" || stepName === "技能/证书及其他") {
         return (
           skills.length > 0 &&
           skills.every(
