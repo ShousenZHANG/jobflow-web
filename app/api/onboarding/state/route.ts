@@ -15,21 +15,15 @@ import {
 
 export const runtime = "nodejs";
 
-const OnboardingTaskIdSchema = z.enum([
-  "resume_setup",
-  "first_fetch",
-  "triage_first_job",
-  "generate_first_pdf",
-  "download_first_pdf",
-]);
+const OnboardingTaskIdSchema = z.enum(["resume_setup", "first_fetch", "generate_first_pdf"]);
 
-const ChecklistPatchSchema = z.object({
-  resume_setup: z.boolean(),
-  first_fetch: z.boolean(),
-  triage_first_job: z.boolean(),
-  generate_first_pdf: z.boolean(),
-  download_first_pdf: z.boolean(),
-}).partial();
+const ChecklistPatchSchema = z
+  .object({
+    resume_setup: z.boolean(),
+    first_fetch: z.boolean(),
+    generate_first_pdf: z.boolean(),
+  })
+  .partial();
 
 const PatchSchema = z.discriminatedUnion("type", [
   z.object({

@@ -9,13 +9,11 @@ import {
 } from "@/lib/onboarding";
 
 describe("onboarding task model", () => {
-  it("defines five ordered guide tasks including generate and download", () => {
+  it("defines three ordered guide tasks focused on resume, fetch, and first CV PDF", () => {
     expect(ONBOARDING_TASKS.map((task) => task.id)).toEqual([
       "resume_setup",
       "first_fetch",
-      "triage_first_job",
       "generate_first_pdf",
-      "download_first_pdf",
     ]);
   });
 
@@ -23,9 +21,7 @@ describe("onboarding task model", () => {
     expect(defaultOnboardingChecklist()).toEqual({
       resume_setup: false,
       first_fetch: false,
-      triage_first_job: false,
       generate_first_pdf: false,
-      download_first_pdf: false,
     });
   });
 
@@ -34,14 +30,11 @@ describe("onboarding task model", () => {
       normalizeOnboardingChecklist({
         resume_setup: true,
         first_fetch: "yes",
-        triage_first_job: true,
       }),
     ).toEqual({
       resume_setup: true,
       first_fetch: false,
-      triage_first_job: true,
       generate_first_pdf: false,
-      download_first_pdf: false,
     });
   });
 
@@ -49,13 +42,11 @@ describe("onboarding task model", () => {
     const incomplete = {
       resume_setup: true,
       first_fetch: true,
-      triage_first_job: true,
-      generate_first_pdf: true,
-      download_first_pdf: false,
+      generate_first_pdf: false,
     };
     const complete = {
       ...incomplete,
-      download_first_pdf: true,
+      generate_first_pdf: true,
     };
 
     expect(isOnboardingComplete(incomplete)).toBe(false);
@@ -77,9 +68,7 @@ describe("onboarding task model", () => {
     ).toEqual({
       resume_setup: true,
       first_fetch: true,
-      triage_first_job: false,
       generate_first_pdf: false,
-      download_first_pdf: false,
     });
   });
 });

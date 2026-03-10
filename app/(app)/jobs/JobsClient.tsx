@@ -1012,7 +1012,6 @@ export function JobsClient({
     onSuccess: (data, variables) => {
       // We still invalidate to ensure consistency, but the UI is already correct
       queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
-      markTaskComplete("triage_first_job");
       if (data?.resumeSaved || data?.resumePdfUrl) {
         markTaskComplete("generate_first_pdf");
       }
@@ -1478,9 +1477,7 @@ export function JobsClient({
   const selectedJob = items.find((it) => it.id === effectiveSelectedId) ?? null;
   const selectedTailorSource = selectedJob ? tailorSourceByJob[selectedJob.id] : undefined;
   const isAppliedSelected = selectedJob?.status === "APPLIED";
-  const highlightTriage = isTaskHighlighted("triage_first_job");
   const highlightGenerate = isTaskHighlighted("generate_first_pdf");
-  const highlightDownload = isTaskHighlighted("download_first_pdf");
   const parsedExternalOutput = useMemo(
     () => parseTailorOutput(externalModelOutput, externalTarget),
     [externalModelOutput, externalTarget],
@@ -1798,16 +1795,9 @@ export function JobsClient({
                     asChild
                     size="sm"
                     variant="outline"
-                    className={`h-9 rounded-xl border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] ${
-                      highlightDownload ? guideHighlightClass : ""
-                    }`}
-                    data-guide-anchor="download_first_pdf"
+                    className="h-9 rounded-xl border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px]"
                   >
-                    <a
-                      href={pdfPreview.url}
-                      download={pdfPreview.filename}
-                      onClick={() => markTaskComplete("download_first_pdf")}
-                    >
+                    <a href={pdfPreview.url} download={pdfPreview.filename}>
                       <Download className="mr-1.5 h-4 w-4" />
                       Download PDF
                     </a>
@@ -2096,9 +2086,7 @@ export function JobsClient({
                       <SelectTrigger
                         className={`rounded-xl border-slate-200 bg-white shadow-sm ${
                           isAppliedSelected ? "h-9 w-full px-3 text-sm sm:w-[118px]" : "h-10 w-full sm:w-[132px]"
-                        } ${highlightTriage ? guideHighlightClass : ""}`}
-                        data-guide-highlight={highlightTriage ? "true" : "false"}
-                        data-guide-anchor="triage_first_job"
+                        }`}
                       >
                         <span className="truncate">{statusLabel[selectedJob.status]}</span>
                       </SelectTrigger>
@@ -2154,15 +2142,9 @@ export function JobsClient({
                         asChild
                         className={`w-full justify-center rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 active:translate-y-[1px] sm:w-auto ${
                           isAppliedSelected ? "h-9 px-3.5" : "h-10 px-4"
-                        } ${highlightDownload ? guideHighlightClass : ""}`}
-                        data-guide-anchor="download_first_pdf"
+                        }`}
                       >
-                        <a
-                          href={selectedJob.resumePdfUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={() => markTaskComplete("download_first_pdf")}
-                        >
+                        <a href={selectedJob.resumePdfUrl} target="_blank" rel="noreferrer">
                           Saved CV
                         </a>
                       </Button>
