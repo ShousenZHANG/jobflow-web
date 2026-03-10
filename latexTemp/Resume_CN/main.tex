@@ -23,8 +23,8 @@
 \definecolor{ruleColor}{RGB}{138, 152, 165}
 
 % Section formatting — compact ruled headers
-\titleformat{\section}{\normalsize\bfseries\color{primaryColor}}{}{0em}{}[\vspace{-2pt}{\color{ruleColor}\hrule height 0.6pt}]
-\titlespacing*{\section}{0pt}{6pt}{5pt}
+\titleformat{\section}{\normalsize\bfseries\color{primaryColor}}{}{0em}{}[\vspace{1pt}{\color{ruleColor}\hrule height 0.5pt}]
+\titlespacing*{\section}{0pt}{5pt}{3pt}
 
 % Remove page numbers
 \pagestyle{empty}
@@ -35,7 +35,7 @@
 \hypersetup{colorlinks=true, linkcolor=primaryColor, urlcolor=primaryColor}
 
 % List styling — tight and compact
-\setlist[itemize]{nosep, leftmargin=14pt, itemsep=1.5pt, topsep=2pt, parsep=0pt, partopsep=0pt}
+\setlist[itemize]{nosep, leftmargin=13pt, itemsep=1.2pt, topsep=2pt, parsep=0pt, partopsep=0pt}
 \renewcommand\labelitemi{\textcolor{primaryColor}{$\vcenter{\hbox{\footnotesize$\bullet$}}$}}
 
 \begin{document}
@@ -46,18 +46,20 @@
 % === HEADER (full-width centered, compact) ===
 \begin{center}
 {\huge\bfseries {{CANDIDATE_NAME}}} \\[4pt]
-{{CANDIDATE_PHONE}} \enspace $\cdot$ \enspace {{CANDIDATE_EMAIL}} {{CONTACT_EXTRA_LINE}} {{LINKS_LINE}} \\[2pt]
-求职意向：\textbf{{{CANDIDATE_TITLE}}} \enspace \textbf{\color{grayText} {{PERSONAL_INFO_LINE}}}
+\small\sloppy
+{{CANDIDATE_PHONE}} \enspace $\cdot$ \enspace {{CANDIDATE_EMAIL}}\allowbreak{{CONTACT_EXTRA_LINE}}\allowbreak{{LINKS_LINE}} \\[2pt]
+\small\sloppy
+求职意向：\textbf{{{CANDIDATE_TITLE}}}\allowbreak \enspace \textbf{\color{grayText} {{PERSONAL_INFO_LINE}}}
+\normalsize
 \end{center}
 
-\vspace{2pt}
+\vspace{4pt}
 
 % === EDUCATION ===
 {{EDUCATION_SECTION}}
 
 % === EXPERIENCE ===
 \section{工作经历}
-\vspace{-2pt}
 {{EXPERIENCE_SECTION}}
 
 % === PROJECTS ===
@@ -66,6 +68,5 @@
 
 % === SKILLS ===
 \section{技能/证书及其他}
-\vspace{-4pt}
 {{SKILLS}}
 \end{document}
