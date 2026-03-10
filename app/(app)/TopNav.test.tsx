@@ -44,17 +44,17 @@ describe("TopNav", () => {
     expect(container.querySelector(".edu-route-progress")).toBeNull();
   });
 
-  it("renders a dedicated mobile route dropdown", () => {
+  it("renders a minimal mobile current-route label instead of dropdown", () => {
     renderNav();
 
-    expect(screen.getAllByTestId("mobile-route-select-wrap")[0]).toBeInTheDocument();
-    expect(screen.getAllByTestId("mobile-route-select")[0]).toBeInTheDocument();
-    expect(screen.queryByTestId("mobile-tab-nav")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("mobile-route-select-wrap")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("mobile-route-select")).not.toBeInTheDocument();
+    expect(screen.getByTestId("mobile-current-route")).toHaveTextContent("Jobs");
   });
 
   it("renders the LocaleSwitcher", () => {
     renderNav();
-    expect(screen.getByRole("button", { name: "EN" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "中文" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "EN" })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "中文" })[0]).toBeInTheDocument();
   });
 });
