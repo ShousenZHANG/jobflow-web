@@ -67,9 +67,9 @@ export default async function AutomationPage() {
   if (!session?.user) redirect("/login?callbackUrl=/automation");
 
   return (
-    <main className="flex h-full min-h-0 flex-1 flex-col gap-6">
-      <section className="rounded-3xl border-2 border-slate-900/10 bg-white/80 p-6 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur">
-        <div className="mb-6 space-y-2">
+    <main className="flex h-full min-h-0 flex-1 flex-col">
+      <section className="flex h-full min-h-0 flex-1 flex-col rounded-3xl border-2 border-slate-900/10 bg-white/80 p-6 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)] backdrop-blur">
+        <div className="mb-4 space-y-2">
           <h1 className="text-2xl font-semibold text-slate-900">Cursor + Codex Automation Setup</h1>
           <p className="text-sm text-slate-600">
             Enterprise runbook for users who do not have repository access. Configure Playwright MCP once, then run
@@ -77,7 +77,8 @@ export default async function AutomationPage() {
           </p>
         </div>
 
-        <div className="grid gap-4">
+        <div className="card-scroll-area min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="grid gap-4 pb-4">
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
             <h2 className="text-sm font-semibold text-slate-900">Step 1: Configure Playwright MCP in Cursor</h2>
             <p className="mt-1 text-xs text-slate-600">
@@ -122,13 +123,14 @@ export default async function AutomationPage() {
             copyLabel="Copy Prompt B"
           />
 
-          <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Step 5: Retry Failed Tasks</h2>
-            <p className="mt-1 text-xs text-slate-600">
-              Use this when summary reports failures.
-            </p>
-          </section>
-          <PromptBlock title="Prompt C - Retry Failed" content={PROMPT_RETRY} copyLabel="Copy Prompt C" />
+            <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+              <h2 className="text-sm font-semibold text-slate-900">Step 5: Retry Failed Tasks</h2>
+              <p className="mt-1 text-xs text-slate-600">
+                Use this when summary reports failures.
+              </p>
+            </section>
+            <PromptBlock title="Prompt C - Retry Failed" content={PROMPT_RETRY} copyLabel="Copy Prompt C" />
+          </div>
         </div>
       </section>
     </main>

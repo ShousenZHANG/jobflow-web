@@ -931,7 +931,8 @@ body {
 
 .app-shell {
   min-height: 0;
-  overflow-y: auto;
+  /* Desktop: lock outer scroll; inner cards handle scrolling */
+  overflow-y: hidden;
   scrollbar-gutter: stable;
 }
 
@@ -970,9 +971,39 @@ body::-webkit-scrollbar-thumb:hover,
 }
 
 @media (max-width: 1023px) {
+  /* Mobile: allow full-page scroll for better usability */
+  .app-shell {
+    overflow-y: auto;
+  }
+
   .app-shell.jobs-scroll-lock {
     overflow-y: auto;
   }
+}
+
+/* Generic inner card scroll area (desktop) */
+.card-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
+}
+
+.card-scroll-area::-webkit-scrollbar {
+  width: 10px;
+}
+
+.card-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-scroll-area::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background-color: rgba(148, 163, 184, 0.5);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.card-scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.8);
 }
 
 .jobs-scroll-area {
