@@ -128,7 +128,8 @@ function renderExperienceBlock(entry: ExperienceEntry) {
     lines.push("\\end{itemize}");
   }
 
-  lines.push("\\vspace{0.25cm}");
+  // Unified block spacing between experience entries / next section.
+  lines.push("\\vspace{0.18cm}");
   return lines.join("\n");
 }
 
@@ -151,7 +152,8 @@ function renderEducationBlock(entry: EducationEntry) {
     lines.push(`${detailStr} \\par`);
   }
 
-  lines.push("\\vspace{0.02cm}");
+  // Unified block spacing between education entries / next section.
+  lines.push("\\vspace{0.18cm}");
   return lines.join("\n");
 }
 
@@ -184,7 +186,8 @@ function renderProjectBlock(entry: ProjectEntry) {
     lines.push("\\end{itemize}");
   }
 
-  lines.push("\\vspace{0.25cm}");
+  // Unified block spacing between project entries / next section.
+  lines.push("\\vspace{0.18cm}");
   return lines.join("\n");
 }
 
@@ -204,12 +207,12 @@ export function renderResumeCNTex(input: RenderResumeCNInput) {
 
   const projectsSection =
     input.projects.length > 0
-      ? `\\section{项目经历}\n\\vspace{0.02cm}\n\n${renderProjects(input.projects)}`
+      ? `\\section{项目经历}\n\n${renderProjects(input.projects)}`
       : "";
 
   const educationSection =
     input.education.length > 0
-      ? `\\section{教育背景}\n\\vspace{0.02cm}\n\n${renderEducation(input.education)}`
+      ? `\\section{教育背景}\n\n${renderEducation(input.education)}`
       : "";
 
   const rendered = replaceAll(template, {
