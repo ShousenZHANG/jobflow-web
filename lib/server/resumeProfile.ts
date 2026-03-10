@@ -37,7 +37,7 @@ export type ResumeProfileInput = {
     items: string[];
   }[] | null;
   experiences?: {
-    location: string;
+  location?: string | null;
     dates: string;
     title: string;
     company: string;

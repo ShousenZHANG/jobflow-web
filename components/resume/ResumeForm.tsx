@@ -518,16 +518,18 @@ export function ResumeForm() {
         return hasContent(summary);
       }
       if (stepName === "Experience" || stepName === "工作经历") {
+        const requireLocation = locale !== "zh-CN";
         return (
           experiences.length > 0 &&
-          experiences.every(
-            (entry) =>
+          experiences.every((entry) => {
+            const baseOk =
               hasContent(entry.company) &&
               hasContent(entry.title) &&
-              hasContent(entry.location) &&
               hasContent(entry.dates) &&
-              hasBullets(entry.bullets),
-          )
+              hasBullets(entry.bullets);
+            if (!baseOk) return false;
+            return requireLocation ? hasContent(entry.location) : true;
+          })
         );
       }
       if (stepName === "Projects" || stepName === "项目经历") {
@@ -1755,15 +1757,17 @@ export function ResumeForm() {
                         placeholder={t("experienceCompanyPlaceholder")}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`experience-location-${index}`}>{t("experienceLocation")}</Label>
-                      <Input
-                        id={`experience-location-${index}`}
-                        value={entry.location}
-                        onChange={(event) => updateExperience(index, "location", event.target.value)}
-                        placeholder={t("experienceLocationPlaceholder")}
-                      />
-                    </div>
+                    {locale !== "zh-CN" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`experience-location-${index}`}>{t("experienceLocation")}</Label>
+                        <Input
+                          id={`experience-location-${index}`}
+                          value={entry.location}
+                          onChange={(event) => updateExperience(index, "location", event.target.value)}
+                          placeholder={t("experienceLocationPlaceholder")}
+                        />
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor={`experience-dates-${index}`}>{t("experienceDates")}</Label>
                       <Input

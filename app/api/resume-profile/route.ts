@@ -38,7 +38,7 @@ const ResumeLinkSchema = z.object({
 });
 
 const ResumeExperienceSchema = z.object({
-  location: z.string().trim().min(1).max(120),
+  location: z.string().trim().min(1).max(120).optional().nullable(),
   dates: z.string().trim().min(1).max(80),
   title: z.string().trim().min(1).max(120),
   company: z.string().trim().min(1).max(120),

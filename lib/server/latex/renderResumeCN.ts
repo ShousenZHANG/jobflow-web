@@ -106,10 +106,7 @@ function renderProjectLinks(links: ProjectLink[]) {
 
 function renderExperienceBlock(entry: ExperienceEntry) {
   const linksLine = renderProjectLinks(entry.links ?? []);
-  const companyParts = [entry.company, entry.location].filter(
-    (v) => v.trim().length > 0,
-  );
-  let secondLine = companyParts.join(" \\enspace $\\cdot$ \\enspace ");
+  let secondLine = entry.company.trim();
   if (linksLine) {
     secondLine = secondLine
       ? `${secondLine} \\enspace $\\cdot$ \\enspace ${linksLine}`
@@ -140,12 +137,19 @@ function renderExperiences(entries: ExperienceEntry[]) {
 }
 
 function renderEducationBlock(entry: EducationEntry) {
-  const lines = [
-    `\\noindent\\textbf{${entry.schoolDegree}} \\hfill ${entry.location?.trim() ?? ""} \\\\`,
-  ];
-  
-  const detailStr = entry.detail?.trim() ? `\\hspace*{14pt}${entry.detail.trim()}` : "";
-  lines.push(`${detailStr} \\hfill ${entry.dates} \\par`);
+  const location = entry.location?.trim() ?? "";
+  const dates = entry.dates.trim();
+  const rightParts = [location, dates].filter((v) => v.length > 0);
+  const rightLine = rightParts.join(" \\enspace $\\cdot$ \\enspace ");
+
+  const lines = [`\\noindent\\textbf{${entry.schoolDegree}} \\hfill ${rightLine} \\\\`];
+
+  const detailStr = entry.detail?.trim()
+    ? `\\hspace*{14pt}${entry.detail.trim()}`
+    : "";
+  if (detailStr) {
+    lines.push(`${detailStr} \\par`);
+  }
 
   lines.push("\\vspace{0.02cm}");
   return lines.join("\n");
