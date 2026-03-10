@@ -54,17 +54,20 @@ export function mapResumeProfileCN(profile: ResumeProfileLike) {
   const website = websiteExplicit || websiteFallback;
 
   // --- CN-specific header fields ---
-  const gender = toStringValue(basics.gender).trim();
-  const age = toStringValue(basics.age).trim();
   const identity = toStringValue(basics.identity).trim();
+  const availabilityMonth = toStringValue(
+    (basics as Record<string, unknown>).availabilityMonth,
+  ).trim();
 
-  const personalParts = [gender, age, identity].filter(
+  const identityEscaped = identity ? escapeLatex(identity) : "";
+  const availabilityPart =
+    availabilityMonth.length > 0 ? `到岗：${escapeLatex(availabilityMonth)}` : "";
+
+  const personalParts = [identityEscaped, availabilityPart].filter(
     (v) => v.length > 0,
   );
   const personalInfoLine =
-    personalParts.length > 0
-      ? personalParts.map((v) => escapeLatex(v)).join(" $\\cdot$ ")
-      : "";
+    personalParts.length > 0 ? personalParts.join(" $\\cdot$ ") : "";
 
   const photoUrl = toStringValue(basics.photoUrl).trim();
   const photoBlock =

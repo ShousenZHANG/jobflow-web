@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { NextIntlClientProvider } from "next-intl";
 import { ResumeForm } from "@/components/resume/ResumeForm";
 import messages from "@/messages/en.json";
+import zhMessages from "@/messages/zh.json";
 
 afterEach(() => {
   cleanup();
@@ -12,6 +13,13 @@ afterEach(() => {
 const renderForm = () =>
   render(
     <NextIntlClientProvider locale="en" messages={messages}>
+      <ResumeForm />
+    </NextIntlClientProvider>,
+  );
+
+const renderFormZhCN = () =>
+  render(
+    <NextIntlClientProvider locale="zh-CN" messages={zhMessages}>
       <ResumeForm />
     </NextIntlClientProvider>,
   );
@@ -43,6 +51,21 @@ describe("ResumeForm", () => {
 
     const previewButton = screen.getByRole("button", { name: "Preview" });
     expect(previewButton).toBeDisabled();
+  });
+
+  it("removes gender/age fields and adds availability month on zh-CN personal info step", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ profile: null }), { status: 200 })),
+    );
+
+    renderFormZhCN();
+
+    expect(await screen.findByRole("heading", { name: "个人信息" })).toBeInTheDocument();
+
+    expect(screen.queryByLabelText("性别")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("年龄")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("到岗（YYYY-MM）")).toBeInTheDocument();
   });
 
   it("advances to summary after basics are filled", async () => {

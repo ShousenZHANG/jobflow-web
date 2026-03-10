@@ -11,6 +11,7 @@ const fullProfile = {
     gender: "男",
     age: "28",
     identity: "5年经验",
+    availabilityMonth: "2026-03",
   },
   links: [
     { label: "LinkedIn", url: "https://linkedin.com/in/zhangsan" },
@@ -67,9 +68,13 @@ describe("mapResumeProfileCN", () => {
     // CN-specific fields
     expect(mapped.photoBlock).toContain("includegraphics");
     expect(mapped.photoBlock).toContain("photo");
-    expect(mapped.personalInfoLine).toContain("男");
-    expect(mapped.personalInfoLine).toContain("28");
     expect(mapped.personalInfoLine).toContain("5年经验");
+    expect(mapped.personalInfoLine).toContain("到岗：2026-03");
+    expect(mapped.personalInfoLine.indexOf("5年经验")).toBeLessThan(
+      mapped.personalInfoLine.indexOf("到岗：2026-03"),
+    );
+    expect(mapped.personalInfoLine).not.toContain("男");
+    expect(mapped.personalInfoLine).not.toContain("28");
 
     // Links line
     expect(mapped.linksLine).toContain("$\\cdot$");
@@ -139,8 +144,8 @@ describe("mapResumeProfileCN", () => {
       education: [],
     });
 
-    expect(mapped.personalInfoLine).toContain("女");
     expect(mapped.personalInfoLine).toContain("3年经验");
+    expect(mapped.personalInfoLine).not.toContain("女");
     // Should not have dangling separators for missing fields
     expect(mapped.personalInfoLine).not.toMatch(/\\cdot\$\s*\$\\cdot/);
     // No wechat/qq provided

@@ -55,9 +55,8 @@ type ResumeBasics = {
   email: string;
   phone: string;
   photoUrl?: string;
-  gender?: string;
-  age?: string;
   identity?: string;
+  availabilityMonth?: string;
   wechat?: string;
   qq?: string;
 };
@@ -127,7 +126,7 @@ type ResumeProfileSummary = {
 };
 
 const stepsEN = ["Personal info", "Summary", "Experience", "Projects", "Education", "Skills"] as const;
-const stepsCN = ["个人信息", "工作经历", "项目经历", "教育背景", "专业技能"] as const;
+const stepsCN = ["个人信息", "工作经历", "项目经历", "教育背景", "技能/证书及其他"] as const;
 
 const emptyBasics: ResumeBasics = {
   fullName: "",
@@ -269,7 +268,7 @@ export function ResumeForm() {
   const [profileCreating, setProfileCreating] = useState(false);
   const [profileDeleting, setProfileDeleting] = useState(false);
 
-  const locale = globalLocale === "zh" ? "zh-CN" : "en-AU";
+  const locale = globalLocale.startsWith("zh") ? "zh-CN" : "en-AU";
   const steps = locale === "zh-CN" ? stepsCN : stepsEN;
 
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
@@ -343,7 +342,20 @@ export function ResumeForm() {
       }
 
       const profileRecord = profile as ResumeProfilePayload & { locale?: string };
-      setBasics(profile.basics ?? emptyBasics);
+      const rawBasics = (profile.basics ?? emptyBasics) as Record<string, unknown>;
+      const sanitizedBasics: ResumeBasics = {
+        fullName: typeof rawBasics.fullName === "string" ? rawBasics.fullName : "",
+        title: typeof rawBasics.title === "string" ? rawBasics.title : "",
+        email: typeof rawBasics.email === "string" ? rawBasics.email : "",
+        phone: typeof rawBasics.phone === "string" ? rawBasics.phone : "",
+        photoUrl: typeof rawBasics.photoUrl === "string" ? rawBasics.photoUrl : undefined,
+        identity: typeof rawBasics.identity === "string" ? rawBasics.identity : undefined,
+        availabilityMonth:
+          typeof rawBasics.availabilityMonth === "string" ? rawBasics.availabilityMonth : undefined,
+        wechat: typeof rawBasics.wechat === "string" ? rawBasics.wechat : undefined,
+        qq: typeof rawBasics.qq === "string" ? rawBasics.qq : undefined,
+      };
+      setBasics(sanitizedBasics);
       setLinks(Array.isArray(profile.links) && profile.links.length > 0 ? profile.links : defaultLinks);
       setSummary(profile.summary ?? "");
 
@@ -1509,37 +1521,23 @@ export function ResumeForm() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="resume-gender">性别</Label>
-                <Select
-                  value={basics.gender ?? ""}
-                  onValueChange={(value) => updateBasics("gender" as keyof ResumeBasics, value)}
-                >
-                  <SelectTrigger id="resume-gender" className="w-full">
-                    <SelectValue placeholder="请选择" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="男">男</SelectItem>
-                    <SelectItem value="女">女</SelectItem>
-                    <SelectItem value="其他">其他</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="resume-age">年龄</Label>
-                <Input
-                  id="resume-age"
-                  value={basics.age ?? ""}
-                  onChange={(event) => updateBasics("age" as keyof ResumeBasics, event.target.value)}
-                  placeholder="如: 23"
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="resume-identity">身份</Label>
                 <Input
                   id="resume-identity"
                   value={basics.identity ?? ""}
                   onChange={(event) => updateBasics("identity" as keyof ResumeBasics, event.target.value)}
                   placeholder="如: 大四学生 / 3年经验"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resume-availability-month">到岗（YYYY-MM）</Label>
+                <Input
+                  id="resume-availability-month"
+                  value={basics.availabilityMonth ?? ""}
+                  onChange={(event) =>
+                    updateBasics("availabilityMonth" as keyof ResumeBasics, event.target.value)
+                  }
+                  placeholder="如: 2026-03"
                 />
               </div>
             </div>
