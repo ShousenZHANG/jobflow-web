@@ -7,6 +7,12 @@ import { CircleHelp, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useGuide } from "../GuideContext";
 
 export function TopNav() {
@@ -120,39 +126,81 @@ export function TopNav() {
                 Jobflow
               </Link>
             </div>
-            <div
-              data-testid="mobile-current-route"
-              className="text-xs font-semibold text-slate-800"
-            >
-              {activeLink.label}
-            </div>
-            <div className="flex items-center gap-1">
-              <LocaleSwitcher />
-            </div>
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-xs">
-            <Button
-              variant="outline"
-              size="sm"
-              className="edu-outline edu-cta--press edu-outline--compact h-8 flex-1 px-2 text-[11px]"
-              onClick={openGuide}
-            >
-              <CircleHelp className="mr-1 h-3 w-3" />
-              {t("guide")}
-              {state ? (
-                <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700">
-                  {state.completedCount}/{state.totalCount}
-                </span>
-              ) : null}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="edu-outline edu-cta--press edu-outline--compact h-8 flex-1 px-2 text-[11px]"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-            >
-              {tc("signOut")}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  data-testid="mobile-current-route"
+                  className="rounded-full px-2 py-1 text-xs font-semibold text-slate-800 hover:bg-slate-100 active:bg-slate-200"
+                >
+                  {activeLink.label}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="min-w-[8rem]">
+                {links.map((link) => {
+                  const isActive = pathname.startsWith(link.href);
+                  return (
+                    <DropdownMenuItem
+                      key={`mobile-route-${link.href}`}
+                      className={isActive ? "font-semibold text-emerald-700" : ""}
+                      onClick={() => {
+                        if (isActive) return;
+                        prepareRouteChange();
+                        router.push(link.href);
+                      }}
+                    >
+                      {link.label}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  data-testid="mobile-more-menu"
+                  className="h-8 w-8 rounded-full border-slate-200 bg-white text-xs font-semibold text-slate-700"
+                >
+                  ⋯
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[9rem]">
+                <DropdownMenuItem
+                  onClick={() => {
+                    openGuide();
+                  }}
+                >
+                  <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-100 text-[10px] text-slate-600">
+                    ?
+                  </span>
+                  <span className="text-xs font-medium text-slate-800">
+                    {t("guide")}
+                  </span>
+                  {state ? (
+                    <span className="ml-auto rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                      {state.completedCount}/{state.totalCount}
+                    </span>
+                  ) : null}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <div className="flex flex-col gap-1 py-1">
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+                      Language
+                    </span>
+                    <LocaleSwitcher />
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="text-xs font-medium text-rose-600"
+                >
+                  {tc("signOut")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
