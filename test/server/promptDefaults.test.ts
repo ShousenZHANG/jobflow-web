@@ -17,7 +17,7 @@ describe("default prompt rules", () => {
     expect(coverText).toContain("bold all jd-critical keywords");
     expect(coverText).toContain("professional");
     expect(coverText).toContain("natural");
-    expect(coverText).toContain("subtle personality");
+    expect(coverText).toMatch(/australian|understated|evidence-first|scannable/);
   });
 
   it("uses recruiter role in system prompt", () => {
@@ -38,7 +38,7 @@ describe("default prompt rules", () => {
       description: "Build product features.",
     });
     const text = `${prompts.systemPrompt}\n${prompts.userPrompt}`;
-    expect(text).toContain("Markdown bold markers inside JSON string values are allowed when requested.");
+    expect(text).toContain("Markdown bold markers inside JSON string values are allowed when explicitly requested.");
     expect(text).toContain("In cvSummary, bold JD-critical keywords using clean markdown **keyword** markers.");
   });
 

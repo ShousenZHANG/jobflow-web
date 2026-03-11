@@ -1283,6 +1283,7 @@ export function JobsClient({
 
   async function loadTailorPrompt(job: JobItem, target: "resume" | "cover"): Promise<{
     promptText: string;
+    shortPromptText: string;
     promptMeta: ExternalPromptMeta | null;
   }> {
     const res = await fetch("/api/applications/prompt", {
