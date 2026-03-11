@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import { Copy, Download, ExternalLink, FileText, MapPin, Plus, Search, Trash2 } from "lucide-react";
+import { Copy, Download, ExternalLink, FileText, MapPin, Search, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -2131,14 +2131,13 @@ export function JobsClient({
             {market === "AU" && (
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => {
                   setAddJobOpen(true);
                   setAddJobError(null);
                 }}
-                className="h-10 rounded-xl border-2 border-slate-700 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-800 hover:bg-slate-50 lg:w-auto"
+                className="h-10 rounded-lg px-4 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 lg:w-auto"
               >
-                <Plus className="mr-1.5 h-4 w-4" />
                 Add job
               </Button>
             )}
