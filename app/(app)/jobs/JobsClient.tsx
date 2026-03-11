@@ -7,11 +7,12 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import { Copy, Download, ExternalLink, FileText, MapPin, Search, Trash2 } from "lucide-react";
+import { Copy, Download, ExternalLink, FileText, MapPin, Plus, Search, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -451,6 +452,18 @@ export function JobsClient({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null);
   const [suppressedDeletedIds, setSuppressedDeletedIds] = useState<Set<string>>(new Set());
+  const [addJobOpen, setAddJobOpen] = useState(false);
+  const [addJobForm, setAddJobForm] = useState({
+    jobUrl: "",
+    title: "",
+    company: "",
+    location: "",
+    jobType: "",
+    jobLevel: "",
+    description: "",
+  });
+  const [addJobError, setAddJobError] = useState<string | null>(null);
+  const [addJobSubmitting, setAddJobSubmitting] = useState(false);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
@@ -487,6 +500,49 @@ export function JobsClient({
     if (err instanceof Error) return err.message;
     if (typeof err === "string") return err;
     return fallback;
+  }
+
+  async function submitAddJob() {
+    setAddJobError(null);
+    setAddJobSubmitting(true);
+    try {
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobUrl: addJobForm.jobUrl.trim(),
+          title: addJobForm.title.trim(),
+          company: addJobForm.company.trim() || undefined,
+          location: addJobForm.location.trim() || undefined,
+          jobType: addJobForm.jobType.trim() || undefined,
+          jobLevel: addJobForm.jobLevel.trim() || undefined,
+          description: addJobForm.description.trim() || undefined,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.status === 201) {
+        setAddJobOpen(false);
+        setAddJobForm({
+          jobUrl: "",
+          title: "",
+          company: "",
+          location: "",
+          jobType: "",
+          jobLevel: "",
+          description: "",
+        });
+        queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
+        toast?.({ title: "Job added", description: undefined });
+        return;
+      }
+      if (res.status === 409 && json.error === "JOB_URL_EXISTS") {
+        setAddJobError("This job link already exists.");
+        return;
+      }
+      setAddJobError(typeof json?.error === "string" ? json.error : "Failed to add job");
+    } finally {
+      setAddJobSubmitting(false);
+    }
   }
 
   function parseTailorOutput(
@@ -1775,6 +1831,127 @@ export function JobsClient({
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={addJobOpen}
+        onOpenChange={(open) => {
+          setAddJobOpen(open);
+          if (!open) setAddJobError(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add job</DialogTitle>
+            <DialogDescription>Add a job from Seek or another site. Paste the job URL and fill in the details.</DialogDescription>
+          </DialogHeader>
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (addJobForm.jobUrl.trim() && addJobForm.title.trim() && !addJobSubmitting) {
+                submitAddJob();
+              }
+            }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="add-job-url">Job URL *</Label>
+              <Input
+                id="add-job-url"
+                type="url"
+                placeholder="https://www.seek.com.au/job/..."
+                value={addJobForm.jobUrl}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, jobUrl: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-job-title">Title *</Label>
+              <Input
+                id="add-job-title"
+                type="text"
+                placeholder="e.g. Software Engineer"
+                value={addJobForm.title}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, title: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-job-company">Company</Label>
+              <Input
+                id="add-job-company"
+                type="text"
+                placeholder="Company name"
+                value={addJobForm.company}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, company: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-job-location">Location</Label>
+              <Input
+                id="add-job-location"
+                type="text"
+                placeholder="e.g. Sydney, NSW"
+                value={addJobForm.location}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, location: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-job-type">Job type</Label>
+                <Input
+                  id="add-job-type"
+                  type="text"
+                  placeholder="Full-time"
+                  value={addJobForm.jobType}
+                  onChange={(e) => setAddJobForm((prev) => ({ ...prev, jobType: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-job-level">Job level</Label>
+                <Input
+                  id="add-job-level"
+                  type="text"
+                  placeholder="Mid-Senior"
+                  value={addJobForm.jobLevel}
+                  onChange={(e) => setAddJobForm((prev) => ({ ...prev, jobLevel: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-job-description">Description</Label>
+              <Textarea
+                id="add-job-description"
+                placeholder="Paste job description (optional)"
+                value={addJobForm.description}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, description: e.target.value }))}
+                className="min-h-[120px] resize-y"
+              />
+            </div>
+            {addJobError ? (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+                {addJobError}
+              </div>
+            ) : null}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAddJobOpen(false)}
+                disabled={addJobSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!addJobForm.jobUrl.trim() || !addJobForm.title.trim() || addJobSubmitting}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                {addJobSubmitting ? "Adding..." : "Add"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent
           className="h-[92vh] w-[98vw] max-w-[min(98vw,1280px)] overflow-hidden p-0"
@@ -1951,6 +2128,20 @@ export function JobsClient({
             </Select>
           </div>
           <div className="flex items-end gap-2">
+            {market === "AU" && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setAddJobOpen(true);
+                  setAddJobError(null);
+                }}
+                className="h-10 rounded-xl border-2 border-slate-700 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-800 hover:bg-slate-50 lg:w-auto"
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                Add job
+              </Button>
+            )}
             <Button
               onClick={triggerSearch}
               disabled={loading}

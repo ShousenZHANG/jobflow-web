@@ -212,7 +212,7 @@ export async function GET(req: Request) {
 
 const CreateSchema = z.object({
   jobUrl: z.string().url(),
-  title: z.string().min(1),
+  title: z.string().trim().min(1),
   company: z.string().optional(),
   location: z.string().optional(),
   jobType: z.string().optional(),
@@ -241,17 +241,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "INVALID_BODY", details: { jobUrl: ["Invalid URL"] } }, { status: 400 });
   }
 
-  const created = await prisma.job.upsert({
+  const existing = await prisma.job.findUnique({
     where: { userId_jobUrl: { userId, jobUrl } },
-    update: {
-      title: parsed.data.title,
-      company: parsed.data.company ?? null,
-      location: parsed.data.location ?? null,
-      jobType: parsed.data.jobType ?? null,
-      jobLevel: parsed.data.jobLevel ?? null,
-      description: parsed.data.description ?? null,
-    },
-    create: {
+    select: { id: true },
+  });
+  if (existing) {
+    return NextResponse.json({ error: "JOB_URL_EXISTS" }, { status: 409 });
+  }
+
+  const created = await prisma.job.create({
+    data: {
       userId,
       jobUrl,
       title: parsed.data.title,
