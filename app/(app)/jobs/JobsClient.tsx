@@ -283,6 +283,27 @@ const CN_LOCATION_OPTIONS = [
   { value: "Xi'an", label: "西安" },
 ];
 
+const ADD_JOB_EMPTY = "__";
+const ADD_JOB_LOCATION_OPTIONS = [
+  { value: ADD_JOB_EMPTY, label: "—" },
+  ...AU_LOCATION_OPTIONS,
+];
+
+const ADD_JOB_TYPE_OPTIONS = [
+  { value: ADD_JOB_EMPTY, label: "—" },
+  { value: "Full-time", label: "Full-time" },
+  { value: "Part-time", label: "Part-time" },
+  { value: "Contract", label: "Contract" },
+  { value: "Internship", label: "Internship" },
+  { value: "Casual", label: "Casual" },
+];
+
+const ADD_JOB_LEVEL_OPTIONS = [
+  { value: ADD_JOB_EMPTY, label: "—" },
+  { value: "Entry level", label: "Entry level" },
+  { value: "Mid-Senior", label: "Mid-Senior" },
+];
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -513,9 +534,9 @@ export function JobsClient({
           jobUrl: addJobForm.jobUrl.trim(),
           title: addJobForm.title.trim(),
           company: addJobForm.company.trim() || undefined,
-          location: addJobForm.location.trim() || undefined,
-          jobType: addJobForm.jobType.trim() || undefined,
-          jobLevel: addJobForm.jobLevel.trim() || undefined,
+          location: addJobForm.location === ADD_JOB_EMPTY ? undefined : addJobForm.location.trim() || undefined,
+          jobType: addJobForm.jobType === ADD_JOB_EMPTY ? undefined : addJobForm.jobType.trim() || undefined,
+          jobLevel: addJobForm.jobLevel === ADD_JOB_EMPTY ? undefined : addJobForm.jobLevel.trim() || undefined,
           description: addJobForm.description.trim() || undefined,
         }),
       });
@@ -1885,35 +1906,59 @@ export function JobsClient({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="add-job-location">Location</Label>
-              <Input
-                id="add-job-location"
-                type="text"
-                placeholder="e.g. Sydney, NSW"
-                value={addJobForm.location}
-                onChange={(e) => setAddJobForm((prev) => ({ ...prev, location: e.target.value }))}
-              />
+              <Label>Location</Label>
+              <Select
+                value={addJobForm.location || ADD_JOB_EMPTY}
+                onValueChange={(v) => setAddJobForm((prev) => ({ ...prev, location: v }))}
+              >
+                <SelectTrigger id="add-job-location">
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ADD_JOB_LOCATION_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-job-type">Job type</Label>
-                <Input
-                  id="add-job-type"
-                  type="text"
-                  placeholder="Full-time"
-                  value={addJobForm.jobType}
-                  onChange={(e) => setAddJobForm((prev) => ({ ...prev, jobType: e.target.value }))}
-                />
+                <Label>Job type</Label>
+                <Select
+                  value={addJobForm.jobType || ADD_JOB_EMPTY}
+                  onValueChange={(v) => setAddJobForm((prev) => ({ ...prev, jobType: v }))}
+                >
+                  <SelectTrigger id="add-job-type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ADD_JOB_TYPE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="add-job-level">Job level</Label>
-                <Input
-                  id="add-job-level"
-                  type="text"
-                  placeholder="Mid-Senior"
-                  value={addJobForm.jobLevel}
-                  onChange={(e) => setAddJobForm((prev) => ({ ...prev, jobLevel: e.target.value }))}
-                />
+                <Label>Job level</Label>
+                <Select
+                  value={addJobForm.jobLevel || ADD_JOB_EMPTY}
+                  onValueChange={(v) => setAddJobForm((prev) => ({ ...prev, jobLevel: v }))}
+                >
+                  <SelectTrigger id="add-job-level">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ADD_JOB_LEVEL_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">
@@ -1923,7 +1968,7 @@ export function JobsClient({
                 placeholder="Paste job description (optional)"
                 value={addJobForm.description}
                 onChange={(e) => setAddJobForm((prev) => ({ ...prev, description: e.target.value }))}
-                className="min-h-[120px] resize-y"
+                className="min-h-[120px] max-h-[320px] resize-y overflow-y-auto"
               />
             </div>
             {addJobError ? (
