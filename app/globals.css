@@ -513,16 +513,16 @@ body {
 }
 
 .edu-pill-pro {
-  border: 1px solid rgba(10, 102, 194, 0.3);
-  background: #e7f0f8;
-  color: #0a66c2;
+  border: 1px solid rgba(5, 150, 105, 0.35);
+  background: #d1fae5;
+  color: #047857;
   padding: 0.35rem 0.75rem;
   font-weight: 600;
 }
 
 .edu-cta-pro {
-  background: #0a66c2;
-  color: #fff;
+  background: #22c55e;
+  color: #0f172a;
   border: none;
   min-height: 48px;
   padding: 0.65rem 1.4rem;
@@ -534,8 +534,8 @@ body {
 }
 
 .edu-cta-pro:hover {
-  background: #004182;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #16a34a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .edu-nav-link {
@@ -957,7 +957,7 @@ body {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #0a66c2 0%, #378fe9 50%, #0a66c2 100%);
+  background: linear-gradient(90deg, #34d399 0%, #6ee7b7 50%, #34d399 100%);
   border-radius: 16px 16px 0 0;
 }
 

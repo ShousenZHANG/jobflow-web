@@ -94,7 +94,7 @@ export function DemoCard() {
           className="edu-pill-pro inline-flex items-center gap-1.5 text-xs font-semibold"
           aria-hidden="true"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-[#0a66c2]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Live demo
         </span>
       </div>

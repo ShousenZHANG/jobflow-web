@@ -49,7 +49,7 @@ export function HeroSection({
         >
           <Badge className="edu-pill-pro">
             <span
-              className="mr-2 inline-block h-2 w-2 rounded-full bg-[#0a66c2]"
+              className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-500"
               aria-hidden="true"
             />
             {badgeLabel}

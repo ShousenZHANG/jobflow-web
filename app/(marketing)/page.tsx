@@ -62,11 +62,11 @@ export default async function HomePage() {
         <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-7xl flex-col items-center gap-10 px-4 pb-10 pt-4 text-center sm:gap-14 sm:px-6 sm:pb-12 md:gap-16 md:pt-5 lg:px-8">
           <Link
             href="/"
-            className="edu-landing-logo-only self-start text-[15px] font-semibold tracking-tight text-slate-800 transition-colors hover:text-slate-900 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#0a66c2] focus-visible:ring-offset-2"
+            className="edu-landing-logo-only self-start text-[15px] font-semibold tracking-tight text-slate-800 transition-colors hover:text-slate-900 focus-visible:outline focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
             aria-label="Jobflow home"
           >
             <span className="inline-flex items-center gap-2">
-              <Search className="h-5 w-5 text-[#0a66c2]" strokeWidth={2.25} />
+              <Search className="h-5 w-5 text-emerald-700" strokeWidth={2.25} />
               Jobflow
             </span>
           </Link>
@@ -88,7 +88,7 @@ export default async function HomePage() {
                 href="/"
                 className="flex items-center gap-1.5 font-semibold text-slate-900"
               >
-                <Search className="h-4 w-4 text-[#0a66c2]" />
+                <Search className="h-4 w-4 text-emerald-700" />
                 Jobflow
               </Link>
               <span aria-hidden="true">·</span>
