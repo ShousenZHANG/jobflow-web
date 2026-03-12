@@ -27,17 +27,17 @@ export function LandingNav() {
         </div>
         <span className="text-base font-semibold text-slate-900">Jobflow</span>
       </Link>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <MobileNav />
         <Link
           href="/login"
-          className="edu-landing-cta text-sm font-semibold text-slate-700 transition-colors hover:text-slate-900 md:text-base"
+          className="edu-landing-cta flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-3 text-sm font-semibold text-slate-700 transition-colors hover:text-slate-900 md:min-h-0 md:min-w-0 md:px-0 md:text-base md:justify-start"
         >
           {t("login")}
         </Link>
         <Link
           href="/login"
-          className="edu-cta edu-cta--press hidden rounded-lg px-4 py-2 text-sm font-semibold md:inline-flex"
+          className="edu-cta edu-cta--press hidden min-h-[44px] items-center rounded-lg px-4 py-2 text-sm font-semibold md:inline-flex"
         >
           {t("cta")}
         </Link>

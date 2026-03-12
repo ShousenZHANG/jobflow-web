@@ -40,7 +40,7 @@ export function HeroSection({
   };
 
   return (
-    <header className="grid w-full max-w-5xl gap-10 text-center lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:text-left">
+    <header className="grid w-full max-w-6xl gap-8 text-center sm:gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:text-left">
       <div className="flex flex-col items-center lg:items-start">
         <motion.div
           initial={base}
@@ -56,7 +56,7 @@ export function HeroSection({
           </Badge>
         </motion.div>
         <motion.h1
-          className="edu-title mt-6 text-4xl leading-tight text-slate-900 md:text-6xl"
+          className="edu-title mt-6 text-3xl leading-tight tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl lg:leading-[1.1]"
           initial={base}
           animate={visible}
           transition={{ delay: noMotion ? 0 : stagger * 1 }}
@@ -64,7 +64,7 @@ export function HeroSection({
           {heroTitle}
         </motion.h1>
         <motion.p
-          className="mt-5 max-w-xl text-base text-slate-600 md:text-lg"
+          className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:mt-5 sm:text-lg sm:leading-7"
           initial={base}
           animate={visible}
           transition={{ delay: noMotion ? 0 : stagger * 2 }}
@@ -72,14 +72,18 @@ export function HeroSection({
           {heroSubtitle}
         </motion.p>
         <motion.div
-          className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start"
+          className="mt-6 flex flex-wrap justify-center gap-3 sm:mt-8 lg:justify-start"
           initial={base}
           animate={visible}
           transition={{ delay: noMotion ? 0 : stagger * 3 }}
         >
-          <Button asChild size="lg" className="edu-cta edu-cta--press">
+          <Button
+            asChild
+            size="lg"
+            className="edu-cta edu-cta--press min-h-[48px] min-w-[44px] px-6"
+          >
             <Link href="/login">
-              {ctaLabel} <ArrowRight className="h-4 w-4" />
+              {ctaLabel} <ArrowRight className="h-4 w-4 shrink-0" />
             </Link>
           </Button>
         </motion.div>

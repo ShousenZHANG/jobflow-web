@@ -39,6 +39,15 @@ yarn-error.log*
 # superpowers plans (generated)
 docs/superpowers/plans/
 
+# superpowers specs and visual companions (local design artifacts)
+docs/superpowers/specs/
+docs/superpowers/*.html
+
+# agent/skills (npx skills add; local, do not commit)
+.agent/
+.agents/
+skills-lock.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

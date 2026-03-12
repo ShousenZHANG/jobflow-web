@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Search } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { HeroSection } from "./HeroSection";
+import { LandingBackground } from "./LandingBackground";
 import { LandingNav } from "./LandingNav";
 
 /* ── SEO ──────────────────────────────────────────────── */
@@ -48,10 +49,8 @@ export default async function HomePage() {
       />
 
       <div className="marketing-edu relative min-h-[100dvh] overflow-hidden">
-        {/* Decorative background */}
         <div className="edu-bg" aria-hidden="true" />
-        <div className="edu-blob edu-blob--mint" aria-hidden="true" />
-        <div className="edu-blob edu-blob--peach" aria-hidden="true" />
+        <LandingBackground />
 
         {/* Skip to content */}
         <a
@@ -63,7 +62,7 @@ export default async function HomePage() {
 
         <LandingNav />
 
-        <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-6xl flex-col items-center gap-16 px-6 pb-12 pt-4 text-center md:gap-20 md:pt-6">
+        <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-7xl flex-col items-center gap-12 px-4 pb-10 pt-4 text-center sm:gap-16 sm:px-6 sm:pb-12 md:gap-20 md:pt-6 lg:px-8">
           <main id="main-content">
             <HeroSection
               heroTitle={t("heroTitle")}
@@ -74,10 +73,10 @@ export default async function HomePage() {
           </main>
 
           <footer
-            className="edu-footer-slim mt-auto w-full max-w-5xl text-center"
+            className="edu-footer-slim mt-auto w-full max-w-5xl pt-8 text-center sm:pt-10"
             role="contentinfo"
           >
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-slate-600">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-slate-600">
               <Link
                 href="/"
                 className="flex items-center gap-1.5 font-semibold text-slate-900"
