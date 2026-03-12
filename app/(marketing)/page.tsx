@@ -60,9 +60,8 @@ export default async function HomePage() {
           {t("skipToContent")}
         </a>
 
-        <LandingNav />
-
-        <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-7xl flex-col items-center gap-12 px-4 pb-10 pt-4 text-center sm:gap-16 sm:px-6 sm:pb-12 md:gap-20 md:pt-6 lg:px-8">
+        <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-7xl flex-col items-center gap-10 px-4 pb-10 pt-4 text-center sm:gap-14 sm:px-6 sm:pb-12 md:gap-16 md:pt-5 lg:px-8">
+          <LandingNav />
           <main id="main-content">
             <HeroSection
               heroTitle={t("heroTitle")}

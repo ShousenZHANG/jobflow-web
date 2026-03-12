@@ -6,8 +6,8 @@ import { useTranslations } from "next-intl";
 import { MobileNav } from "./MobileNav";
 
 /**
- * Minimal top bar for landing first screen (big-tech pattern).
- * Logo + single CTA link; full nav (Jobs, Fetch) available via mobile menu or scroll if we add scroll-to-nav later.
+ * Landing nav: glass bar aligned with content, soft Log in + pill CTA.
+ * Fits inside max-w-7xl so Jobflow / Log in / Start free feel part of the page.
  */
 export function LandingNav() {
   const t = useTranslations("marketing");
@@ -15,32 +15,36 @@ export function LandingNav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="edu-landing-bar relative z-[2] flex w-full items-center justify-between px-4 py-4 md:px-6"
+      className="edu-landing-glass w-full rounded-2xl border border-slate-200/60 bg-white/75 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-3.5"
     >
-      <Link
-        href="/"
-        className="flex items-center gap-2"
-        aria-label="Jobflow home"
-      >
-        <div className="edu-logo h-9 w-9">
-          <Search className="h-4 w-4 text-emerald-700" />
+      <div className="flex w-full items-center justify-between gap-4">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 text-slate-800 transition-colors hover:text-slate-900"
+          aria-label="Jobflow home"
+        >
+          <div className="edu-landing-logo flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/12 text-emerald-700">
+            <Search className="h-4 w-4" strokeWidth={2.25} />
+          </div>
+          <span className="text-[15px] font-semibold tracking-tight sm:text-base">
+            Jobflow
+          </span>
+        </Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <MobileNav />
+          <Link
+            href="/login"
+            className="edu-landing-login hidden min-h-[40px] items-center rounded-lg px-3 text-sm font-medium text-slate-600 outline-none transition-colors hover:bg-slate-100/80 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 md:inline-flex"
+          >
+            {t("login")}
+          </Link>
+          <Link
+            href="/login"
+            className="edu-landing-cta-pill inline-flex min-h-[40px] min-w-[44px] items-center justify-center rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm outline-none transition-all hover:bg-emerald-700 hover:shadow focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 md:min-h-[42px] md:px-5"
+          >
+            {t("cta")}
+          </Link>
         </div>
-        <span className="text-base font-semibold text-slate-900">Jobflow</span>
-      </Link>
-      <div className="flex items-center gap-1 sm:gap-2">
-        <MobileNav />
-        <Link
-          href="/login"
-          className="edu-landing-cta flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-3 text-sm font-semibold text-slate-700 transition-colors hover:text-slate-900 md:min-h-0 md:min-w-0 md:px-0 md:text-base md:justify-start"
-        >
-          {t("login")}
-        </Link>
-        <Link
-          href="/login"
-          className="edu-cta edu-cta--press hidden min-h-[44px] items-center rounded-lg px-4 py-2 text-sm font-semibold md:inline-flex"
-        >
-          {t("cta")}
-        </Link>
       </div>
     </nav>
   );
