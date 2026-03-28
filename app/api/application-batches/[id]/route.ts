@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSession";
+import type { SessionContext } from "@/lib/server/auth/requireSession";
+import { unauthorizedError } from "@/lib/server/api/errorResponse";
 
 export const runtime = "nodejs";
 
@@ -33,11 +34,14 @@ export async function GET(
     params: Promise<{ id: string }>;
   },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  let ctx: SessionContext;
+  try {
+    ctx = await requireSession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedError();
+    throw err;
   }
+  const { userId } = ctx;
 
   const { id } = await context.params;
 

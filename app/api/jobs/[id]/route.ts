@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSession";
+import type { SessionContext } from "@/lib/server/auth/requireSession";
+import { unauthorizedError } from "@/lib/server/api/errorResponse";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { buildResumePdfForJob } from "@/lib/server/applications/buildResumePdf";
 import { LatexRenderError } from "@/lib/server/latex/compilePdf";
@@ -29,11 +30,14 @@ export async function PATCH(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  let session: SessionContext;
+  try {
+    session = await requireSession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedError();
+    throw err;
   }
+  const { userId } = session;
 
   const params = await ctx.params;
   const parsedParams = ParamsSchema.safeParse(params);
@@ -179,11 +183,14 @@ export async function GET(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  let session: SessionContext;
+  try {
+    session = await requireSession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedError();
+    throw err;
   }
+  const { userId } = session;
 
   const params = await ctx.params;
   const parsedParams = ParamsSchema.safeParse(params);
@@ -207,11 +214,14 @@ export async function DELETE(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  let session: SessionContext;
+  try {
+    session = await requireSession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedError();
+    throw err;
   }
+  const { userId } = session;
 
   const params = await ctx.params;
   const parsedParams = ParamsSchema.safeParse(params);

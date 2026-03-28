@@ -74,12 +74,9 @@ type TailorOptions = {
   targetWordRange?: { min: number; max: number };
 };
 
-const DEFAULT_PROVIDER: AiProviderName = "gemini";
+import { truncate } from "@/lib/shared/utils/text";
 
-function truncate(text: string, max = 1600) {
-  if (text.length <= max) return text;
-  return `${text.slice(0, max)}...`;
-}
+const DEFAULT_PROVIDER: AiProviderName = "gemini";
 
 function buildFallback(input: TailorInput, reason: TailorResult["reason"]): TailorResult {
   const title = input.jobTitle || "the role";

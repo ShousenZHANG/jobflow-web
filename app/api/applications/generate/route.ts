@@ -1,11 +1,11 @@
-import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSession";
+import type { SessionContext } from "@/lib/server/auth/requireSession";
+import { unauthorizedError } from "@/lib/server/api/errorResponse";
+import { handleLatexError } from "@/lib/server/api/handleLatexError";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
-import { LatexRenderError } from "@/lib/server/latex/compilePdf";
 import { buildResumePdfForJob } from "@/lib/server/applications/buildResumePdf";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 
@@ -16,16 +16,14 @@ const GenerateSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const requestId = randomUUID();
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-
-  if (!userId) {
-    return NextResponse.json(
-      { error: { code: "UNAUTHORIZED", message: "Unauthorized" }, requestId },
-      { status: 401 },
-    );
+  let ctx: SessionContext;
+  try {
+    ctx = await requireSession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedError();
+    throw err;
   }
+  const { userId, requestId } = ctx;
 
   const json = await req.json().catch(() => null);
   const parsed = GenerateSchema.safeParse(json);
@@ -83,19 +81,8 @@ export async function POST(req: Request) {
   try {
     pdfResult = await buildResumePdfForJob({ userId, profile, job });
   } catch (err) {
-    if (err instanceof LatexRenderError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: err.code,
-            message: err.message,
-            details: err.details,
-          },
-          requestId,
-        },
-        { status: err.status },
-      );
-    }
+    const latexRes = handleLatexError(err, requestId);
+    if (latexRes) return latexRes;
     return NextResponse.json(
       { error: { code: "UNKNOWN_ERROR", message: "Unknown render error" }, requestId },
       { status: 500 },

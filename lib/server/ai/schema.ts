@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { toStringValue } from "@/lib/shared/utils/text";
 
 export const TailorModelOutputSchema = z.object({
   cvSummary: z.string().trim().max(1400).optional().default(""),
@@ -29,10 +30,6 @@ export const TailorModelOutputSchema = z.object({
 });
 
 export type TailorModelOutput = z.infer<typeof TailorModelOutputSchema>;
-
-function toStringValue(value: unknown) {
-  return typeof value === "string" ? value : "";
-}
 
 function pickFirstText(obj: Record<string, unknown>, keys: string[]) {
   for (const key of keys) {

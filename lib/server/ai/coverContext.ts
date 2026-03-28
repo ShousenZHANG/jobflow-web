@@ -1,67 +1,9 @@
 import { extractTopResponsibilities } from "./responsibilityCoverage";
-
-const COVER_EVIDENCE_STOPWORDS = new Set([
-  "the",
-  "and",
-  "for",
-  "with",
-  "from",
-  "that",
-  "this",
-  "your",
-  "our",
-  "their",
-  "you",
-  "will",
-  "have",
-  "has",
-  "are",
-  "is",
-  "to",
-  "of",
-  "in",
-  "on",
-  "as",
-  "by",
-  "an",
-  "a",
-  "be",
-  "or",
-  "at",
-  "using",
-  "through",
-  "across",
-  "experience",
-  "experienced",
-  "responsibility",
-  "responsibilities",
-  "required",
-  "preferred",
-  "role",
-  "team",
-  "teams",
-]);
-
-function asRecord(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object") return {};
-  return value as Record<string, unknown>;
-}
-
-function asArray(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : [];
-}
+import { asRecord, asArray, toStringValue } from "@/lib/shared/utils/text";
+import { tokenize, COVER_STOPWORDS } from "./textAnalysis";
 
 function toText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function tokenize(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s+/#.-]/g, " ")
-    .split(/\s+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 4 && !COVER_EVIDENCE_STOPWORDS.has(token));
+  return toStringValue(value).trim();
 }
 
 function dedupe(items: string[]) {
@@ -88,7 +30,7 @@ export function buildCoverEvidenceContext(input: {
   resumeSnapshot?: unknown;
 }): CoverEvidenceContext {
   const topResponsibilities = extractTopResponsibilities(input.description);
-  const jdTokens = new Set(tokenize(`${topResponsibilities.join(" ")} ${input.description}`));
+  const jdTokens = new Set(tokenize(`${topResponsibilities.join(" ")} ${input.description}`, COVER_STOPWORDS));
   const record = asRecord(input.resumeSnapshot);
 
   const evidencePool: string[] = [];
@@ -134,7 +76,7 @@ export function buildCoverEvidenceContext(input: {
   const dedupedEvidence = dedupe(evidencePool);
   const scored = dedupedEvidence
     .map((line) => {
-      const tokens = tokenize(line);
+      const tokens = tokenize(line, COVER_STOPWORDS);
       let hits = 0;
       for (const token of tokens) {
         if (jdTokens.has(token)) hits += 1;

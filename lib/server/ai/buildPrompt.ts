@@ -3,6 +3,7 @@ import {
   buildApplicationSystemPrompt,
   buildApplicationUserPrompt,
 } from "./applicationPromptBuilder";
+import { truncate } from "@/lib/shared/utils/text";
 
 export type TailorPromptInput = {
   baseSummary: string;
@@ -15,11 +16,6 @@ export type TailorPromptInput = {
     resumeHighlights: string[];
   };
 };
-
-function truncate(text: string, max = 1600) {
-  if (text.length <= max) return text;
-  return `${text.slice(0, max)}...`;
-}
 
 function formatList(title: string, items: string[]) {
   if (!items.length) return `${title}\n1. (none)`;

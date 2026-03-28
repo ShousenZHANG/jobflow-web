@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSession";
+import type { SessionContext } from "@/lib/server/auth/requireSession";
+import { unauthorizedError } from "@/lib/server/api/errorResponse";
 
 export const runtime = "nodejs";
 
@@ -15,11 +16,14 @@ const CreateBatchSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  let ctx: SessionContext;
+  try {
+    ctx = await requireSession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedError();
+    throw err;
   }
+  const { userId } = ctx;
 
   const json = await req.json().catch(() => ({}));
   const parsed = CreateBatchSchema.safeParse(json ?? {});

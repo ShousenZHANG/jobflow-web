@@ -1,9 +1,10 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { handleLatexError } from "@/lib/server/api/handleLatexError";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { escapeLatex, escapeLatexWithBold } from "./escapeLatex";
+import { replaceTokens } from "./templateUtils";
 
 type CoverCandidate = {
   name: string;
@@ -32,14 +33,7 @@ function readTemplate(relPath: string) {
   return fs.readFileSync(path.join(TEMPLATE_ROOT, relPath), "utf-8");
 }
 
-function replaceAll(text: string, map: Record<string, string>) {
-  let out = text;
-  for (const [key, value] of Object.entries(map)) {
-    const token = `{${key}}`;
-    out = out.split(token).join(value);
-  }
-  return out;
-}
+const replaceAll = replaceTokens;
 
 function normalizeLine(value: string, fallback = "-") {
   const text = value.trim();

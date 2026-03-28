@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/auth";
 import { prisma } from "@/lib/server/prisma";
+import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSession";
+import type { SessionContext } from "@/lib/server/auth/requireSession";
+import { unauthorizedError } from "@/lib/server/api/errorResponse";
 import {
   BatchRunnerError,
   claimNextBatchTask,
@@ -66,9 +67,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     );
   }
 
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  let session: SessionContext;
+  try {
+    session = await requireSession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedError();
+    throw err;
+  }
+  const { userId } = session;
 
   const parsedParams = ParamsSchema.safeParse(await ctx.params);
   if (!parsedParams.success) return NextResponse.json({ error: "INVALID_PARAMS" }, { status: 400 });

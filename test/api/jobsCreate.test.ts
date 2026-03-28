@@ -50,7 +50,7 @@ describe("POST /api/jobs", () => {
 
     expect(res.status).toBe(401);
     const json = await res.json();
-    expect(json.error).toBe("UNAUTHORIZED");
+    expect(json.error).toEqual({ code: "UNAUTHORIZED", message: "Unauthorized" });
     expect(prismaStore.job.findUnique).not.toHaveBeenCalled();
   });
 

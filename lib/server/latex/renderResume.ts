@@ -1,5 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  replaceTokens,
+  sanitizeRendered,
+  renderBullets as sharedRenderBullets,
+  renderLinks,
+} from "./templateUtils";
 
 type CandidateInfo = {
   name: string;
@@ -71,14 +77,7 @@ function readTemplate(relPath: string) {
   return loaded;
 }
 
-function replaceAll(text: string, map: Record<string, string>) {
-  let out = text;
-  for (const [key, value] of Object.entries(map)) {
-    const token = `{{${key}}}`;
-    out = out.split(token).join(value);
-  }
-  return out;
-}
+const replaceAll = replaceTokens;
 
 function renderSkills(groups: SkillsGroup[]) {
   return groups
@@ -89,9 +88,7 @@ function renderSkills(groups: SkillsGroup[]) {
     .join("\n");
 }
 
-function renderBullets(items: string[]) {
-  return items.map((item) => `\\item ${item}`).join("\n");
-}
+const renderBullets = sharedRenderBullets;
 
 function formatExperienceMeta(location: string, dates: string) {
   const loc = location.trim();
@@ -165,12 +162,7 @@ function formatProjectMeta(location: string, dates: string) {
   return loc || when || "~";
 }
 
-function renderProjectLinks(links: ProjectLink[]) {
-  if (links.length === 0) return "";
-  return links
-    .map((link) => `\\href{${link.url}}{${link.label}}`)
-    .join(" \\;|\\; ");
-}
+const renderProjectLinks = renderLinks;
 
 function renderProjectStackLine(entry: ProjectEntry) {
   const stack = entry.stack.trim();
@@ -206,13 +198,6 @@ function renderProjects(entries: ProjectEntry[]) {
 function renderProjectsSection(entries: ProjectEntry[]) {
   if (entries.length === 0) return "";
   return `\\section{Projects}\n\\vspace{0.1cm}\n\n${renderProjects(entries)}`;
-}
-
-function sanitizeRendered(tex: string) {
-  return tex
-    .replace(/[\uD800-\uDFFF]/g, "")
-    .replace(/\uFFFD/g, "")
-    .replace(/[\u{1F000}-\u{10FFFF}]/gu, "");
 }
 
 export function renderResumeTex(input: RenderResumeInput) {

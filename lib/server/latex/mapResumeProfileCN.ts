@@ -1,4 +1,5 @@
 import { escapeLatex, escapeLatexWithBold } from "./escapeLatex";
+import { asRecord, asArray, toStringValue, hasText } from "@/lib/shared/utils/text";
 
 type ResumeProfileLike = {
   summary?: string | null;
@@ -9,23 +10,6 @@ type ResumeProfileLike = {
   projects?: unknown;
   education?: unknown;
 };
-
-function asRecord(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object") return {};
-  return value as Record<string, unknown>;
-}
-
-function asArray(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : [];
-}
-
-function toStringValue(value: unknown) {
-  return typeof value === "string" ? value : "";
-}
-
-function hasText(value: string) {
-  return value.trim().length > 0;
-}
 
 function formatSchoolDegree(schoolRaw: unknown, degreeRaw: unknown) {
   const school = escapeLatex(toStringValue(schoolRaw)).trim();
