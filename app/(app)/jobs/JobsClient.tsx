@@ -7,13 +7,14 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "react-day-picker/dist/style.css";
-import { ChevronDown, Copy, Download, ExternalLink, FileText, MapPin, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { CheckSquare, ChevronDown, Copy, Download, ExternalLink, FileText, MapPin, Search, SlidersHorizontal, Square, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -311,6 +312,9 @@ export function JobsClient({
   const [externalSkillPackFresh, setExternalSkillPackFresh] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null);
+  const [batchSelectMode, setBatchSelectMode] = useState(false);
+  const [batchSelectedIds, setBatchSelectedIds] = useState<Set<string>>(new Set());
+  const [batchDeleteConfirmOpen, setBatchDeleteConfirmOpen] = useState(false);
   const [addJobOpen, setAddJobOpen] = useState(false);
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
@@ -842,6 +846,38 @@ export function JobsClient({
     } finally {
       setExternalGenerating(false);
     }
+  }
+
+  function toggleBatchSelect(id: string) {
+    setBatchSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (batchSelectedIds.size === items.length) {
+      setBatchSelectedIds(new Set());
+    } else {
+      setBatchSelectedIds(new Set(items.map((it) => it.id)));
+    }
+  }
+
+  function exitBatchMode() {
+    setBatchSelectMode(false);
+    setBatchSelectedIds(new Set());
+  }
+
+  function confirmBatchDelete() {
+    for (const id of batchSelectedIds) {
+      if (!deletingIds.has(id)) {
+        deleteMutation.mutate(id);
+      }
+    }
+    setBatchDeleteConfirmOpen(false);
+    exitBatchMode();
   }
 
   function scheduleDelete(job: JobItem) {
@@ -1549,17 +1585,70 @@ export function JobsClient({
             mobileTab !== "list" && "hidden lg:flex",
           )}
         >
-          <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
-            <span>
-              {t("results")}
-              {typeof totalCount === "number" ? (
-                <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                  · {totalCount} {totalCount === 1 ? "job" : "jobs"}
-                </span>
-              ) : null}
-            </span>
-            <span className="text-xs text-muted-foreground">{items.length} loaded</span>
-          </div>
+          {batchSelectMode ? (
+            <div className="flex items-center justify-between border-b bg-emerald-50/60 px-4 py-2.5 text-sm">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleSelectAll}
+                  className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-emerald-100"
+                  aria-label={batchSelectedIds.size === items.length ? "Deselect all" : "Select all"}
+                >
+                  {batchSelectedIds.size === items.length ? (
+                    <CheckSquare className="h-4 w-4 text-emerald-600" />
+                  ) : (
+                    <Square className="h-4 w-4 text-slate-400" />
+                  )}
+                  {batchSelectedIds.size > 0 ? (
+                    <span className="font-semibold text-emerald-700">{batchSelectedIds.size} selected</span>
+                  ) : (
+                    <span>Select all</span>
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={batchSelectedIds.size === 0}
+                  onClick={() => setBatchDeleteConfirmOpen(true)}
+                  className="flex items-center gap-1 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:bg-rose-700 active:translate-y-px disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  onClick={exitBatchMode}
+                  className="flex items-center justify-center rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
+                  aria-label="Exit selection mode"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between border-b px-4 py-3 text-sm font-semibold">
+              <span>
+                {t("results")}
+                {typeof totalCount === "number" ? (
+                  <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                    · {totalCount} {totalCount === 1 ? "job" : "jobs"}
+                  </span>
+                ) : null}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{items.length} loaded</span>
+                <button
+                  type="button"
+                  onClick={() => setBatchSelectMode(true)}
+                  className="flex items-center justify-center rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                  aria-label="Enter selection mode"
+                >
+                  <CheckSquare className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
           <div className="relative flex min-h-0 flex-1 flex-col">
           <ScrollArea
             ref={resultsScrollRef}
@@ -1588,6 +1677,9 @@ export function JobsClient({
                   onSelect={setSelectedId}
                   timeZone={timeZone}
                   scrollRootRef={resultsScrollRef}
+                  batchMode={batchSelectMode}
+                  batchSelectedIds={batchSelectedIds}
+                  onBatchToggle={toggleBatchSelect}
                 />
               ) : (
                 <div className="space-y-3 p-3">
@@ -1598,6 +1690,9 @@ export function JobsClient({
                       isActive={it.id === effectiveSelectedId}
                       onSelect={() => handleSelectJob(it.id)}
                       timeZone={timeZone}
+                      batchMode={batchSelectMode}
+                      batchSelected={batchSelectedIds.has(it.id)}
+                      onBatchToggle={toggleBatchSelect}
                     />
                   ))}
                 </div>
@@ -1909,6 +2004,30 @@ export function JobsClient({
         candidate={deleteCandidate}
         onConfirm={confirmDeleteCandidate}
       />
+      <AlertDialog
+        open={batchDeleteConfirmOpen}
+        onOpenChange={setBatchDeleteConfirmOpen}
+      >
+        <AlertDialogContent className="max-w-md rounded-2xl border-slate-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {batchSelectedIds.size} {batchSelectedIds.size === 1 ? "job" : "jobs"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The selected jobs will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">{tc("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmBatchDelete}
+              className="rounded-xl bg-rose-600 text-white hover:bg-rose-700"
+            >
+              Delete {batchSelectedIds.size} {batchSelectedIds.size === 1 ? "job" : "jobs"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -15,12 +15,18 @@ export function VirtualJobList({
   onSelect,
   timeZone,
   scrollRootRef,
+  batchMode,
+  batchSelectedIds,
+  onBatchToggle,
 }: {
   items: JobItem[];
   effectiveSelectedId: string | null;
   onSelect: (id: string) => void;
   timeZone: string | null;
   scrollRootRef: RefObject<HTMLDivElement | null>;
+  batchMode?: boolean;
+  batchSelectedIds?: Set<string>;
+  onBatchToggle?: (id: string) => void;
 }) {
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
 
@@ -63,6 +69,9 @@ export function VirtualJobList({
                 isActive={job.id === effectiveSelectedId}
                 onSelect={() => onSelect(job.id)}
                 timeZone={timeZone}
+                batchMode={batchMode}
+                batchSelected={batchSelectedIds?.has(job.id)}
+                onBatchToggle={onBatchToggle}
               />
             </div>
           );

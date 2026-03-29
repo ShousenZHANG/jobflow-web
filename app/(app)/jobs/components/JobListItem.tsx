@@ -1,5 +1,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { CheckSquare, Square } from "lucide-react";
 import type { JobItem, JobStatus } from "../types";
 
 function formatInsertedTime(iso: string) {
@@ -36,44 +37,73 @@ function JobListItemInner({
   isActive,
   onSelect,
   timeZone,
+  batchMode,
+  batchSelected,
+  onBatchToggle,
 }: {
   job: JobItem;
   isActive: boolean;
   onSelect: () => void;
   timeZone: string | null;
+  batchMode?: boolean;
+  batchSelected?: boolean;
+  onBatchToggle?: (id: string) => void;
 }) {
   const listLabel = `${job.title} at ${job.company || "Unknown"}`;
 
   return (
     <div role="listitem" aria-current={isActive ? "true" : undefined} aria-label={listLabel} className="w-full">
-      <button
-        type="button"
-        onClick={onSelect}
-        data-job-id={job.id}
-        data-perf="cv-auto"
-        className={`jobflow-list-item w-full rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 px-3 py-3 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
-          isActive
-            ? "border-l-emerald-500 bg-emerald-50/60 shadow-sm"
-            : "border-l-transparent hover:border-slate-900/20 hover:bg-white"
+      <div
+        className={`jobflow-list-item flex w-full items-start gap-0 rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
+          batchSelected
+            ? "border-l-emerald-500 bg-emerald-50/80 shadow-sm ring-1 ring-emerald-200"
+            : isActive
+              ? "border-l-emerald-500 bg-emerald-50/60 shadow-sm"
+              : "border-l-transparent hover:border-slate-900/20 hover:bg-white"
         }`}
       >
-        <div className="flex items-center justify-between gap-2">
-          <Badge className={STATUS_CLASS[job.status]}>{job.status}</Badge>
-          <span
-            className="text-xs text-muted-foreground"
-            title={formatLocalDateTime(job.createdAt, timeZone)}
+        {batchMode && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBatchToggle?.(job.id);
+            }}
+            className="flex shrink-0 items-center justify-center py-3 pl-3 pr-1"
+            aria-label={batchSelected ? `Deselect ${job.title}` : `Select ${job.title}`}
           >
-            {formatInsertedTime(job.createdAt)}
-          </span>
-        </div>
-        <div className="mt-2 text-sm font-semibold">{job.title}</div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          {job.company ?? "-"} - {job.location ?? "-"}
-        </div>
-        <div className="mt-2 text-[11px] text-muted-foreground">
-          {job.jobType ?? "Unknown"} - {job.jobLevel ?? "Unknown"}
-        </div>
-      </button>
+            {batchSelected ? (
+              <CheckSquare className="h-[18px] w-[18px] text-emerald-600" />
+            ) : (
+              <Square className="h-[18px] w-[18px] text-slate-300 transition-colors hover:text-slate-500" />
+            )}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={batchMode ? () => onBatchToggle?.(job.id) : onSelect}
+          data-job-id={job.id}
+          data-perf="cv-auto"
+          className="min-w-0 flex-1 cursor-pointer px-3 py-3 text-left"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <Badge className={STATUS_CLASS[job.status]}>{job.status}</Badge>
+            <span
+              className="text-xs text-muted-foreground"
+              title={formatLocalDateTime(job.createdAt, timeZone)}
+            >
+              {formatInsertedTime(job.createdAt)}
+            </span>
+          </div>
+          <div className="mt-2 text-sm font-semibold">{job.title}</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {job.company ?? "-"} - {job.location ?? "-"}
+          </div>
+          <div className="mt-2 text-[11px] text-muted-foreground">
+            {job.jobType ?? "Unknown"} - {job.jobLevel ?? "Unknown"}
+          </div>
+        </button>
+      </div>
     </div>
   );
 }
