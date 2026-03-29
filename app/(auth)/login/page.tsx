@@ -3,6 +3,7 @@
 import { signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Github, Search } from "lucide-react";
 import { Fredoka, Nunito } from "next/font/google";
 import { Button } from "@/components/ui/button";
@@ -76,7 +77,14 @@ export default function LoginPage() {
             </Button>
           </div>
           <p className="mt-4 text-xs text-slate-500">
-            By signing in, you agree to the platform terms and privacy policy.
+            By signing in, you agree to our{" "}
+            <Link href="/terms" className="text-slate-700 underline decoration-slate-300 underline-offset-2 transition-colors hover:text-emerald-700 hover:decoration-emerald-300">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-slate-700 underline decoration-slate-300 underline-offset-2 transition-colors hover:text-emerald-700 hover:decoration-emerald-300">
+              Privacy Policy
+            </Link>.
           </p>
         </div>
       </div>
