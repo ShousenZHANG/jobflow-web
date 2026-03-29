@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/server/prisma";
@@ -77,5 +78,26 @@ export async function GET(req: Request) {
     ),
   ).slice(0, 20);
 
-  return NextResponse.json({ suggestions: combined });
+  const digest = createHash("sha1")
+    .update(userId + "::" + q + "::" + combined.join(","))
+    .digest("base64url");
+  const etag = `W/"sug:${digest}"`;
+
+  const cacheHeaders = {
+    ETag: etag,
+    "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+  } as const;
+
+  const ifNoneMatch = req.headers.get("if-none-match");
+  if (
+    ifNoneMatch &&
+    ifNoneMatch
+      .split(",")
+      .map((s) => s.trim())
+      .includes(etag)
+  ) {
+    return new NextResponse(null, { status: 304, headers: cacheHeaders });
+  }
+
+  return NextResponse.json({ suggestions: combined }, { headers: cacheHeaders });
 }

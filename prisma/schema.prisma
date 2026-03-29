@@ -143,6 +143,8 @@ model Job {
   @@index([userId, updatedAt])
   @@index([userId, status])
   @@index([userId, market, createdAt])
+  @@index([userId, jobLevel])
+  // GIN trigram indexes (title, company, location) created via raw SQL migration
 }
 
 model ApplicationBatch {

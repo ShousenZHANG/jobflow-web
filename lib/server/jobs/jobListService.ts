@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/server/prisma";
 import { buildJobsListEtag } from "@/lib/server/jobsListEtag";
+import { shouldUseRelevanceSort } from "./searchUtils";
+import { listJobsWithRelevance } from "./jobSearchService";
 
 const STATE_LOCATION_MAP = {
   NSW: ["NSW", "New South Wales", "Sydney", "Newcastle", "Wollongong"],
@@ -87,7 +89,7 @@ function buildWhereClause(userId: string, query: JobListQuery): JobWhereClause {
   }
 
   if (jobLevel) {
-    andClauses.push({ jobLevel: { equals: jobLevel } });
+    andClauses.push({ jobLevel: { equals: jobLevel, mode: "insensitive" } });
   }
 
   return {
@@ -118,6 +120,10 @@ export async function listJobs(userId: string, query: JobListQuery): Promise<Job
       : [{ createdAt: "desc" as const }, { id: "desc" as const }];
 
   const where = buildWhereClause(userId, query);
+
+  if (query.q && shouldUseRelevanceSort(query.q)) {
+    return listJobsWithRelevance(userId, query);
+  }
 
   const [jobsWithExtra, totalCount] = await Promise.all([
     prisma.job.findMany({
@@ -174,7 +180,6 @@ export async function listJobs(userId: string, query: JobListQuery): Promise<Job
     `jobLevel=${query.jobLevel ?? ""}`,
     `sort=${sort}`,
     `market=${query.market ?? ""}`,
-    `platform=${query.platform ?? ""}`,
   ].join("|");
 
   const etag = buildJobsListEtag({

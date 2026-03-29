@@ -1,618 +1,1376 @@
-# Jobflow 搜索与全站性能优化方案
+# Jobflow 搜索与平台性能优化方案
 
 **Date:** 2026-03-29
 **Branch:** master
-**Tech Stack:** Next.js 15 App Router, PostgreSQL (Neon Serverless), Prisma ORM, TanStack Query 5, Vercel, Zod v4
+**Tech Stack:** Next.js 16 (App Router), React 19, TypeScript strict, Prisma 7.4 + PostgreSQL (Neon Serverless), TanStack Query v5, Tailwind CSS v4, shadcn/ui, framer-motion, next-intl, Zod v4, Vercel
 
 ---
 
-## 1. 方案对比
+## 一、现状分析摘要
 
-### Option A: B-tree Index + ILIKE（增量修复）
+### 1.1 架构现状
 
-| 维度 | 说明 |
-|------|------|
-| 搜索方式 | 保留现有 `ILIKE` / `contains`，补充 B-tree 索引 |
-| 索引策略 | `@@index([userId, title])` 等 |
-| 缓存 | 保留现有 ETag，补充 suggestions Cache-Control |
-| 工期 | 1-2 天 |
+Jobflow 是一个面向 AU/CN 双市场的求职管理平台。搜索为核心交互路径：用户通过关键词 + 筛选器在个人 Job 列表中搜索、浏览、管理职位。
 
-**优点：** 改动最小，零回归风险，不需要新的 PostgreSQL 扩展。
+**当前请求链路：**
 
-**缺点：** B-tree 索引对 `%keyword%` 模式无效（仅支持前缀 `keyword%`），依然全表扫描。无相关性排名。中文搜索不支持。
+```
+用户输入 → debounce 200ms (仅 q 字段) → URLSearchParams → React Query fetch
+  → GET /api/jobs?{params}
+  → Zod validation → requireSession()
+  → jobListService.listJobs(userId, query)
+    → buildWhereClause()  // ILIKE 三字段 OR 匹配
+    → Promise.all([prisma.job.findMany(), prisma.job.count()])
+    → getCursorPage() → buildJobsListEtag()
+  → ETag compare (304 / 200)
+  → Client 合并多页结果 + 去重
+```
 
-**结论：** 不足以解决核心性能问题，仅修补表面 Bug。
+### 1.2 核心问题汇总
 
----
+| 优先级 | 问题 | 影响 |
+|--------|------|------|
+| **P0** | `title`/`company`/`location` 无索引 → `ILIKE` 全表扫描 | 数据增长后搜索延迟线性恶化 |
+| **P1** | `platform` 参数接受但忽略 | 筛选无效 |
+| **P1** | Job 详情独立查询（N+1） | 每次选中多一次 DB roundtrip |
+| **P2** | 仅 `q` 有 debounce，其他筛选器无防抖 | 快速切换触发多次 API |
+| **P2** | 无相关性排序 | 搜索结果按时间而非匹配度排列 |
+| **P2** | Suggestions API 无缓存 | 每次自动补全都查库 |
+| **P3** | 无 Error Boundary | 路由错误导致白屏 |
+| **P3** | 无虚拟滚动 | 深度加载后 DOM 节点过多 |
+| **P3** | 无键盘导航 | Accessibility 不足 |
+| **P3** | `JobsClient.tsx` 2,638 行（God Component） | 不可维护 |
 
-### Option B: PostgreSQL 全文搜索 tsvector + GIN（推荐）
+### 1.3 数据特征
 
-| 维度 | 说明 |
-|------|------|
-| 搜索方式 | 添加 `searchVector` (tsvector) 列，GIN 索引，`ts_rank` 排序 |
-| 索引策略 | GIN 索引 + 补充 B-tree 索引 |
-| 缓存 | React Query 调优 + suggestions ETag + HTTP 304 |
-| 工期 | 5-7 天（分 3 阶段） |
-
-**优点：**
-- 原生 PostgreSQL 方案，无外部服务依赖
-- GIN 索引对任意位置子串高效匹配
-- `ts_rank` 提供相关性排名
-- 前缀匹配 `to_tsquery('word:*')`
-- 兼容 Neon Serverless，无额外基础设施成本
-
-**缺点：**
-- 需要 raw SQL migration（Prisma 不原生支持 tsvector）
-- 搜索路径需 `$queryRaw`
-- 中文 FTS 依赖 Neon 的扩展支持（`zhparser` 可能不可用，退回 `simple` 配置 + ILIKE 兜底）
-
-**结论：** 当前阶段的最佳平衡——能力、成本、复杂度均可控。
-
----
-
-### Option C: 外部搜索引擎（Typesense / Meilisearch）
-
-| 维度 | 说明 |
-|------|------|
-| 搜索方式 | 同步 jobs 到外部搜索引擎，前端直连 |
-| 索引策略 | 搜索引擎自管理 |
-| 缓存 | 搜索引擎内置 + CDN 边缘缓存 |
-| 工期 | 10-14 天 |
-
-**优点：** 最佳搜索体验（容错、分面、高亮、<5ms 响应），中文分词内置（Meilisearch），可扩展至百万级。
-
-**缺点：** 新增基础设施依赖；数据同步复杂度；成本（自建或 SaaS）；最终一致性问题；对当前用户规模严重过度设计。
-
-**结论：** 过早优化。当用户量超过 10K 或 Job 记录超过 500K 时再考虑。
+- 每用户 Job 数量：当前数百条，预期增长到数千条
+- 搜索频率：每次输入字符触发 debounce → API 请求
+- 双语环境：AU 市场英文为主，CN 市场中文为主
+- 个人数据隔离：所有查询都带 `userId` WHERE 前缀
 
 ---
 
-### 方案对比总结
+## 二、方案对比
 
-| 维度 | A: ILIKE | B: FTS (推荐) | C: 外部引擎 |
-|------|----------|---------------|-------------|
-| 搜索质量 | 差（无排名） | 好（ts_rank） | 极佳（容错+排名） |
-| 性能 | 全表扫描 | GIN 索引 <10ms | <5ms |
-| 中文支持 | ILIKE 可用 | simple + ILIKE 兜底 | 内置分词 |
-| 基础设施 | 无变更 | 无变更 | 新增服务 |
-| 复杂度 | 极低 | 中等 | 高 |
-| 工期 | 1-2 天 | 5-7 天 | 10-14 天 |
-| 适用阶段 | 临时修补 | 当前最优 | 规模化阶段 |
+### 方案 A: B-tree Index + ILIKE 增量修复（保守渐进）
+
+**核心思路：** 在现有 `ILIKE`/`contains` 搜索架构上，补充 B-tree 索引 + 前端性能优化 + 缓存增强。不引入新的 PostgreSQL 扩展。
+
+**Scope:**
+- 添加 `title`/`company`/`location`/`jobLevel` 的 B-tree 复合索引
+- 为所有筛选器添加 debounce + AbortController
+- Suggestions API 加 ETag + `Cache-Control`
+- 前端组件拆分 + React.memo + Skeleton 优化
+- Error Boundary 覆盖
+
+**Pros:**
+- 改动最小，零回归风险
+- 不依赖 PostgreSQL 扩展（Neon 完全兼容）
+- 1-2 周可完成全部工作
+- 团队理解成本低
+
+**Cons:**
+- B-tree 对 `ILIKE '%keyword%'`（中间匹配）**无法加速**，只对前缀 `LIKE 'keyword%'` 有效
+- 无法实现相关性排序
+- 中文分词完全不支持
+- 搜索能力天花板低
+
+**Effort:** 约 5-8 人天
+**Risk:** 低
 
 ---
 
-## 2. 推荐方案详细设计（Option B）
+### 方案 B: pg_trgm 三字匹配 + GIN 索引（推荐 — 精准平衡）
 
-### 2.1 搜索算法优化
+**核心思路：** 启用 PostgreSQL `pg_trgm` 扩展，使用 trigram GIN 索引加速 `ILIKE` 中间匹配。同时引入 `similarity()` / `word_similarity()` 实现相关性排序。搭配全面的前端性能优化和 UX 改进。
 
-#### 2.1.1 数据库迁移：添加 searchVector 列
+**Scope:**
+- 启用 `pg_trgm` 扩展（Neon 原生支持）
+- 为 `title`/`company`/`location` 创建 trigram GIN 索引
+- 使用 `similarity()` 函数进行相关性排序
+- 中文通过 trigram 的 Unicode 三字符窗口获得基础模糊匹配能力
+- 全面的前端性能优化（虚拟滚动、组件拆分、prefetch 等）
+- Suggestions API 重建（ETag + stale-while-revalidate）
+- 搜索历史、高亮、键盘导航等 UX 提升
 
-Prisma 不原生支持 `tsvector`，需要通过 raw SQL migration 实现。
+**Pros:**
+- `pg_trgm` GIN 索引可加速 `ILIKE '%keyword%'` 中间匹配 — 直接解决 P0
+- `similarity()` 提供 0.0-1.0 相关性评分 — 解决 P2 排序问题
+- 对中文的三字符匹配提供基础模糊能力（非精确分词，但覆盖常见搜索场景）
+- Neon Serverless 原生支持 `pg_trgm`，无需额外基础设施
+- 与 Prisma `$queryRaw` 兼容良好
+- 增量迁移 — 现有 `ILIKE` 查询无需修改即可受益于 GIN 索引
 
-**Migration 文件:** `prisma/migrations/YYYYMMDD_add_search_vector/migration.sql`
+**Cons:**
+- 需要 Raw SQL 实现相关性排序（Prisma ORM 不支持 `similarity()` 函数）
+- Trigram 对极短关键词（1-2 字符）和罕见中文词组效果有限
+- GIN 索引增加写入开销（约 10-15%）
+- 比方案 A 复杂度高
+
+**Effort:** 约 10-15 人天
+**Risk:** 中低
+
+---
+
+### 方案 C: Full-Text Search (tsvector + GIN) + 中文分词（高配）
+
+**核心思路：** 引入 PostgreSQL 原生全文搜索（`tsvector`/`tsquery`），为中文市场配置 `zhparser` 或 `pg_jieba` 分词器，实现 `ts_rank()` 排序、词干提取、停用词过滤。
+
+**Scope:**
+- 添加 `search_vector tsvector` 计算列 + GIN 索引
+- 用 Trigger 自动维护 tsvector（INSERT/UPDATE）
+- 英文使用 `english` 字典，中文使用 `zhparser`/`simple` 字典
+- `ts_rank()` 实现相关性排序
+- 全部前端优化（同方案 B）
+
+**Pros:**
+- 搜索能力最强：词干提取、停用词、phrase 搜索、布尔逻辑
+- `ts_rank()` 排序质量最高
+- 标准 PostgreSQL 全文搜索，长期生态好
+
+**Cons:**
+- **Neon Serverless 不支持 `zhparser`/`pg_jieba`** — 中文全文搜索需要用 `simple` 分词器（按空格分词，对中文基本无效）或付费迁移到支持自定义扩展的 PostgreSQL 托管
+- 需要新增 `search_vector` 列 + Trigger + Migration — schema 变动大
+- tsvector 不支持中间匹配（只能前缀匹配 `ts_rank` 或精确词匹配）
+- Prisma 不原生支持 tsvector — 全部搜索逻辑需 `$queryRaw`
+- 开发和调试成本高，回归风险中
+
+**Effort:** 约 20-30 人天
+**Risk:** 中高
+
+---
+
+### 方案对比表
+
+| 维度 | 方案 A: B-tree 增量 | 方案 B: pg_trgm (推荐) | 方案 C: Full-Text Search |
+|------|-------------------|---------------------|------------------------|
+| **搜索质量** | 低（ILIKE 精确匹配） | 中高（模糊匹配 + similarity 排序） | 高（词干 + 排序 + 布尔） |
+| **中文支持** | 仅 ILIKE | 基础 trigram（可用） | 需 zhparser（Neon 不支持） |
+| **中间匹配加速** | 不支持 | 支持（GIN trigram） | 不支持（词匹配） |
+| **相关性排序** | 不支持 | `similarity()` 评分 | `ts_rank()` 评分 |
+| **Neon 兼容性** | 完全兼容 | 完全兼容 | 部分兼容（缺 zhparser） |
+| **Prisma 兼容** | 完全 ORM | ORM + 少量 Raw SQL | 大量 Raw SQL |
+| **Schema 变动** | 仅加索引 | 仅加索引 | 新增列 + Trigger |
+| **写入性能影响** | 无 | ~10-15% | ~15-25% |
+| **开发工期** | 5-8 天 | 10-15 天 | 20-30 天 |
+| **风险等级** | 低 | 中低 | 中高 |
+| **可维护性** | 高 | 高 | 中 |
+| **扩展性** | 低（天花板明显） | 中高（可后续升级 FTS） | 高 |
+
+### 推荐结论
+
+**推荐方案 B: pg_trgm 三字匹配 + GIN 索引**
+
+理由：
+1. **直接解决 P0** — trigram GIN 索引加速 `ILIKE '%keyword%'` 中间匹配，这是方案 A 无法做到的
+2. **Neon 完全兼容** — 方案 C 的中文分词需要 Neon 不支持的扩展
+3. **渐进式** — 现有 `ILIKE` 查询自动受益于 GIN 索引，再用 `similarity()` 增强排序
+4. **中文可用** — trigram 虽非精确分词，但对「三字及以上」的中文搜索有效
+5. **成本可控** — 10-15 天完成全部优化，后续可平滑升级到 FTS
+
+---
+
+## 三、推荐方案详细设计
+
+### 3.1 搜索算法优化
+
+#### 3.1.1 启用 pg_trgm 扩展
+
+在 Neon Console 或通过 migration 启用：
 
 ```sql
--- 1. 添加 tsvector 列
-ALTER TABLE "Job" ADD COLUMN "searchVector" tsvector;
-
--- 2. 回填现有数据
-UPDATE "Job" SET "searchVector" =
-  setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
-  setweight(to_tsvector('english', coalesce("company", '')), 'B') ||
-  setweight(to_tsvector('english', coalesce("location", '')), 'C');
-
--- 3. 创建 GIN 索引
-CREATE INDEX "Job_userId_searchVector_idx"
-  ON "Job" USING gin ("userId", "searchVector");
-
--- 4. 创建自动更新触发器
-CREATE OR REPLACE FUNCTION job_search_vector_update() RETURNS trigger AS $$
-BEGIN
-  NEW."searchVector" :=
-    setweight(to_tsvector('english', coalesce(NEW."title", '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(NEW."company", '')), 'B') ||
-    setweight(to_tsvector('english', coalesce(NEW."location", '')), 'C');
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER job_search_vector_trigger
-  BEFORE INSERT OR UPDATE OF "title", "company", "location"
-  ON "Job"
-  FOR EACH ROW
-  EXECUTE FUNCTION job_search_vector_update();
-```
-
-**权重说明：**
-- `'A'` (title) = 最高权重 — 标题匹配优先
-- `'B'` (company) = 中等权重
-- `'C'` (location) = 最低权重
-
-#### 2.1.2 搜索服务实现
-
-**新文件:** `lib/server/jobs/jobSearchService.ts`
-
-```typescript
-/**
- * 将用户搜索字符串转为 tsquery 格式
- * "senior react developer" -> "senior:* & react:* & developer:*"
- */
-export function buildTsQuery(input: string): string {
-  const tokens = input
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((token) => token.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, ""))
-    .filter((token) => token.length > 0);
-
-  if (tokens.length === 0) return "";
-  return tokens.map((t) => `${t}:*`).join(" & ");
-}
-
-/**
- * 判断是否使用 FTS（短查询或纯数字退回 ILIKE）
- */
-export function shouldUseFts(query: string): boolean {
-  const trimmed = query.trim();
-  if (trimmed.length < 2) return false;
-  if (/^\d+$/.test(trimmed)) return false;
-  return true;
-}
-```
-
-#### 2.1.3 修改 listJobs 支持 FTS
-
-`lib/server/jobs/jobListService.ts` 需要两条代码路径：
-
-```
-Path 1: q 为空或不适合 FTS → 现有 Prisma findMany（保留）
-Path 2: q 有效 + shouldUseFts(q) → $queryRaw 走 FTS + ts_rank 排序
-```
-
-FTS 路径的 SQL 核心：
-
-```sql
-SELECT j.*, ts_rank(j."searchVector", to_tsquery('english', $2)) AS rank
-FROM "Job" j
-WHERE j."userId" = $1
-  AND j."searchVector" @@ to_tsquery('english', $2)
-  AND ... (status, market, jobLevel 条件)
-ORDER BY rank DESC, j."createdAt" DESC, j."id" DESC
-LIMIT $N
-```
-
-#### 2.1.4 中文搜索策略
-
-Neon PostgreSQL 目前不支持 `zhparser` / `pg_jieba`。退路方案：
-
-1. **主路径：** CN 市场使用 `'simple'` 配置（按空格分词，不做词干提取——对中英混合招聘标题基本可用）
-2. **兜底路径：** 对 CN 市场同时保留 ILIKE OR 条件：
-
-```sql
-WHERE (
-  j."searchVector" @@ to_tsquery('simple', $2)
-  OR j."title" ILIKE '%' || $3 || '%'
-  OR j."company" ILIKE '%' || $3 || '%'
-)
-```
-
-3. **远期：** 当 Neon 支持 `zhparser` 时，更新触发器即可无缝迁移。
-
-#### 2.1.5 模糊匹配（Phase 3）
-
-利用 `pg_trgm` 扩展实现容错搜索（FTS 返回 0 结果时的 fallback）：
-
-```sql
+-- Migration: 20260329_enable_pg_trgm.sql
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
-CREATE INDEX "Job_title_trgm_idx" ON "Job" USING gin ("title" gin_trgm_ops);
-CREATE INDEX "Job_company_trgm_idx" ON "Job" USING gin ("company" gin_trgm_ops);
-
--- 当 FTS 无结果时 fallback
-SELECT * FROM "Job" j
-WHERE j."userId" = $1
-  AND (similarity(j."title", $2) > 0.3 OR similarity(j."company", $2) > 0.3)
-ORDER BY greatest(similarity(j."title", $2), similarity(j."company", $2)) DESC
-LIMIT $3;
 ```
 
----
+Prisma migration 文件：
 
-### 2.2 数据库索引优化
+```
+prisma/migrations/20260329000000_enable_pg_trgm/migration.sql
+```
 
-#### 新增索引
+#### 3.1.2 创建 Trigram GIN 索引
+
+```sql
+-- Migration: 20260329_add_trigram_indexes.sql
+
+-- 搜索字段 trigram GIN 索引（加速 ILIKE 中间匹配）
+CREATE INDEX CONCURRENTLY idx_job_title_trgm
+  ON "Job" USING gin (title gin_trgm_ops);
+
+CREATE INDEX CONCURRENTLY idx_job_company_trgm
+  ON "Job" USING gin (company gin_trgm_ops);
+
+CREATE INDEX CONCURRENTLY idx_job_location_trgm
+  ON "Job" USING gin (location gin_trgm_ops);
+
+-- jobLevel 等值匹配 B-tree 索引
+CREATE INDEX CONCURRENTLY idx_job_user_joblevel
+  ON "Job" (("userId"), "jobLevel");
+```
+
+> **关键点：** `gin_trgm_ops` 操作符类使 `ILIKE '%keyword%'` 查询自动走 GIN 索引扫描而非顺序扫描。无需修改现有 Prisma `contains` 查询代码。
+
+Prisma Schema 中标记索引（文档用途，实际由 Raw SQL migration 创建）：
 
 ```prisma
 model Job {
-  // ... 现有字段 ...
+  // ... existing fields ...
 
-  // 现有索引
-  @@unique([userId, jobUrl])
+  @@index([userId, jobUrl])   // existing unique
   @@index([userId, createdAt])
   @@index([userId, updatedAt])
   @@index([userId, status])
   @@index([userId, market, createdAt])
-
-  // 新增索引
-  @@index([userId, jobLevel])                      // jobLevel 精确匹配
-  @@index([userId, market, status, createdAt])      // 最常见复合筛选
-  // GIN(userId, searchVector) — 通过 raw SQL migration 创建
+  @@index([userId, jobLevel])  // NEW: B-tree for exact match
+  // GIN trigram indexes created via raw SQL migration
 }
 ```
 
-#### 索引覆盖分析
+#### 3.1.3 相关性排序搜索查询
 
-| 索引 | 查询模式 | 影响 |
-|------|----------|------|
-| `GIN(userId, searchVector)` | 关键词搜索 `@@` 操作符 | 消除全表扫描，<10ms |
-| `B-tree(userId, jobLevel)` | `WHERE userId=? AND jobLevel=?` | 精确匹配从全表扫描 → 索引查找 |
-| `B-tree(userId, market, status, createdAt)` | `WHERE userId=? AND market=? AND status=? ORDER BY createdAt` | 覆盖最常见的复合筛选组合 |
+当用户提供 `q` 关键词时，使用 `similarity()` 函数计算匹配得分并排序。保留无 `q` 时的时间排序。
 
-#### 不推荐的索引
+**新增 `searchJobsWithRelevance` 函数：**
 
-- `B-tree(userId, title/company/location)` — 对 `ILIKE '%keyword%'` 无效，FTS 方案下不需要
-- `INCLUDE(description)` 覆盖索引 — description 太大（数 KB），不适合放入索引
+```typescript
+// lib/server/jobs/jobSearchService.ts
+
+import { Prisma } from "@/lib/generated/prisma";
+import { prisma } from "@/lib/server/prisma";
+
+type SearchParams = {
+  userId: string;
+  q: string;
+  status?: string;
+  market?: string;
+  location?: string;
+  jobLevel?: string;
+  limit: number;
+  cursor?: string;
+};
+
+export async function searchJobsWithRelevance(params: SearchParams) {
+  const { userId, q, status, market, location, jobLevel, limit, cursor } = params;
+
+  const conditions: string[] = [`j."userId" = $1`];
+  const values: unknown[] = [userId];
+  let paramIdx = 2;
+
+  // q → trigram similarity across title, company, location
+  conditions.push(`(
+    j."title" ILIKE $${paramIdx}
+    OR j."company" ILIKE $${paramIdx}
+    OR j."location" ILIKE $${paramIdx}
+  )`);
+  values.push(`%${q}%`);
+  paramIdx++;
+
+  if (status) {
+    conditions.push(`j."status" = $${paramIdx}::\"JobStatus\"`);
+    values.push(status);
+    paramIdx++;
+  }
+
+  if (market) {
+    conditions.push(`j."market" = $${paramIdx}`);
+    values.push(market);
+    paramIdx++;
+  }
+
+  if (jobLevel) {
+    conditions.push(`j."jobLevel" = $${paramIdx}`);
+    values.push(jobLevel);
+    paramIdx++;
+  }
+
+  // Location filter (simplified — state expansion done in calling code)
+  if (location) {
+    conditions.push(`j."location" ILIKE $${paramIdx}`);
+    values.push(`%${location}%`);
+    paramIdx++;
+  }
+
+  // Cursor pagination
+  if (cursor) {
+    conditions.push(`j."id" != $${paramIdx}`);
+    values.push(cursor);
+    paramIdx++;
+  }
+
+  const qParamIdx = 2; // q is always $2
+
+  const sql = Prisma.sql`
+    SELECT
+      j."id", j."jobUrl", j."title", j."company", j."location",
+      j."jobType", j."jobLevel", j."status", j."market",
+      j."createdAt", j."updatedAt",
+      GREATEST(
+        similarity(LOWER(j."title"), LOWER(${q})),
+        similarity(LOWER(COALESCE(j."company", '')), LOWER(${q})),
+        similarity(LOWER(COALESCE(j."location", '')), LOWER(${q}))
+      ) AS relevance_score
+    FROM "Job" j
+    WHERE ${Prisma.raw(conditions.join(" AND "))}
+    ORDER BY relevance_score DESC, j."createdAt" DESC
+    LIMIT ${limit + 1}
+  `;
+
+  // Note: actual implementation uses $queryRawUnsafe with parameterized values
+  // The above is conceptual — see section 3.1.5 for production code
+}
+```
+
+#### 3.1.4 中英文混合搜索策略
+
+| 场景 | 策略 | 说明 |
+|------|------|------|
+| 英文关键词 3+ 字符 | `ILIKE + similarity()` | trigram 完美覆盖 |
+| 英文关键词 1-2 字符 | `ILIKE` only (skip similarity) | trigram 对极短字符串效果差 |
+| 中文关键词 3+ 字符 | `ILIKE + similarity()` | Unicode trigram 对三字及以上中文可用 |
+| 中文关键词 1-2 字符 | `ILIKE` only | 二字中文仅有一个 trigram，recall 低 |
+| 混合中英文 | `ILIKE` + 分别计算 similarity | 取最高 similarity 分数 |
+
+**实现判断：**
+
+```typescript
+// lib/server/jobs/searchUtils.ts
+
+export function shouldUseRelevanceSort(q: string): boolean {
+  const trimmed = q.trim();
+  if (trimmed.length < 3) return false;
+  // CJK character detection
+  const cjkCount = (trimmed.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g) || []).length;
+  if (cjkCount > 0 && cjkCount < 2) return false; // 单个汉字不用 similarity
+  return true;
+}
+```
+
+#### 3.1.5 生产级搜索服务改造
+
+改造 `jobListService.ts` 的 `listJobs` 函数，使其在有 `q` 参数时切换到 relevance 排序：
+
+```typescript
+// lib/server/jobs/jobListService.ts — listJobs 改造要点
+
+export async function listJobs(userId: string, query: JobListQuery): Promise<JobListResult> {
+  const { limit, cursor, sort, q } = query;
+  const where = buildWhereClause(userId, query);
+
+  if (q && shouldUseRelevanceSort(q)) {
+    // Relevance-ranked search via raw SQL
+    return listJobsWithRelevance(userId, query);
+  }
+
+  // Existing time-sorted path (unchanged)
+  const orderBy = sort === "oldest"
+    ? [{ createdAt: "asc" as const }, { id: "asc" as const }]
+    : [{ createdAt: "desc" as const }, { id: "desc" as const }];
+
+  const [jobsWithExtra, totalCount] = await Promise.all([
+    prisma.job.findMany({ where, orderBy, take: limit + 1, /* ... */ }),
+    prisma.job.count({ where }),
+  ]);
+  // ... rest unchanged
+}
+```
+
+#### 3.1.6 搜索建议（Autocomplete）改进
+
+当前 suggestions API 查询最近 80 条 `title ILIKE` 匹配，无缓存。改进方案：
+
+```typescript
+// app/api/jobs/suggestions/route.ts — 改造
+
+export async function GET(req: Request) {
+  // ... auth, validation ...
+
+  const q = parsed.data.q.toLowerCase();
+
+  // 1. 使用 similarity 排序建议结果
+  const suggestions = await prisma.$queryRaw<{ title: string; score: number }[]>`
+    SELECT DISTINCT ON (title) title,
+           similarity(LOWER(title), LOWER(${q})) AS score
+    FROM "Job"
+    WHERE "userId" = ${userId}::uuid
+      AND (title ILIKE ${`%${q}%`} OR similarity(LOWER(title), LOWER(${q})) > 0.1)
+    ORDER BY title, score DESC
+    LIMIT 15
+  `;
+
+  // 2. 合并 fallback 建议
+  const fallbackMatches = FALLBACK_SUGGESTIONS
+    .filter(s => s.toLowerCase().includes(q))
+    .slice(0, 5);
+
+  const combined = [
+    ...suggestions.map(s => s.title),
+    ...fallbackMatches,
+  ].slice(0, 15);
+
+  // 3. ETag + Cache-Control
+  const etag = buildSuggestionsEtag(userId, q, combined);
+  const ifNoneMatch = req.headers.get("if-none-match");
+  if (ifNoneMatch === etag) {
+    return new NextResponse(null, {
+      status: 304,
+      headers: { ETag: etag, "Cache-Control": "private, max-age=30" },
+    });
+  }
+
+  return NextResponse.json(
+    { suggestions: combined },
+    { headers: { ETag: etag, "Cache-Control": "private, max-age=30" } },
+  );
+}
+```
 
 ---
 
-### 2.3 API 层优化
+### 3.2 数据库性能优化
 
-#### 2.3.1 移除 `platform` 参数
+#### 3.2.1 索引策略全览
 
-数据库 `Job` 模型中**没有 `platform` 字段**，但 API 的 Zod Schema 接受了它。
+| 索引 | 类型 | 加速的查询 | 优先级 |
+|------|------|-----------|--------|
+| `idx_job_title_trgm` | GIN (gin_trgm_ops) | `title ILIKE '%keyword%'` | P0 |
+| `idx_job_company_trgm` | GIN (gin_trgm_ops) | `company ILIKE '%keyword%'` | P0 |
+| `idx_job_location_trgm` | GIN (gin_trgm_ops) | `location ILIKE '%keyword%'` | P0 |
+| `idx_job_user_joblevel` | B-tree | `jobLevel = 'xxx'` | P0 |
+| 现有 `userId_createdAt` | B-tree | 时间排序 | 已有 |
+| 现有 `userId_status` | B-tree | 状态筛选 | 已有 |
+| 现有 `userId_market_createdAt` | B-tree | 市场+排序 | 已有 |
 
-**修改文件：**
-- `app/api/jobs/route.ts` — 从 `QuerySchema` 移除 `platform`
-- `lib/server/jobs/jobListService.ts` — 从 `JobListQuery` 类型和 `filtersSignature` 移除
+#### 3.2.2 Migration 执行计划
 
-如果未来需要按平台筛选，先在 `Job` 模型添加 `platform` 字段再接入。
+```sql
+-- prisma/migrations/20260330000000_search_optimization/migration.sql
 
-#### 2.3.2 列表响应包含 description
+-- Step 1: 启用扩展
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
-消除 N+1 详情查询：
+-- Step 2: Trigram GIN 索引（CONCURRENTLY 避免锁表）
+-- 注意：Prisma migration 不支持 CONCURRENTLY，生产环境需手动执行
+CREATE INDEX idx_job_title_trgm ON "Job" USING gin (title gin_trgm_ops);
+CREATE INDEX idx_job_company_trgm ON "Job" USING gin (company gin_trgm_ops);
+CREATE INDEX idx_job_location_trgm ON "Job" USING gin (location gin_trgm_ops);
 
-```typescript
-// lib/server/jobs/jobListService.ts — select 中添加
-select: {
-  // ... 现有字段 ...
-  description: true,  // 新增
-}
+-- Step 3: jobLevel B-tree 索引
+CREATE INDEX idx_job_user_joblevel ON "Job" ("userId", "jobLevel");
+
+-- Step 4: 设置 trigram 相似度阈值（全局默认 0.3，可按需调整）
+-- 注意：这是 session 级设置，生产环境可在连接池初始化时设置
+-- SET pg_trgm.similarity_threshold = 0.1;
 ```
 
-**负载控制：** 描述字段可能 2-10KB。若 `limit=10` 导致响应超 200KB，降级为截断方案：
+**Neon Serverless 注意事项：**
+- Neon 支持 `pg_trgm` 扩展 — 可通过 `CREATE EXTENSION` 直接启用
+- Neon 不支持 `CREATE INDEX CONCURRENTLY` 在 Prisma migration 中 — 对于生产环境应通过 Neon Console SQL Editor 或连接后手动执行
+- Neon 的 autoscaling 对 GIN 索引构建有额外冷启动开销 — 建议在写入不密集的时段执行
 
-```typescript
-description: job.description?.slice(0, 500) ?? null,
-descriptionTruncated: (job.description?.length ?? 0) > 500,
+#### 3.2.3 查询优化：合并 count
+
+当前 `listJobs` 使用 `Promise.all([findMany, count])` 做两次 DB roundtrip。使用 Window Function 可合并为一次：
+
+```sql
+-- 优化版本：单次查询返回 items + totalCount
+SELECT
+  j.*,
+  COUNT(*) OVER() AS total_count
+FROM "Job" j
+WHERE j."userId" = $1
+  AND /* ... filters ... */
+ORDER BY j."createdAt" DESC, j."id" DESC
+LIMIT $2
+OFFSET $3;
 ```
 
-前端：若 `descriptionTruncated` 为 `true` 才触发详情接口。
+**但 Prisma ORM 不直接支持 Window Function**，需要 `$queryRaw`。建议：
 
-#### 2.3.3 Suggestions API 缓存
+- **Phase 1：** 保持 `Promise.all` 双查询（已并行，延迟影响小）
+- **Phase 2：** 当搜索用 `$queryRaw` 实现相关性排序时，顺带合并 count
 
-`app/api/jobs/suggestions/route.ts` 添加：
+#### 3.2.4 连接池优化
+
+Neon Serverless Adapter 配置建议：
 
 ```typescript
-const etag = `W/"sug:${createHash("sha1").update(combined.join("|")).digest("base64url")}"`;
+// lib/server/prisma.ts
 
-if (ifNoneMatch === etag) {
-  return new NextResponse(null, {
-    status: 304,
-    headers: { ETag: etag, "Cache-Control": "private, max-age=30" },
-  });
-}
+import { Pool } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaClient } from "@/lib/generated/prisma";
 
-return NextResponse.json({ suggestions: combined }, {
-  headers: { ETag: etag, "Cache-Control": "private, max-age=30" },
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  // Neon serverless 建议值
+  max: 10,                   // Vercel serverless 函数共享
+  idleTimeoutMillis: 30_000, // 30s idle 后释放
+  connectionTimeoutMillis: 10_000,
+});
+
+const adapter = new PrismaNeon(pool);
+
+export const prisma = new PrismaClient({ adapter });
+```
+
+---
+
+### 3.3 前端性能优化
+
+#### 3.3.1 组件拆分（解决 God Component）
+
+将 `JobsClient.tsx`（2,638 行）拆分为：
+
+```
+app/(app)/jobs/
+├── JobsClient.tsx           ← 编排层 (~300 行)
+├── components/
+│   ├── JobSearchBar.tsx     ← 搜索栏 + 筛选器
+│   ├── JobListPanel.tsx     ← 列表面板 + 无限滚动
+│   ├── JobListItem.tsx      ← 单条 Job 卡片（React.memo）
+│   ├── JobDetailPanel.tsx   ← 右侧详情面板
+│   ├── JobDeleteDialog.tsx  ← 删除确认 Dialog
+│   ├── JobAddDialog.tsx     ← 新增 Job Dialog
+│   └── JobExternalDialog.tsx ← 外部 Prompt Dialog
+├── hooks/
+│   ├── useJobSearch.ts      ← 搜索状态 + debounce + queryString
+│   ├── useJobPagination.ts  ← cursor-based 无限滚动
+│   ├── useJobMutations.ts   ← status update, delete, add
+│   └── useJobDetail.ts      ← 详情查询 + 缓存
+```
+
+#### 3.3.2 React.memo 关键渲染路径
+
+```tsx
+// components/jobs/JobListItem.tsx
+
+import { memo } from "react";
+
+type JobListItemProps = {
+  job: JobItem;
+  isActive: boolean;
+  onSelect: (id: string) => void;
+  isUpdating: boolean;
+  isDeleting: boolean;
+};
+
+export const JobListItem = memo(function JobListItem({
+  job, isActive, onSelect, isUpdating, isDeleting,
+}: JobListItemProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(job.id)}
+      className={`w-full text-left rounded-lg border p-3 transition-colors ${
+        isActive ? "border-emerald-500 bg-emerald-50/50" : "border-transparent hover:bg-muted/40"
+      } ${isDeleting ? "opacity-40" : ""}`}
+    >
+      <div className="font-medium text-sm truncate">{job.title}</div>
+      {job.company && (
+        <div className="text-xs text-muted-foreground mt-1">{job.company}</div>
+      )}
+      {job.location && (
+        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+          <MapPin className="h-3 w-3" />
+          {job.location}
+        </div>
+      )}
+      <div className="flex items-center gap-2 mt-2">
+        <Badge variant={statusVariant(job.status)} className="text-[10px]">
+          {job.status}
+        </Badge>
+        {job.jobLevel && (
+          <span className="text-[10px] text-muted-foreground">{job.jobLevel}</span>
+        )}
+      </div>
+    </button>
+  );
 });
 ```
 
----
+#### 3.3.3 虚拟滚动（大列表优化）
 
-### 2.4 前端性能优化
-
-#### 2.4.1 React Query 配置调优
-
-```typescript
-// 全局默认
-staleTime: 30_000,      // 30 秒
-gcTime: 5 * 60_000,     // 5 分钟
-retry: 1,
-
-// Jobs 列表（JobsClient.tsx）
-staleTime: 60_000,       // 1 分钟（jobs 变化不频繁）
-gcTime: 10 * 60_000,     // 滚动历史保留 10 分钟
-
-// Job 详情
-staleTime: 5 * 60_000,   // 5 分钟（description 几乎不变）
-
-// Suggestions
-staleTime: 2 * 60_000,   // 2 分钟
-```
-
-#### 2.4.2 所有筛选器统一防抖
-
-当前只有 `q` 有 200ms 防抖。改为统一防抖整个 filter 对象：
-
-```typescript
-const rawFilters = useMemo(() => ({
-  q, statusFilter, locationFilter, jobLevelFilter, market, sortOrder, pageSize,
-}), [q, statusFilter, locationFilter, jobLevelFilter, market, sortOrder, pageSize]);
-
-const debouncedFilters = useDebouncedValue(rawFilters, 200);
-```
-
-效果：200ms 内连续更改多个筛选器只触发 1 次 API 请求。
-
-#### 2.4.3 Loading 状态优化
-
-**即时反馈条：** 筛选器变化后立刻在结果面板顶部显示 pulse 条：
+当 Job 数量超过 100 条时，DOM 节点过多影响滚动性能。引入 `@tanstack/react-virtual`：
 
 ```tsx
-{(isFilterDirty || showLoadingOverlay) && (
-  <div className="absolute top-0 left-0 right-0 h-0.5 bg-emerald-500/60 animate-pulse z-20" />
-)}
-```
+// components/jobs/JobListPanel.tsx — 虚拟滚动
 
-**Skeleton UI：** 初始加载时渲染骨架屏而非空白：
+import { useVirtualizer } from "@tanstack/react-virtual";
 
-```tsx
-{loadingInitial && Array.from({ length: 5 }).map((_, i) => (
-  <div key={i} className="space-y-2 rounded-lg border p-3">
-    <Skeleton className="h-5 w-3/4" />
-    <Skeleton className="h-4 w-1/2" />
-    <Skeleton className="h-3 w-1/3" />
-  </div>
-))}
-```
+function JobListPanel({ items, selectedId, onSelect }: Props) {
+  const parentRef = useRef<HTMLDivElement>(null);
 
-#### 2.4.4 包体积优化
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 88, // 单条 Job 卡片估算高度
+    overscan: 5,
+  });
 
-```typescript
-// next.config.ts
-experimental: {
-  optimizePackageImports: [
-    "lucide-react",
-    "framer-motion",
-    "react-markdown",
-    "rehype-highlight",
-    "remark-gfm",
-  ],
+  return (
+    <div ref={parentRef} className="flex-1 overflow-auto">
+      <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const job = items[virtualRow.index];
+          return (
+            <div
+              key={job.id}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <JobListItem
+                job={job}
+                isActive={job.id === selectedId}
+                onSelect={onSelect}
+                isUpdating={false}
+                isDeleting={false}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 ```
 
-Markdown 渲染器（重型依赖）改为懒加载：
+**触发条件：** 仅当 `items.length > 80` 时启用虚拟滚动，避免小列表的额外复杂度。
 
-```typescript
+#### 3.3.4 Code Splitting + Dynamic Import
+
+```tsx
+// 延迟加载重型 Dialog 组件
+const JobExternalDialog = dynamic(
+  () => import("./components/JobExternalDialog"),
+  { ssr: false },
+);
+
+// ReactMarkdown + rehype-highlight 延迟加载（Job 详情面板）
 const MarkdownRenderer = dynamic(
-  () => import("./MarkdownRenderer"),
-  { loading: () => <Skeleton className="h-40 w-full" /> },
+  () => import("./components/MarkdownRenderer"),
+  { ssr: false, loading: () => <Skeleton className="h-48 w-full" /> },
 );
 ```
 
-#### 2.4.5 路由预取
+#### 3.3.5 React Query 优化
 
-```tsx
-// 在 AppLayout 或 TopNav 中
-useEffect(() => {
-  router.prefetch("/jobs");
-  router.prefetch("/resume");
-  router.prefetch("/automation");
-}, [router]);
+```typescript
+// hooks/useJobSearch.ts
+
+const pageQueries = useQueries({
+  queries: loadedCursors.map((cursor) => ({
+    queryKey: ["jobs", queryString, cursor] as const,
+    queryFn: async ({ signal }): Promise<JobsResponse> => {
+      const sp = new URLSearchParams(queryString);
+      if (cursor) sp.set("cursor", cursor);
+      const res = await fetch(`/api/jobs?${sp}`, {
+        signal, // AbortController — React Query 自动管理
+        headers: {
+          // 发送 ETag 以支持 304
+          ...(cachedEtag ? { "If-None-Match": cachedEtag } : {}),
+        },
+      });
+      if (res.status === 304) return previousData!;
+      // ...
+    },
+    staleTime: 60_000,       // 从 30s 提升到 60s
+    gcTime: 5 * 60_000,      // 5 分钟 GC
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  })),
+});
 ```
 
----
+#### 3.3.6 Prefetch 策略
 
-### 2.5 全站性能优化
+```typescript
+// app/(app)/jobs/page.tsx — SSR 阶段预取数据
 
-#### 2.5.1 Suspense 流式渲染
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/getQueryClient";
 
-`app/(app)/jobs/page.tsx` 改为流式：
+export default async function JobsPage() {
+  // ... auth ...
+  const queryClient = getQueryClient();
 
-```tsx
-export default function JobsPage() {
+  await queryClient.prefetchQuery({
+    queryKey: ["jobs", defaultQueryString, null],
+    queryFn: () => listJobs(userId, defaultQuery),
+  });
+
   return (
-    <Suspense fallback={<JobsPageSkeleton />}>
-      <JobsPageContent />
-    </Suspense>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <JobsClient />
+    </HydrationBoundary>
   );
 }
-
-async function JobsPageContent() {
-  // ... SSR 数据获取 + 渲染 JobsClient ...
-}
 ```
-
-效果：页面 Shell（导航栏、侧边栏）立即渲染，数据库查询异步流入。
-
-#### 2.5.2 Core Web Vitals 目标
-
-| 指标 | 目标 | 风险点 | 缓解措施 |
-|------|------|--------|----------|
-| LCP | < 2.5s | SSR 查询阻塞首屏 | Suspense 流式渲染 |
-| INP | < 200ms | 筛选器切换 | `useTransition` + 防抖 |
-| CLS | < 0.1 | 数据加载前布局偏移 | 骨架屏 + 固定容器尺寸 |
-
-#### 2.5.3 Edge 缓存
-
-当前 `Cache-Control: private, max-age=0, must-revalidate` 对已认证的动态数据是正确的，无需更改。
-
-静态资源由 Vercel 自动 Edge 缓存。确保 `next.config.ts` 不覆盖默认行为。
-
-#### 2.5.4 Service Worker
-
-当前阶段不推荐。App 是动态仪表板，数据新鲜度优先。离线场景下 Service Worker 增加的复杂度不值当。
 
 ---
 
-### 2.6 用户体验优化
+### 3.4 网络层优化
 
-#### 2.6.1 搜索建议 / 自动补全
+#### 3.4.1 全筛选器 Debounce
 
-提取 `SearchInput` 组件，带下拉建议列表：
+当前仅 `q` 有 200ms debounce，`status`/`location`/`jobLevel` 的变更立即触发请求。改为统一 debounce：
 
-```tsx
-// app/(app)/jobs/SearchInput.tsx
-<div className="relative">
-  <Input value={value} onChange={onChange} role="combobox"
-    aria-expanded={open} aria-autocomplete="list" />
-  {open && suggestions.length > 0 && (
-    <ul id="search-suggestions" role="listbox" className="absolute ...">
-      {suggestions.map((s, i) => (
-        <li key={i} role="option" onMouseDown={() => onChange(s)}>{s}</li>
-      ))}
-    </ul>
-  )}
-</div>
+```typescript
+// hooks/useJobSearch.ts
+
+const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+
+// 所有筛选器统一 debounce 150ms
+const debouncedFilters = useDebouncedValue(filters, 150);
+
+// q 额外 debounce（叠加）— 总计 350ms
+const debouncedQ = useDebouncedValue(filters.q, 200);
+
+const effectiveFilters = useMemo(
+  () => ({ ...debouncedFilters, q: debouncedQ }),
+  [debouncedFilters, debouncedQ],
+);
 ```
 
-#### 2.6.2 搜索结果高亮
+**设计决策：** Select 类筛选器使用较短的 150ms debounce（用户预期即时反馈），文本输入使用较长的 350ms（减少中间态请求）。
+
+#### 3.4.2 AbortController 请求取消
+
+React Query v5 已自动通过 `signal` 支持请求取消（queryFn 接收 `{ signal }` 参数），但需确保实际传递给 fetch：
+
+```typescript
+// 确保 fetch 传递 signal（当前代码已有 signal 但需验证）
+queryFn: async ({ signal }): Promise<JobsResponse> => {
+  const res = await fetch(`/api/jobs?${sp}`, { signal });
+  // ...
+},
+```
+
+当筛选条件变化时，React Query 自动 abort 上一次请求的 signal。无额外代码。
+
+#### 3.4.3 Suggestions API 缓存策略
+
+```typescript
+// React Query 配置
+const suggestionsQuery = useQuery({
+  queryKey: ["suggestions", debouncedQ] as const,
+  queryFn: async ({ signal }) => {
+    const res = await fetch(`/api/jobs/suggestions?q=${encodeURIComponent(debouncedQ)}`, { signal });
+    return res.json();
+  },
+  enabled: debouncedQ.length >= 2,  // 至少 2 个字符
+  staleTime: 120_000,               // 2 分钟内相同关键词不重新请求
+  gcTime: 5 * 60_000,
+  placeholderData: keepPreviousData,
+});
+```
+
+服务端响应头：
+
+```typescript
+// suggestions/route.ts 响应头
+headers: {
+  ETag: etag,
+  "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+}
+```
+
+#### 3.4.4 ETag 优化
+
+当前 ETag 包含所有 item 的 `id + status + updatedAt + resumePdfUrl + ...`。优化点：
+
+1. **排除空 platform 字段**（当前 `platform=` 始终为空字符串）
+2. **简化 ETag 输入**：用 `MAX(updatedAt)` + `count` 代替遍历全部 items（减少序列化开销）
+
+```typescript
+// lib/server/jobsListEtag.ts — 简化版 ETag
+
+export function buildJobsListEtag(input: BuildJobsListEtagInput): string {
+  const payload = [
+    input.userId,
+    input.cursor ?? "start",
+    input.nextCursor ?? "end",
+    input.filtersSignature,
+    input.totalCount ?? -1,
+    input.items.length,
+    // 用最近更新时间 + 首末 ID 代替全遍历
+    input.items[0]?.id ?? "",
+    input.items[input.items.length - 1]?.id ?? "",
+    input.items[0]?.updatedAt ? toIso(input.items[0].updatedAt) : "",
+  ].join("::");
+
+  return `W/"jobs:${createHash("sha1").update(payload).digest("base64url")}"`;
+}
+```
+
+---
+
+### 3.5 用户体验优化
+
+#### 3.5.1 搜索建议 + 关键词高亮
+
+使用 `cmdk`（项目已安装）构建 Command Palette 风格的搜索建议：
 
 ```tsx
-// lib/shared/highlightMatch.tsx
-export function highlightMatch(text: string, query: string): ReactNode {
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`(${escaped})`, "gi");
-  const parts = text.split(regex);
-  return parts.map((part, i) =>
-    regex.test(part)
-      ? <mark key={i} className="bg-yellow-200/60 rounded-sm px-0.5">{part}</mark>
-      : part
+// components/jobs/JobSearchBar.tsx
+
+import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from "cmdk";
+
+function SearchWithSuggestions({ q, onQChange, suggestions }: Props) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <Command shouldFilter={false}>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <CommandInput
+            value={q}
+            onValueChange={onQChange}
+            onFocus={() => setOpen(true)}
+            onBlur={() => setTimeout(() => setOpen(false), 200)}
+            placeholder="Search jobs..."
+            className="pl-9"
+          />
+        </div>
+        {open && q.length >= 2 && (
+          <CommandList className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
+            <CommandEmpty className="p-3 text-sm text-muted-foreground">
+              No suggestions found
+            </CommandEmpty>
+            {suggestions.map((suggestion) => (
+              <CommandItem
+                key={suggestion}
+                value={suggestion}
+                onSelect={() => {
+                  onQChange(suggestion);
+                  setOpen(false);
+                }}
+                className="cursor-pointer px-3 py-2 text-sm"
+              >
+                <HighlightMatch text={suggestion} query={q} />
+              </CommandItem>
+            ))}
+          </CommandList>
+        )}
+      </Command>
+    </div>
+  );
+}
+
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-emerald-100 text-emerald-900 rounded px-0.5">
+        {text.slice(idx, idx + query.length)}
+      </mark>
+      {text.slice(idx + query.length)}
+    </>
   );
 }
 ```
 
-#### 2.6.3 搜索历史
+#### 3.5.2 搜索历史（Recent Searches）
+
+使用 localStorage 存储最近 10 次搜索，零服务端成本：
 
 ```typescript
 // hooks/useSearchHistory.ts
+
 const STORAGE_KEY = "jobflow:search-history";
-const MAX_ENTRIES = 10;
+const MAX_HISTORY = 10;
 
 export function useSearchHistory() {
-  function getHistory(): string[] { /* localStorage.getItem */ }
-  function addEntry(query: string) { /* 去重 + 头部插入 + 截断 */ }
-  function clearHistory() { /* localStorage.removeItem */ }
-  return { getHistory, addEntry, clearHistory };
+  const [history, setHistory] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const addToHistory = useCallback((query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed || trimmed.length < 2) return;
+    setHistory((prev) => {
+      const next = [trimmed, ...prev.filter((h) => h !== trimmed)].slice(0, MAX_HISTORY);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  return { history, addToHistory, clearHistory };
 }
 ```
 
-焦点聚焦且输入为空时显示历史记录列表。
-
-#### 2.6.4 空状态与错误状态
-
-**空结果：**
+在搜索建议 Dropdown 中，当 `q` 为空时展示搜索历史：
 
 ```tsx
-<div className="flex flex-col items-center py-16">
-  <Search className="h-12 w-12 text-muted-foreground/40" />
-  <p>{q ? t("noSearchResults") : t("noJobs")}</p>
-  {q && <button onClick={() => setQ("")}>{t("clearSearch")}</button>}
+{q.length < 2 && history.length > 0 && (
+  <div className="border-b px-3 py-2">
+    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+      <span>Recent searches</span>
+      <button onClick={clearHistory} className="hover:underline">Clear</button>
+    </div>
+    {history.map((h) => (
+      <CommandItem key={h} value={h} onSelect={() => onQChange(h)}>
+        <Clock className="mr-2 h-3 w-3" />
+        {h}
+      </CommandItem>
+    ))}
+  </div>
+)}
+```
+
+#### 3.5.3 Loading States 优化
+
+**问题：** 当前 `useDebouncedValue(loading, 160)` 导致 debounce 200ms + 延迟 160ms = 360ms 无视觉反馈。
+
+**方案：** 使用三层 Loading 策略：
+
+```tsx
+// 1. 输入时立即显示 — subtle 搜索栏指示器
+{isTyping && <div className="absolute right-3 top-3">
+  <div className="h-3 w-3 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+</div>}
+
+// 2. 请求发出后 — 顶部进度条（已有 edu-loading-bar）
+{isFetching && <div className="edu-loading-bar" aria-hidden />}
+
+// 3. 初次加载 / 筛选器切换 — Skeleton 叠加（保持列表结构可见）
+{isFilterChanging && (
+  <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm transition-opacity duration-150">
+    <div className="space-y-3 p-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="rounded-lg border p-3 animate-pulse">
+          <div className="h-4 w-2/3 bg-muted rounded" />
+          <div className="h-3 w-1/2 bg-muted rounded mt-2" />
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+```
+
+#### 3.5.4 键盘导航
+
+```tsx
+// hooks/useKeyboardNavigation.ts
+
+export function useKeyboardNavigation(
+  items: { id: string }[],
+  selectedId: string | null,
+  onSelect: (id: string) => void,
+) {
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!items.length) return;
+      const currentIndex = items.findIndex((item) => item.id === selectedId);
+
+      switch (e.key) {
+        case "ArrowDown":
+        case "j": {
+          e.preventDefault();
+          const nextIndex = Math.min(currentIndex + 1, items.length - 1);
+          onSelect(items[nextIndex].id);
+          break;
+        }
+        case "ArrowUp":
+        case "k": {
+          e.preventDefault();
+          const prevIndex = Math.max(currentIndex - 1, 0);
+          onSelect(items[prevIndex].id);
+          break;
+        }
+        case "Enter": {
+          if (selectedId) {
+            // Open detail or trigger primary action
+          }
+          break;
+        }
+        case "Escape": {
+          // Clear search or close detail
+          break;
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [items, selectedId, onSelect]);
+}
+```
+
+#### 3.5.5 Empty State 与 Error Recovery
+
+```tsx
+// components/jobs/EmptyState.tsx
+
+function EmptyState({ hasFilters, onClearFilters }: Props) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="rounded-full bg-muted p-4 mb-4">
+        <Search className="h-8 w-8 text-muted-foreground" />
+      </div>
+      <h3 className="text-lg font-semibold mb-1">
+        {hasFilters ? "No matching jobs" : "No jobs yet"}
+      </h3>
+      <p className="text-sm text-muted-foreground text-center max-w-sm">
+        {hasFilters
+          ? "Try adjusting your search or filters"
+          : "Import jobs from the Fetch page to get started"}
+      </p>
+      {hasFilters && (
+        <Button variant="outline" className="mt-4" onClick={onClearFilters}>
+          Clear all filters
+        </Button>
+      )}
+    </div>
+  );
+}
+
+// Error recovery 组件
+function SearchError({ error, onRetry }: Props) {
+  return (
+    <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <AlertCircle className="h-4 w-4 text-destructive" />
+        <span className="text-sm font-medium text-destructive">Search failed</span>
+      </div>
+      <p className="text-sm text-muted-foreground mb-3">{error}</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  );
+}
+```
+
+#### 3.5.6 移动端响应式改进
+
+当前 `JobsClient` 在移动端 (`< lg`) 使用 44dvh 的固定列表高度。优化：
+
+```tsx
+// 移动端：列表 + 详情 Tab 切换模式
+<div className="lg:hidden">
+  <Tabs value={mobileTab} onValueChange={setMobileTab}>
+    <TabsList className="w-full">
+      <TabsTrigger value="list" className="flex-1">
+        Jobs {totalCount && `(${totalCount})`}
+      </TabsTrigger>
+      <TabsTrigger value="detail" className="flex-1" disabled={!selectedId}>
+        Detail
+      </TabsTrigger>
+    </TabsList>
+  </Tabs>
+</div>
+
+// Desktop: 保持 side-by-side 布局
+<div className="hidden lg:grid lg:grid-cols-[380px_1fr] lg:gap-3">
+  <JobListPanel />
+  <JobDetailPanel />
 </div>
 ```
 
-**错误状态：** 加入重试按钮。
+---
 
-#### 2.6.5 无障碍访问
+### 3.6 页面切换与整体性能
 
-- 搜索输入：`aria-label={t("searchJobs")}`
-- 结果计数：`aria-live="polite"` 让屏幕阅读器播报筛选变化
-- 所有 Select 组件添加 `aria-label`
-- Job 列表支持方向键导航（`role="listbox"` + `role="option"`）
+#### 3.6.1 Error Boundary 覆盖
+
+当前 **零** `error.tsx` 文件。为每个路由段添加：
+
+```tsx
+// app/(app)/jobs/error.tsx
+"use client";
+
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+
+export default function JobsError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    console.error("Jobs page error:", error);
+  }, [error]);
+
+  return (
+    <div className="flex flex-col items-center justify-center py-20">
+      <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {error.message || "An unexpected error occurred"}
+      </p>
+      <Button onClick={reset} variant="outline">
+        Try again
+      </Button>
+    </div>
+  );
+}
+```
+
+需添加 `error.tsx` 的路由段：
+- `app/(app)/jobs/error.tsx`
+- `app/(app)/resume/error.tsx`
+- `app/(app)/fetch/error.tsx`
+- `app/(app)/resume/rules/error.tsx`
+- `app/(app)/error.tsx` （根 layout 级兜底）
+
+#### 3.6.2 Route Prefetch
+
+Next.js 16 App Router 默认对 `<Link>` 组件做 prefetch。但当前 `TopNav` 中的导航是否使用了 `<Link>` 需要验证。确保：
+
+```tsx
+// TopNav.tsx — 确保使用 Next.js Link
+import Link from "next/link";
+
+<Link href="/jobs" prefetch={true}>Jobs</Link>
+<Link href="/resume" prefetch={true}>Resume</Link>
+<Link href="/fetch" prefetch={true}>Fetch</Link>
+```
+
+Next.js 16 的 `prefetch` 默认行为已优化：
+- Static 路由：prefetch 完整页面
+- Dynamic 路由（`force-dynamic`）：prefetch 到最近的 `loading.tsx` boundary
+
+当前 Jobs 页面为 `force-dynamic`，prefetch 会预加载到 `loading.tsx` 的 skeleton UI — 已有该文件，无需额外工作。
+
+#### 3.6.3 Streaming SSR
+
+当前 `page.tsx` 的 SSR 查询可使用 React Suspense 实现流式渲染：
+
+```tsx
+// app/(app)/jobs/page.tsx — Streaming 改造
+
+import { Suspense } from "react";
+import { JobsListSkeleton } from "./components/JobsListSkeleton";
+
+export default async function JobsPage() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) redirect("/login?callbackUrl=/jobs");
+
+  return (
+    <main className="flex min-h-0 flex-1 flex-col gap-2 lg:h-full lg:overflow-hidden">
+      <Suspense fallback={<JobsListSkeleton />}>
+        <JobsContent userId={session.user.id} />
+      </Suspense>
+    </main>
+  );
+}
+
+async function JobsContent({ userId }: { userId: string }) {
+  const locale = await getLocale();
+  const market = locale === "zh" ? "CN" : "AU";
+  const items = await fetchInitialJobs(userId, market);
+  return <JobsClient initialItems={items} />;
+}
+```
+
+#### 3.6.4 Bundle Size 优化
+
+当前 `package.json` 分析：
+
+| Package | Size (estimated) | 优化方案 |
+|---------|-----------------|----------|
+| `react-markdown` + `remark-gfm` + `rehype-highlight` | ~120KB gzipped | Dynamic import (仅详情面板) |
+| `highlight.js/styles/github.css` | ~3KB | 同上 |
+| `framer-motion` | ~40KB gzipped | Tree-shake: `import { motion } from "framer-motion"` |
+| `react-day-picker` | ~20KB gzipped | 检查是否被使用，未使用则移除 |
+| `@dnd-kit/*` | ~30KB gzipped | Dynamic import (仅 Resume 页面) |
+
+**next.config.ts 优化配置：**
+
+```typescript
+// next.config.ts
+const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-select",
+      "@radix-ui/react-dropdown-menu",
+    ],
+  },
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
+};
+```
+
+#### 3.6.5 Accessibility 改进清单
+
+| 改进项 | 当前状态 | 目标 |
+|--------|---------|------|
+| 键盘导航（j/k/Enter/Esc） | 不支持 | 完整支持 |
+| ARIA landmarks | 部分 | 完整（search, list, detail） |
+| Focus management（筛选器切换后） | 无 | 自动聚焦首条结果 |
+| Screen reader announcements | 无 | 搜索结果数量通知 |
+| Color contrast | 未验证 | WCAG AA |
+
+```tsx
+// ARIA 增强示例
+<div role="search" aria-label="Job search">
+  {/* search bar */}
+</div>
+
+<div role="list" aria-label={`${totalCount} jobs found`} aria-busy={isFetching}>
+  {items.map(job => (
+    <div role="listitem" key={job.id} aria-selected={job.id === selectedId}>
+      <JobListItem job={job} />
+    </div>
+  ))}
+</div>
+
+// Live region for search results count
+<div aria-live="polite" className="sr-only">
+  {totalCount !== undefined && `${totalCount} jobs found`}
+</div>
+```
 
 ---
 
-## 3. 实施路线图
+## 四、实施路线图
 
-### Phase 1: 立即修复（1-2 天，零风险）
+### Phase 1 — 立即可做（第 1 周）
 
-| 任务 | 涉及文件 | 解决问题 |
-|------|----------|----------|
-| 移除 `platform` 参数 | `route.ts`, `jobListService.ts` | Bug #2 |
-| 列表响应包含 `description` | `jobListService.ts`, `JobsClient.tsx` | N+1 #3 |
-| 添加 `jobLevel` 索引 | `prisma/schema.prisma` | 精确匹配性能 |
-| 添加复合索引 `(userId, market, status, createdAt)` | `prisma/schema.prisma` | 复合筛选性能 |
-| Suggestions API 加 Cache-Control | `suggestions/route.ts` | 重复查询 #6 |
-| 所有筛选器统一防抖 | `JobsClient.tsx` | 多次请求 #4 |
-| 即时 filter-dirty 指示器 | `JobsClient.tsx` | 360ms 空白反馈 #9 |
-| `optimizePackageImports` | `next.config.ts` | 包体积 |
+| # | 任务 | 文件 | 预期收益 | 验证方式 |
+|---|------|------|----------|----------|
+| 1.1 | 启用 `pg_trgm` + 创建 GIN 索引 | `prisma/migrations/` | 搜索从全表扫描 → 索引扫描 | `EXPLAIN ANALYZE` |
+| 1.2 | 添加 `jobLevel` B-tree 索引 | `prisma/schema.prisma` | jobLevel 筛选索引加速 | `EXPLAIN ANALYZE` |
+| 1.3 | 全筛选器 debounce (150ms) | `hooks/useJobSearch.ts` | 减少 ~60% API 请求量 | Network tab |
+| 1.4 | Suggestions API 加 ETag + Cache-Control | `suggestions/route.ts` | 重复建议请求 → 304 | Network tab |
+| 1.5 | 添加 Error Boundary 到所有路由段 | `app/(app)/*/error.tsx` | 消除白屏崩溃 | 手动触发异常 |
+| 1.6 | `jobLevel` 大小写不敏感匹配 | `jobListService.ts:89-91` | 一致性修复 | Unit test |
 
-### Phase 2: 全文搜索 + UX 升级（5-7 天）
+### Phase 2 — 短期优化（第 2-3 周）
 
-| 任务 | 涉及文件 | 解决问题 |
-|------|----------|----------|
-| searchVector 列 + GIN 索引 migration | `prisma/migrations/` | FTS 基础设施 |
-| 自动更新触发器 | 同上 | 保持 tsvector 同步 |
-| `jobSearchService.ts` 实现 | `lib/server/jobs/` | FTS 查询 + ts_rank |
-| 修改 `listJobs` 支持 FTS | `jobListService.ts` | 相关性排名 #5 |
-| SearchInput 组件（建议下拉） | `app/(app)/jobs/SearchInput.tsx` | 自动补全 UX |
-| 搜索高亮 | `lib/shared/highlightMatch.tsx` | 视觉反馈 |
-| 搜索历史 | `hooks/useSearchHistory.ts` | 快速重搜 |
-| Markdown 懒加载 | `app/(app)/jobs/MarkdownRenderer.tsx` | 包体积 |
-| Suspense 流式渲染 | `app/(app)/jobs/page.tsx` | LCP 优化 |
-| React Query 缓存调优 | `providers.tsx`, `JobsClient.tsx` | 减少请求 |
-| FTS 单元测试 | `jobSearchService.test.ts` | 回归安全 |
+| # | 任务 | 文件 | 预期收益 | 验证方式 |
+|---|------|------|----------|----------|
+| 2.1 | `similarity()` 相关性排序 | `jobListService.ts` / `jobSearchService.ts` | 搜索质量提升 | 用户反馈 |
+| 2.2 | 搜索建议高亮 + `cmdk` 集成 | `JobSearchBar.tsx` | UX 提升 | 手动测试 |
+| 2.3 | 搜索历史 (localStorage) | `hooks/useSearchHistory.ts` | 重复搜索效率 | 手动测试 |
+| 2.4 | Loading 三层策略 | `JobsClient.tsx` | 消除 360ms 无反馈 | 视觉测试 |
+| 2.5 | `JobsClient.tsx` 组件拆分 | `components/jobs/*`, `hooks/*` | 可维护性 | Test suite |
+| 2.6 | `next.config.ts` 添加 `optimizePackageImports` | `next.config.ts` | Bundle size 减少 | `next build` |
+| 2.7 | 键盘导航 (j/k/Enter/Esc) | `hooks/useKeyboardNavigation.ts` | Accessibility | 手动测试 |
 
-### Phase 3: 远期增强（2-4 周，按需）
+### Phase 3 — 中期增强（第 4-6 周）
 
-| 任务 | 涉及文件 | 解决问题 |
-|------|----------|----------|
-| `pg_trgm` 模糊匹配 | migration + `jobSearchService.ts` | 容错搜索 |
-| `zhparser` 集成 | migration（更新触发器） | 原生中文分词 |
-| 移动端 slide-over 详情面板 | `JobsClient.tsx` | Mobile UX |
-| 键盘导航 | `JobsClient.tsx` | 无障碍 |
-| 拆分 `JobsClient.tsx`（2400 行） | `app/(app)/jobs/` 目录 | 可维护性 |
-| 外部搜索引擎评估 | 架构决策 | >500K 数据规模 |
-| Upstash Redis 限流 | `lib/server/api/rateLimit.ts` | 生产级限流 |
+| # | 任务 | 文件 | 预期收益 | 验证方式 |
+|---|------|------|----------|----------|
+| 3.1 | 虚拟滚动 (`@tanstack/react-virtual`) | `JobListPanel.tsx` | 大列表渲染性能 | Performance tab |
+| 3.2 | Streaming SSR + Suspense | `jobs/page.tsx` | TTFB → FCP 缩短 | Lighthouse |
+| 3.3 | React Markdown dynamic import | `JobDetailPanel.tsx` | 首屏 JS 减少 ~120KB | Bundle analyzer |
+| 3.4 | React Query `HydrationBoundary` | `jobs/page.tsx` | 消除 SSR→CSR 闪烁 | 视觉测试 |
+| 3.5 | 移动端 Tab 切换布局 | `JobsClient.tsx` | 移动端体验提升 | 响应式测试 |
+| 3.6 | ARIA landmarks + screen reader | 多文件 | WCAG AA 达标 | axe DevTools |
+| 3.7 | 合并 count 到单次查询 | `jobSearchService.ts` | 减少 1 次 DB roundtrip | `EXPLAIN` |
 
 ---
 
-## 4. 风险与回退策略
+## 五、性能指标目标
 
-### 风险 1: Neon 不支持 GIN 复合索引 (userId + tsvector)
+### 搜索性能
 
-**可能性：** 低（Neon 支持标准 PostgreSQL GIN 索引）
-**缓解：** 改用两个独立索引（B-tree on userId + GIN on searchVector），PostgreSQL 自动做 bitmap AND。
-**回退：** Drop GIN 索引，revert `listJobs` 到 ILIKE 路径。原始代码保留为 `buildWhereClauseLegacy`。
+| 指标 | 当前估值 | Phase 1 目标 | Phase 3 目标 |
+|------|---------|-------------|-------------|
+| 空搜索（全量列表） | ~200ms (500条) | <100ms | <80ms |
+| 关键词搜索 (ILIKE) | ~300ms (500条) → 线性恶化 | <100ms (GIN 索引) | <80ms |
+| 关键词搜索 + similarity 排序 | N/A | <150ms | <120ms |
+| Suggestions 响应 | ~200ms (无缓存) | <50ms (304 hit) | <30ms |
+| Debounce → 首次响应 | 200ms + 300ms = 500ms | 150ms + 100ms = 250ms | 150ms + 80ms = 230ms |
 
-### 风险 2: $queryRaw SQL 注入
+### 前端性能 (Core Web Vitals)
 
-**可能性：** 中（如果实现不当）
-**缓解：** 所有用户输入通过参数化查询（`$1`, `$2`），不做字符串拼接。`buildTsQuery` 剔除特殊字符。优先用 `Prisma.$queryRaw`（tagged template）而非 `$queryRawUnsafe`。
-**验证：** Code review + SQL 注入测试用例。
+| 指标 | 当前估值 | Phase 1 目标 | Phase 3 目标 | 行业优秀值 |
+|------|---------|-------------|-------------|-----------|
+| **LCP** | ~2.5s | <2.0s | <1.5s | <1.2s |
+| **FID / INP** | ~150ms | <100ms | <50ms | <50ms |
+| **CLS** | ~0.1 | <0.05 | <0.01 | <0.01 |
+| **TTFB** | ~800ms | <600ms | <400ms | <200ms |
+| **TTI** | ~3.0s | <2.5s | <2.0s | <1.5s |
 
-### 风险 3: tsvector 触发器影响批量导入
+### Bundle Size
 
-**可能性：** 中（FetchRun 一次可导入数百条 Job）
-**缓解：** 触发器按行执行，PostgreSQL 处理效率可接受。如需导入 1000+ 行，可临时禁用触发器后批量 UPDATE。
-**监控：** 追踪 FetchRun 导入耗时。
+| 资产 | 当前估值 | Phase 3 目标 |
+|------|---------|-------------|
+| Jobs 页面 JS (initial) | ~350KB gzipped | <200KB gzipped |
+| 总 JS 传输量 | ~500KB gzipped | <350KB gzipped |
+| CSS 传输量 | ~50KB | <40KB |
 
-### 风险 4: description 加入列表响应增大负载
+### 数据库
 
-**可能性：** 高（描述字段 2-10KB）
-**缓解：** 先以截断方案上线（500 字符）。监控 Vercel 分析中的 payload 大小。若中位数超 200KB，回退到独立详情请求 + React Query 预取。
-
-### 通用回退策略
-
-1. 数据库变更为 forward-only migration，回退 = 创建新 migration 回退变更
-2. FTS 路径通过环境变量 `ENABLE_FTS=true` 门控
-3. 原始 ILIKE 的 `buildWhereClause` 保留为 `buildWhereClauseLegacy`，可即时恢复
-4. Phase 1 和 Phase 2 分别独立 PR 发布，Phase 1 零风险先行
+| 指标 | 当前 | 目标 |
+|------|------|------|
+| 搜索查询 P95 | 未测量 (估 300ms) | <100ms |
+| GIN 索引写入开销 | 0% | <15% |
+| 连接池利用率 | 未监控 | <80% |
 
 ---
 
-## 附录：关键文件索引
+## 六、风险与缓解
 
-| 文件 | 角色 |
-|------|------|
-| `prisma/schema.prisma` | 数据库 Schema — 添加索引 |
-| `lib/server/jobs/jobListService.ts` | 核心搜索逻辑 — 修改 WHERE + 添加 FTS 路径 |
-| `lib/server/jobs/jobSearchService.ts` | 新文件 — FTS 查询构建 + ts_rank |
-| `app/api/jobs/route.ts` | API 路由 — 移除 platform |
-| `app/api/jobs/suggestions/route.ts` | Suggestions API — 添加缓存 |
-| `app/(app)/jobs/JobsClient.tsx` | 主 UI — 防抖 + loading + 高亮 |
-| `app/(app)/jobs/SearchInput.tsx` | 新文件 — 搜索输入 + 自动补全 |
-| `app/(app)/jobs/page.tsx` | SSR 页面 — Suspense 流式 |
-| `next.config.ts` | Next.js 配置 — optimizePackageImports |
-| `lib/shared/highlightMatch.tsx` | 新文件 — 搜索高亮工具 |
-| `hooks/useSearchHistory.ts` | 新文件 — 搜索历史 |
-| `lib/server/jobsListEtag.ts` | ETag — 移除 platform |
+### 6.1 pg_trgm GIN 索引写入性能
+
+**风险：** GIN 索引在 INSERT/UPDATE 时增加约 10-15% 开销。Batch import（FetchRun）一次导入几十条 Job 时可能受影响。
+
+**缓解：**
+- Neon 的写入规模目前远未达到瓶颈
+- GIN 索引支持 `fastupdate` 参数（默认开启），写入时先写入 pending list 再批量合并
+- 监控：`pg_stat_user_indexes` 观察索引使用率
+
+### 6.2 Raw SQL 维护成本
+
+**风险：** `similarity()` 排序需要 `$queryRaw`，丧失 Prisma 的类型安全。
+
+**缓解：**
+- 仅搜索路径使用 Raw SQL，其他路径保持 Prisma ORM
+- 返回类型用 Zod 或手动 Type Guard 校验
+- 单元测试覆盖所有 Raw SQL 路径
+- 封装在 `jobSearchService.ts` 单一模块中
+
+### 6.3 中文搜索体验不足
+
+**风险：** Trigram 对中文的覆盖不如专业分词器，用户搜索二字中文词（如「产品」）可能 recall 低。
+
+**缓解：**
+- 对 < 3 字符的中文查询 fallback 到纯 `ILIKE`（不使用 similarity 排序）
+- 建议列表中补充高频中文职位头衔
+- 如后续需求增长，可迁移到 Typesense / Meilisearch 作为专用搜索引擎
+
+### 6.4 God Component 拆分回归
+
+**风险：** `JobsClient.tsx` 拆分涉及大量状态迁移，可能引入回归。
+
+**缓解：**
+- 拆分前确保现有测试覆盖率（`JobsClient.test.tsx` 已存在）
+- 采用"提取 → 验证 → 删除"三步法，每步验证测试通过
+- 拆分为独立 PR，逐步 review
+
+### 6.5 Neon Cold Start
+
+**风险：** Neon Serverless 在 autoscale-to-zero 后首次查询有 ~500ms cold start，加上新的 GIN 索引扫描可能更慢。
+
+**缓解：**
+- Neon 支持 `suspend_timeout_seconds` 配置（设置为 300s 以上避免频繁冷启动）
+- React Query `staleTime: 60_000` 减少重复请求
+- SSR prefetch 确保首屏数据在服务端完成

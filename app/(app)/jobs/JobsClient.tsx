@@ -712,19 +712,19 @@ export function JobsClient({
     };
   }
 
-  const debouncedQ = useDebouncedValue(q, 200);
+  const filters = useMemo(
+    () => ({ statusFilter, locationFilter, jobLevelFilter, market, sortOrder, pageSize }),
+    [statusFilter, locationFilter, jobLevelFilter, market, sortOrder, pageSize],
+  );
+  const debouncedSelectFilters = useDebouncedValue(filters, 120);
+  const debouncedQ = useDebouncedValue(q, 320);
 
   const debouncedFilters = useMemo(
     () => ({
       q: debouncedQ,
-      statusFilter,
-      locationFilter,
-      jobLevelFilter,
-      market,
-      sortOrder,
-      pageSize,
+      ...debouncedSelectFilters,
     }),
-    [debouncedQ, statusFilter, locationFilter, jobLevelFilter, market, sortOrder, pageSize],
+    [debouncedQ, debouncedSelectFilters],
   );
 
   useEffect(() => {
@@ -804,7 +804,7 @@ export function JobsClient({
       enabled: Boolean(queryString),
       placeholderData: (prev: JobsResponse | undefined) => prev,
       refetchOnWindowFocus: false,
-      staleTime: 30_000,
+      staleTime: 60_000,
       initialData: (): JobsResponse | undefined => {
         const shouldUseInitial =
           pageIndex === 0 &&

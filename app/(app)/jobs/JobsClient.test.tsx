@@ -201,7 +201,7 @@ describe("JobsClient", () => {
     const input = within(toolbar).getByPlaceholderText("e.g. software engineer");
     await user.clear(input);
     await user.type(input, "designer");
-    await new Promise((resolve) => setTimeout(resolve, 220));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const jobsCall = (global.fetch as unknown as { mock: { calls: Array<[RequestInfo, RequestInit | undefined]> } }).mock.calls.find(
       ([request]) =>
