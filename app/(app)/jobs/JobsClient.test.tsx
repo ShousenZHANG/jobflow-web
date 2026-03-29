@@ -1100,6 +1100,14 @@ describe("JobsClient", () => {
       const deletedIds = new Set<string>();
       const mockFetch = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
         const url = typeof input === "string" ? input : input.url;
+        if (url.startsWith("/api/jobs/batch-delete") && init?.method === "POST") {
+          const body = JSON.parse(typeof init.body === "string" ? init.body : "{}");
+          for (const id of body.ids ?? []) deletedIds.add(id);
+          return new Response(
+            JSON.stringify({ ok: true, deleted: body.ids?.length ?? 0, notFound: 0 }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
+        }
         if (url.startsWith("/api/jobs?")) {
           const remaining = [jobA, jobB, jobC].filter((j) => !deletedIds.has(j.id));
           return new Response(
@@ -1175,7 +1183,7 @@ describe("JobsClient", () => {
       expect(screen.getByText("Select all")).toBeInTheDocument();
     });
 
-    it("batch delete sends DELETE requests for all selected items and removes them from list", async () => {
+    it("batch delete sends a single batch-delete request and removes items from list", async () => {
       const user = userEvent.setup();
       const { mockFetch } = setupMultiJobFetch();
       renderWithClient(<JobsClient initialItems={[jobA, jobB, jobC]} initialCursor={null} />);
@@ -1191,11 +1199,15 @@ describe("JobsClient", () => {
       expect(within(dialog).getByText(/delete 2 jobs\?/i)).toBeInTheDocument();
       await user.click(within(dialog).getByRole("button", { name: /delete 2 jobs/i }));
 
-      const deleteCalls = mockFetch.mock.calls.filter(
+      const batchCalls = mockFetch.mock.calls.filter(
         ([url, init]: [RequestInfo, RequestInit | undefined]) =>
-          typeof url === "string" && url.startsWith("/api/jobs/") && init?.method === "DELETE",
+          typeof url === "string" && url.includes("/api/jobs/batch-delete") && init?.method === "POST",
       );
-      expect(deleteCalls).toHaveLength(2);
+      expect(batchCalls).toHaveLength(1);
+      const body = JSON.parse(batchCalls[0][1]?.body as string);
+      expect(body.ids).toHaveLength(2);
+      expect(body.ids).toContain(jobA.id);
+      expect(body.ids).toContain(jobB.id);
 
       const resultsPane = screen.getAllByTestId("jobs-results-scroll")[0];
       await waitFor(() => {

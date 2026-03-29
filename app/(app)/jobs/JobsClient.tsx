@@ -283,7 +283,7 @@ export function JobsClient({
   });
 
   const {
-    updateStatus, deleteMutation,
+    updateStatus, deleteMutation, batchDeleteMutation,
     updatingIds, deletingIds,
     error: mutationError, setError,
   } = useJobMutations({
@@ -891,10 +891,9 @@ export function JobsClient({
   }
 
   function confirmBatchDelete() {
-    for (const id of batchSelectedIds) {
-      if (!deletingIds.has(id)) {
-        deleteMutation.mutate(id);
-      }
+    const ids = [...batchSelectedIds].filter((id) => !deletingIds.has(id));
+    if (ids.length > 0) {
+      batchDeleteMutation.mutate(ids);
     }
     setBatchDeleteConfirmOpen(false);
     exitBatchMode();

@@ -305,6 +305,102 @@ export function useJobMutations({
     },
   });
 
+  const batchDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const res = await fetch("/api/jobs/batch-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Failed to batch delete");
+      return json as { deleted: number; notFound: number };
+    },
+    onMutate: async (ids) => {
+      setError(null);
+      const idSet = new Set(ids);
+      setSuppressedDeletedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of ids) next.add(id);
+        return next;
+      });
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        for (const id of ids) next.add(id);
+        return next;
+      });
+      await queryClient.cancelQueries({ queryKey: ["jobs"] });
+
+      const previousSelectedId = selectedId;
+      let nextSelectedId = selectedId;
+      if (selectedId && idSet.has(selectedId)) {
+        nextSelectedId = items.find((it) => !idSet.has(it.id))?.id ?? null;
+      }
+
+      const rollbackSnapshots: Array<{ queryKey: readonly unknown[]; data: JobsResponse | undefined }> = [];
+      const queryCache = queryClient.getQueryCache().findAll({ queryKey: ["jobs"] });
+      for (const query of queryCache) {
+        const key = query.queryKey;
+        const currentData = queryClient.getQueryData<JobsResponse>(key);
+        rollbackSnapshots.push({ queryKey: key, data: currentData });
+
+        queryClient.setQueryData<JobsResponse>(key, (old) => {
+          if (!old || !Array.isArray(old.items)) return old;
+          const removedCount = old.items.filter((it) => idSet.has(it.id)).length;
+          return {
+            ...old,
+            items: old.items.filter((it) => !idSet.has(it.id)),
+            totalCount: typeof old.totalCount === "number" ? old.totalCount - removedCount : old.totalCount,
+          };
+        });
+      }
+
+      if (selectedId && idSet.has(selectedId)) {
+        setSelectedId(nextSelectedId);
+      }
+
+      return { rollbackSnapshots, previousSelectedId };
+    },
+    onError: (e, ids, context) => {
+      setError(getErrorMessage(e, "Failed to batch delete"));
+      setSuppressedDeletedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of ids) next.delete(id);
+        return next;
+      });
+      for (const snap of context?.rollbackSnapshots ?? []) {
+        queryClient.setQueryData(snap.queryKey, snap.data);
+      }
+      queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
+      if (context?.previousSelectedId) {
+        setSelectedId(context.previousSelectedId);
+      }
+      toast({
+        title: "Batch delete failed",
+        description: getErrorMessage(e, "Some jobs could not be removed."),
+        variant: "destructive",
+        duration: 2400,
+        className: "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
+      });
+    },
+    onSuccess: (_data, ids) => {
+      toast({
+        title: `${ids.length} ${ids.length === 1 ? "job" : "jobs"} deleted`,
+        description: "The selected jobs were removed.",
+        duration: 1800,
+        className: "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
+      });
+    },
+    onSettled: (_data, _error, ids) => {
+      if (!ids) return;
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        for (const id of ids) next.delete(id);
+        return next;
+      });
+    },
+  });
+
   function updateStatus(id: string, status: JobStatus) {
     const previous = items.find((it) => it.id === id)?.status;
     if (!previous || previous === status) return;
@@ -314,6 +410,7 @@ export function useJobMutations({
   return {
     updateStatus,
     deleteMutation,
+    batchDeleteMutation,
     updatingIds,
     deletingIds,
     error,
