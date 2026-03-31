@@ -220,8 +220,9 @@ export function getTemplateResumePromptInput(baseLatestBullets: string[]): Resum
  */
 export function buildV2SystemPrompt(
   rules: PromptSkillRuleSet,
-  locale: "en-AU" | "zh-CN" = "en-AU",
+  localeOverride?: "en-AU" | "zh-CN",
 ): string {
+  const locale = localeOverride ?? rules.locale;
   const profile = getLocaleProfile(locale);
 
   const role = [

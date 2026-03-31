@@ -105,16 +105,31 @@ export function getStructuredSkillRules(
  * Flatten a StructuredRuleSet back into the V1 PromptSkillRuleSet format
  * for backward compatibility with internal AI calling code.
  */
+const PRIORITY_ORDER: Record<SkillRule["priority"], number> = {
+  critical: 0,
+  high: 1,
+  normal: 2,
+};
+
+function sortByPriority(rules: SkillRule[]): SkillRule[] {
+  return [...rules].sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
+}
+
+/**
+ * Flatten a StructuredRuleSet back into the V1 PromptSkillRuleSet format
+ * for backward compatibility with internal AI calling code.
+ * Rules are sorted by priority (critical first).
+ */
 export function flattenStructuredRules(
   structured: StructuredRuleSet,
 ): PromptSkillRuleSet {
   return {
     id: structured.id,
     locale: structured.locale,
-    cvRules: structured.rules
+    cvRules: sortByPriority(structured.rules)
       .filter((r) => r.appliesTo.includes("resume"))
       .map((r) => r.text),
-    coverRules: structured.rules
+    coverRules: sortByPriority(structured.rules)
       .filter((r) => r.appliesTo.includes("cover"))
       .map((r) => r.text),
     hardConstraints: structured.hardConstraints.map((r) => r.text),

@@ -14,7 +14,7 @@ export function buildEmbeddedResumeQualityGates(): string {
     "",
     "2. **GROUNDING**: No new bullet references skills, tools, metrics, employers, or responsibilities that do not appear anywhere in the provided resume snapshot. Every claim must trace back to explicit evidence in the candidate context.",
     "",
-    "3. **ADDITION_COUNT**: When top-3 responsibility gaps exist AND base resume evidence supports additions: add 2-3 new bullets (no fewer, no more). When all top-3 responsibilities are already covered by base bullets: add 0 new bullets (reorder only).",
+    "3. **ADDITION_COUNT**: When coverage gaps exist AND grounded evidence supports additions: add exactly as many grounded bullets as gaps warrant (minimum 1 if only 1 gap, maximum 3). Target 2-3 when multiple gaps exist. When all top-3 responsibilities are already covered: add 0 (reorder only). Never fabricate a bullet to meet a count target.",
     "",
     "4. **BOLD_MARKERS**: Every new bullet AND the `cvSummary` field contain at least one clean **keyword** bold marker for JD-critical terms. Markers must be clean: `**keyword**` with no inner spaces and no nested markers.",
     "",
@@ -24,7 +24,9 @@ export function buildEmbeddedResumeQualityGates(): string {
     "",
     "7. **STRONG_VERBS**: Every new bullet starts with a strong, specific action verb (Led, Architected, Shipped, Designed, Migrated, Optimized, Automated, Implemented, Drove, Delivered). Reject: Helped, Assisted, Worked on, Was responsible for, Participated in.",
     "",
-    "8. **JSON_VALID**: Output is strict JSON matching the required schema. No code fences (` ``` `), no markdown prose outside JSON string values, no trailing commas, no comments. Use `\\n` for line breaks within string values.",
+    "8. **BULLET_LENGTH**: Each bullet is under 200 characters for ATS safety. No bullet exceeds 250 characters.",
+    "",
+    "9. **JSON_VALID**: Output is strict JSON matching the required schema. No code fences (` ``` `), no markdown prose outside JSON string values, no trailing commas, no comments. Use `\\n` for line breaks within string values.",
   ].join("\n");
 }
 
@@ -55,9 +57,11 @@ export function buildEmbeddedCoverQualityGates(
     "",
     "6. **GENERIC_MOTIVATION**: `paragraphThree` mentions the company name OR a specific JD topic, product, or team by name. It must not be a generic closing that could apply to any company.",
     "",
-    "7. **FORWARD_CONTRIBUTION**: `paragraphThree` includes a forward-looking contribution statement — not just why you like the company, but what you will bring. Must contain language like 'I'd bring...', 'I'd apply my...', 'I'd contribute...', or equivalent.",
+    "7. **FORWARD_CONTRIBUTION**: `paragraphThree` includes a forward-looking contribution statement — not just why you like the company, but what you will bring. Must contain language like 'I'd bring...', 'I'd apply my...', 'I'd contribute...', 'I'd welcome the chance to apply...', or equivalent.",
     "",
-    "8. **CALL_TO_ACTION**: The closing sentence of `paragraphThree` contains a professional call to action (e.g., 'I'd welcome the opportunity to discuss...'). Reject passive endings like 'I hope to hear from you' or 'Thank you for your consideration.'",
+    "8. **CALL_TO_ACTION**: The closing sentence of `paragraphThree` contains a professional call to action (e.g., 'I'd welcome the opportunity to discuss...', 'Happy to walk through specific examples...'). Reject passive endings like 'I hope to hear from you' or 'Thank you for your consideration.'",
+    "",
+    "9. **PARAGRAPH_BALANCE**: No single paragraph exceeds 800 characters. The three paragraphs should be roughly balanced — paragraphTwo may be the longest (evidence section) but not more than 2x the shortest paragraph.",
   ].join("\n");
 }
 

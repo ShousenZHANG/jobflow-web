@@ -12,6 +12,7 @@ import {
  */
 export function buildReadme(version: string, locale: "en-AU" | "zh-CN"): string {
   const localeLabel = locale === "zh-CN" ? "zh-CN (Simplified Chinese)" : "en-AU (Australian English)";
+  const p = "jobflow-skills-v2";
 
   return `# Jobflow Tailoring Skill Pack v${version}
 
@@ -25,74 +26,65 @@ export function buildReadme(version: string, locale: "en-AU" | "zh-CN"): string 
 
 ### 1. Import into your AI platform
 
-**Claude Projects:**
-1. Create a new Project (or open existing)
-2. Go to Project Knowledge > Add content
-3. Upload all files from \`instructions/\`, \`rules/\`, \`schema/\`, and \`examples/\`
-4. Upload \`context/resume-snapshot.json\` (your resume data)
+**Claude (Skill Upload):**
+1. Go to claude.ai > Settings > Skills > Upload Skill
+2. Upload this entire ZIP file — Claude reads the root \`SKILL.md\` automatically
+3. Start a new conversation and the skill is available
 
-**Custom GPTs:**
-1. Go to GPT Builder > Configure > Knowledge
-2. Upload the same files listed above
+**Claude Projects (Knowledge Upload):**
+1. Create a new Project > Project Knowledge > Add content
+2. Upload priority files: \`SKILL.md\`, \`${p}/instructions/system.md\`, \`${p}/instructions/quality-gates.md\`
+3. Upload \`${p}/context/resume-snapshot.json\` and relevant schema file
+4. Note: Claude Projects has ~20 file / ~1MB limit. Upload the most important files first.
 
-**Gemini:**
-1. Start a new conversation
-2. Upload \`instructions/system.md\` and set as context
-3. Upload remaining files as attachments
+**Custom GPTs (OpenAI):**
+1. GPT Builder > Configure > Knowledge
+2. Upload: \`SKILL.md\`, instruction files, schema files, examples, and resume snapshot
+3. Recommended: Use Structured Output with the schema JSON for reliable formatting
 
-**Any LLM with file upload:**
-1. Upload \`instructions/system.md\` as the system prompt
-2. Upload all other files as context/knowledge
-3. Proceed with the job prompt workflow below
+**Gemini (AI Studio):**
+1. Open AI Studio > Create Prompt > click "System Instructions"
+2. Paste content of \`${p}/instructions/system.md\` into System Instructions field
+3. Upload \`SKILL.md\`, resume snapshot, and schema files as attachments
+4. Note: Gemini web (gemini.google.com) does not persist attachments across sessions
 
 ### 2. Generate for each job
 
 For each job application:
-1. Copy the template from \`prompts/resume-user.txt\` or \`prompts/cover-user.txt\`
-2. Replace \`{{JOB_TITLE}}\`, \`{{COMPANY}}\`, and \`{{JOB_DESCRIPTION}}\` with the actual job details
-3. Paste into your AI chat
-4. Copy the JSON output
+1. In Jobflow Jobs page, select a job and click "Generate CV" or "Generate Cover Letter"
+2. Copy the prompt from Step 2 of the dialog
+3. Paste into your AI chat (Claude/GPT/Gemini with skill pack loaded)
+4. Copy the JSON result
 
 ### 3. Import back to Jobflow
 
-1. In Jobflow Jobs page, click "Generate CV" or "Generate Cover Letter"
-2. Choose "Import from external AI"
-3. Paste the JSON output
-4. Jobflow renders the PDF automatically
+1. In the Jobflow dialog Step 3, paste the JSON output
+2. Click "Generate CV PDF" or "Generate Cover PDF"
+3. Jobflow validates, renders LaTeX, and compiles to PDF automatically
 
 ## Pack Contents
 
-| Directory | Contents | Purpose |
-|-----------|----------|---------|
-| \`instructions/\` | SKILL.md | Trigger conditions, hard constraints, execution procedure, and verification checklist |
-| \`prompts/\` | system.txt, resume-user.txt, cover-user.txt | System prompt and per-job user prompt templates with placeholders |
-| \`rules/\` | cv-rules.md, cover-rules.md, hard-constraints.md | Detailed rule sets governing output quality |
-| \`schema/\` | output.resume.schema.json, output.cover.schema.json | JSON Schema definitions the AI output must conform to |
-| \`examples/\` | output.resume.full.json, output.cover.full.json, resume-walkthrough.md, cover-walkthrough.md | Realistic examples with annotated explanations |
-| \`context/\` | resume-snapshot.json, resume-snapshot-updated-at.txt | Your resume data (the single source of truth) |
-| \`meta/\` | manifest.json, prompt-contract.json | Pack metadata, versioning, and contract info |
-
-## Output Contracts
-
-The skill pack produces two types of output:
-
-**Resume output** (\`output.resume.schema.json\`):
-- \`cvSummary\`: Role-tailored professional summary with bolded JD keywords
-- \`latestExperience.bullets\`: Complete ordered bullet list (base preserved + grounded additions)
-- \`skillsFinal\`: Complete skills list in up to 5 categories, JD-priority ordered
-
-**Cover letter output** (\`output.cover.schema.json\`):
-- \`cover.paragraphOne\`: Application intent anchored in real experience
-- \`cover.paragraphTwo\`: Evidence mapped to top JD responsibilities
-- \`cover.paragraphThree\`: Company-specific motivation
-- Plus metadata: candidateTitle, subject, date, salutation, closing, signatureName
+| Path | Purpose |
+|------|---------|
+| \`SKILL.md\` | Root skill definition (for Claude Skill Upload) |
+| \`${p}/instructions/system.md\` | System prompt with role, constraints, locale |
+| \`${p}/instructions/resume-skill.md\` | Resume tailoring rules and execution flow |
+| \`${p}/instructions/cover-skill.md\` | Cover letter rules and execution flow |
+| \`${p}/instructions/quality-gates.md\` | 9+9 self-validation checks |
+| \`${p}/rules/*.json\` | Categorized rules with priorities |
+| \`${p}/schema/*.json\` | JSON Schema for output validation |
+| \`${p}/examples/*.json\` | Realistic full output examples |
+| \`${p}/examples/*.md\` | Annotated walkthroughs |
+| \`${p}/context/resume-snapshot.json\` | Your resume data (source of truth) |
+| \`${p}/prompts/*.template.md\` | Job-specific prompt templates |
+| \`${p}/meta/manifest.json\` | Pack metadata and versioning |
 
 ## Tips
 
-- Always use the latest resume snapshot when generating. Stale snapshots produce lower-quality tailoring.
+- Always use the latest resume snapshot. Stale snapshots produce lower-quality tailoring.
 - Review the annotated walkthroughs in \`examples/\` to understand what good output looks like.
-- If the AI output does not parse as valid JSON, check for markdown code fences and strip them before importing.
-- The schema files can be used as structured output constraints in platforms that support them (e.g. OpenAI function calling).
+- If the AI output does not parse as valid JSON, use the "Auto-fix JSON" button in Jobflow.
+- For OpenAI: use Structured Output with the schema JSON for the most reliable formatting.
 `;
 }
 
@@ -104,90 +96,77 @@ The skill pack produces two types of output:
  * Generate platform-specific import notes.
  */
 export function buildPlatformNotes(): string {
+  const p = "jobflow-skills-v2";
   return `# Platform Import Guide
 
-## Claude Projects
+## Claude (Recommended)
 
-Claude Projects is the recommended platform for skill pack usage.
+### Option A: Skill Upload (Simplest)
+1. Go to claude.ai > Settings > Skills > Upload Skill
+2. Upload this entire ZIP file
+3. Claude reads the root SKILL.md automatically
+4. Start any conversation — the skill activates when you paste a job prompt
 
-### Setup
-1. Go to claude.ai > Projects > New Project (or open existing)
-2. Click "Project Knowledge" in the sidebar
-3. Click "Add content" > "Upload files"
-4. Upload the following files in order:
-   - \`instructions/SKILL.md\` (the AI reads this to understand its task)
-   - \`rules/cv-rules.md\`, \`rules/cover-rules.md\`, \`rules/hard-constraints.md\`
-   - \`schema/output.resume.schema.json\`, \`schema/output.cover.schema.json\`
-   - \`examples/output.resume.full.json\`, \`examples/output.cover.full.json\`
-   - \`examples/resume-walkthrough.md\`, \`examples/cover-walkthrough.md\`
-   - \`context/resume-snapshot.json\`
-5. Optionally set \`prompts/system.txt\` as the Project Instructions
-
-### Per-Job Usage
-1. Start a new conversation within the project
-2. Paste the content of \`prompts/resume-user.txt\` or \`prompts/cover-user.txt\`
-3. Replace the three placeholders with actual job data
-4. Send the message and wait for JSON output
-5. Copy the JSON and import into Jobflow
+### Option B: Claude Projects (Knowledge Upload)
+1. Go to claude.ai > Projects > New Project
+2. Project Knowledge > Add content > Upload files
+3. Priority upload order (Claude Projects has ~20 file / ~1MB limit):
+   - \`SKILL.md\` (root — skill definition)
+   - \`${p}/instructions/system.md\` (system prompt)
+   - \`${p}/instructions/quality-gates.md\` (self-validation)
+   - \`${p}/context/resume-snapshot.json\` (your resume)
+   - \`${p}/schema/resume-output.schema.json\` or \`cover-output.schema.json\`
+   - \`${p}/examples/resume-output.full.json\` or \`cover-output.full.json\`
+4. Start a new conversation, paste the job prompt from Jobflow
 
 ---
 
 ## Custom GPTs (OpenAI)
 
 ### Setup
-1. Go to chat.openai.com > Explore GPTs > Create a GPT
-2. In the Configure tab:
-   - Set the system instructions to the content of \`prompts/system.txt\`
-   - Under Knowledge, upload: SKILL.md, all rules files, all schema files, all example files, and resume-snapshot.json
-3. Save the GPT
+1. chat.openai.com > Explore GPTs > Create a GPT
+2. Configure tab:
+   - System instructions: paste content of \`${p}/instructions/system.md\`
+   - Knowledge: upload SKILL.md, instruction files, schema files, examples, resume snapshot
+3. **Recommended**: Enable Structured Output with the schema JSON for reliable formatting
+   - Define a function using \`${p}/schema/resume-output.schema.json\` or \`cover-output.schema.json\`
+   - This forces the model to output valid JSON matching the exact schema
 
 ### Per-Job Usage
 1. Open your custom GPT
-2. Paste the resume or cover user prompt template with placeholders filled in
+2. Paste the job prompt from Jobflow (or fill the template from \`${p}/prompts/\`)
 3. Copy the JSON output and import into Jobflow
-
-### Notes
-- Custom GPTs support structured output via function calling. You can optionally define a function with the resume or cover schema to enforce valid JSON.
-- Knowledge files have a size limit. If your resume snapshot is large, consider using the redacted version.
 
 ---
 
 ## Gemini (Google)
 
-### Setup
-1. Go to gemini.google.com
-2. Start a new conversation
-3. In your first message, paste the full content of \`prompts/system.txt\`
-4. Upload \`instructions/SKILL.md\` and \`context/resume-snapshot.json\` as attachments
-5. Optionally upload rule and schema files for additional grounding
+### Option A: AI Studio (Recommended)
+1. Open AI Studio (aistudio.google.com) > Create Prompt
+2. Click **"System Instructions"** button (top of prompt editor)
+3. Paste the content of \`${p}/instructions/system.md\` into the System Instructions field
+4. Upload SKILL.md, resume snapshot, and schema files as attachments
+5. Send your job prompt as a user message
 
-### Per-Job Usage
-1. In the same conversation, paste the resume or cover user prompt template
-2. Replace placeholders with actual job data
-3. Copy the JSON output and import into Jobflow
+### Option B: Gemini Web (gemini.google.com)
+1. Start a new conversation
+2. Paste \`${p}/instructions/system.md\` as your first message
+3. Upload resume snapshot and SKILL.md as attachments
+4. **Note**: Gemini web does NOT persist attachments across sessions — you must re-upload each time
 
-### Notes
-- Gemini does not have a dedicated "system prompt" field in the web UI. Pasting system.txt as the first message achieves a similar effect.
-- For Gemini API usage, set system.txt as the \`system_instruction\` parameter.
+### Gemini API
+- Set \`${p}/instructions/system.md\` content as the \`system_instruction\` parameter
+- Include SKILL.md and resume-snapshot.json in the context
+- Use \`responseMimeType: "application/json"\` for reliable JSON output
 
 ---
 
-## Generic LLM (Any Platform)
+## Any LLM (Generic)
 
-For any LLM that accepts a system prompt and user messages:
-
-1. **System prompt**: Use the content of \`prompts/system.txt\`
-2. **Context**: Provide the content of \`instructions/SKILL.md\` and \`context/resume-snapshot.json\` as part of the conversation context (upload, paste, or include in system prompt)
-3. **User message**: Use the resume or cover user prompt template with placeholders filled in
-4. **Validation**: Validate the output JSON against the appropriate schema file before importing into Jobflow
-
-### API Integration
-If calling an LLM API programmatically:
-- Set \`prompts/system.txt\` as the system message
-- Include SKILL.md and resume-snapshot.json in the context window
-- Use \`prompts/resume-user.txt\` or \`prompts/cover-user.txt\` (with placeholders replaced) as the user message
-- Parse the response as JSON and validate against the schema
-- Import the validated JSON into Jobflow via the UI or API
+1. **System prompt**: Content of \`${p}/instructions/system.md\`
+2. **Context**: Upload or paste SKILL.md + resume-snapshot.json
+3. **User message**: Job prompt from Jobflow (or fill template from \`${p}/prompts/\`)
+4. **Validation**: Validate output JSON against the schema before importing
 `;
 }
 

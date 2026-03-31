@@ -21,7 +21,7 @@ export const DEFAULT_CV_RULES = [
 
   // ── Summary (high) ──
   "Rewrite cvSummary using this formula: {Role-aligned identity} + {years/scope} + {2-3 core strengths mapped to top JD requirements} + {signature achievement with measurable outcome}. Example: 'Platform-focused engineer with 6+ years delivering cloud-native services; led Kubernetes migration for 200-service platform, improving deploy frequency by 40%.'",
-  "Preserve the base summary length (+/-10% chars) and sentence count. If the base summary is weak or generic, strengthen it within the same length using the formula above.",
+  "Preserve the base summary length (+/-10% chars) and sentence count. If the base summary is weak or generic, strengthen it within the same length using the formula above. If the base summary is missing or empty, generate a 2-3 sentence summary (150-250 chars) using the formula and grounded in resume experience data.",
   "Bold 3-5 JD-aligned technical keywords in summary using markdown **keyword** format. Over-bolding reduces readability.",
   "When using markdown bold, keep markers clean: use **keyword** (no leading/trailing spaces inside ** **).",
 
@@ -33,8 +33,7 @@ export const DEFAULT_CV_RULES = [
   "Use strong, specific action verbs for new bullets. Prefer: Led, Architected, Shipped, Designed, Migrated, Optimized, Automated, Implemented, Drove, Delivered. Avoid weak verbs: Helped, Assisted, Worked on, Was responsible for, Participated in, Supported.",
   "Each new bullet must introduce at least one meaningfully different JD-relevant concept. If two bullets would cover the same theme (e.g., both about 'performance optimization'), keep only the stronger one.",
   "Quantification strategy for new bullets: mine the resume snapshot for real numbers first (users served, services managed, team size, uptime %, latency reduction). Only fall back to qualitative outcomes when no numbers exist anywhere in the snapshot.",
-  "Keep any new bullet similar in length to nearby bullets (+/-20%) and consistent with the resume tone.",
-  "Before final output, self-check: (1) all base bullets are preserved verbatim, (2) any additions are grounded, (3) no two bullets cover the same theme, (4) output remains concise and role-relevant.",
+  "Keep any new bullet similar in length to nearby bullets (+/-20%) and consistent with the resume tone. Target under 200 characters per bullet for ATS safety; never exceed 250 characters.",
 
   // ── Bullet Coverage (high) ──
   "When top-3 JD responsibilities are under-covered and grounded evidence exists, add at least 2 and at most 3 new bullets.",
@@ -104,7 +103,7 @@ export const DEFAULT_COVER_RULES = [
   "Write as a strong candidate narrative (clear, confident, specific), not recruiter boilerplate.",
 
   // ── Word Count & Quality (high) ──
-  "Target 300-400 words total across the three paragraphs. Senior/Staff-level roles warrant the upper range; junior roles the lower range. Never exceed 450 or go below 250.",
+  "Target 300-400 words total across the three paragraphs (en-AU). Senior/Staff-level roles warrant the upper range; junior roles the lower range. Never exceed 400 or go below 250.",
   "Keep language application-ready with concrete wording, not hype or filler. Every sentence must earn its place — if removing a sentence would not reduce the recruiter's understanding of your fit, remove it.",
 ];
 
@@ -131,7 +130,7 @@ export const STRUCTURED_CV_RULES: SkillRuleDef[] = [
   { id: "cv.style.01", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[11] },
   { id: "cv.style.02", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[12] },
 
-  // bullet content (high) — indices 13-21
+  // bullet content (high) — indices 13-20
   { id: "cv.structure.01", category: "structure", priority: "critical", appliesTo: ["resume"], text: DEFAULT_CV_RULES[13] },
   { id: "cv.content.03", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[14] },
   { id: "cv.content.04", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[15] },
@@ -140,29 +139,28 @@ export const STRUCTURED_CV_RULES: SkillRuleDef[] = [
   { id: "cv.content.07", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[18] },
   { id: "cv.content.08", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[19] },
   { id: "cv.content.09", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[20] },
-  { id: "cv.content.10", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[21] },
 
-  // bullet coverage (high) — indices 22-26
-  { id: "cv.coverage.01", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[22] },
-  { id: "cv.coverage.02", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[23] },
-  { id: "cv.coverage.03", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[24] },
-  { id: "cv.coverage.04", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[25] },
-  { id: "cv.coverage.05", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[26] },
+  // bullet coverage (high) — indices 21-25
+  { id: "cv.coverage.01", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[21] },
+  { id: "cv.coverage.02", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[22] },
+  { id: "cv.coverage.03", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[23] },
+  { id: "cv.coverage.04", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[24] },
+  { id: "cv.coverage.05", category: "coverage", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[25] },
 
-  // bullet style (high) — indices 27-28
-  { id: "cv.style.03", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[27] },
-  { id: "cv.style.04", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[28] },
+  // bullet style (high) — indices 26-27
+  { id: "cv.style.03", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[26] },
+  { id: "cv.style.04", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[27] },
 
-  // skills (high) — indices 29-33
-  { id: "cv.structure.02", category: "structure", priority: "critical", appliesTo: ["resume"], text: DEFAULT_CV_RULES[29] },
-  { id: "cv.ats.02", category: "ats", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[30] },
+  // skills (high) — indices 28-32
+  { id: "cv.structure.02", category: "structure", priority: "critical", appliesTo: ["resume"], text: DEFAULT_CV_RULES[28] },
+  { id: "cv.ats.02", category: "ats", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[29] },
+  { id: "cv.content.10", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[30] },
   { id: "cv.content.11", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[31] },
-  { id: "cv.content.12", category: "content", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[32] },
-  { id: "cv.structure.03", category: "structure", priority: "critical", appliesTo: ["resume"], text: DEFAULT_CV_RULES[33] },
+  { id: "cv.structure.03", category: "structure", priority: "critical", appliesTo: ["resume"], text: DEFAULT_CV_RULES[32] },
 
-  // output format (critical) — indices 34-35
-  { id: "cv.structure.04", category: "structure", priority: "critical", appliesTo: ["resume"], text: DEFAULT_CV_RULES[34] },
-  { id: "cv.style.05", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[35] },
+  // output format (critical) — indices 33-34
+  { id: "cv.structure.04", category: "structure", priority: "critical", appliesTo: ["resume"], text: DEFAULT_CV_RULES[33] },
+  { id: "cv.style.05", category: "style", priority: "high", appliesTo: ["resume"], text: DEFAULT_CV_RULES[34] },
 ];
 
 /* ── V2 Structured Cover Rules (maps to upgraded DEFAULT_COVER_RULES indices) ── */
@@ -200,10 +198,15 @@ export const STRUCTURED_COVER_RULES: SkillRuleDef[] = [
   // call to action (high) — index 20
   { id: "cover.content.09", category: "content", priority: "high", appliesTo: ["cover"], text: DEFAULT_COVER_RULES[20] },
 
-  // locale (normal) — indices 21-23
+  // locale: en-AU (normal) — indices 21-23
   { id: "cover.locale.01", category: "locale", priority: "normal", appliesTo: ["cover"], locale: "en-AU", text: DEFAULT_COVER_RULES[21] },
   { id: "cover.locale.02", category: "locale", priority: "normal", appliesTo: ["cover"], locale: "en-AU", text: DEFAULT_COVER_RULES[22] },
   { id: "cover.locale.03", category: "locale", priority: "normal", appliesTo: ["cover"], locale: "en-AU", text: DEFAULT_COVER_RULES[23] },
+
+  // locale: zh-CN (normal) — Chinese cover tone rules
+  { id: "cover.locale.04", category: "locale", priority: "normal", appliesTo: ["cover"], locale: "zh-CN", text: "中国职场风格求职信：专业简练，直接展示与岗位的匹配度。避免空洞客套和过度谦虚，用数据和成果说话。段落结构清晰：主题句开头，证据支撑，结果收尾。" },
+  { id: "cover.locale.05", category: "locale", priority: "normal", appliesTo: ["cover"], locale: "zh-CN", text: "大厂/互联网标准：以证据和匹配度为导向，不用'我非常荣幸'等泛泛开头。技术关键词保留英文原文（如 React、Kubernetes）。语气直接自信但不傲慢，像一个有能力的同事在介绍自己的经验。" },
+  { id: "cover.locale.06", category: "locale", priority: "normal", appliesTo: ["cover"], locale: "zh-CN", text: "目标400-600字符（中文字符计数）。使用简体中文书面语，避免口语化和网络用语。日期格式：YYYY年M月D日。称呼格式：收件人称呼（适用于互联网/科技公司；传统企业可加'尊敬的'前缀）。" },
 
   // style (high) — indices 24-26
   { id: "cover.style.01", category: "style", priority: "high", appliesTo: ["cover"], text: DEFAULT_COVER_RULES[24] },

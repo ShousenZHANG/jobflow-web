@@ -1,5 +1,3 @@
-import { getLocaleProfile } from "@/lib/shared/locales";
-
 // ---------------------------------------------------------------------------
 // Resume example data
 // ---------------------------------------------------------------------------
@@ -294,12 +292,7 @@ const ZH_CN_COVER_WALKTHROUGH = `# 求职信输出详解
  * and complete skillsFinal with JD-priority ordering.
  */
 export function buildRealisticResumeExample(locale: "en-AU" | "zh-CN" = "en-AU"): string {
-  const profile = getLocaleProfile(locale);
   const data = locale === "zh-CN" ? ZH_CN_RESUME : EN_AU_RESUME;
-
-  // Attach locale metadata as a top-level comment-safe wrapper is not possible
-  // in JSON, so we rely on the data being self-documenting via content language.
-  void profile; // consumed for locale validation
   return JSON.stringify(data, null, 2);
 }
 
@@ -316,8 +309,6 @@ export function buildAnnotatedResumeWalkthrough(locale: "en-AU" | "zh-CN" = "en-
  * Shows proper Australian tone, keyword bolding, responsibility mapping.
  */
 export function buildRealisticCoverExample(locale: "en-AU" | "zh-CN" = "en-AU"): string {
-  const profile = getLocaleProfile(locale);
-  void profile;
   const data = locale === "zh-CN" ? ZH_CN_COVER : EN_AU_COVER;
   return JSON.stringify(data, null, 2);
 }

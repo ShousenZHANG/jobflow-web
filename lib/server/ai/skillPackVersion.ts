@@ -12,7 +12,7 @@ export const PACK_CHANGELOG: ChangelogEntry[] = [
     date: "2026-03-31",
     changes: [
       "Redesigned skill pack with categorized rules and XML-tagged prompts",
-      "Added self-validation quality gates (6 resume + 6 cover checks)",
+      "Added self-validation quality gates (9 resume + 9 cover checks)",
       "Added zh-CN locale support with Chinese tone rules",
       "Switched default format from tar.gz to ZIP",
       "Added realistic full examples with annotated walkthroughs",
@@ -39,7 +39,10 @@ export function compareVersions(a: string, b: string): number {
   const partsA = a.split(".").map(Number);
   const partsB = b.split(".").map(Number);
   for (let i = 0; i < 3; i++) {
-    const diff = (partsA[i] ?? 0) - (partsB[i] ?? 0);
+    const a_i = partsA[i] ?? 0;
+    const b_i = partsB[i] ?? 0;
+    if (Number.isNaN(a_i) || Number.isNaN(b_i)) return 0;
+    const diff = a_i - b_i;
     if (diff !== 0) return diff;
   }
   return 0;
