@@ -1116,51 +1116,53 @@ body {
 
 .app-shell {
   min-height: 0;
-  /* Desktop: lock outer scroll; inner cards handle scrolling */
-  overflow-y: hidden;
-  scrollbar-gutter: stable;
+  /* Allow outer scroll for content pages (Fetch, Resume).
+     Scrollbar is hidden — content is reachable via wheel/trackpad/touch. */
+  overflow-y: auto;
+  /* Hide scrollbar: Firefox */
+  scrollbar-width: none;
+  /* Hide scrollbar: IE / legacy Edge */
+  -ms-overflow-style: none;
 }
 
-/* Global scrollbar styling (desktop) */
+/* Hide scrollbar: Chrome / Safari / Opera */
+.app-shell::-webkit-scrollbar {
+  display: none;
+}
+
+/* Jobs page locks outer scroll so its own inner panels scroll instead */
+.app-shell.jobs-scroll-lock {
+  overflow-y: hidden;
+}
+
+/* Global scrollbar styling (desktop — body only) */
 html,
 body {
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
 }
 
-body::-webkit-scrollbar,
-.app-shell::-webkit-scrollbar {
+body::-webkit-scrollbar {
   width: 10px;
 }
 
-body::-webkit-scrollbar-track,
-.app-shell::-webkit-scrollbar-track {
+body::-webkit-scrollbar-track {
   background: transparent;
 }
 
-body::-webkit-scrollbar-thumb,
-.app-shell::-webkit-scrollbar-thumb {
+body::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background-color: rgba(148, 163, 184, 0.5);
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-body::-webkit-scrollbar-thumb:hover,
-.app-shell::-webkit-scrollbar-thumb:hover {
+body::-webkit-scrollbar-thumb:hover {
   background-color: rgba(100, 116, 139, 0.8);
 }
 
-.app-shell.jobs-scroll-lock {
-  overflow: hidden;
-}
-
 @media (max-width: 1023px) {
-  /* Mobile: allow full-page scroll for better usability */
-  .app-shell {
-    overflow-y: auto;
-  }
-
+  /* Mobile: jobs-scroll-lock keeps its natural scroll (Jobs inner panels scroll) */
   .app-shell.jobs-scroll-lock {
     overflow-y: auto;
   }
