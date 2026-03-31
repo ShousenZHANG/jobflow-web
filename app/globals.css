@@ -979,10 +979,20 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @media (max-width: 1023px) {
-  /* Mobile: jobs-scroll-lock keeps its natural scroll (Jobs inner panels scroll) */
-  .app-shell.jobs-scroll-lock {
+  /* Mobile: fixed-height page locks fall back to natural scroll */
+  .app-shell.jobs-scroll-lock,
+  .app-shell.resume-scroll-lock {
     overflow-y: auto;
   }
+}
+
+/* Mobile horizontal scrollbar suppression */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Generic inner card scroll area (desktop) */

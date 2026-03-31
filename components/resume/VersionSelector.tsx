@@ -32,11 +32,11 @@ export function VersionSelector() {
   const isBusy = profileSwitching || profileCreating || profileDeleting;
 
   return (
-    <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+    <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-3 lg:p-4">
+      <p className="hidden sm:block text-xs font-medium uppercase tracking-wide text-slate-500">
         {t("masterResumeVersion")}
       </p>
-      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-row items-center gap-2 sm:mt-2">
         <Label htmlFor="resume-profile-select" className="sr-only">
           {t("resumeVersion")}
         </Label>
@@ -51,7 +51,7 @@ export function VersionSelector() {
             }
           }}
           disabled={isBusy}
-          className="min-h-11 w-full flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-slate-100"
+          className="min-h-9 sm:min-h-11 w-full flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-slate-100"
         >
           {profiles.length === 0 ? (
             <option value="">{t("unsavedVersion")}</option>
@@ -63,15 +63,17 @@ export function VersionSelector() {
             </option>
           ))}
         </select>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => void handleCreateProfile("copy")}
             disabled={isBusy}
+            className="h-9 px-2.5 text-xs sm:h-10 sm:px-4 sm:text-sm"
           >
-            <Plus className="h-4 w-4" />
-            {profileCreating ? t("creating") : t("newVersion")}
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{profileCreating ? t("creating") : t("newVersion")}</span>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -81,8 +83,9 @@ export function VersionSelector() {
                 size="icon"
                 aria-label={t("moreVersionActions")}
                 disabled={isBusy}
+                className="h-9 w-9 sm:h-10 sm:w-10"
               >
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -104,7 +107,7 @@ export function VersionSelector() {
           </DropdownMenu>
         </div>
       </div>
-      <div className="mt-3 space-y-1">
+      <div className="mt-3 hidden sm:block space-y-1">
         <Label htmlFor="resume-profile-name">{t("versionName")}</Label>
         <Input
           id="resume-profile-name"
@@ -115,7 +118,7 @@ export function VersionSelector() {
           disabled={profileDeleting}
         />
       </div>
-      <p className="mt-2 text-xs text-slate-500">{t("versionCloneHint")}</p>
+      <p className="mt-2 hidden sm:block text-xs text-slate-500">{t("versionCloneHint")}</p>
     </div>
   );
 }

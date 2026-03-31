@@ -50,7 +50,7 @@ export function SectionNav({ className }: SectionNavProps) {
       </div>
 
       {/* Mobile: horizontal scrollable tabs */}
-      <div className="flex w-full gap-2 overflow-x-auto px-4 py-2 lg:hidden">
+      <div className="scrollbar-hide flex w-full gap-2 overflow-x-auto px-4 py-2 lg:hidden">
         {SECTION_CONFIG.map(({ id, tKey, icon: Icon }) => {
           const isActive = activeSection === id;
           return (
