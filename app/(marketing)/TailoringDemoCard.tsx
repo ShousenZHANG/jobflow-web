@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { renderBoldText } from "./renderBoldText";
+
+const TYPING_INTERVAL_MS = 40;
+const SEQUENCE_PAUSE_MS = 3000;
+const FADE_DURATION_MS = 300;
 
 interface DemoSequence {
   jd: string;
@@ -11,24 +15,21 @@ interface DemoSequence {
   type: string;
 }
 
-function useSequences(t: ReturnType<typeof useTranslations>): DemoSequence[] {
-  return [
-    { jd: t("demoJd1"), output: t("demoCv1"), type: t("demoType1") },
-    { jd: t("demoJd2"), output: t("demoCl2"), type: t("demoType2") },
-    { jd: t("demoJd3"), output: t("demoCv3"), type: t("demoType3") },
-  ];
-}
-
 export function TailoringDemoCard() {
   const t = useTranslations("marketing");
   const reduceMotion = useReducedMotion();
   const noMotion = reduceMotion === true;
-  const sequences = useSequences(t);
+  const sequences = useMemo<DemoSequence[]>(
+    () => [
+      { jd: t("demoJd1"), output: t("demoCv1"), type: t("demoType1") },
+      { jd: t("demoJd2"), output: t("demoCl2"), type: t("demoType2") },
+      { jd: t("demoJd3"), output: t("demoCv3"), type: t("demoType3") },
+    ],
+    [t],
+  );
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [displayedOutput, setDisplayedOutput] = useState(
-    noMotion ? sequences[0].output : "",
-  );
+  const [displayedOutput, setDisplayedOutput] = useState(sequences[0].output);
   const [isFading, setIsFading] = useState(false);
 
   const typeOutput = useCallback(
@@ -37,39 +38,39 @@ export function TailoringDemoCard() {
       for (let i = 1; i <= text.length; i += 1) {
         if (cancelled.current) return;
         setDisplayedOutput(text.slice(0, i));
-        await new Promise((resolve) => setTimeout(resolve, 40));
+        await new Promise((resolve) => setTimeout(resolve, TYPING_INTERVAL_MS));
+        if (cancelled.current) return;
       }
     },
     [],
   );
 
   useEffect(() => {
-    if (noMotion) return;
+    if (noMotion || reduceMotion === null) return;
 
     const cancelled = { current: false };
     const sleep = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
 
+    // Reset to start typing from scratch
+    setDisplayedOutput("");
+
     async function run() {
-      // Type initial sequence
       await typeOutput(sequences[0].output, cancelled);
-      await sleep(3000);
+      await sleep(SEQUENCE_PAUSE_MS);
 
       let index = 1;
       while (!cancelled.current) {
-        // Fade out
         setIsFading(true);
-        await sleep(300);
+        await sleep(FADE_DURATION_MS);
         if (cancelled.current) return;
 
-        // Switch to next sequence
         setIsFading(false);
         setActiveIndex(index);
         setDisplayedOutput("");
 
-        // Type output
         await typeOutput(sequences[index].output, cancelled);
-        await sleep(3000);
+        await sleep(SEQUENCE_PAUSE_MS);
 
         index = (index + 1) % sequences.length;
       }
@@ -79,7 +80,7 @@ export function TailoringDemoCard() {
     return () => {
       cancelled.current = true;
     };
-  }, [noMotion, sequences, typeOutput]);
+  }, [noMotion, reduceMotion, sequences, typeOutput]);
 
   const current = sequences[activeIndex];
 
@@ -101,8 +102,8 @@ export function TailoringDemoCard() {
         </div>
         <p className="mt-1 text-xs text-slate-500">{t("demoSubtitle")}</p>
         <div className="mt-4 space-y-4">
-          {sequences.map((seq, i) => (
-            <div key={i} className="grid gap-3 sm:grid-cols-2">
+          {sequences.map((seq) => (
+            <div key={seq.type} className="grid gap-3 sm:grid-cols-2">
               <div>
                 <span className="text-xs font-medium text-slate-400">
                   {seq.type}
@@ -160,7 +161,7 @@ export function TailoringDemoCard() {
           <p className="text-sm font-medium text-slate-900">
             {renderBoldText(displayedOutput)}
             {displayedOutput.length < current.output.length && (
-              <span className="edu-caret" />
+              <span className="edu-caret" aria-hidden="true" />
             )}
           </p>
         </div>

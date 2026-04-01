@@ -49,7 +49,6 @@ export function BeforeAfterSection() {
           whileInView={visible}
           viewport={{ once: true }}
           transition={{
-            delay: noMotion ? 0 : 0,
             duration: noMotion ? 0 : duration,
           }}
         >
@@ -72,12 +71,12 @@ export function BeforeAfterSection() {
             duration: noMotion ? 0 : duration,
           }}
         >
-          <Wand2 className="h-6 w-6 text-emerald-500" />
+          <Wand2 className="h-6 w-6 text-emerald-500" aria-hidden="true" />
         </motion.div>
 
         {/* Mobile wand icon */}
         <div className="flex items-center justify-center md:hidden">
-          <Wand2 className="h-5 w-5 text-emerald-500" />
+          <Wand2 className="h-5 w-5 text-emerald-500" aria-hidden="true" />
         </div>
 
         {/* After card */}

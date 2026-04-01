@@ -23,19 +23,19 @@ export function HowItWorksSection() {
   const steps: Step[] = [
     {
       number: 1,
-      icon: <Search className="mx-auto mt-3 h-6 w-6 text-emerald-600" />,
+      icon: <Search className="mx-auto mt-3 h-6 w-6 text-emerald-600" aria-hidden="true" />,
       titleKey: "howItWorksStep1Title",
       descKey: "howItWorksStep1Desc",
     },
     {
       number: 2,
-      icon: <Wand2 className="mx-auto mt-3 h-6 w-6 text-emerald-600" />,
+      icon: <Wand2 className="mx-auto mt-3 h-6 w-6 text-emerald-600" aria-hidden="true" />,
       titleKey: "howItWorksStep2Title",
       descKey: "howItWorksStep2Desc",
     },
     {
       number: 3,
-      icon: <FileText className="mx-auto mt-3 h-6 w-6 text-emerald-600" />,
+      icon: <FileText className="mx-auto mt-3 h-6 w-6 text-emerald-600" aria-hidden="true" />,
       titleKey: "howItWorksStep3Title",
       descKey: "howItWorksStep3Desc",
     },
@@ -80,7 +80,8 @@ export function HowItWorksSection() {
               }}
             >
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">
-                {step.number}
+                <span aria-hidden="true">{step.number}</span>
+                <span className="sr-only">Step {step.number}</span>
               </div>
               {step.icon}
               <h3 className="mt-3 text-center text-sm font-semibold text-slate-900">
