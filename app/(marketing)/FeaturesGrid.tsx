@@ -8,9 +8,9 @@ import {
   Cloud,
   FileType,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useInView, useSpring, useTransform } from "framer-motion";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { useRef, useState, useEffect, useCallback, type ReactNode } from "react";
 
 interface Feature {
   icon: ReactNode;
@@ -20,6 +20,27 @@ interface Feature {
 
 const stagger = 0.08;
 const duration = 0.4;
+
+/* ── Number ticker (spring-animated counter) ───────── */
+
+function NumberTicker({ target }: { target: number }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+  const springVal = useSpring(0, { duration: 1500, bounce: 0 });
+  const display = useTransform(springVal, (v) => Math.floor(v));
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (isInView) springVal.set(target);
+  }, [isInView, springVal, target]);
+
+  useEffect(() => {
+    const unsub = display.on("change", (v) => setValue(v));
+    return unsub;
+  }, [display]);
+
+  return <span ref={ref}>{value}</span>;
+}
 
 export function FeaturesGrid() {
   const t = useTranslations("marketing");
@@ -61,11 +82,13 @@ export function FeaturesGrid() {
 
   const base = {
     opacity: 0,
-    y: noMotion ? 0 : 14,
+    y: noMotion ? 0 : 30,
+    scale: noMotion ? 1 : 0.95,
   };
   const visible = {
     opacity: 1,
     y: 0,
+    scale: 1,
     transition: {
       duration: noMotion ? 0 : duration,
       ease: [0.25, 0.4, 0.25, 1] as const,
@@ -79,36 +102,100 @@ export function FeaturesGrid() {
         className="text-center text-2xl font-bold text-slate-900 sm:text-3xl"
         initial={base}
         whileInView={visible}
-        viewport={{ once: true }}
+        viewport={{ once: true, margin: "-50px" }}
       >
         {t("featuresTitle")}
       </motion.h2>
 
       <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((feature, i) => (
-          <motion.div
-            key={feature.titleKey}
-            className="rounded-xl border border-slate-200 bg-white/80 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-            initial={base}
-            whileInView={visible}
-            viewport={{ once: true }}
-            transition={{
-              delay: noMotion ? 0 : stagger * i,
-              duration: noMotion ? 0 : duration,
-            }}
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
-              {feature.icon}
-            </div>
-            <h3 className="mt-3 text-sm font-semibold text-slate-900">
-              {t(feature.titleKey)}
-            </h3>
-            <p className="mt-1 text-sm text-slate-600">
-              {t(feature.descKey)}
-            </p>
-          </motion.div>
+          <TiltCard key={feature.titleKey} noMotion={noMotion}>
+            <motion.div
+              className="h-full rounded-xl border border-slate-200 bg-white/80 p-5 transition-shadow duration-200 hover:shadow-md"
+              initial={base}
+              whileInView={visible}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{
+                delay: noMotion ? 0 : stagger * i,
+                duration: noMotion ? 0 : duration,
+              }}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+                {feature.icon}
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-900">
+                {t(feature.titleKey)}
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {feature.titleKey === "featureSkillPackTitle"
+                  ? <SkillPackDesc text={t(feature.descKey)} />
+                  : t(feature.descKey)}
+              </p>
+            </motion.div>
+          </TiltCard>
         ))}
       </div>
     </section>
+  );
+}
+
+/* ── Skill pack description with number tickers ────── */
+
+function SkillPackDesc({ text }: { text: string }) {
+  const numbers: Record<string, number> = { "35": 35, "29": 29, "18": 18 };
+  const parts = text.split(/(\b(?:35|29|18)\b)/);
+  return (
+    <>
+      {parts.map((part, i) =>
+        numbers[part] ? (
+          <NumberTicker key={i} target={numbers[part]} />
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+/* ── Hover tilt wrapper ────────────────────────────── */
+
+function TiltCard({
+  children,
+  noMotion,
+}: {
+  children: ReactNode;
+  noMotion: boolean;
+}) {
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (noMotion) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / (rect.width / 2);
+      const dy = (e.clientY - cy) / (rect.height / 2);
+      setRotate({ x: -dy * 3, y: dx * 3 });
+    },
+    [noMotion],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    setRotate({ x: 0, y: 0 });
+  }, []);
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transformStyle: "preserve-3d",
+        transform: `perspective(800px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
+        transition: "transform 0.15s ease-out",
+      }}
+    >
+      {children}
+    </div>
   );
 }

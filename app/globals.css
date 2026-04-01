@@ -699,6 +699,97 @@ body {
   animation: confetti-pop 0.8s ease-out forwards;
 }
 
+/* ── Aceternity-style shimmer sweep for CTA buttons ── */
+@keyframes shimmer-sweep {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.edu-cta-shimmer {
+  background: linear-gradient(110deg, #22c55e 40%, #34d399 50%, #22c55e 60%);
+  background-size: 250% 100%;
+  animation: shimmer-sweep 3s ease-in-out infinite;
+  color: white;
+  border: none;
+}
+
+/* ── Moving gradient border for demo card ── */
+@keyframes border-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.edu-demo-card-v2 {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.edu-demo-card-v2::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #22c55e, #14b8a6, #0ea5e9, #22c55e);
+  background-size: 300% 100%;
+  animation: border-glow 4s ease infinite;
+}
+
+/* ── Shimmer loading bar ── */
+@keyframes shimmer-load {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.edu-shimmer-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.edu-shimmer-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, #22c55e, transparent);
+  animation: shimmer-load 1.2s ease-in-out infinite;
+}
+
+/* ── Floating particles ── */
+@keyframes float-particle {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(var(--px, 10px), var(--py, -15px)); }
+  50% { transform: translate(var(--px2, -8px), var(--py2, 12px)); }
+  75% { transform: translate(var(--px3, 15px), var(--py3, -8px)); }
+}
+
+.edu-particle {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  animation: float-particle var(--duration, 12s) ease-in-out infinite;
+  opacity: var(--opacity, 0.3);
+}
+
+/* ── Scroll progress bar ── */
+.edu-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: #22c55e;
+  transform-origin: left;
+  z-index: 50;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-confetti-pop {
     animation: none;
@@ -1103,6 +1194,84 @@ body::-webkit-scrollbar-thumb:hover {
 
 .jobs-scroll-area .scroll-area-thumb:hover {
   background: var(--jobs-scroll-thumb-hover);
+}
+
+/* ── Shimmer CTA button ────────────────────────────── */
+
+.edu-cta-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: #22c55e;
+  color: #0f172a;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edu-cta-shimmer:hover {
+  background: #16a34a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.edu-cta-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  animation: shimmer-slide 2.4s ease-in-out infinite;
+}
+
+@keyframes shimmer-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── Floating particles ────────────────────────────── */
+
+.edu-particle {
+  position: absolute;
+  border-radius: 999px;
+  opacity: var(--opacity, 0.25);
+  will-change: transform;
+  animation: particle-drift var(--duration, 14s) ease-in-out infinite;
+}
+
+@keyframes particle-drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(var(--px, 10px), var(--py, -10px)); }
+  50% { transform: translate(var(--px2, -8px), var(--py2, 12px)); }
+  75% { transform: translate(var(--px3, 6px), var(--py3, -6px)); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── Scroll progress bar ───────────────────────────── */
+
+.edu-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #14b8a6);
+  transform-origin: 0%;
+  z-index: 9999;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edu-cta-shimmer::after {
+    animation: none;
+  }
+  .edu-particle {
+    animation: none;
+    opacity: 0.15;
+  }
 }
 
 html[lang="zh"] {

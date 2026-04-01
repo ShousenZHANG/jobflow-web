@@ -8,6 +8,7 @@ import { FeaturesGrid } from "./FeaturesGrid";
 import { BeforeAfterSection } from "./BeforeAfterSection";
 import { FinalCTA } from "./FinalCTA";
 import { LandingBackground } from "./LandingBackground";
+import { ScrollProgress } from "./ScrollProgress";
 
 /* ── SEO ──────────────────────────────────────────────── */
 
@@ -51,6 +52,8 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      <ScrollProgress />
+
       <div className="marketing-edu relative min-h-[100dvh] overflow-hidden">
         <div className="edu-bg" aria-hidden="true" />
         <LandingBackground />
@@ -81,9 +84,13 @@ export default async function HomePage() {
               ctaLabel={t("cta")}
               badgeLabel={t("badge")}
             />
+            <div className="h-16 w-full bg-gradient-to-b from-transparent via-emerald-50/20 to-transparent" aria-hidden="true" />
             <HowItWorksSection />
+            <div className="h-16 w-full bg-gradient-to-b from-transparent via-emerald-50/20 to-transparent" aria-hidden="true" />
             <FeaturesGrid />
+            <div className="h-16 w-full bg-gradient-to-b from-transparent via-emerald-50/20 to-transparent" aria-hidden="true" />
             <BeforeAfterSection />
+            <div className="h-16 w-full bg-gradient-to-b from-transparent via-emerald-50/20 to-transparent" aria-hidden="true" />
             <FinalCTA />
           </main>
 

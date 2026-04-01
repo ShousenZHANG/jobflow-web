@@ -30,8 +30,20 @@ export function FinalCTA() {
     <section aria-labelledby="final-cta-heading" className="py-16 sm:py-20">
       <motion.div
         className="flex flex-col items-center text-center"
-        initial={base}
-        whileInView={visible}
+        initial={{
+          opacity: 0,
+          filter: noMotion ? "blur(0px)" : "blur(8px)",
+          scale: noMotion ? 1 : 0.95,
+        }}
+        whileInView={{
+          opacity: 1,
+          filter: "blur(0px)",
+          scale: 1,
+          transition: {
+            duration: noMotion ? 0 : 0.6,
+            ease: [0.25, 0.4, 0.25, 1],
+          },
+        }}
         viewport={{ once: true }}
       >
         <h2
@@ -44,7 +56,7 @@ export function FinalCTA() {
         <Button
           asChild
           size="lg"
-          className="edu-cta-pro mt-6 min-h-[48px] px-8"
+          className="edu-cta-shimmer mt-6 min-h-[48px] px-8"
         >
           <Link href="/login">
             {t("finalCtaCta")} <ArrowRight className="h-4 w-4 shrink-0" />

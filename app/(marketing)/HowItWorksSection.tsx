@@ -12,8 +12,29 @@ interface Step {
   descKey: string;
 }
 
-const stagger = 0.12;
+const stagger = 0.15;
 const duration = 0.4;
+
+/* ── Animated SVG beam connector ───────────────────── */
+
+function AnimatedBeam() {
+  return (
+    <div className="mt-5 hidden flex-1 self-center md:block" style={{ minWidth: "2rem" }}>
+      <svg width="100%" height="4" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true">
+        <motion.line
+          x1="0" y1="2" x2="100" y2="2"
+          stroke="rgb(52 211 153)"
+          strokeWidth="2"
+          strokeDasharray="100"
+          strokeDashoffset={100}
+          whileInView={{ strokeDashoffset: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        />
+      </svg>
+    </div>
+  );
+}
 
 export function HowItWorksSection() {
   const t = useTranslations("marketing");
@@ -43,11 +64,13 @@ export function HowItWorksSection() {
 
   const base = {
     opacity: 0,
-    y: noMotion ? 0 : 14,
+    y: noMotion ? 0 : 40,
+    scale: noMotion ? 1 : 0.95,
   };
   const visible = {
     opacity: 1,
     y: 0,
+    scale: 1,
     transition: {
       duration: noMotion ? 0 : duration,
       ease: [0.25, 0.4, 0.25, 1] as const,
@@ -79,10 +102,18 @@ export function HowItWorksSection() {
                 duration: noMotion ? 0 : duration,
               }}
             >
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">
+              <motion.div
+                className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700"
+                whileInView={noMotion ? undefined : { scale: [1, 1.15, 1] }}
+                viewport={{ once: true }}
+                transition={{
+                  delay: noMotion ? 0 : stagger * i + 0.3,
+                  duration: 0.4,
+                }}
+              >
                 <span aria-hidden="true">{step.number}</span>
                 <span className="sr-only">Step {step.number}</span>
-              </div>
+              </motion.div>
               {step.icon}
               <h3 className="mt-3 text-center text-sm font-semibold text-slate-900">
                 {t(step.titleKey)}
@@ -91,9 +122,7 @@ export function HowItWorksSection() {
                 {t(step.descKey)}
               </p>
             </motion.div>
-            {i < steps.length - 1 && (
-              <div className="mt-5 hidden h-px flex-1 self-center border-t border-dashed border-slate-300 md:block" style={{ minWidth: "2rem" }} />
-            )}
+            {i < steps.length - 1 && <AnimatedBeam />}
           </div>
         ))}
       </div>

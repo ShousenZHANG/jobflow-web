@@ -29,9 +29,10 @@ describe("HomePage", () => {
   it("renders the new hero title and tailoring demo card", async () => {
     await renderPage();
 
-    expect(screen.getByText("AI-tailored resumes for every job you apply to")).toBeInTheDocument();
-    // TailoringDemoCard shows JD snippets
-    expect(screen.getByText(/Experience with Kubernetes/i)).toBeInTheDocument();
+    // Text-generate effect splits title into words — check for key word
+    expect(screen.getByText(/AI-tailored/i)).toBeInTheDocument();
+    // TailoringDemoCard shows search or JD content
+    expect(screen.getByText(/Live demo|Frontend Engineer/i)).toBeInTheDocument();
   });
 
   it("uses correct semantic structure with a single main landmark", async () => {
