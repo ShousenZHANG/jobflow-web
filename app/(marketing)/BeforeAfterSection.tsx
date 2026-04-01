@@ -29,11 +29,19 @@ export function BeforeAfterSection() {
   return (
     <section
       aria-labelledby="before-after-heading"
-      className="py-16 sm:py-20"
+      className="relative py-16 sm:py-20"
     >
+      <motion.div
+        className="section-glow"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        aria-hidden="true"
+      />
       <motion.h2
         id="before-after-heading"
-        className="text-center text-2xl font-bold text-slate-900 sm:text-3xl"
+        className="text-center text-3xl font-bold text-slate-900 sm:text-4xl"
         initial={base}
         whileInView={visible}
         viewport={{ once: true }}
@@ -44,7 +52,7 @@ export function BeforeAfterSection() {
       <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-6 md:grid-cols-[1fr_auto_1fr]">
         {/* Before card */}
         <motion.div
-          className="rounded-xl border border-rose-200 bg-rose-50/30 p-6"
+          className="card-scan-hover rounded-xl border border-rose-200 bg-rose-50/30 p-6"
           initial={{ opacity: 0, x: noMotion ? 0 : -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -56,7 +64,7 @@ export function BeforeAfterSection() {
           <span className="text-xs font-semibold uppercase tracking-wider text-rose-500">
             {t("beforeLabel")}
           </span>
-          <p className="mt-3 text-sm text-slate-600 line-through decoration-rose-300">
+          <p className="mt-3 text-base text-slate-600 line-through decoration-rose-300">
             {t("beforeAfterBefore")}
           </p>
         </motion.div>
@@ -88,7 +96,7 @@ export function BeforeAfterSection() {
 
         {/* After card */}
         <motion.div
-          className="rounded-xl border border-emerald-200 bg-emerald-50/30 p-6"
+          className="card-scan-hover rounded-xl border border-emerald-200 bg-emerald-50/30 p-6"
           initial={{ opacity: 0, x: noMotion ? 0 : 40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -101,14 +109,14 @@ export function BeforeAfterSection() {
           <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
             {t("afterLabel")}
           </span>
-          <p className="mt-3 text-sm font-medium text-slate-900">
+          <p className="mt-3 text-base font-medium text-slate-900">
             {renderBoldText(t("beforeAfterAfter"))}
           </p>
         </motion.div>
       </div>
 
       <motion.p
-        className="mt-8 text-center text-sm font-medium text-slate-600"
+        className="mt-8 text-center text-base sm:text-lg font-medium text-slate-600"
         initial={base}
         whileInView={visible}
         viewport={{ once: true }}

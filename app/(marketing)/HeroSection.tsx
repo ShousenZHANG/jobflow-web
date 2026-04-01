@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useCallback } from "react";
-import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { TailoringDemoCard } from "./TailoringDemoCard";
+import { SmartCTA } from "./SmartCTA";
 
 const stagger = 0.08;
 const duration = 0.4;
@@ -85,7 +83,7 @@ export function HeroSection({
           </Badge>
         </motion.div>
         <h1
-          className="edu-title mt-6 text-3xl leading-tight tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl lg:leading-[1.1]"
+          className="edu-title mt-6 text-4xl leading-tight tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl lg:leading-[1.1]"
         >
           {words.map((word, i) => (
             <motion.span
@@ -103,7 +101,7 @@ export function HeroSection({
           ))}
         </h1>
         <motion.p
-          className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:mt-5 sm:text-lg sm:leading-7"
+          className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 sm:mt-5 sm:text-xl sm:leading-7"
           initial={base}
           animate={visible}
           transition={{ delay: noMotion ? 0 : stagger * 2 }}
@@ -116,15 +114,7 @@ export function HeroSection({
           animate={visible}
           transition={{ delay: noMotion ? 0 : stagger * 3 }}
         >
-          <Button
-            asChild
-            size="lg"
-            className="edu-cta-shimmer min-h-[48px] min-w-[44px] px-6"
-          >
-            <Link href="/login">
-              {ctaLabel} <ArrowRight className="h-4 w-4 shrink-0" />
-            </Link>
-          </Button>
+          <SmartCTA label={ctaLabel} className="edu-cta-shimmer min-h-[48px] min-w-[44px] px-6" />
         </motion.div>
       </div>
 

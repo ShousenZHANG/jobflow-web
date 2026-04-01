@@ -44,19 +44,19 @@ export function HowItWorksSection() {
   const steps: Step[] = [
     {
       number: 1,
-      icon: <Search className="mx-auto mt-3 h-6 w-6 text-emerald-600" aria-hidden="true" />,
+      icon: <Search className="mx-auto mt-3 h-6 w-6 text-emerald-600 transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />,
       titleKey: "howItWorksStep1Title",
       descKey: "howItWorksStep1Desc",
     },
     {
       number: 2,
-      icon: <Wand2 className="mx-auto mt-3 h-6 w-6 text-emerald-600" aria-hidden="true" />,
+      icon: <Wand2 className="mx-auto mt-3 h-6 w-6 text-emerald-600 transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />,
       titleKey: "howItWorksStep2Title",
       descKey: "howItWorksStep2Desc",
     },
     {
       number: 3,
-      icon: <FileText className="mx-auto mt-3 h-6 w-6 text-emerald-600" aria-hidden="true" />,
+      icon: <FileText className="mx-auto mt-3 h-6 w-6 text-emerald-600 transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />,
       titleKey: "howItWorksStep3Title",
       descKey: "howItWorksStep3Desc",
     },
@@ -78,10 +78,18 @@ export function HowItWorksSection() {
   };
 
   return (
-    <section aria-labelledby="how-it-works-heading" className="py-16 sm:py-20">
+    <section aria-labelledby="how-it-works-heading" className="relative py-16 sm:py-20">
+      <motion.div
+        className="section-glow"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        aria-hidden="true"
+      />
       <motion.h2
         id="how-it-works-heading"
-        className="text-center text-2xl font-bold text-slate-900 sm:text-3xl"
+        className="text-center text-3xl font-bold text-slate-900 sm:text-4xl"
         initial={base}
         whileInView={visible}
         viewport={{ once: true }}
@@ -93,7 +101,7 @@ export function HowItWorksSection() {
         {steps.map((step, i) => (
           <div key={step.number} className="flex items-start">
             <motion.div
-              className="flex w-full max-w-xs flex-col items-center text-center"
+              className="group flex w-full max-w-xs flex-col items-center text-center"
               initial={base}
               whileInView={visible}
               viewport={{ once: true }}
@@ -103,7 +111,7 @@ export function HowItWorksSection() {
               }}
             >
               <motion.div
-                className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700"
+                className="step-circle-hover cursor-default mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700"
                 whileInView={noMotion ? undefined : { scale: [1, 1.15, 1] }}
                 viewport={{ once: true }}
                 transition={{
@@ -115,10 +123,10 @@ export function HowItWorksSection() {
                 <span className="sr-only">Step {step.number}</span>
               </motion.div>
               {step.icon}
-              <h3 className="mt-3 text-center text-sm font-semibold text-slate-900">
+              <h3 className="mt-3 text-center text-base font-semibold text-slate-900">
                 {t(step.titleKey)}
               </h3>
-              <p className="mx-auto mt-1 max-w-xs text-center text-sm text-slate-600">
+              <p className="mx-auto mt-1 max-w-xs text-center text-sm sm:text-base text-slate-600">
                 {t(step.descKey)}
               </p>
             </motion.div>

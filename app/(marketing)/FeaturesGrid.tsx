@@ -96,10 +96,18 @@ export function FeaturesGrid() {
   };
 
   return (
-    <section aria-labelledby="features-heading" className="py-16 sm:py-20">
+    <section aria-labelledby="features-heading" className="relative py-16 sm:py-20">
+      <motion.div
+        className="section-glow"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        aria-hidden="true"
+      />
       <motion.h2
         id="features-heading"
-        className="text-center text-2xl font-bold text-slate-900 sm:text-3xl"
+        className="text-center text-3xl font-bold text-slate-900 sm:text-4xl"
         initial={base}
         whileInView={visible}
         viewport={{ once: true, margin: "-50px" }}
@@ -111,7 +119,7 @@ export function FeaturesGrid() {
         {features.map((feature, i) => (
           <TiltCard key={feature.titleKey} noMotion={noMotion}>
             <motion.div
-              className="h-full rounded-xl border border-slate-200 bg-white/80 p-5 transition-shadow duration-200 hover:shadow-md"
+              className="feature-card-glow h-full rounded-xl border border-slate-200 bg-white/80 p-5"
               initial={base}
               whileInView={visible}
               viewport={{ once: true, margin: "-50px" }}
@@ -123,10 +131,10 @@ export function FeaturesGrid() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
                 {feature.icon}
               </div>
-              <h3 className="mt-3 text-sm font-semibold text-slate-900">
+              <h3 className="mt-3 text-base font-semibold text-slate-900">
                 {t(feature.titleKey)}
               </h3>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm sm:text-base text-slate-600">
                 {feature.titleKey === "featureSkillPackTitle"
                   ? <SkillPackDesc text={t(feature.descKey)} />
                   : t(feature.descKey)}

@@ -1256,6 +1256,83 @@ body::-webkit-scrollbar-thumb:hover {
   z-index: 9999;
 }
 
+/* ── Feature card glassmorphism glow ── */
+.feature-card-glow {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.feature-card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #22c55e, #14b8a6, #0ea5e9, #22c55e);
+  background-size: 300% 300%;
+  opacity: 0;
+  z-index: -1;
+  filter: blur(8px);
+  transition: opacity 0.4s ease;
+  animation: border-glow 4s ease infinite;
+}
+
+.feature-card-glow:hover::before {
+  opacity: 0.5;
+}
+
+.feature-card-glow:hover {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.12);
+}
+
+/* ── How it Works step hover pulse ── */
+.step-circle-hover {
+  transition: all 0.3s ease;
+}
+
+.step-circle-hover:hover {
+  box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.15), 0 0 0 12px rgba(16, 185, 129, 0.05);
+  transform: scale(1.1);
+}
+
+/* ── Before/After card scan sweep ── */
+.card-scan-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-scan-hover::after {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: none;
+  pointer-events: none;
+}
+
+.card-scan-hover:hover::after {
+  animation: scan-sweep 1.2s ease-out;
+}
+
+@keyframes scan-sweep {
+  0% { top: -100%; }
+  100% { top: 100%; }
+}
+
+/* ── Section scroll glow backdrop ── */
+.section-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 600px 400px at center, rgba(16, 185, 129, 0.04), transparent 70%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .edu-cta-shimmer::after {
     animation: none;

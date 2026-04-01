@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
+import { SessionProvider } from "next-auth/react";
 import HomePage from "./page";
 import messages from "../../messages/en.json";
 
@@ -19,9 +20,11 @@ afterEach(cleanup);
 async function renderPage() {
   const Page = await HomePage();
   return render(
-    <NextIntlClientProvider locale="en" messages={messages}>
-      {Page}
-    </NextIntlClientProvider>,
+    <SessionProvider session={null}>
+      <NextIntlClientProvider locale="en" messages={messages}>
+        {Page}
+      </NextIntlClientProvider>
+    </SessionProvider>,
   );
 }
 

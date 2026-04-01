@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { SmartCTA } from "./SmartCTA";
 
 const duration = 0.4;
 
@@ -27,7 +25,15 @@ export function FinalCTA() {
   };
 
   return (
-    <section aria-labelledby="final-cta-heading" className="py-16 sm:py-20">
+    <section aria-labelledby="final-cta-heading" className="relative py-16 sm:py-20">
+      <motion.div
+        className="section-glow"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        aria-hidden="true"
+      />
       <motion.div
         className="flex flex-col items-center text-center"
         initial={{
@@ -48,20 +54,12 @@ export function FinalCTA() {
       >
         <h2
           id="final-cta-heading"
-          className="text-2xl font-bold text-slate-900 sm:text-3xl"
+          className="text-3xl font-bold text-slate-900 sm:text-4xl"
         >
           {t("finalCtaTitle")}
         </h2>
-        <p className="mt-3 text-sm text-slate-600">{t("finalCtaSubtitle")}</p>
-        <Button
-          asChild
-          size="lg"
-          className="edu-cta-shimmer mt-6 min-h-[48px] px-8"
-        >
-          <Link href="/login">
-            {t("finalCtaCta")} <ArrowRight className="h-4 w-4 shrink-0" />
-          </Link>
-        </Button>
+        <p className="mt-3 text-base text-slate-600">{t("finalCtaSubtitle")}</p>
+        <SmartCTA label={t("finalCtaCta")} className="edu-cta-shimmer mt-6 min-h-[48px] px-8" />
       </motion.div>
     </section>
   );
