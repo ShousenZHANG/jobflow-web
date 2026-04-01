@@ -32,8 +32,8 @@ describe("HomePage", () => {
   it("renders the new hero title and tailoring demo card", async () => {
     await renderPage();
 
-    // Text-generate effect splits title into words — check for key word
-    expect(screen.getByText(/AI-tailored/i)).toBeInTheDocument();
+    // Hero subtitle is always visible (not animated by typewriter)
+    expect(screen.getByText(/Fetch roles, generate a custom CV/i)).toBeInTheDocument();
     // TailoringDemoCard shows search or JD content
     expect(screen.getByText(/Live demo|Frontend Engineer/i)).toBeInTheDocument();
   });

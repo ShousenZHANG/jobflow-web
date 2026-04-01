@@ -41,7 +41,7 @@ export function BeforeAfterSection() {
       />
       <motion.h2
         id="before-after-heading"
-        className="text-center text-3xl font-bold text-slate-900 sm:text-4xl"
+        className="text-center text-2xl font-bold text-slate-900 sm:text-3xl"
         initial={base}
         whileInView={visible}
         viewport={{ once: true }}

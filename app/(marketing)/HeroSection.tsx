@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { TailoringDemoCard } from "./TailoringDemoCard";
@@ -50,7 +50,44 @@ export function HeroSection({
     },
   };
 
-  const words = heroTitle.split(" ");
+  // Typewriter effect for hero title
+  const [displayedTitle, setDisplayedTitle] = useState(noMotion ? heroTitle : "");
+  const [showCursor, setShowCursor] = useState(!noMotion);
+
+  useEffect(() => {
+    if (noMotion) return;
+    let cancelled = false;
+    let i = 0;
+    setDisplayedTitle("");
+    const type = () => {
+      if (cancelled || i >= heroTitle.length) {
+        if (!cancelled) setTimeout(() => setShowCursor(false), 600);
+        return;
+      }
+      i += 1;
+      setDisplayedTitle(heroTitle.slice(0, i));
+      setTimeout(type, 30);
+    };
+    // Start typing after badge animation
+    const delay = setTimeout(type, 400);
+    return () => { cancelled = true; clearTimeout(delay); };
+  }, [heroTitle, noMotion]);
+
+  // Render title with gradient on "AI-tailored" portion
+  function renderTitle(text: string) {
+    const aiMatch = text.match(/^(AI-tailored)/);
+    if (aiMatch) {
+      return (
+        <>
+          <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+            {aiMatch[1]}
+          </span>
+          {text.slice(aiMatch[1].length)}
+        </>
+      );
+    }
+    return text;
+  }
 
   return (
     <header
@@ -74,7 +111,7 @@ export function HeroSection({
           animate={visible}
           transition={{ delay: noMotion ? 0 : 0 }}
         >
-          <Badge className="edu-pill-pro">
+          <Badge className="edu-pill-pro text-sm">
             <span
               className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-500"
               aria-hidden="true"
@@ -83,22 +120,12 @@ export function HeroSection({
           </Badge>
         </motion.div>
         <h1
-          className="edu-title mt-6 text-4xl leading-tight tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl lg:leading-[1.1]"
+          className="edu-title mt-6 min-h-[3em] text-3xl leading-tight tracking-tight text-slate-900 sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem] lg:leading-[1.15]"
         >
-          {words.map((word, i) => (
-            <motion.span
-              key={i}
-              className={`inline-block ${word.includes("AI") ? "bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent" : ""}`}
-              initial={noMotion ? undefined : { opacity: 0, filter: "blur(8px)" }}
-              animate={{ opacity: 1, filter: "blur(0px)" }}
-              transition={{
-                duration: noMotion ? 0 : 0.4,
-                delay: noMotion ? 0 : stagger + i * 0.06,
-              }}
-            >
-              {word}{i < words.length - 1 ? "\u00A0" : ""}
-            </motion.span>
-          ))}
+          {renderTitle(displayedTitle)}
+          {showCursor && (
+            <span className="edu-caret ml-0.5 inline-block" aria-hidden="true" />
+          )}
         </h1>
         <motion.p
           className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 sm:mt-5 sm:text-xl sm:leading-7"

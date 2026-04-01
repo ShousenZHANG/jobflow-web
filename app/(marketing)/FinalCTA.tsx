@@ -54,7 +54,7 @@ export function FinalCTA() {
       >
         <h2
           id="final-cta-heading"
-          className="text-3xl font-bold text-slate-900 sm:text-4xl"
+          className="text-2xl font-bold text-slate-900 sm:text-3xl"
         >
           {t("finalCtaTitle")}
         </h2>
