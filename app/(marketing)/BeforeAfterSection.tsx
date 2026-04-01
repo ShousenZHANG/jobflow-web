@@ -5,8 +5,8 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { renderBoldText } from "./renderBoldText";
 
-const stagger = 0.1;
-const duration = 0.4;
+const stagger = 0.12;
+const duration = 0.7;
 
 export function BeforeAfterSection() {
   const t = useTranslations("marketing");
@@ -35,7 +35,7 @@ export function BeforeAfterSection() {
         className="section-glow"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.8 }}
         aria-hidden="true"
       />
@@ -44,7 +44,7 @@ export function BeforeAfterSection() {
         className="text-center text-2xl font-bold text-slate-900 sm:text-3xl"
         initial={base}
         whileInView={visible}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
       >
         {t("beforeAfterTitle")}
       </motion.h2>
@@ -55,7 +55,7 @@ export function BeforeAfterSection() {
           className="card-scan-hover rounded-xl border border-rose-200 bg-rose-50/30 p-6"
           initial={{ opacity: 0, x: noMotion ? 0 : -40 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{
             duration: noMotion ? 0 : duration,
             ease: [0.25, 0.4, 0.25, 1],
@@ -74,7 +74,7 @@ export function BeforeAfterSection() {
           className="hidden items-center justify-center md:flex"
           initial={base}
           whileInView={visible}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{
             delay: noMotion ? 0 : stagger,
             duration: noMotion ? 0 : duration,
@@ -82,7 +82,7 @@ export function BeforeAfterSection() {
         >
           <motion.div
             whileInView={noMotion ? undefined : { rotate: [0, -10, 10, 0], scale: [1, 1.2, 1] }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
             <Wand2 className="h-6 w-6 text-emerald-500" aria-hidden="true" />
@@ -99,7 +99,7 @@ export function BeforeAfterSection() {
           className="card-scan-hover rounded-xl border border-emerald-200 bg-emerald-50/30 p-6"
           initial={{ opacity: 0, x: noMotion ? 0 : 40 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{
             delay: noMotion ? 0 : stagger * 2,
             duration: noMotion ? 0 : duration,
@@ -119,7 +119,7 @@ export function BeforeAfterSection() {
         className="mt-8 text-center text-base sm:text-lg font-medium text-slate-600"
         initial={base}
         whileInView={visible}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
         transition={{
           delay: noMotion ? 0 : stagger * 3,
           duration: noMotion ? 0 : duration,

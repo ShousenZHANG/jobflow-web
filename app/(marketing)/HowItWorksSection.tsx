@@ -13,7 +13,7 @@ interface Step {
 }
 
 const stagger = 0.15;
-const duration = 0.4;
+const duration = 0.7;
 
 /* ── Animated SVG beam connector ───────────────────── */
 
@@ -28,7 +28,7 @@ function AnimatedBeam() {
           strokeDasharray="100"
           strokeDashoffset={100}
           whileInView={{ strokeDashoffset: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
         />
       </svg>
@@ -83,7 +83,7 @@ export function HowItWorksSection() {
         className="section-glow"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.8 }}
         aria-hidden="true"
       />
@@ -92,7 +92,7 @@ export function HowItWorksSection() {
         className="text-center text-2xl font-bold text-slate-900 sm:text-3xl"
         initial={base}
         whileInView={visible}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
       >
         {t("howItWorksTitle")}
       </motion.h2>
@@ -104,7 +104,7 @@ export function HowItWorksSection() {
               className="group flex w-full max-w-xs flex-col items-center text-center"
               initial={base}
               whileInView={visible}
-              viewport={{ once: true }}
+              viewport={{ once: true, amount: 0.15 }}
               transition={{
                 delay: noMotion ? 0 : stagger * i,
                 duration: noMotion ? 0 : duration,
@@ -113,7 +113,7 @@ export function HowItWorksSection() {
               <motion.div
                 className="step-circle-hover cursor-default mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700"
                 whileInView={noMotion ? undefined : { scale: [1, 1.15, 1] }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.15 }}
                 transition={{
                   delay: noMotion ? 0 : stagger * i + 0.3,
                   duration: 0.4,

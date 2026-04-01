@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { SmartCTA } from "./SmartCTA";
 
-const duration = 0.4;
+const duration = 0.7;
 
 export function FinalCTA() {
   const t = useTranslations("marketing");
@@ -13,7 +13,7 @@ export function FinalCTA() {
 
   const base = {
     opacity: 0,
-    y: noMotion ? 0 : 14,
+    y: noMotion ? 0 : 30,
   };
   const visible = {
     opacity: 1,
@@ -30,7 +30,7 @@ export function FinalCTA() {
         className="section-glow"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.8 }}
         aria-hidden="true"
       />
@@ -50,7 +50,7 @@ export function FinalCTA() {
             ease: [0.25, 0.4, 0.25, 1],
           },
         }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
       >
         <h2
           id="final-cta-heading"

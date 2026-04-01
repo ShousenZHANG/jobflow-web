@@ -18,8 +18,8 @@ interface Feature {
   descKey: string;
 }
 
-const stagger = 0.08;
-const duration = 0.4;
+const stagger = 0.1;
+const duration = 0.7;
 
 /* ── Number ticker (spring-animated counter) ───────── */
 
@@ -101,7 +101,7 @@ export function FeaturesGrid() {
         className="section-glow"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.8 }}
         aria-hidden="true"
       />
