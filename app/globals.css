@@ -780,15 +780,7 @@ body {
 }
 
 /* ── Scroll progress bar ── */
-.edu-scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 2px;
-  background: #22c55e;
-  transform-origin: left;
-  z-index: 50;
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   .animate-confetti-pop {
