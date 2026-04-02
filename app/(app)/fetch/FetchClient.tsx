@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -251,7 +249,7 @@ export function FetchClient() {
     (globalStatus === "RUNNING" || globalStatus === "QUEUED" || globalStatus === null);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold text-foreground">{t("searchRoles")}</h1>
       </div>
@@ -263,8 +261,9 @@ export function FetchClient() {
       ) : null}
 
       {market === "AU" && (
-      <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
-        <CardContent className="grid gap-4 p-5 md:grid-cols-3">
+      <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur">
+        {/* Search fields: title, location, hours */}
+        <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label>{t("jobTitle")}</Label>
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
@@ -334,13 +333,127 @@ export function FetchClient() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Compact toggle row */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className={`filter-chip ${smartExpand ? "filter-chip--active" : "filter-chip--inactive"}`}
+            onClick={() => setSmartExpand(!smartExpand)}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${smartExpand ? "bg-emerald-500" : "bg-slate-300"}`} />
+            Smart expand
+          </button>
+          <button
+            type="button"
+            className={`filter-chip ${applyExcludes ? "filter-chip--active" : "filter-chip--inactive"}`}
+            onClick={() => setApplyExcludes(!applyExcludes)}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${applyExcludes ? "bg-emerald-500" : "bg-slate-300"}`} />
+            Apply exclusions
+          </button>
+        </div>
+
+        {/* Collapsible advanced filters */}
+        {applyExcludes && (
+          <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">Title exclusions</div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-10 w-full justify-between rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-none transition-colors hover:bg-slate-50 disabled:opacity-50"
+                      disabled={!applyExcludes}
+                    >
+                      {excludeTitleTerms.length ? `Selected (${excludeTitleTerms.length})` : "Select terms"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64">
+                    {[
+                      { value: "senior", label: "Senior" },
+                      { value: "lead", label: "Lead" },
+                      { value: "principal", label: "Principal" },
+                      { value: "staff", label: "Staff" },
+                      { value: "manager", label: "Manager" },
+                      { value: "director", label: "Director" },
+                      { value: "head", label: "Head" },
+                      { value: "architect", label: "Architect" },
+                    ].map((opt) => {
+                      const checked = excludeTitleTerms.includes(opt.value);
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={opt.value}
+                          checked={checked}
+                          onSelect={(e) => e.preventDefault()}
+                          onCheckedChange={(value) => {
+                            setExcludeTitleTerms((prev) =>
+                              value
+                                ? [...prev, opt.value]
+                                : prev.filter((v) => v !== opt.value),
+                            );
+                          }}
+                        >
+                          {opt.label}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">Description exclusions</div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-10 w-full justify-between rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-none transition-colors hover:bg-slate-50 disabled:opacity-50"
+                      disabled={!applyExcludes}
+                    >
+                      {excludeDescriptionRules.length
+                        ? `Selected (${excludeDescriptionRules.length})`
+                        : "Select rules"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-72">
+                    {[
+                      { value: "identity_requirement", label: "PR/Citizen requirement" },
+                      { value: "clearance_requirement", label: "Security clearance required" },
+                      { value: "sponsorship_unavailable", label: "No visa sponsorship" },
+                    ].map((opt) => {
+                      const checked = excludeDescriptionRules.includes(opt.value);
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={opt.value}
+                          checked={checked}
+                          onSelect={(e) => e.preventDefault()}
+                          onCheckedChange={(value) => {
+                            setExcludeDescriptionRules((prev) =>
+                              value
+                                ? [...prev, opt.value]
+                                : prev.filter((v) => v !== opt.value),
+                            );
+                          }}
+                        >
+                          {opt.label}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       )}
 
       {market === "CN" && (
-      <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
-        <CardContent className="grid gap-4 p-5 md:grid-cols-2">
+      <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>{t("jobTitle")}</Label>
             <Popover open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
@@ -432,126 +545,8 @@ export function FetchClient() {
               onChange={(e) => setCnExcludeKeywords(e.target.value)}
             />
           </div>
-        </CardContent>
-      </Card>
-      )}
-
-      {market === "AU" && (
-      <Card className="rounded-3xl border-2 border-slate-900/10 bg-white/80 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)] backdrop-blur transition-shadow duration-200 ease-out hover:shadow-[0_26px_55px_-40px_rgba(15,23,42,0.4)]">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 pb-5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-sm font-medium">Smart role coverage</div>
-              <div className="text-xs text-muted-foreground">
-                Expand one title to related role variants automatically.
-              </div>
-            </div>
-            <Switch checked={smartExpand} onCheckedChange={setSmartExpand} />
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-sm font-medium">Apply exclusions</div>
-              <div className="text-xs text-muted-foreground">
-                Remove seniority and work-rights restricted roles.
-              </div>
-            </div>
-            <Switch checked={applyExcludes} onCheckedChange={setApplyExcludes} />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Title exclusions</div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-10 w-full justify-between rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-none transition-colors hover:bg-slate-50 disabled:opacity-50"
-                    disabled={!applyExcludes}
-                  >
-                    {excludeTitleTerms.length ? `Selected (${excludeTitleTerms.length})` : "Select terms"}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-64">
-                  {[
-                    { value: "senior", label: "Senior" },
-                    { value: "lead", label: "Lead" },
-                    { value: "principal", label: "Principal" },
-                    { value: "staff", label: "Staff" },
-                    { value: "manager", label: "Manager" },
-                    { value: "director", label: "Director" },
-                    { value: "head", label: "Head" },
-                    { value: "architect", label: "Architect" },
-                  ].map((opt) => {
-                    const checked = excludeTitleTerms.includes(opt.value);
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={opt.value}
-                        checked={checked}
-                        onSelect={(e) => e.preventDefault()}
-                        onCheckedChange={(value) => {
-                          setExcludeTitleTerms((prev) =>
-                            value
-                              ? [...prev, opt.value]
-                              : prev.filter((v) => v !== opt.value),
-                          );
-                        }}
-                      >
-                        {opt.label}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Description exclusions</div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-10 w-full justify-between rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-none transition-colors hover:bg-slate-50 disabled:opacity-50"
-                    disabled={!applyExcludes}
-                  >
-                    {excludeDescriptionRules.length
-                      ? `Selected (${excludeDescriptionRules.length})`
-                      : "Select rules"}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-72">
-                  {[
-                    { value: "identity_requirement", label: "PR/Citizen requirement" },
-                    { value: "clearance_requirement", label: "Security clearance required" },
-                    { value: "sponsorship_unavailable", label: "No visa sponsorship" },
-                  ].map((opt) => {
-                    const checked = excludeDescriptionRules.includes(opt.value);
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={opt.value}
-                        checked={checked}
-                        onSelect={(e) => e.preventDefault()}
-                        onCheckedChange={(value) => {
-                          setExcludeDescriptionRules((prev) =>
-                            value
-                              ? [...prev, opt.value]
-                              : prev.filter((v) => v !== opt.value),
-                          );
-                        }}
-                      >
-                        {opt.label}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center" data-testid="fetch-actions">
