@@ -115,6 +115,10 @@ export default async function HomePage() {
                 Terms
               </Link>
               <span aria-hidden="true">·</span>
+              <Link href="/extension" className="hover:text-slate-900">
+                {t("extensionLink")}
+              </Link>
+              <span aria-hidden="true">·</span>
               <span>
                 &copy; {new Date().getFullYear()} {t("allRightsReserved")}
               </span>

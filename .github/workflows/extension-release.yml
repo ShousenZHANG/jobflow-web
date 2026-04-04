@@ -1,0 +1,84 @@
+name: Extension Release
+
+on:
+  push:
+    tags:
+      - "ext-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install extension dependencies
+        working-directory: chrome-extension
+        run: npm ci
+
+      - name: Run extension tests
+        working-directory: chrome-extension
+        run: npm test
+
+      - name: Build extension
+        working-directory: chrome-extension
+        run: npm run build
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#ext-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Package extension zip
+        run: |
+          cd chrome-extension/dist
+          zip -r "../../jobflow-autofill-v${{ steps.version.outputs.version }}.zip" .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Jobflow AutoFill v${{ steps.version.outputs.version }}"
+          body: |
+            ## Jobflow AutoFill v${{ steps.version.outputs.version }}
+
+            Chrome extension for auto-filling job application forms.
+
+            ### Features
+            - Auto-detect and fill form fields on Greenhouse, Lever, Workday, iCIMS, SuccessFactors, and generic forms
+            - 44 field categories with multi-signal weighted classification (label, name, placeholder, position, autocomplete)
+            - Bilingual field detection (English + Chinese patterns)
+            - Historical form matching — learns from your corrections
+            - Multi-step form support with automatic page advancement
+            - Floating widget with field preview and confidence indicators
+            - Keyboard shortcut: Alt+Shift+F
+            - Shadow DOM isolation — zero style conflicts with host pages
+            - Offline sync queue with automatic retry
+            - Secure token-based authentication (SHA-256 hashed, 90-day expiry)
+
+            ### Supported ATS Platforms
+            - Greenhouse (`boards.greenhouse.io`)
+            - Lever (`jobs.lever.co`)
+            - Workday (`*.myworkdayjobs.com`)
+            - iCIMS (`*.icims.com`)
+            - SuccessFactors (`*.successfactors.com`)
+            - Generic HTML forms
+
+            ### Installation
+            1. Download the `.zip` file below
+            2. Unzip to a folder
+            3. Open `chrome://extensions` → enable Developer mode
+            4. Click "Load unpacked" → select the unzipped folder
+            5. See the [full installation guide](https://jobflow.app/extension) for connecting to your account
+          files: |
+            jobflow-autofill-v${{ steps.version.outputs.version }}.zip
+          draft: false
+          prerelease: false
