@@ -7,15 +7,6 @@ import type { DetectedField } from "@ext/shared/types";
 import { FieldCategory, PROFILE_KEY_MAP } from "@ext/shared/fieldTaxonomy";
 import type { FlatProfile } from "../filler/formFiller";
 
-/** Escape HTML entities to prevent XSS when inserting user-controlled text. */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 export interface WidgetCallbacks {
   onFill: () => void;
