@@ -21,7 +21,7 @@ export default async function ExtensionPage() {
                 Browser Extension
               </h1>
               <p className="text-sm text-muted-foreground">
-                Manage your Jobflow AutoFill extension tokens and view submission
+                Manage your Joblit AutoFill extension tokens and view submission
                 history.
               </p>
             </div>

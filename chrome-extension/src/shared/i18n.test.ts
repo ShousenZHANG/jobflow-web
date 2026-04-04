@@ -7,12 +7,12 @@ describe("i18n", () => {
   });
 
   it("returns English by default", () => {
-    expect(t("app.name")).toBe("Jobflow AutoFill");
+    expect(t("app.name")).toBe("Joblit AutoFill");
   });
 
   it("returns Chinese after setLocale('zh')", () => {
     setLocale("zh");
-    expect(t("app.name")).toBe("Jobflow 自动填充");
+    expect(t("app.name")).toBe("Joblit 自动填充");
   });
 
   it("returns the key for unknown messages", () => {

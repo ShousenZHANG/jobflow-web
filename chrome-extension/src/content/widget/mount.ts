@@ -3,7 +3,7 @@
  * from the host page.
  */
 
-const WIDGET_HOST_ID = "jobflow-autofill-widget";
+const WIDGET_HOST_ID = "joblit-autofill-widget";
 
 export function mountWidget(): { shadowRoot: ShadowRoot; container: HTMLDivElement } | null {
   // Prevent double-mount
@@ -22,7 +22,7 @@ export function mountWidget(): { shadowRoot: ShadowRoot; container: HTMLDivEleme
   shadowRoot.appendChild(style);
 
   const container = document.createElement("div");
-  container.id = "jobflow-widget-root";
+  container.id = "joblit-widget-root";
   shadowRoot.appendChild(container);
 
   return { shadowRoot, container };
@@ -46,7 +46,7 @@ function getWidgetStyles(): string {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    #jobflow-widget-root {
+    #joblit-widget-root {
       position: fixed;
       bottom: 20px;
       right: 20px;

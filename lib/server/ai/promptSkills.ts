@@ -50,7 +50,7 @@ const DEFAULT_HARD_CONSTRAINTS: string[] = [
 ];
 
 export const DEFAULT_RULES: PromptSkillRuleSet = {
-  id: "jobflow-default-v1",
+  id: "joblit-default-v1",
   locale: "en-AU",
   cvRules: DEFAULT_CV_RULES,
   coverRules: DEFAULT_COVER_RULES,
@@ -90,7 +90,7 @@ export function getStructuredSkillRules(
     !rule.locale || rule.locale === "all" || rule.locale === locale;
 
   return {
-    id: `jobflow-v2-${locale}`,
+    id: `joblit-v2-${locale}`,
     version: SKILL_PACK_VERSION,
     locale,
     rules: [

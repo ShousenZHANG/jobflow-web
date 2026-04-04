@@ -1,4 +1,4 @@
-# Jobflow flows (high signal)
+# Joblit flows (high signal)
 
 ## 1) FetchRun → GitHub Actions → import → Jobs list
 

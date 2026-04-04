@@ -55,7 +55,7 @@ export function TopNav() {
                   className="text-lg font-semibold text-slate-900"
                   href="/"
                 >
-                  Jobflow
+                  Joblit
                 </Link>
               </div>
               <nav className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export function TopNav() {
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50">
                 <Search className="h-3.5 w-3.5 text-emerald-600" />
               </div>
-              <span className="text-sm font-bold text-slate-900">Jobflow</span>
+              <span className="text-sm font-bold text-slate-900">Joblit</span>
             </Link>
 
             <nav className="flex items-center rounded-lg bg-slate-100/80 p-0.5" data-testid="mobile-current-route">

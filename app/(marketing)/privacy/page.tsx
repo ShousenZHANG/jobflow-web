@@ -4,8 +4,8 @@ import { Search, ArrowLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Jobflow",
-  description: "How Jobflow collects, uses, and protects your data.",
+  title: "Privacy Policy — Joblit",
+  description: "How Joblit collects, uses, and protects your data.",
 };
 
 export default async function PrivacyPolicyPage() {
@@ -22,7 +22,7 @@ export default async function PrivacyPolicyPage() {
             className="flex items-center gap-2 text-sm font-semibold text-slate-800 transition-colors hover:text-slate-900"
           >
             <Search className="h-4 w-4 text-emerald-700" />
-            Jobflow
+            Joblit
           </Link>
           <Link
             href="/"
@@ -143,7 +143,7 @@ export default async function PrivacyPolicyPage() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Link href="/" className="flex items-center gap-1.5 font-semibold text-slate-900">
               <Search className="h-3.5 w-3.5 text-emerald-700" />
-              Jobflow
+              Joblit
             </Link>
             <span aria-hidden="true">&middot;</span>
             <Link href="/privacy" className="text-emerald-700">Privacy</Link>

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Jobflow AutoFill",
+  "name": "Joblit AutoFill",
   "version": "0.1.0",
-  "description": "Auto-fill job application forms with your Jobflow profile data",
+  "description": "Auto-fill job application forms with your Joblit profile data",
   "default_locale": "en",
   "icons": {
     "16": "icons/icon16.png",
@@ -60,7 +60,7 @@
       "suggested_key": {
         "default": "Alt+Shift+W"
       },
-      "description": "Toggle the Jobflow widget"
+      "description": "Toggle the Joblit widget"
     }
   }
 }

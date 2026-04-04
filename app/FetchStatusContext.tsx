@@ -40,10 +40,10 @@ type FetchStatusContextValue = {
 
 const FetchStatusContext = createContext<FetchStatusContextValue | null>(null);
 
-const RUN_ID_KEY = "jobflow_fetch_run_id";
-const STARTED_AT_KEY = "jobflow_fetch_started_at";
-const PANEL_OPEN_KEY = "jobflow_fetch_panel_open";
-const ENDED_AT_KEY = "jobflow_fetch_ended_at";
+const RUN_ID_KEY = "joblit_fetch_run_id";
+const STARTED_AT_KEY = "joblit_fetch_started_at";
+const PANEL_OPEN_KEY = "joblit_fetch_panel_open";
+const ENDED_AT_KEY = "joblit_fetch_ended_at";
 
 export function FetchStatusProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -127,7 +127,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
       refreshFromStorage();
     }
 
-    window.addEventListener("jobflow-fetch-started", handleStart);
+    window.addEventListener("joblit-fetch-started", handleStart);
     window.addEventListener("storage", handleStart);
     function handleVisibility() {
       if (document.visibilityState === "visible") {
@@ -136,7 +136,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     }
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
-      window.removeEventListener("jobflow-fetch-started", handleStart);
+      window.removeEventListener("joblit-fetch-started", handleStart);
       window.removeEventListener("storage", handleStart);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
@@ -168,7 +168,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     localStorage.setItem(storageKeys.startedAt, String(Date.now()));
     localStorage.setItem(storageKeys.panelOpen, "1");
     localStorage.removeItem(storageKeys.endedAt);
-    window.dispatchEvent(new Event("jobflow-fetch-started"));
+    window.dispatchEvent(new Event("joblit-fetch-started"));
   }, [setOpen, storageKeys]);
 
   const cancelRun = useCallback(async () => {

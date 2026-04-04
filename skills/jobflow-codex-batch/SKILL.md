@@ -1,9 +1,9 @@
 ---
-name: jobflow-codex-batch
-description: Execute Jobflow NEW-job batch tailoring in a deterministic Codex loop and persist CV/Cover PDFs with task-level status updates.
+name: joblit-codex-batch
+description: Execute Joblit NEW-job batch tailoring in a deterministic Codex loop and persist CV/Cover PDFs with task-level status updates.
 ---
 
-# Jobflow Codex Batch Skill
+# Joblit Codex Batch Skill
 
 ## Purpose
 
@@ -52,5 +52,5 @@ Run a deterministic, resumable batch loop that generates resume and cover output
 
 - No pending tasks in batch summary.
 - Every processed task is `SUCCEEDED`, `FAILED`, or `SKIPPED`.
-- Generated PDFs are downloadable from Jobflow UI.
+- Generated PDFs are downloadable from Joblit UI.
 

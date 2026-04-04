@@ -112,7 +112,7 @@ export class FloatingWidget {
     const headerLeft = document.createElement("div");
     const title = document.createElement("span");
     title.className = "jf-header-title";
-    title.textContent = "Jobflow";
+    title.textContent = "Joblit";
     const badgeSpan = document.createElement("span");
     badgeSpan.className = "jf-header-badge";
     badgeSpan.textContent = `${matched}/${this.fields.length}`;

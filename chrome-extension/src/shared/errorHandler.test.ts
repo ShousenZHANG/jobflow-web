@@ -10,7 +10,7 @@ describe("classifyError", () => {
   });
 
   it("classifies auth errors as non-recoverable", () => {
-    const err = new Error("Not authenticated. Please connect your Jobflow account.");
+    const err = new Error("Not authenticated. Please connect your Joblit account.");
     const result = classifyError(err);
     expect(result.code).toBe("AUTH");
     expect(result.recoverable).toBe(false);

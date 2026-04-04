@@ -12,9 +12,9 @@ import {
  */
 export function buildReadme(version: string, locale: "en-AU" | "zh-CN"): string {
   const localeLabel = locale === "zh-CN" ? "zh-CN (Simplified Chinese)" : "en-AU (Australian English)";
-  const p = "jobflow-skills-v2";
+  const p = "joblit-skills-v2";
 
-  return `# Jobflow Tailoring Skill Pack v${version}
+  return `# Joblit Tailoring Skill Pack v${version}
 
 > Production-grade AI skill pack for generating role-tailored CVs and cover letters.
 
@@ -51,16 +51,16 @@ export function buildReadme(version: string, locale: "en-AU" | "zh-CN"): string 
 ### 2. Generate for each job
 
 For each job application:
-1. In Jobflow Jobs page, select a job and click "Generate CV" or "Generate Cover Letter"
+1. In Joblit Jobs page, select a job and click "Generate CV" or "Generate Cover Letter"
 2. Copy the prompt from Step 2 of the dialog
 3. Paste into your AI chat (Claude/GPT/Gemini with skill pack loaded)
 4. Copy the JSON result
 
-### 3. Import back to Jobflow
+### 3. Import back to Joblit
 
-1. In the Jobflow dialog Step 3, paste the JSON output
+1. In the Joblit dialog Step 3, paste the JSON output
 2. Click "Generate CV PDF" or "Generate Cover PDF"
-3. Jobflow validates, renders LaTeX, and compiles to PDF automatically
+3. Joblit validates, renders LaTeX, and compiles to PDF automatically
 
 ## Pack Contents
 
@@ -83,7 +83,7 @@ For each job application:
 
 - Always use the latest resume snapshot. Stale snapshots produce lower-quality tailoring.
 - Review the annotated walkthroughs in \`examples/\` to understand what good output looks like.
-- If the AI output does not parse as valid JSON, use the "Auto-fix JSON" button in Jobflow.
+- If the AI output does not parse as valid JSON, use the "Auto-fix JSON" button in Joblit.
 - For OpenAI: use Structured Output with the schema JSON for the most reliable formatting.
 `;
 }
@@ -96,7 +96,7 @@ For each job application:
  * Generate platform-specific import notes.
  */
 export function buildPlatformNotes(): string {
-  const p = "jobflow-skills-v2";
+  const p = "joblit-skills-v2";
   return `# Platform Import Guide
 
 ## Claude (Recommended)
@@ -117,7 +117,7 @@ export function buildPlatformNotes(): string {
    - \`${p}/context/resume-snapshot.json\` (your resume)
    - \`${p}/schema/resume-output.schema.json\` or \`cover-output.schema.json\`
    - \`${p}/examples/resume-output.full.json\` or \`cover-output.full.json\`
-4. Start a new conversation, paste the job prompt from Jobflow
+4. Start a new conversation, paste the job prompt from Joblit
 
 ---
 
@@ -134,8 +134,8 @@ export function buildPlatformNotes(): string {
 
 ### Per-Job Usage
 1. Open your custom GPT
-2. Paste the job prompt from Jobflow (or fill the template from \`${p}/prompts/\`)
-3. Copy the JSON output and import into Jobflow
+2. Paste the job prompt from Joblit (or fill the template from \`${p}/prompts/\`)
+3. Copy the JSON output and import into Joblit
 
 ---
 
@@ -165,7 +165,7 @@ export function buildPlatformNotes(): string {
 
 1. **System prompt**: Content of \`${p}/instructions/system.md\`
 2. **Context**: Upload or paste SKILL.md + resume-snapshot.json
-3. **User message**: Job prompt from Jobflow (or fill template from \`${p}/prompts/\`)
+3. **User message**: Job prompt from Joblit (or fill template from \`${p}/prompts/\`)
 4. **Validation**: Validate output JSON against the schema before importing
 `;
 }
@@ -180,7 +180,7 @@ export function buildPlatformNotes(): string {
 export function buildChangelog(): string {
   return `# Changelog
 
-All notable changes to the Jobflow Tailoring Skill Pack are documented here.
+All notable changes to the Joblit Tailoring Skill Pack are documented here.
 
 ## v2.0.0 — 2026-03-31
 
@@ -199,7 +199,7 @@ All notable changes to the Jobflow Tailoring Skill Pack are documented here.
 - Output contract now uses \`skillsFinal\` (complete final list) instead of \`skillsAdditions\` (delta)
 - Cover letter structure formalised into three semantic paragraphs with distinct purposes
 - Bold keyword marking uses clean markdown (**keyword**) with no inner whitespace
-- Prompt templates generated from the same builder used by the Jobflow API
+- Prompt templates generated from the same builder used by the Joblit API
 
 ### Removed
 - Deprecated \`skillsAdditions\` output field

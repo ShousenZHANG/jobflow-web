@@ -54,7 +54,7 @@ function JobListItemInner({
   return (
     <div role="listitem" aria-current={isActive ? "true" : undefined} aria-label={listLabel} className="w-full">
       <div
-        className={`jobflow-list-item flex w-full items-start gap-0 rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
+        className={`joblit-list-item flex w-full items-start gap-0 rounded-2xl border border-l-4 border-slate-900/10 bg-white/80 text-left transition-all duration-200 ease-out hover:-translate-y-[1px] ${
           batchSelected
             ? "border-l-emerald-500 bg-emerald-50/80 shadow-sm ring-1 ring-emerald-200"
             : isActive

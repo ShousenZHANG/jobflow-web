@@ -52,7 +52,7 @@ export default function LoginPage() {
             <div className="edu-logo">
               <Search className="h-4 w-4 text-emerald-700" />
             </div>
-            <span className="text-sm font-semibold text-slate-900">Jobflow</span>
+            <span className="text-sm font-semibold text-slate-900">Joblit</span>
           </div>
           <div className="mt-5">
             <span className="edu-pill inline-flex items-center gap-2 text-xs font-semibold">

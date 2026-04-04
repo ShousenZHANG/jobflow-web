@@ -4,8 +4,8 @@ import { Search, ArrowLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Jobflow",
-  description: "Terms governing use of the Jobflow application.",
+  title: "Terms of Service — Joblit",
+  description: "Terms governing use of the Joblit application.",
 };
 
 export default async function TermsOfServicePage() {
@@ -22,7 +22,7 @@ export default async function TermsOfServicePage() {
             className="flex items-center gap-2 text-sm font-semibold text-slate-800 transition-colors hover:text-slate-900"
           >
             <Search className="h-4 w-4 text-emerald-700" />
-            Jobflow
+            Joblit
           </Link>
           <Link
             href="/"
@@ -121,7 +121,7 @@ export default async function TermsOfServicePage() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Link href="/" className="flex items-center gap-1.5 font-semibold text-slate-900">
               <Search className="h-3.5 w-3.5 text-emerald-700" />
-              Jobflow
+              Joblit
             </Link>
             <span aria-hidden="true">&middot;</span>
             <Link href="/privacy" className="hover:text-slate-900">Privacy</Link>

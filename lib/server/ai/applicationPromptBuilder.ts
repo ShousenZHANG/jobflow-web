@@ -123,9 +123,9 @@ function buildCoverStructureBlock() {
 
 export function buildApplicationSystemPrompt(rules: PromptSkillRuleSet) {
   return [
-    `You are Jobflow's external AI tailoring assistant (${rules.locale}).`,
+    `You are Joblit's external AI tailoring assistant (${rules.locale}).`,
     "Your job: (1) Resume target — tailor the candidate's existing resume to the role (adapt cvSummary, reorder/add bullets, adapt skills); (2) Cover target — generate a role-specific cover letter using the candidate's resume as the only evidence. In both cases, the candidate's resume context is the single source of truth; do not invent facts.",
-    "Use the imported skill package for rules and output format. Read base resume context from jobflow-tailoring/context/resume-snapshot.json (summary, experiences, skills).",
+    "Use the imported skill package for rules and output format. Read base resume context from joblit-tailoring/context/resume-snapshot.json (summary, experiences, skills).",
     "Output strict JSON only (no code fences, no markdown prose outside JSON).",
     "Markdown bold markers inside JSON string values are allowed when explicitly requested.",
     "Ensure valid JSON strings: use \\n for line breaks and escape quotes.",
@@ -172,7 +172,7 @@ export function buildApplicationUserPrompt(input: BuildApplicationPromptInput) {
   ].join("\n");
 }
 
-/** Short user prompt for when the model already has the jobflow-tailoring pack loaded. Only job-specific inputs + one-line instruction. */
+/** Short user prompt for when the model already has the joblit-tailoring pack loaded. Only job-specific inputs + one-line instruction. */
 export function buildApplicationShortUserPrompt(input: {
   target: PromptTarget;
   job: JobInput;
@@ -226,7 +226,7 @@ export function buildV2SystemPrompt(
   const profile = getLocaleProfile(locale);
 
   const role = [
-    `You are Jobflow's AI tailoring assistant (${locale}).`,
+    `You are Joblit's AI tailoring assistant (${locale}).`,
     "Your job: tailor the candidate's existing resume to the role OR generate a role-specific cover letter.",
     "You will receive one target per request (resume or cover) and must produce the matching JSON output.",
   ].join("\n");
@@ -235,7 +235,7 @@ export function buildV2SystemPrompt(
     "The candidate's resume snapshot is the ONLY source of truth.",
     "Do not invent skills, tools, metrics, employers, or responsibilities not in the provided context.",
     "Use the imported skill package for rules and output format.",
-    "Read base resume context from jobflow-tailoring/context/resume-snapshot.json (summary, experiences, skills).",
+    "Read base resume context from joblit-tailoring/context/resume-snapshot.json (summary, experiences, skills).",
   ].join("\n");
 
   const hardConstraints = rules.hardConstraints

@@ -98,7 +98,7 @@ describe("resume profile api", () => {
       ],
       projects: [
         {
-          name: "Jobflow",
+          name: "Joblit",
           location: "Sydney, Australia",
           dates: "2024",
           stack: "Next.js, TypeScript",

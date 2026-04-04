@@ -39,7 +39,7 @@ import { GenerateProgress } from "./components/GenerateProgress";
 import { GenerateSuccess } from "./components/GenerateSuccess";
 import { cn } from "@/lib/utils";
 
-const SKILL_PACK_META_STORAGE_KEY = "jobflow.skill-pack-meta.v1";
+const SKILL_PACK_META_STORAGE_KEY = "joblit.skill-pack-meta.v1";
 
 function isValidPromptMeta(value: unknown): value is ExternalPromptMeta {
   if (!value || typeof value !== "object") return false;
@@ -630,7 +630,7 @@ export function JobsClient({
     const shortPromptText =
       typeof json.prompt?.shortUserPrompt === "string" && json.prompt.shortUserPrompt.trim().length > 0
         ? [
-            "Follow your loaded jobflow-tailoring pack. Output exactly one JSON object (no markdown or code fences).",
+            "Follow your loaded joblit-tailoring pack. Output exactly one JSON object (no markdown or code fences).",
             "",
             json.prompt.shortUserPrompt,
           ].join("\n")
@@ -722,7 +722,7 @@ export function JobsClient({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "jobflow-tailor-prompt.txt";
+    anchor.download = "joblit-tailor-prompt.txt";
     anchor.click();
     URL.revokeObjectURL(url);
     toast({
@@ -752,7 +752,7 @@ export function JobsClient({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "jobflow-tailor-prompt-short.txt";
+    anchor.download = "joblit-tailor-prompt-short.txt";
     anchor.click();
     URL.revokeObjectURL(url);
     toast({
@@ -785,7 +785,7 @@ export function JobsClient({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "jobflow-tailor-prompt.txt";
+    anchor.download = "joblit-tailor-prompt.txt";
     anchor.click();
     URL.revokeObjectURL(url);
     setPromptCopied(true);
@@ -811,7 +811,7 @@ export function JobsClient({
         throw new Error(json?.error?.message || json?.error || "Failed to download skill pack");
       }
       const blob = await res.blob();
-      const fallbackName = "jobflow-skills-v2.zip";
+      const fallbackName = "joblit-skills-v2.zip";
       const filename = filenameFromDisposition(res.headers.get("content-disposition")) || fallbackName;
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");

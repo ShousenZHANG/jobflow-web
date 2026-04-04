@@ -104,7 +104,7 @@ ${formatList(
     "  }",
     "}",
     "",
-    "Use the following guidance blocks (same source as Jobflow Generate Prompt).",
+    "Use the following guidance blocks (same source as Joblit Generate Prompt).",
     "",
     "Resume guidance:",
     resumeGuidancePrompt,

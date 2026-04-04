@@ -177,7 +177,7 @@ export function ExtensionTokenManager() {
           Setup Instructions
         </h2>
         <ol className="text-sm text-slate-600 space-y-1 list-decimal list-inside">
-          <li>Install the Jobflow AutoFill extension from the Chrome Web Store.</li>
+          <li>Install the Joblit AutoFill extension from the Chrome Web Store.</li>
           <li>Click the extension icon in your toolbar.</li>
           <li>Paste the generated token and click Connect.</li>
           <li>Visit any ATS job application page — the extension will auto-detect form fields.</li>

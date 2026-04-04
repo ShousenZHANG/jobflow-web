@@ -23,7 +23,7 @@ describe("ExtensionGuidePage", () => {
   it("renders the page title", async () => {
     await renderPage();
     expect(
-      screen.getByText("Jobflow AutoFill — Chrome Extension"),
+      screen.getByText("Joblit AutoFill — Chrome Extension"),
     ).toBeInTheDocument();
   });
 
@@ -68,7 +68,7 @@ describe("ExtensionGuidePage", () => {
     });
     expect(downloadLink).toHaveAttribute(
       "href",
-      "https://github.com/ShousenZHANG/jobflow-web/releases/latest",
+      "https://github.com/ShousenZHANG/joblit-web/releases/latest",
     );
     expect(downloadLink).toHaveAttribute("target", "_blank");
   });

@@ -6,7 +6,7 @@
 
 ---
 
-**Project:** Jobflow
+**Project:** Joblit
 **Generated:** 2026-01-30 14:42:37
 **Category:** SaaS (General)
 

@@ -1,6 +1,6 @@
 # Dashboard Page Overrides
 
-> **PROJECT:** Jobflow
+> **PROJECT:** Joblit
 > **Generated:** 2026-01-30 14:42:37
 > **Page Type:** Dashboard / Data View
 

@@ -41,14 +41,14 @@ jobs:
       - name: Package extension zip
         run: |
           cd chrome-extension/dist
-          zip -r "../../jobflow-autofill-v${{ steps.version.outputs.version }}.zip" .
+          zip -r "../../joblit-autofill-v${{ steps.version.outputs.version }}.zip" .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Jobflow AutoFill v${{ steps.version.outputs.version }}"
+          name: "Joblit AutoFill v${{ steps.version.outputs.version }}"
           body: |
-            ## Jobflow AutoFill v${{ steps.version.outputs.version }}
+            ## Joblit AutoFill v${{ steps.version.outputs.version }}
 
             Chrome extension for auto-filling job application forms.
 
@@ -77,8 +77,8 @@ jobs:
             2. Unzip to a folder
             3. Open `chrome://extensions` → enable Developer mode
             4. Click "Load unpacked" → select the unzipped folder
-            5. See the [full installation guide](https://jobflow-web.vercel.app/get-extension) for connecting to your account
+            5. See the [full installation guide](https://www.joblit.tech/get-extension) for connecting to your account
           files: |
-            jobflow-autofill-v${{ steps.version.outputs.version }}.zip
+            joblit-autofill-v${{ steps.version.outputs.version }}.zip
           draft: false
           prerelease: false

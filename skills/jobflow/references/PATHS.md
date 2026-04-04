@@ -1,4 +1,4 @@
-# Jobflow paths reference
+# Joblit paths reference
 
 Quick index of the most commonly used locations.
 

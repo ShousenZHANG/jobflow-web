@@ -29,7 +29,7 @@ describe("renderResumeTex", () => {
       ],
       projects: [
         {
-          name: "Jobflow",
+          name: "Joblit",
           location: "Sydney, Australia",
           dates: "2024",
           stack: "Next.js, TypeScript",
@@ -56,7 +56,7 @@ describe("renderResumeTex", () => {
     expect(output).toContain("\\item Delivered features");
     expect(output).toContain("Frontend");
     expect(output).toContain("React, TypeScript");
-    expect(output).toContain("Jobflow");
+    expect(output).toContain("Joblit");
     expect(output).toContain("Jane Doe");
     expect(output).toContain("Example Co");
     expect(output).toContain("\\href{https://demo.example.com}{Demo}");

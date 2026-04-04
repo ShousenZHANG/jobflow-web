@@ -85,9 +85,9 @@ function buildPromptFiles(
   });
 
   const files = [
-    { name: "jobflow-tailoring/prompts/system.txt", content: systemPromptTemplate },
-    { name: "jobflow-tailoring/prompts/resume-user.txt", content: resumePromptTemplate },
-    { name: "jobflow-tailoring/prompts/cover-user.txt", content: coverPromptTemplate },
+    { name: "joblit-tailoring/prompts/system.txt", content: systemPromptTemplate },
+    { name: "joblit-tailoring/prompts/resume-user.txt", content: resumePromptTemplate },
+    { name: "joblit-tailoring/prompts/cover-user.txt", content: coverPromptTemplate },
   ];
 
   if (!context) return files;
@@ -97,11 +97,11 @@ function buildPromptFiles(
     : context.resumeSnapshot ?? {};
 
   files.push({
-    name: "jobflow-tailoring/context/resume-snapshot.json",
+    name: "joblit-tailoring/context/resume-snapshot.json",
     content: JSON.stringify(snapshot, null, 2),
   });
   files.push({
-    name: "jobflow-tailoring/context/resume-snapshot-updated-at.txt",
+    name: "joblit-tailoring/context/resume-snapshot-updated-at.txt",
     content: context.resumeSnapshotUpdatedAt,
   });
 
@@ -113,7 +113,7 @@ export function buildGlobalSkillPackFiles(
   context?: SkillPackContext,
   options?: SkillPackOptions,
 ) {
-  const readme = `# Jobflow Global Skill Pack
+  const readme = `# Joblit Global Skill Pack
 
 This pack defines reusable rules and prompt templates for CV/Cover generation.
 The default rule profile is recruiter-grade and enforces Google XYZ-style bullets for new experience points.
@@ -127,32 +127,32 @@ The default rule profile is recruiter-grade and enforces Google XYZ-style bullet
    - {{JOB_DESCRIPTION}}
 4. Use \`prompts/system.txt\` as system prompt and the target user prompt (\`prompts/resume-user.txt\` or \`prompts/cover-user.txt\`).
 5. Use \`schema/output.resume.schema.json\` for CV or \`schema/output.cover.schema.json\` for cover.
-6. Paste target JSON back into Jobflow via Generate CV / Generate Cover Letter.
+6. Paste target JSON back into Joblit via Generate CV / Generate Cover Letter.
 
 ## Notes
 - This is a global template pack, not bound to one specific job.
 - This pack may include your latest resume snapshot and snapshot timestamp file.
 - Prompt template version: ${PROMPT_TEMPLATE_VERSION}
 - Output schema version: ${PROMPT_SCHEMA_VERSION}
-- Prompt generation for each job is done separately in Jobflow UI.
+- Prompt generation for each job is done separately in Joblit UI.
 - Prompt templates in this pack are generated from the same builder used by \`/api/applications/prompt\`.
 - Rules version id: ${rules.id}
 - Locale: ${rules.locale}
 `;
 
   const skillMd = `---
-name: jobflow-tailoring
-description: Use when a job description is provided and tailored CV or Cover Letter JSON is needed for Jobflow import.
+name: joblit-tailoring
+description: Use when a job description is provided and tailored CV or Cover Letter JSON is needed for Joblit import.
 version: ${rules.id}
 locale: ${rules.locale}
 ---
 
-# Jobflow Tailoring Skill
+# Joblit Tailoring Skill
 
 ## Trigger Conditions
 Use this skill when:
 - A job description is provided and you need to **tailor the candidate's resume** for the role or **generate a cover letter** from their resume.
-- Output will be pasted back into Jobflow to render PDF.
+- Output will be pasted back into Joblit to render PDF.
 - The candidate's resume (context) is the only source of truth; do not invent skills, employers, or experience.
 - Accuracy, ATS safety, and deterministic JSON format are required.
 
@@ -268,22 +268,22 @@ ${list(rules.coverRules)}
   );
 
   const files: { name: string; content: string }[] = [
-    { name: "jobflow-tailoring/README.md", content: readme },
-    { name: "jobflow-tailoring/SKILL.md", content: skillMd },
-    { name: "jobflow-tailoring/rules/cv-rules.md", content: list(rules.cvRules) },
-    { name: "jobflow-tailoring/rules/cover-rules.md", content: list(rules.coverRules) },
-    { name: "jobflow-tailoring/rules/hard-constraints.md", content: list(rules.hardConstraints) },
+    { name: "joblit-tailoring/README.md", content: readme },
+    { name: "joblit-tailoring/SKILL.md", content: skillMd },
+    { name: "joblit-tailoring/rules/cv-rules.md", content: list(rules.cvRules) },
+    { name: "joblit-tailoring/rules/cover-rules.md", content: list(rules.coverRules) },
+    { name: "joblit-tailoring/rules/hard-constraints.md", content: list(rules.hardConstraints) },
     ...buildPromptFiles(rules, context, options),
     {
-      name: "jobflow-tailoring/schema/output.resume.schema.json",
+      name: "joblit-tailoring/schema/output.resume.schema.json",
       content: JSON.stringify(getExpectedJsonSchemaForTarget("resume"), null, 2),
     },
     {
-      name: "jobflow-tailoring/schema/output.cover.schema.json",
+      name: "joblit-tailoring/schema/output.cover.schema.json",
       content: JSON.stringify(getExpectedJsonSchemaForTarget("cover"), null, 2),
     },
     {
-      name: "jobflow-tailoring/meta/prompt-contract.json",
+      name: "joblit-tailoring/meta/prompt-contract.json",
       content: JSON.stringify(
         {
           promptTemplateVersion: PROMPT_TEMPLATE_VERSION,
@@ -296,8 +296,8 @@ ${list(rules.coverRules)}
         2,
       ),
     },
-    { name: "jobflow-tailoring/examples/output.resume.minimal.json", content: exampleJson },
-    { name: "jobflow-tailoring/examples/output.cover.minimal.json", content: coverExampleJson },
+    { name: "joblit-tailoring/examples/output.resume.minimal.json", content: exampleJson },
+    { name: "joblit-tailoring/examples/output.cover.minimal.json", content: coverExampleJson },
   ];
 
   const resumeSnapshotUpdatedAt = context?.resumeSnapshotUpdatedAt ?? "missing-profile";
@@ -305,9 +305,9 @@ ${list(rules.coverRules)}
     ruleSetId: rules.id,
     resumeSnapshotUpdatedAt,
   });
-  const fileList = files.map((f) => f.name).concat("jobflow-tailoring/meta/manifest.json");
+  const fileList = files.map((f) => f.name).concat("joblit-tailoring/meta/manifest.json");
   const manifest = {
-    packName: "jobflow-tailoring",
+    packName: "joblit-tailoring",
     packVersion: rules.id,
     generatedAt: new Date().toISOString(),
     redacted: !!options?.redactContext,
@@ -319,7 +319,7 @@ ${list(rules.coverRules)}
     files: fileList,
   };
   files.push({
-    name: "jobflow-tailoring/meta/manifest.json",
+    name: "joblit-tailoring/meta/manifest.json",
     content: JSON.stringify(manifest, null, 2),
   });
 
@@ -401,7 +401,7 @@ function buildLocaleJson(locale: "en-AU" | "zh-CN"): string {
 }
 
 function buildV2SystemMd(locale: "en-AU" | "zh-CN"): string {
-  return `<role>You are Jobflow's AI tailoring assistant (${locale}).</role>
+  return `<role>You are Joblit's AI tailoring assistant (${locale}).</role>
 
 <source-of-truth>The candidate's resume snapshot is the ONLY source of truth for all factual claims. Never invent skills, employers, projects, metrics, or responsibilities not present in the snapshot.</source-of-truth>
 
@@ -421,7 +421,7 @@ function buildV2ResumeSkillMd(rules: SkillRule[]): string {
   const high = filterRulesByPriority(resumeRules, "high");
 
   return `---
-name: jobflow-resume-tailoring
+name: joblit-resume-tailoring
 trigger: When a job description is provided and tailored CV JSON is needed
 ---
 
@@ -450,7 +450,7 @@ function buildV2CoverSkillMd(rules: SkillRule[]): string {
   const high = filterRulesByPriority(coverRules, "high");
 
   return `---
-name: jobflow-cover-tailoring
+name: joblit-cover-tailoring
 trigger: When a job description is provided and a tailored cover letter JSON is needed
 ---
 
@@ -553,11 +553,11 @@ function buildV2PlatformNotesMd(): string {
 ## General Tips
 - Always include the resume snapshot (context/) for personalized tailoring.
 - The quality-gates.md file helps the AI self-validate before returning output.
-- Schema files enforce strict output structure for Jobflow import compatibility.`;
+- Schema files enforce strict output structure for Joblit import compatibility.`;
 }
 
 function buildV2ReadmeMd(locale: "en-AU" | "zh-CN"): string {
-  return `# Jobflow Skills V2
+  return `# Joblit Skills V2
 
 Structured skill pack for AI-powered resume and cover letter tailoring.
 
@@ -569,7 +569,7 @@ Structured skill pack for AI-powered resume and cover letter tailoring.
    - \`{{JOB_TITLE}}\` - Target role title
    - \`{{COMPANY}}\` - Target company name
    - \`{{JOB_DESCRIPTION}}\` - Full job description text
-4. Submit the prompt and paste the resulting JSON back into Jobflow.
+4. Submit the prompt and paste the resulting JSON back into Joblit.
 
 ## Pack Structure
 
@@ -613,18 +613,18 @@ export function buildSkillPackV2Files(
   options?: SkillPackV2Options,
 ): { name: string; content: string }[] {
   const locale = options?.locale ?? rules.locale;
-  const prefix = "jobflow-skills-v2";
+  const prefix = "joblit-skills-v2";
 
   // Root-level SKILL.md required by Claude skill upload format
   const rootSkillMd = [
     "---",
-    "name: jobflow-tailoring",
-    "description: Generate role-tailored CVs and cover letters from a resume snapshot. Produces strict JSON for Jobflow PDF rendering. Supports en-AU and zh-CN locales.",
+    "name: joblit-tailoring",
+    "description: Generate role-tailored CVs and cover letters from a resume snapshot. Produces strict JSON for Joblit PDF rendering. Supports en-AU and zh-CN locales.",
     "---",
     "",
-    "# Jobflow Tailoring Skill",
+    "# Joblit Tailoring Skill",
     "",
-    "Use when a job description is provided and tailored CV or Cover Letter JSON is needed for Jobflow import.",
+    "Use when a job description is provided and tailored CV or Cover Letter JSON is needed for Joblit import.",
     "",
     "## Required Inputs",
     "- Job title, company, and full job description",
@@ -633,9 +633,9 @@ export function buildSkillPackV2Files(
     "",
     "## How to Use",
     "1. Load this skill pack into your AI project",
-    "2. For each job application, paste the job-specific prompt from Jobflow",
+    "2. For each job application, paste the job-specific prompt from Joblit",
     "3. The AI produces strict JSON matching the output schema",
-    "4. Paste the JSON back into Jobflow to render the PDF",
+    "4. Paste the JSON back into Joblit to render the PDF",
     "",
     "## Key Rules",
     "- Every claim must be grounded in the resume snapshot — no fabrication",
@@ -765,7 +765,7 @@ export function buildSkillPackV2Files(
   // Manifest (always last so file list is complete)
   const fileList = files.map((f) => f.name).concat(`${prefix}/meta/manifest.json`);
   const manifest = {
-    packName: "jobflow-skills-v2",
+    packName: "joblit-skills-v2",
     packVersion: "2.0.0",
     locale,
     generatedAt: new Date().toISOString(),

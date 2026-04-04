@@ -1,4 +1,4 @@
-# Jobflow
+# Joblit
 
 A practical job-search command center: fetch roles, triage quickly, tailor resume and cover letter content, and export production-ready PDFs.
 
@@ -23,7 +23,7 @@ A practical job-search command center: fetch roles, triage quickly, tailor resum
 
 ## Table of Contents
 
-- [What Jobflow Does](#what-jobflow-does)
+- [What Joblit Does](#what-joblit-does)
 - [Core Features](#core-features)
 - [Technology Stack](#technology-stack)
 - [Architecture](#architecture)
@@ -36,9 +36,9 @@ A practical job-search command center: fetch roles, triage quickly, tailor resum
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
-## What Jobflow Does
+## What Joblit Does
 
-Jobflow is designed as a production workflow product, not a prompt-only demo.
+Joblit is designed as a production workflow product, not a prompt-only demo.
 
 - End-to-end flow: intake, triage, tracking, tailoring, export
 - Reliable data path: dedupe, tombstone filtering, guarded imports
@@ -206,7 +206,7 @@ AI and files
 
 - Recommended: Vercel + Neon (PostgreSQL)
 - Configure all environment variables in the deployment platform
-- If deploying from a subdirectory, set root directory to `jobflow`
+- If deploying from a subdirectory, set root directory to `joblit`
 
 ## Troubleshooting
 

@@ -27,12 +27,12 @@ async function getToken(): Promise<string | null> {
   return token;
 }
 
-/** Make an authenticated request to the Jobflow API. */
+/** Make an authenticated request to the Joblit API. */
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const [base, token] = await Promise.all([getApiBase(), getToken()]);
 
   if (!token) {
-    throw new Error("Not authenticated. Please connect your Jobflow account.");
+    throw new Error("Not authenticated. Please connect your Joblit account.");
   }
 
   return fetch(`${base}${path}`, {
@@ -124,7 +124,7 @@ export async function fetchFieldMappings(params: {
   return (await res.json()).data;
 }
 
-/** Match a job URL to an existing Job in Jobflow. */
+/** Match a job URL to an existing Job in Joblit. */
 export async function matchJob(url: string) {
   const res = await apiFetch(`/api/ext/jobs/match?url=${encodeURIComponent(url)}`);
   if (!res.ok) throw new Error(`Job match failed: ${res.status}`);

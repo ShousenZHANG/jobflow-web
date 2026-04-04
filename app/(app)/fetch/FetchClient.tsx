@@ -147,7 +147,7 @@ export function FetchClient() {
   }, [userId]);
 
   useEffect(() => {
-    const raw = localStorage.getItem("jobflow.fetch.preferences");
+    const raw = localStorage.getItem("joblit.fetch.preferences");
     if (!raw) return;
     try {
       const parsed = JSON.parse(raw) as {
@@ -167,7 +167,7 @@ export function FetchClient() {
 
   useEffect(() => {
     localStorage.setItem(
-      "jobflow.fetch.preferences",
+      "joblit.fetch.preferences",
       JSON.stringify({
         title: jobTitle,
         location,

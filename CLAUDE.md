@@ -25,7 +25,7 @@ npm run deps:policy       # Check dependency policy
 
 ## Architecture
 
-**Jobflow** is a job-search workflow product: fetch roles → triage → tailor resume/cover letter → export PDFs.
+**Joblit** is a job-search workflow product: fetch roles → triage → tailor resume/cover letter → export PDFs.
 
 ### Key Data Flow
 

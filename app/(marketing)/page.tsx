@@ -19,14 +19,14 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   openGraph: {
-    title: `Jobflow — ${TITLE}`,
+    title: `Joblit — ${TITLE}`,
     description: DESC,
     type: "website",
-    siteName: "Jobflow",
+    siteName: "Joblit",
   },
   twitter: {
     card: "summary_large_image",
-    title: `Jobflow — ${TITLE}`,
+    title: `Joblit — ${TITLE}`,
     description: DESC,
   },
 };
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Jobflow",
+  name: "Joblit",
   description: DESC,
   applicationCategory: "BusinessApplication",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -70,11 +70,11 @@ export default async function HomePage() {
           <Link
             href="/"
             className="edu-landing-logo-only self-start text-[15px] font-semibold tracking-tight text-slate-800 transition-colors hover:text-slate-900 focus-visible:outline focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-            aria-label="Jobflow home"
+            aria-label="Joblit home"
           >
             <span className="inline-flex items-center gap-2">
               <Search className="h-5 w-5 text-emerald-700" strokeWidth={2.25} />
-              Jobflow
+              Joblit
             </span>
           </Link>
           <main id="main-content" className="flex w-full flex-col items-center">
@@ -104,7 +104,7 @@ export default async function HomePage() {
                 className="flex items-center gap-1.5 font-semibold text-slate-900"
               >
                 <Search className="h-4 w-4 text-emerald-700" />
-                Jobflow
+                Joblit
               </Link>
               <span aria-hidden="true">·</span>
               <Link href="/privacy" className="hover:text-slate-900">

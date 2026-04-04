@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-const STORAGE_KEY = "jobflow:search-history";
+const STORAGE_KEY = "joblit:search-history";
 const MAX_ITEMS = 10;
 
 function readStorage(): string[] {

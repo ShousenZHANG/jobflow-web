@@ -10,7 +10,7 @@ vi.mock("next-auth/next", () => ({
 
 vi.mock("@/lib/server/promptRuleTemplates", () => ({
   getActivePromptSkillRulesForUser: vi.fn(() => ({
-    id: "jobflow-default-v1",
+    id: "joblit-default-v1",
     locale: "en-AU",
     cvRules: ["cv-rule"],
     coverRules: ["cover-rule"],
@@ -56,7 +56,7 @@ describe("prompt rules skill pack api", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("application/zip");
     expect(res.headers.get("content-disposition")).toContain(".zip");
-    expect(res.headers.get("content-disposition")).toMatch(/jobflow-skills-v2/);
+    expect(res.headers.get("content-disposition")).toMatch(/joblit-skills-v2/);
     expect(res.headers.get("x-skill-pack-version")?.length).toBe(64);
   });
 

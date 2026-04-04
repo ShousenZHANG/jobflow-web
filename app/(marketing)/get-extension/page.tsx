@@ -21,9 +21,9 @@ import {
 import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
-  title: "Jobflow AutoFill — Chrome Extension",
+  title: "Joblit AutoFill — Chrome Extension",
   description:
-    "Download and install the Jobflow AutoFill Chrome extension. Auto-fill job applications on Greenhouse, Lever, Workday, and more.",
+    "Download and install the Joblit AutoFill Chrome extension. Auto-fill job applications on Greenhouse, Lever, Workday, and more.",
 };
 
 const ATS_PLATFORMS = [
@@ -59,7 +59,7 @@ export default async function ExtensionGuidePage() {
             className="flex items-center gap-2 text-sm font-semibold text-slate-800 transition-colors hover:text-slate-900"
           >
             <Search className="h-4 w-4 text-emerald-700" aria-hidden="true" />
-            Jobflow
+            Joblit
           </Link>
           <Link
             href="/"
@@ -97,7 +97,7 @@ export default async function ExtensionGuidePage() {
             </div>
             <p className="mb-4 text-sm text-slate-600">{t("downloadDesc")}</p>
             <a
-              href="https://github.com/ShousenZHANG/jobflow-web/releases/latest"
+              href="https://github.com/ShousenZHANG/joblit-web/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
@@ -331,7 +331,7 @@ export default async function ExtensionGuidePage() {
               className="flex items-center gap-1.5 font-semibold text-slate-900"
             >
               <Search className="h-4 w-4 text-emerald-700" />
-              Jobflow
+              Joblit
             </Link>
             <span aria-hidden="true">&middot;</span>
             <Link href="/privacy" className="hover:text-slate-900">

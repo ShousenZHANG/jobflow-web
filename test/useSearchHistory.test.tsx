@@ -65,19 +65,19 @@ describe("useSearchHistory", () => {
   });
 
   it("handles invalid localStorage data gracefully", () => {
-    localStorage.setItem("jobflow:search-history", "not-json{{{");
+    localStorage.setItem("joblit:search-history", "not-json{{{");
     const { result } = renderHook(() => useSearchHistory());
     expect(result.current.history).toEqual([]);
   });
 
   it("handles non-array localStorage data gracefully", () => {
-    localStorage.setItem("jobflow:search-history", JSON.stringify({ bad: true }));
+    localStorage.setItem("joblit:search-history", JSON.stringify({ bad: true }));
     const { result } = renderHook(() => useSearchHistory());
     expect(result.current.history).toEqual([]);
   });
 
   it("filters out non-string entries from localStorage", () => {
-    localStorage.setItem("jobflow:search-history", JSON.stringify(["valid", 42, null, "also-valid"]));
+    localStorage.setItem("joblit:search-history", JSON.stringify(["valid", 42, null, "also-valid"]));
     const { result } = renderHook(() => useSearchHistory());
     expect(result.current.history).toEqual(["valid", "also-valid"]);
   });

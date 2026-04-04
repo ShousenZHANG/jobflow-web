@@ -55,7 +55,7 @@ export function App() {
           borderBottom: "1px solid #e5e7eb",
         }}
       >
-        <div style={{ fontSize: 18, fontWeight: 700, color: "#2563eb" }}>Jobflow</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "#2563eb" }}>Joblit</div>
         <div style={{ fontSize: 11, color: "#888" }}>AutoFill</div>
       </header>
 

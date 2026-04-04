@@ -66,10 +66,10 @@ describe("mapResumeProfile", () => {
           location: "Sydney",
           dates: "2024",
           title: "Builder",
-          company: "Jobflow",
+          company: "Joblit",
           links: [
-            { label: "GitHub", url: "https://github.com/example/jobflow" },
-            { label: "Demo", url: "https://jobflow-web.vercel.app" },
+            { label: "GitHub", url: "https://github.com/example/joblit" },
+            { label: "Demo", url: "https://joblit-web.vercel.app" },
             { label: "Docs", url: "https://docs.example.com" },
           ],
           bullets: ["Built"],
@@ -80,8 +80,8 @@ describe("mapResumeProfile", () => {
     });
 
     expect(mapped.experiences[0]?.links).toEqual([
-      { label: "GitHub", url: "https://github.com/example/jobflow" },
-      { label: "Demo", url: "https://jobflow-web.vercel.app" },
+      { label: "GitHub", url: "https://github.com/example/joblit" },
+      { label: "Demo", url: "https://joblit-web.vercel.app" },
     ]);
   });
 });

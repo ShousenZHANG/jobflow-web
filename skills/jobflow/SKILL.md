@@ -1,21 +1,21 @@
 ---
-name: jobflow
-description: Use when working in the Jobflow repo (jobflow-web) or when discussing job fetch (JobSpy/LinkedIn/Seek/CN platforms), resume/cover tailoring, prompt rules/skill pack, or PDF export.
+name: joblit
+description: Use when working in the Joblit repo (joblit-web) or when discussing job fetch (JobSpy/LinkedIn/Seek/CN platforms), resume/cover tailoring, prompt rules/skill pack, or PDF export.
 ---
 
-# Jobflow (jobflow-web)
+# Joblit (joblit-web)
 
 Job-search command center: fetch → triage → tailor CV/CL → export PDFs.
 
 ## When to Use
 
-- You are in the `ShousenZHANG/jobflow-web` repo, or the user mentions Jobflow/jobflow-web.
+- You are in the `ShousenZHANG/joblit-web` repo, or the user mentions Joblit/joblit-web.
 - The task involves job intake (JobSpy/LinkedIn, Seek manual add, CN platforms), prompt rules/skill pack, CV/CL generation, batch workflows, or PDF export.
 
 ## When NOT to Use
 
-- For repositories other than jobflow-web (jobflow-tailoring pack is for Jobflow import only).
-- When the task is generic job-search advice with no code or Jobflow workflow involved.
+- For repositories other than joblit-web (joblit-tailoring pack is for Joblit import only).
+- When the task is generic job-search advice with no code or Joblit workflow involved.
 
 ## Mental Model
 

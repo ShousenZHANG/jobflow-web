@@ -32,8 +32,8 @@ function createHeader(name: string, size: number, mtime: number): Buffer {
   header[156] = "0".charCodeAt(0); // typeflag
   writeString(header, 257, 6, "ustar\0");
   writeString(header, 263, 2, "00");
-  writeString(header, 265, 32, "jobflow");
-  writeString(header, 297, 32, "jobflow");
+  writeString(header, 265, 32, "joblit");
+  writeString(header, 297, 32, "joblit");
 
   let sum = 0;
   for (let i = 0; i < 512; i += 1) sum += header[i];

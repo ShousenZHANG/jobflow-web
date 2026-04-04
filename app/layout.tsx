@@ -17,8 +17,8 @@ const geistMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Jobflow Dashboard",
-    template: "%s | Jobflow",
+    default: "Joblit Dashboard",
+    template: "%s | Joblit",
   },
   description: "Job tracking and automated discovery dashboard.",
 };

@@ -71,7 +71,7 @@ export async function GET(req: Request) {
     const files = buildGlobalSkillPackFiles(rules, context, { redactContext });
     const tarGz = createTarGz(files);
     const today = new Date().toISOString().slice(0, 10);
-    const filename = `jobflow-tailoring-${safeSegment(rules.id)}-${today}.tar.gz`;
+    const filename = `joblit-tailoring-${safeSegment(rules.id)}-${today}.tar.gz`;
 
     return new NextResponse(new Uint8Array(tarGz), {
       status: 200,
@@ -93,7 +93,7 @@ export async function GET(req: Request) {
   });
   const zip = createZip(v2Files);
   const today = new Date().toISOString().slice(0, 10);
-  const filename = `jobflow-skills-v2-${locale}-${today}.zip`;
+  const filename = `joblit-skills-v2-${locale}-${today}.zip`;
 
   return new NextResponse(new Uint8Array(zip), {
     status: 200,

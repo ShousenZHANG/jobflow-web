@@ -1,4 +1,4 @@
-# Jobflow Agent Playbook
+# Joblit Agent Playbook
 
 This repository supports a Codex-driven batch workflow for CV/CL generation.
 

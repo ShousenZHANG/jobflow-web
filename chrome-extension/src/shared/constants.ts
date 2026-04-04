@@ -1,8 +1,8 @@
-/** Base URL for Jobflow API. Configured via extension storage or defaults. */
+/** Base URL for Joblit API. Configured via extension storage or defaults. */
 export const DEFAULT_API_BASE =
   typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE
     ? (import.meta.env.VITE_API_BASE as string)
-    : "https://jobflow-web.vercel.app";
+    : "https://www.joblit.tech";
 
 /** Storage keys. */
 export const STORAGE_KEYS = {
