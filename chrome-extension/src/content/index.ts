@@ -234,7 +234,9 @@ async function performFill() {
         setTimeout(() => {
           currentDetection = detectForms(document);
           if (currentDetection.fields.length > 0) {
-            performFill();
+            performFill().catch(() => {
+              // Non-critical — multi-step fill failed silently
+            });
           }
         }, 1500);
       }

@@ -65,7 +65,7 @@ export class FloatingWidget {
 
   private renderCollapsed(): void {
     const matched = this.getMatchedCount();
-    this.root.innerHTML = "";
+    this.root.replaceChildren();
 
     // Reset expanded styles
     this.root.style.width = "";
@@ -94,7 +94,7 @@ export class FloatingWidget {
   }
 
   private renderExpanded(): void {
-    this.root.innerHTML = "";
+    this.root.replaceChildren();
 
     // Restore expanded styles
     this.root.style.width = "320px";
@@ -195,6 +195,6 @@ export class FloatingWidget {
   }
 
   destroy(): void {
-    this.root.innerHTML = "";
+    this.root.replaceChildren();
   }
 }

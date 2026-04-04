@@ -46,8 +46,10 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
   const handleFillNow = useCallback(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: "TRIGGER_FILL" });
-        window.close();
+        chrome.tabs.sendMessage(tabs[0].id, { type: "TRIGGER_FILL" }, () => {
+          if (chrome.runtime.lastError) return;
+          window.close();
+        });
       }
     });
   }, []);
@@ -109,8 +111,7 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
       </button>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <button
-          onClick={handleFillNow}
+        <kbd
           style={{
             flex: 1,
             padding: "8px",
@@ -118,16 +119,20 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
             border: "1px solid #e2e8f0",
             borderRadius: 6,
             fontSize: 12,
-            cursor: "pointer",
+            textAlign: "center",
+            color: "#64748b",
+            fontFamily: "system-ui, sans-serif",
           }}
         >
           Alt+Shift+F
-        </button>
+        </kbd>
         <button
           onClick={() => {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
               if (tabs[0]?.id) {
-                chrome.tabs.sendMessage(tabs[0].id, { type: "TOGGLE_WIDGET" });
+                chrome.tabs.sendMessage(tabs[0].id, { type: "TOGGLE_WIDGET" }, () => {
+                  void chrome.runtime.lastError;
+                });
               }
             });
           }}

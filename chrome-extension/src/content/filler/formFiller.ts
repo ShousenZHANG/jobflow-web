@@ -2,6 +2,11 @@ import type { DetectedField } from "@ext/shared/types";
 import { FieldCategory, PROFILE_KEY_MAP } from "@ext/shared/fieldTaxonomy";
 import { simulateInput, simulateSelect, simulateRadio, simulateCheckbox } from "./inputSimulator";
 
+/** Escape a string for use in a CSS attribute selector. */
+const cssEscape = typeof CSS !== "undefined" && CSS.escape
+  ? (s: string) => CSS.escape(s)
+  : (s: string) => s.replace(/([^\w-])/g, "\\$1");
+
 /** Flat profile data from /api/ext/profile/flat. */
 export type FlatProfile = Record<string, string>;
 
@@ -110,7 +115,7 @@ function fillSingleField(field: DetectedField, value: string): boolean {
     if (!name) return false;
     const form = el.closest("form") ?? el.ownerDocument;
     const radios = Array.from(
-      form.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${name}"]`),
+      form.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${cssEscape(name)}"]`),
     );
     return simulateRadio(radios, value);
   }

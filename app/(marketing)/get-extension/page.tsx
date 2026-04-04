@@ -21,7 +21,7 @@ import {
 import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
-  title: "Chrome Extension — Jobflow AutoFill",
+  title: "Jobflow AutoFill — Chrome Extension",
   description:
     "Download and install the Jobflow AutoFill Chrome extension. Auto-fill job applications on Greenhouse, Lever, Workday, and more.",
 };
@@ -58,7 +58,7 @@ export default async function ExtensionGuidePage() {
             href="/"
             className="flex items-center gap-2 text-sm font-semibold text-slate-800 transition-colors hover:text-slate-900"
           >
-            <Search className="h-4 w-4 text-emerald-700" />
+            <Search className="h-4 w-4 text-emerald-700" aria-hidden="true" />
             Jobflow
           </Link>
           <Link

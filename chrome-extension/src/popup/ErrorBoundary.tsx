@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div style={{ padding: 24, textAlign: "center", fontFamily: "system-ui, sans-serif" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>Something went wrong</div>
           <div style={{ fontSize: 13, color: "#666", marginBottom: 16 }}>
-            {this.state.error}
+            {this.state.error.slice(0, 200)}
           </div>
           <button
             onClick={this.handleReset}

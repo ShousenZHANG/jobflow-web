@@ -26,7 +26,7 @@ export default async function ExtensionPage() {
               </p>
             </div>
             <Link
-              href="/extension"
+              href="/get-extension"
               target="_blank"
               className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
