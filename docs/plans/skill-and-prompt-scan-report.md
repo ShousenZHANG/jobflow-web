@@ -8,17 +8,17 @@
 
 | 对象 | 位置 | 用途 |
 |------|------|------|
-| **Cursor Skill** | `skills/jobflow/SKILL.md` + README + references | Cursor 在 jobflow-web 仓库内工作时的指引 |
-| **Pack SKILL** | `lib/server/ai/skillPack.ts` 内生成的 `SKILL.md`（包内 `jobflow-tailoring/SKILL.md`） | 外部模型使用 skill pack 时的单源真相 |
+| **Cursor Skill** | `skills/joblit/SKILL.md` + README + references | Cursor 在 joblit-web 仓库内工作时的指引 |
+| **Pack SKILL** | `lib/server/ai/skillPack.ts` 内生成的 `SKILL.md`（包内 `joblit-tailoring/SKILL.md`） | 外部模型使用 skill pack 时的单源真相 |
 | **Pack Prompts** | `lib/server/ai/applicationPromptBuilder.ts` → 包内 `prompts/system.txt`、`resume-user.txt`、`cover-user.txt` | 每次生成 CV/CL 时发给外部模型的 system + user prompt |
 
 ---
 
-## 二、Cursor Skill（skills/jobflow/）vs skill-creator
+## 二、Cursor Skill（skills/joblit/）vs skill-creator
 
 ### 2.1 已符合项
 
-- **Frontmatter**：仅 `name`、`description`，且 `name` 为字母/数字/连字符（`jobflow`）✓  
+- **Frontmatter**：仅 `name`、`description`，且 `name` 为字母/数字/连字符（`joblit`）✓  
 - **description 以 “Use when” 开头**：有 ✓  
 - **Overview**：简短，核心一句（job-search command center）✓  
 - **When to Use**：有，且为 bullet 症状/场景 ✓  
@@ -31,8 +31,8 @@
 
 | 项 | 规范要求 | 当前 | 建议 |
 |----|----------|------|------|
-| **description 仅写“何时用”** | 只写触发条件，不写“做什么” | 含 “Provides structure, key paths, and non-negotiable conventions.” | 删除该句，或改为纯触发条件（例如 “Use when working in Jobflow repo or when discussing job fetch, tailoring, skill pack, or PDF export.”） |
-| **When NOT to use** | 建议有 | 无 | 可加一句（如 “Do not use for repositories other than jobflow-web.”） |
+| **description 仅写“何时用”** | 只写触发条件，不写“做什么” | 含 “Provides structure, key paths, and non-negotiable conventions.” | 删除该句，或改为纯触发条件（例如 “Use when working in Joblit repo or when discussing job fetch, tailoring, skill pack, or PDF export.”） |
+| **When NOT to use** | 建议有 | 无 | 可加一句（如 “Do not use for repositories other than joblit-web.”） |
 | **Common Mistakes** | 建议有 | 无 | 可加与 “Non-Negotiable Rules” 对应的易错点（如 “Calling manual-generate without promptMeta” 等） |
 
 ### 2.3 结论（Cursor Skill）
@@ -42,13 +42,13 @@
 
 ---
 
-## 三、Pack SKILL（jobflow-tailoring）vs skill-creator
+## 三、Pack SKILL（joblit-tailoring）vs skill-creator
 
 - Pack SKILL 面向**外部模型**，格式上借鉴 skill，但 YAML 含 `version`/`locale`，属于合理扩展。  
-- **description** 当前为：“Generate recruiter-grade CV/Cover JSON from JD using strict contracts for Jobflow PDF rendering.”  
+- **description** 当前为：“Generate recruiter-grade CV/Cover JSON from JD using strict contracts for Joblit PDF rendering.”  
   - 这是“做什么”的概括；writing-skills 建议 description 以“何时用”为主。  
   - **建议**：改为触发型，例如  
-    `Use when a job description is provided and tailored CV or Cover Letter JSON is needed for Jobflow import.`  
+    `Use when a job description is provided and tailored CV or Cover Letter JSON is needed for Joblit import.`  
 - **Trigger Conditions / Required Inputs / Execution / Output Contracts / Verification / Failure and Recovery** 均存在且清晰，与单源真相、JSON-only、schema 约束一致 ✓  
 
 ### 结论（Pack SKILL）
@@ -63,7 +63,7 @@
 
 | 检查项 | 状态 |
 |--------|------|
-| 系统 prompt 中 resume 上下文路径 | `jobflow-tailoring/context/resume-snapshot.json` ✓ 与包内路径一致 |
+| 系统 prompt 中 resume 上下文路径 | `joblit-tailoring/context/resume-snapshot.json` ✓ 与包内路径一致 |
 | “Use the imported skill package as the single source of truth” | ✓ 与 Pack SKILL 定位一致 |
 | Hard Constraints 来自 `rules.hardConstraints` | ✓ 与默认/用户规则一致 |
 | User prompt 中 Required JSON shape | 来自 `getExpectedJsonShapeForTarget` ✓ 与 schema 一致 |

@@ -193,7 +193,7 @@ Fetch and workflow
 - `GITHUB_TOKEN` (workflow scope required)
 - `GITHUB_WORKFLOW_FILE` (default: `jobspy-fetch.yml`)
 - `GITHUB_REF` (default: `master`)
-- `JOBFLOW_WEB_URL`
+- `JOBLIT_WEB_URL`
 - `FETCH_RUN_SECRET`
 - `IMPORT_SECRET`
 

@@ -126,7 +126,7 @@ Create `messages/en.json`:
   },
   "marketing": {
     "heroTitle": "Find the right roles, faster",
-    "heroSubtitle": "Search smarter, compare quickly, and move with clarity. Jobflow helps you discover, track, and apply to jobs with confidence.",
+    "heroSubtitle": "Search smarter, compare quickly, and move with clarity. Joblit helps you discover, track, and apply to jobs with confidence.",
     "feature1Title": "Smart search",
     "feature1Desc": "AI-powered matching surfaces the most relevant roles for your skills and preferences.",
     "feature2Title": "Quick compare",
@@ -145,7 +145,7 @@ Create `messages/en.json`:
     "login": "Log in",
     "howItWorks": "How it works",
     "readyToStart": "Ready to take control of your job search?",
-    "readyToStartDesc": "Join Jobflow today — it only takes a minute to get started.",
+    "readyToStartDesc": "Join Joblit today — it only takes a minute to get started.",
     "getStarted": "Get started — it's free",
     "allRightsReserved": "All rights reserved.",
     "openSource": "Open-source on GitHub",
@@ -229,7 +229,7 @@ Create `messages/zh.json`:
   },
   "marketing": {
     "heroTitle": "更快找到合适的职位",
-    "heroSubtitle": "智能搜索、快速对比、清晰决策。Jobflow 帮你发现、追踪并自信地申请理想职位。",
+    "heroSubtitle": "智能搜索、快速对比、清晰决策。Joblit 帮你发现、追踪并自信地申请理想职位。",
     "feature1Title": "智能搜索",
     "feature1Desc": "AI 驱动的匹配算法，为你推荐最相关的职位。",
     "feature2Title": "快速对比",
@@ -248,7 +248,7 @@ Create `messages/zh.json`:
     "login": "登录",
     "howItWorks": "使用流程",
     "readyToStart": "准备好掌控你的求职过程了吗？",
-    "readyToStartDesc": "立即加入 Jobflow — 只需一分钟即可开始。",
+    "readyToStartDesc": "立即加入 Joblit — 只需一分钟即可开始。",
     "getStarted": "免费开始使用",
     "allRightsReserved": "保留所有权利。",
     "openSource": "在 GitHub 上开源",
@@ -396,8 +396,8 @@ const geistMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Jobflow Dashboard",
-    template: "%s | Jobflow",
+    default: "Joblit Dashboard",
+    template: "%s | Joblit",
   },
   description: "Job tracking and automated discovery dashboard.",
 };

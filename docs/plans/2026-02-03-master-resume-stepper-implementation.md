@@ -125,7 +125,7 @@ const payload = {
   links: [{ label: "LinkedIn", url: "https://linkedin.com/in/jane" }],
   summary: "Focused engineer.",
   experiences: [{ company: "Example", title: "Engineer", location: "Sydney", dates: "2023-2025", bullets: ["Built"] }],
-  projects: [{ name: "Jobflow", role: "Frontend", dates: "2024", bullets: ["Shipped"] }],
+  projects: [{ name: "Joblit", role: "Frontend", dates: "2024", bullets: ["Shipped"] }],
   education: [{ school: "UNSW", degree: "MIT", location: "Sydney", dates: "2023-2025" }],
   skills: [{ label: "Frontend", items: ["React"] }],
 };

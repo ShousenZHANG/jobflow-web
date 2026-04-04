@@ -793,9 +793,9 @@ def fetch_linkedin(
 
 
 def api_base() -> str:
-    base = os.environ.get("JOBFLOW_WEB_URL", "").strip().rstrip("/")
+    base = os.environ.get("JOBLIT_WEB_URL", "").strip().rstrip("/")
     if not base:
-        raise RuntimeError("JOBFLOW_WEB_URL is not set")
+        raise RuntimeError("JOBLIT_WEB_URL is not set")
     return base
 
 

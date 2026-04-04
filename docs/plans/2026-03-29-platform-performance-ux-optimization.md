@@ -1,4 +1,4 @@
-# Jobflow 全平台性能与用户体验优化 — 实施计划
+# Joblit 全平台性能与用户体验优化 — 实施计划
 
 **Date:** 2026-03-29
 **Base doc:** `docs/search-optimization-plan.md`（方案 B: pg_trgm + GIN）
@@ -8,7 +8,7 @@
 
 ## 需求复述
 
-基于 `search-optimization-plan.md` 推荐方案，对 Jobflow 全平台执行大厂级优化：
+基于 `search-optimization-plan.md` 推荐方案，对 Joblit 全平台执行大厂级优化：
 
 1. **数据库层** — pg_trgm GIN 索引消除全表扫描 + similarity 相关性排序
 2. **前端架构** — God Component 拆分 + React.memo + 虚拟滚动 + Code Splitting
@@ -431,7 +431,7 @@ npm run build                           # 编译成功
 
 **做什么：**
 - `useSearchHistory()` hook：
-  - 从 localStorage `jobflow:search-history` 读取最近 10 条
+  - 从 localStorage `joblit:search-history` 读取最近 10 条
   - `addToHistory(query)` — 去重 + 插入头部 + 截断到 10
   - `clearHistory()` — 清空
 - 当 `q` 为空时，SearchBar Dropdown 展示搜索历史

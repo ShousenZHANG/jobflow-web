@@ -68,7 +68,7 @@ Use a valid URL for jobUrl (e.g. `https://www.seek.com.au/job/123`). Trim title 
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd jobflow && npx vitest run test/api/jobsCreate.test.ts -v
+cd joblit && npx vitest run test/api/jobsCreate.test.ts -v
 ```
 
 Expected: all tests pass (implementation already changed in Task 1).

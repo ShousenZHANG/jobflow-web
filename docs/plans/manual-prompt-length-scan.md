@@ -2,8 +2,8 @@
 
 ## 当前流程
 
-1. 用户下载 jobflow-tailoring 压缩包并解压，将包内容（SKILL.md、rules、schema、context、prompts）喂给大模型。
-2. 在 Jobflow 里对某个职位点击 Generate CV/CL，点击「Copy Prompt」。
+1. 用户下载 joblit-tailoring 压缩包并解压，将包内容（SKILL.md、rules、schema、context、prompts）喂给大模型。
+2. 在 Joblit 里对某个职位点击 Generate CV/CL，点击「Copy Prompt」。
 3. 复制的内容被粘贴到已加载 pack 的对话里，模型按指令产出 JSON。
 
 **问题**：每次复制的 prompt 是否必须那么长？是否合理？
@@ -81,14 +81,14 @@
 
 - **服务端**：在 `POST /api/applications/prompt` 的响应中增加 `shortUserPrompt`（或等价字段），内容仅包含：
   - 目标（resume/cover）
-  - 一句：「按你已加载的 jobflow-tailoring 规则与 schema，输出唯一 JSON，不要 markdown/code fence。」
+  - 一句：「按你已加载的 joblit-tailoring 规则与 schema，输出唯一 JSON，不要 markdown/code fence。」
   - Job title、Company、Job description
   - 若 target=resume：当前 job 的 coverage 块（top-3、base bullets、missing、fallback、suggested additions）；不包含完整 CV rules、skills policy、JSON shape。
 - **前端**：在「Copy Prompt」旁增加「Copy short prompt (pack already loaded)」（或折叠/切换），复制内容为上述 `shortUserPrompt` + 极简头部（可选）。这样在已喂 pack 的前提下，每次复制量可降到约 1500–5000 字符（主要差在 JD 长度），**长度合理**且不丢必要信息。
 
 ### C. 文档与 UI 提示
 
-- 在「Copy short prompt」旁或帮助文案中说明：仅当**已把 jobflow-tailoring 包内容提供给当前对话**时使用短版；否则用「Copy full prompt」。
+- 在「Copy short prompt」旁或帮助文案中说明：仅当**已把 joblit-tailoring 包内容提供给当前对话**时使用短版；否则用「Copy full prompt」。
 - 可选：在下载 pack 的说明里加一句：「若每次生成前都会先上传/粘贴本包，可使用『Copy short prompt』减少重复内容。」
 
 ---

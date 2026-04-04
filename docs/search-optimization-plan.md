@@ -1,4 +1,4 @@
-# Jobflow 搜索与平台性能优化方案
+# Joblit 搜索与平台性能优化方案
 
 **Date:** 2026-03-29
 **Branch:** master
@@ -10,7 +10,7 @@
 
 ### 1.1 架构现状
 
-Jobflow 是一个面向 AU/CN 双市场的求职管理平台。搜索为核心交互路径：用户通过关键词 + 筛选器在个人 Job 列表中搜索、浏览、管理职位。
+Joblit 是一个面向 AU/CN 双市场的求职管理平台。搜索为核心交互路径：用户通过关键词 + 筛选器在个人 Job 列表中搜索、浏览、管理职位。
 
 **当前请求链路：**
 
@@ -886,7 +886,7 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
 ```typescript
 // hooks/useSearchHistory.ts
 
-const STORAGE_KEY = "jobflow:search-history";
+const STORAGE_KEY = "joblit:search-history";
 const MAX_HISTORY = 10;
 
 export function useSearchHistory() {

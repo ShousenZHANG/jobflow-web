@@ -5,7 +5,7 @@
 
 ## 概述
 
-为 Jobflow 添加全站 CN/EN 语言切换功能。语言 = 市场，一个开关控制所有：EN 模式 = 英文界面 + 海外岗位，CN 模式 = 中文界面 + 国内岗位，两个市场完全隔离。
+为 Joblit 添加全站 CN/EN 语言切换功能。语言 = 市场，一个开关控制所有：EN 模式 = 英文界面 + 海外岗位，CN 模式 = 中文界面 + 国内岗位，两个市场完全隔离。
 
 ## 决策记录
 
@@ -34,7 +34,7 @@
 ### 新增文件
 
 ```
-jobflow/
+joblit/
   middleware.ts                    # 读 cookie，设 locale
   i18n/
     request.ts                     # next-intl 服务端配置
