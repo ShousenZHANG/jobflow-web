@@ -438,6 +438,34 @@ function getWidgetStyles(): string {
       background: #fecaca;
     }
 
+    /* ── Toast ── */
+    .jf-toast {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #065f46;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      white-space: nowrap;
+      animation: jf-toast-in 200ms ease, jf-toast-out 300ms ease 1.7s forwards;
+      z-index: 10;
+    }
+
+    @keyframes jf-toast-in {
+      from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @keyframes jf-toast-out {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
     /* ── Animations ── */
     @keyframes jf-pulse {
       0%, 100% { box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35); }

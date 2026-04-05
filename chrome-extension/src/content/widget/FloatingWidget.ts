@@ -294,40 +294,18 @@ export class FloatingWidget {
     footer.className = "jf-footer";
 
     if (this.mode === "review") {
-      // Review mode: Save All + Done
-      const hasEdits = this.edits.size > 0;
-
-      if (hasEdits) {
-        const saveAllBtn = document.createElement("button");
-        saveAllBtn.className = "jf-btn-primary";
-        saveAllBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7.5l3 3L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t("widget.saveAll")} (${this.edits.size})`;
-        saveAllBtn.addEventListener("click", () => this.handleSaveAll());
-        footer.appendChild(saveAllBtn);
-      }
-
+      // Review mode: user reviews filled fields, edits auto-save on confirm
       const doneBtn = document.createElement("button");
-      doneBtn.className = hasEdits ? "jf-btn-secondary" : "jf-btn-primary";
+      doneBtn.className = "jf-btn-primary";
       doneBtn.textContent = t("widget.looksGood");
       doneBtn.addEventListener("click", () => this.handleDone());
       footer.appendChild(doneBtn);
     } else {
-      // Browse mode
-      const hasEdits = this.edits.size > 0;
-
-      if (hasEdits) {
-        // Show Save button when user has made edits in browse mode
-        const saveAllBtn = document.createElement("button");
-        saveAllBtn.className = "jf-btn-primary";
-        saveAllBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7.5l3 3L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t("widget.saveAll")} (${this.edits.size})`;
-        saveAllBtn.addEventListener("click", () => this.handleSaveAll());
-        footer.appendChild(saveAllBtn);
-      }
-
+      // Browse mode: Fill All
       const fillBtn = document.createElement("button");
-      fillBtn.className = hasEdits ? "jf-btn-secondary" : "jf-btn-primary jf-fill-btn";
+      fillBtn.className = "jf-btn-primary jf-fill-btn";
       fillBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12l3-8h6l3 8M4.5 8h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t("widget.fillAll")}`;
       fillBtn.addEventListener("click", () => this.callbacks.onFill());
-
       footer.appendChild(fillBtn);
     }
 
@@ -432,7 +410,7 @@ export class FloatingWidget {
     return item;
   }
 
-  /** Commit an edit: apply to form, save to edits map. */
+  /** Commit an edit: apply to form, auto-save to knowledge base. */
   private commitEdit(field: DetectedField, value: string): void {
     const trimmed = value.trim();
 
@@ -440,6 +418,9 @@ export class FloatingWidget {
       this.edits.set(field.selector, { value: trimmed, source: "user" });
       // Apply value to the actual form field immediately
       this.callbacks.onApplyValue(field.selector, trimmed);
+      // Auto-save to knowledge base — no extra "Save All" step needed
+      this.saveFieldRule(field, trimmed);
+      this.showToast(t("widget.ruleSaved"));
     } else {
       this.edits.delete(field.selector);
     }
@@ -448,32 +429,45 @@ export class FloatingWidget {
     this.render();
   }
 
-  /** Save all edits as knowledge base rules. */
+  /** Persist a single field edit as a knowledge base rule. */
+  private saveFieldRule(field: DetectedField, value: string): void {
+    const profileMatch = matchValueToProfile(value, this.profile);
+
+    const rule: FieldRuleData = {
+      fieldSelector: field.selector,
+      fieldLabel: field.labelText || field.name || "",
+      profilePath: profileMatch?.profilePath ?? field.category,
+      staticValue: profileMatch ? undefined : value,
+      atsProvider: this.atsProvider,
+      pageDomain: this.pageDomain,
+      scope: "ats",
+    };
+
+    this.callbacks.onSaveRule(rule);
+  }
+
+  /** Show a brief toast notification inside the widget. */
+  private showToast(message: string): void {
+    const existing = this.root.querySelector(".jf-toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.className = "jf-toast";
+    toast.textContent = message;
+    this.root.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 2000);
+  }
+
+  /** Save any remaining unsaved edits and exit review mode. */
   private handleSaveAll(): void {
+    // All edits are already auto-saved individually, but handle any edge cases
     for (const [selector, edit] of this.edits) {
       const field = this.fields.find((f) => f.selector === selector);
-      if (!field) continue;
-
-      // Check if value matches a profile field
-      const profileMatch = matchValueToProfile(edit.value, this.profile);
-
-      const rule: FieldRuleData = {
-        fieldSelector: selector,
-        fieldLabel: field.labelText || field.name || "",
-        profilePath: profileMatch?.profilePath ?? field.category,
-        staticValue: profileMatch ? undefined : edit.value,
-        atsProvider: this.atsProvider,
-        pageDomain: this.pageDomain,
-        scope: "ats", // default: all sites with same ATS
-      };
-
-      this.callbacks.onSaveRule(rule);
+      if (field) this.saveFieldRule(field, edit.value);
     }
 
-    // Record submission after saving
     this.callbacks.onRecordSubmission();
-
-    // Clear edits and switch to browse
     this.edits.clear();
     this.mode = "browse";
     this.fillProgress = { filled: 0, total: 0, status: "idle" };
