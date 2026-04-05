@@ -4,6 +4,11 @@ const mockCreate = vi.fn();
 const mockFindMany = vi.fn();
 const mockCount = vi.fn();
 const mockUpsert = vi.fn();
+const mockDeleteMany = vi.fn();
+const mockUpdateMany = vi.fn();
+
+// Separate mocks so fieldMappingRule.findMany and formSubmission.findMany don't collide
+const mockRuleFindMany = vi.fn();
 
 vi.mock("@/lib/server/prisma", () => ({
   prisma: {
@@ -14,7 +19,9 @@ vi.mock("@/lib/server/prisma", () => ({
     },
     fieldMappingRule: {
       upsert: (...args: unknown[]) => mockUpsert(...args),
-      findMany: (...args: unknown[]) => mockFindMany(...args),
+      findMany: (...args: unknown[]) => mockRuleFindMany(...args),
+      deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
+      updateMany: (...args: unknown[]) => mockUpdateMany(...args),
     },
   },
 }));
@@ -24,6 +31,8 @@ import {
   listFormSubmissions,
   upsertFieldMappingRule,
   listFieldMappingRules,
+  deleteFieldMappingRule,
+  updateFieldMappingRule,
 } from "./extensionSubmission";
 
 describe("createFormSubmission", () => {
@@ -155,23 +164,130 @@ describe("upsertFieldMappingRule", () => {
 describe("listFieldMappingRules", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("returns rules for user", async () => {
-    const rules = [{ id: "rule-1", fieldSelector: "#email", profilePath: "email" }];
-    mockFindMany.mockResolvedValue(rules);
+  it("returns ALL rules when no filters (web dashboard)", async () => {
+    const rules = [{ id: "rule-1" }];
+    mockRuleFindMany.mockResolvedValue(rules);
 
     const result = await listFieldMappingRules({ userId: "user-1" });
+
     expect(result).toEqual(rules);
+    expect(mockRuleFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-1" },
+      }),
+    );
   });
 
-  it("filters by atsProvider", async () => {
-    mockFindMany.mockResolvedValue([]);
+  it("includes global + ATS-level rules when filtering by atsProvider", async () => {
+    mockRuleFindMany.mockResolvedValue([]);
 
     await listFieldMappingRules({ userId: "user-1", atsProvider: "greenhouse" });
 
-    expect(mockFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ atsProvider: "greenhouse" }),
-      }),
-    );
+    const callArg = mockRuleFindMany.mock.calls[0][0];
+    expect(callArg.where.userId).toBe("user-1");
+    expect(callArg.where.OR).toEqual([
+      { atsProvider: "", pageDomain: "" },
+      { atsProvider: "greenhouse", pageDomain: "" },
+    ]);
+  });
+
+  it("includes global + ATS + site rules when both filters provided", async () => {
+    mockRuleFindMany.mockResolvedValue([]);
+
+    await listFieldMappingRules({
+      userId: "user-1",
+      atsProvider: "greenhouse",
+      pageDomain: "boards.greenhouse.io",
+    });
+
+    const callArg = mockRuleFindMany.mock.calls[0][0];
+    expect(callArg.where.OR).toEqual([
+      { atsProvider: "", pageDomain: "" },
+      { atsProvider: "greenhouse", pageDomain: "" },
+      { atsProvider: "greenhouse", pageDomain: "boards.greenhouse.io" },
+    ]);
+  });
+});
+
+describe("upsertFieldMappingRule — normalization", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("normalizes undefined atsProvider/pageDomain to empty string", async () => {
+    mockUpsert.mockResolvedValue({ id: "rule-1" });
+
+    await upsertFieldMappingRule({
+      userId: "user-1",
+      fieldSelector: "#email",
+      profilePath: "email",
+    });
+
+    const callArg = mockUpsert.mock.calls[0][0];
+    // where and create should both use "" (not null or undefined)
+    expect(callArg.where.userId_fieldSelector_atsProvider_pageDomain.atsProvider).toBe("");
+    expect(callArg.where.userId_fieldSelector_atsProvider_pageDomain.pageDomain).toBe("");
+    expect(callArg.create.atsProvider).toBe("");
+    expect(callArg.create.pageDomain).toBe("");
+  });
+
+  it("normalizes empty string atsProvider consistently", async () => {
+    mockUpsert.mockResolvedValue({ id: "rule-2" });
+
+    await upsertFieldMappingRule({
+      userId: "user-1",
+      fieldSelector: "#name",
+      profilePath: "fullName",
+      atsProvider: "",
+      pageDomain: "",
+    });
+
+    const callArg = mockUpsert.mock.calls[0][0];
+    expect(callArg.where.userId_fieldSelector_atsProvider_pageDomain.atsProvider).toBe("");
+    expect(callArg.create.atsProvider).toBe("");
+  });
+
+  it("trims whitespace from atsProvider and pageDomain", async () => {
+    mockUpsert.mockResolvedValue({ id: "rule-3" });
+
+    await upsertFieldMappingRule({
+      userId: "user-1",
+      fieldSelector: "#phone",
+      profilePath: "phone",
+      atsProvider: "  greenhouse  ",
+      pageDomain: "  boards.greenhouse.io  ",
+    });
+
+    const callArg = mockUpsert.mock.calls[0][0];
+    expect(callArg.where.userId_fieldSelector_atsProvider_pageDomain.atsProvider).toBe("greenhouse");
+    expect(callArg.where.userId_fieldSelector_atsProvider_pageDomain.pageDomain).toBe("boards.greenhouse.io");
+    expect(callArg.create.atsProvider).toBe("greenhouse");
+    expect(callArg.create.pageDomain).toBe("boards.greenhouse.io");
+  });
+});
+
+describe("deleteFieldMappingRule", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("deletes by id and userId", async () => {
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+    await deleteFieldMappingRule("user-1", "rule-1");
+    expect(mockDeleteMany).toHaveBeenCalledWith({
+      where: { id: "rule-1", userId: "user-1" },
+    });
+  });
+});
+
+describe("updateFieldMappingRule", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("updates by id and userId with data", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+    await updateFieldMappingRule("user-1", "rule-1", {
+      profilePath: "email",
+      staticValue: "new@ex.com",
+    });
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: "rule-1", userId: "user-1" },
+      data: { profilePath: "email", staticValue: "new@ex.com" },
+    });
   });
 });

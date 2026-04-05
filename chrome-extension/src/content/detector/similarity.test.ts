@@ -163,4 +163,138 @@ describe("matchFieldsFromHistory", () => {
     );
     expect(matches.size).toBe(0);
   });
+
+  // ── Knowledge base rule matching (label + category + profile resolution) ──
+
+  it("matches rules by label when selector doesn't match", () => {
+    const rules: MappingRule[] = [{
+      fieldSelector: "#old-email-field",
+      fieldLabel: "Email",
+      atsProvider: "greenhouse",
+      pageDomain: null,
+      profilePath: "email",
+      staticValue: "label-match@ex.com",
+      source: "user",
+      confidence: 1.0,
+      useCount: 3,
+    }];
+
+    const matches = matchFieldsFromHistory(
+      fields, "sig-new", "example.com", "greenhouse", [], rules,
+    );
+
+    expect(matches.get("#email")?.value).toBe("label-match@ex.com");
+    expect(matches.get("#email")?.source).toBe("user_rule");
+  });
+
+  it("matches rules by category as last resort", () => {
+    const categoryField = makeField({
+      selector: "#completely-new",
+      name: "my-phone",
+      category: FieldCategory.PHONE,
+      labelText: "Enter your phone number please",
+    });
+
+    const rules: MappingRule[] = [{
+      fieldSelector: "#other-selector",
+      fieldLabel: "Telephone",
+      atsProvider: "lever",
+      pageDomain: null,
+      profilePath: FieldCategory.PHONE,
+      staticValue: "+1 555 1234",
+      source: "user",
+      confidence: 0.9,
+      useCount: 2,
+    }];
+
+    const matches = matchFieldsFromHistory(
+      [categoryField], "sig-x", "example.com", "lever", [], rules,
+    );
+
+    expect(matches.get("#completely-new")?.value).toBe("+1 555 1234");
+  });
+
+  it("resolves profilePath from profile when no staticValue", () => {
+    const profile = { email: "from-profile@ex.com", fullName: "Jane Smith" };
+    const rules: MappingRule[] = [{
+      fieldSelector: "#email",
+      fieldLabel: "Email",
+      atsProvider: "greenhouse",
+      pageDomain: null,
+      profilePath: "email",
+      staticValue: null,
+      source: "user",
+      confidence: 1.0,
+      useCount: 1,
+    }];
+
+    const matches = matchFieldsFromHistory(
+      fields, "sig-new", "example.com", "greenhouse", [], rules, profile,
+    );
+
+    expect(matches.get("#email")?.value).toBe("from-profile@ex.com");
+  });
+
+  it("prefers staticValue over profilePath resolution", () => {
+    const profile = { email: "profile@ex.com" };
+    const rules: MappingRule[] = [{
+      fieldSelector: "#email",
+      fieldLabel: "Email",
+      atsProvider: "greenhouse",
+      pageDomain: null,
+      profilePath: "email",
+      staticValue: "static@ex.com",
+      source: "user",
+      confidence: 1.0,
+      useCount: 1,
+    }];
+
+    const matches = matchFieldsFromHistory(
+      fields, "sig-new", "example.com", "greenhouse", [], rules, profile,
+    );
+
+    expect(matches.get("#email")?.value).toBe("static@ex.com");
+  });
+
+  it("skips rule when no staticValue and profilePath not in profile", () => {
+    const profile = { fullName: "Jane" };
+    const rules: MappingRule[] = [{
+      fieldSelector: "#email",
+      fieldLabel: "Email",
+      atsProvider: "greenhouse",
+      pageDomain: null,
+      profilePath: "email",
+      staticValue: null,
+      source: "user",
+      confidence: 1.0,
+      useCount: 1,
+    }];
+
+    const matches = matchFieldsFromHistory(
+      fields, "sig-new", "example.com", "greenhouse", [], rules, profile,
+    );
+
+    // No value resolved, should not create a match
+    expect(matches.has("#email")).toBe(false);
+  });
+
+  it("works without profile parameter (backward compat)", () => {
+    const rules: MappingRule[] = [{
+      fieldSelector: "#email",
+      fieldLabel: "Email",
+      atsProvider: "greenhouse",
+      pageDomain: null,
+      profilePath: "email",
+      staticValue: "direct@ex.com",
+      source: "user",
+      confidence: 1.0,
+      useCount: 1,
+    }];
+
+    const matches = matchFieldsFromHistory(
+      fields, "sig-new", "example.com", "greenhouse", [], rules,
+    );
+
+    expect(matches.get("#email")?.value).toBe("direct@ex.com");
+  });
 });
