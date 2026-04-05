@@ -98,8 +98,8 @@ async function init() {
           newDetection.atsProvider,
         );
       }
-    } catch {
-      // Non-critical — observer fires frequently, don't crash on transient DOM states
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") console.warn("[Joblit] MutationObserver error:", err);
     }
   });
 
@@ -225,8 +225,8 @@ async function fetchHistoricalOverrides(
     for (const [selector, match] of matches) {
       overrides[selector] = match.value;
     }
-  } catch {
-    // Non-critical — fall back to profile-only fill
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") console.warn("[Joblit] Historical overrides fetch failed:", err);
   }
 
   return overrides;

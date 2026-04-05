@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireExtensionToken, ExtensionTokenError } from "@/lib/server/auth/requireExtensionToken";
 import { unauthorizedError, errorJson } from "@/lib/server/api/errorResponse";
+import { checkRateLimit, rateLimitKeyFromRequest, rateLimitHeaders } from "@/lib/server/api/rateLimit";
 import { prisma } from "@/lib/server/prisma";
 import { z } from "zod";
 
@@ -15,6 +16,9 @@ const AppliedSchema = z.object({
  * Mark a job as APPLIED from the extension after a form submission.
  */
 export async function POST(req: Request) {
+  const rl = checkRateLimit(rateLimitKeyFromRequest(req, "ext:jobs:applied"), { limit: 20, windowSeconds: 60 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
+
   try {
     const { userId } = await requireExtensionToken(req);
     const body = await req.json().catch(() => ({}));

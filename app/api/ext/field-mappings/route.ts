@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireExtensionToken, ExtensionTokenError } from "@/lib/server/auth/requireExtensionToken";
 import { unauthorizedError, errorJson } from "@/lib/server/api/errorResponse";
+import { checkRateLimit, rateLimitKeyFromRequest, rateLimitHeaders } from "@/lib/server/api/rateLimit";
 import { z } from "zod";
 import { upsertFieldMappingRule, listFieldMappingRules } from "@/lib/server/extensionSubmission";
 
@@ -17,6 +18,9 @@ const UpsertMappingSchema = z.object({
 });
 
 export async function GET(req: Request) {
+  const rl = checkRateLimit(rateLimitKeyFromRequest(req, "ext:map:get"), { limit: 60, windowSeconds: 60 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
+
   try {
     const { userId } = await requireExtensionToken(req);
     const url = new URL(req.url);
@@ -35,6 +39,9 @@ export async function GET(req: Request) {
 }
 
 export async function PUT(req: Request) {
+  const rl = checkRateLimit(rateLimitKeyFromRequest(req, "ext:map:put"), { limit: 30, windowSeconds: 60 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
+
   try {
     const { userId } = await requireExtensionToken(req);
     const body = await req.json().catch(() => ({}));

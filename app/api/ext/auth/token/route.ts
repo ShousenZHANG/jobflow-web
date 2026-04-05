@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSession";
 import { unauthorizedError, errorJson } from "@/lib/server/api/errorResponse";
+import { checkRateLimit, rateLimitKeyFromRequest, rateLimitHeaders } from "@/lib/server/api/rateLimit";
 import { z } from "zod";
 import {
   createExtensionToken,
@@ -33,6 +34,9 @@ export async function GET() {
 
 /** POST — Generate a new extension token. Requires an active session (cookie auth). */
 export async function POST(req: Request) {
+  const rl = checkRateLimit(rateLimitKeyFromRequest(req, "ext:token:create"), { limit: 10, windowSeconds: 60 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
+
   try {
     const { userId } = await requireSession();
     const body = await req.json().catch(() => ({}));

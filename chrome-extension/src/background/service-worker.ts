@@ -54,8 +54,8 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
     case "RECORD_SUBMISSION": {
       try {
         await postSubmission(message.data as Record<string, unknown>);
-      } catch {
-        // Offline or server error — queue for later sync
+      } catch (err) {
+        if (process.env.NODE_ENV !== "production") console.warn("[Joblit] Submission failed, queuing:", err);
         await enqueue("submission", message.data as Record<string, unknown>);
       }
       return { success: true };
@@ -75,7 +75,8 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
       try {
         const mapping = await putFieldMapping(message.data as Record<string, unknown>);
         return { success: true, data: mapping };
-      } catch {
+      } catch (err) {
+        if (process.env.NODE_ENV !== "production") console.warn("[Joblit] Field mapping save failed, queuing:", err);
         await enqueue("field_mapping", message.data as Record<string, unknown>);
         return { success: true };
       }

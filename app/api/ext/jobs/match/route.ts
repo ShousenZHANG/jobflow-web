@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireExtensionToken, ExtensionTokenError } from "@/lib/server/auth/requireExtensionToken";
 import { unauthorizedError, errorJson } from "@/lib/server/api/errorResponse";
+import { checkRateLimit, rateLimitKeyFromRequest, rateLimitHeaders } from "@/lib/server/api/rateLimit";
 import { prisma } from "@/lib/server/prisma";
 
 export const runtime = "nodejs";
@@ -10,6 +11,9 @@ export const runtime = "nodejs";
  * Match a job URL to an existing Job record for the authenticated user.
  */
 export async function GET(req: Request) {
+  const rl = checkRateLimit(rateLimitKeyFromRequest(req, "ext:jobs:match"), { limit: 60, windowSeconds: 60 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
+
   try {
     const { userId } = await requireExtensionToken(req);
     const url = new URL(req.url);

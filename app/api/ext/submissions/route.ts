@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireExtensionToken, ExtensionTokenError } from "@/lib/server/auth/requireExtensionToken";
 import { unauthorizedError, errorJson } from "@/lib/server/api/errorResponse";
+import { checkRateLimit, rateLimitKeyFromRequest, rateLimitHeaders } from "@/lib/server/api/rateLimit";
 import { z } from "zod";
 import { createFormSubmission, listFormSubmissions } from "@/lib/server/extensionSubmission";
 
@@ -21,6 +22,9 @@ const CreateSubmissionSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const rl = checkRateLimit(rateLimitKeyFromRequest(req, "ext:sub:post"), { limit: 30, windowSeconds: 60 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
+
   try {
     const { userId } = await requireExtensionToken(req);
     const body = await req.json().catch(() => ({}));
@@ -41,6 +45,9 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
+  const rl = checkRateLimit(rateLimitKeyFromRequest(req, "ext:sub:get"), { limit: 60, windowSeconds: 60 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
+
   try {
     const { userId } = await requireExtensionToken(req);
     const url = new URL(req.url);

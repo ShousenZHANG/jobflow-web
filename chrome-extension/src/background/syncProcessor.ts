@@ -23,7 +23,8 @@ export async function processQueue(): Promise<{ synced: number; failed: number }
         }
         await dequeue(item.id);
         synced++;
-      } catch {
+      } catch (err) {
+        if (process.env.NODE_ENV !== "production") console.warn("[Joblit] Sync retry for", item.type, err);
         const willRetry = await markRetry(item.id);
         if (!willRetry) failed++;
       }

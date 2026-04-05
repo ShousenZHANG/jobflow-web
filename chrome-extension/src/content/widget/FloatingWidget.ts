@@ -310,7 +310,11 @@ export class FloatingWidget {
       // Browse mode: Fill All
       const fillBtn = document.createElement("button");
       fillBtn.className = "jf-btn-primary jf-fill-btn";
-      fillBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12l3-8h6l3 8M4.5 8h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t("widget.fillAll")}`;
+      const fillIcon = document.createElement("span");
+      fillIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12l3-8h6l3 8M4.5 8h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const fillLabel = document.createElement("span");
+      fillLabel.textContent = t("widget.fillAll");
+      fillBtn.append(fillIcon, fillLabel);
       fillBtn.addEventListener("click", () => this.callbacks.onFill());
       footer.appendChild(fillBtn);
     }

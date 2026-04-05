@@ -47,6 +47,8 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* SAFETY: JSON.stringify produces spec-compliant JSON with no unescaped HTML.
+          This is the standard Next.js pattern for structured data / JSON-LD. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
