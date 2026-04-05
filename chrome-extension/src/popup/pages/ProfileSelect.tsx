@@ -13,8 +13,8 @@ interface ProfileInfo {
 }
 
 const SUPPORTED_LOCALES = [
-  { value: "en-AU", label: "English (AU)" },
-  { value: "zh-CN", label: "中文 (CN)" },
+  { value: "en-AU", label: "English (AU)", flag: "🇦🇺" },
+  { value: "zh-CN", label: "中文 (CN)", flag: "🇨🇳" },
 ] as const;
 
 export function ProfileSelect() {
@@ -56,79 +56,91 @@ export function ProfileSelect() {
   );
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
-          {t("profile.locale")}
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {SUPPORTED_LOCALES.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => handleLocaleChange(value)}
-              style={{
-                flex: 1,
-                padding: "8px 12px",
-                background: currentLocale === value ? "#2563eb" : "#f1f5f9",
-                color: currentLocale === value ? "#fff" : "#334155",
-                border: currentLocale === value ? "none" : "1px solid #e2e8f0",
-                borderRadius: 6,
-                fontSize: 12,
-                fontWeight: currentLocale === value ? 600 : 400,
-                cursor: "pointer",
-              }}
-            >
-              {label}
-            </button>
-          ))}
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Locale picker */}
+      <div>
+        <div className="jl-section-label">{t("profile.locale")}</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {SUPPORTED_LOCALES.map(({ value, label }) => {
+            const active = currentLocale === value;
+            return (
+              <button
+                key={value}
+                onClick={() => handleLocaleChange(value)}
+                className={`jl-btn ${active ? "jl-btn--primary" : "jl-btn--outline"}`}
+                style={{ flex: 1, height: 36, fontSize: 12, borderRadius: "var(--jl-radius-md)" }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 8,
-          padding: 12,
-          background: "#fafafa",
-        }}
-      >
-        <div style={{ fontSize: 11, color: "#666", fontWeight: 600, marginBottom: 8 }}>
+      {/* Active profile card */}
+      <div className="jl-card">
+        <div className="jl-section-label" style={{ marginBottom: 10 }}>
           {t("profile.active")}
         </div>
 
         {loading ? (
-          <div style={{ color: "#888", fontSize: 13 }}>{t("app.loading")}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div className="jl-skeleton" style={{ width: 120, height: 14 }} />
+            <div className="jl-skeleton" style={{ width: 160, height: 12 }} />
+            <div className="jl-skeleton" style={{ width: 140, height: 12 }} />
+          </div>
         ) : profile ? (
-          <>
-            <div style={{ fontSize: 14, fontWeight: 600 }}>
-              {profile.flat?.fullName ?? "—"}
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "var(--jl-emerald-50)", color: "var(--jl-emerald-700)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 700, fontSize: 15, flexShrink: 0,
+            }}>
+              {(profile.flat?.fullName ?? "?")[0].toUpperCase()}
             </div>
-            <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>
-              {profile.flat?.currentTitle ?? "—"}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>
+                {profile.flat?.fullName ?? "—"}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--jl-text-secondary)", marginTop: 1 }}>
+                {profile.flat?.currentTitle ?? "—"}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--jl-text-muted)", marginTop: 1 }}>
+                {profile.flat?.email ?? "—"} &middot; {profile.profileName}
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
-              {profile.flat?.email ?? "—"} &middot; {profile.profileName}
-            </div>
-          </>
+          </div>
         ) : (
-          <div style={{ color: "#888", fontSize: 13 }}>
-            {t("profile.noProfile")}
+          <div className="jl-empty" style={{ padding: "16px 0" }}>
+            <div className="jl-empty-icon" style={{ width: 36, height: 36, borderRadius: 10 }}>
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="5.5" r="3" stroke="#9ca3af" strokeWidth="1.5"/>
+                <path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div className="jl-empty-desc">{t("profile.noProfile")}</div>
           </div>
         )}
       </div>
 
-      <div
-        style={{
-          marginTop: 16,
-          padding: 10,
-          background: "#fef3c7",
-          border: "1px solid #fde68a",
-          borderRadius: 6,
-          fontSize: 12,
-          color: "#92400e",
-        }}
-      >
-        {t("profile.manageHint")}
+      {/* Hint */}
+      <div className="jl-card" style={{
+        background: "var(--jl-warning-bg)",
+        borderColor: "#fde68a",
+        padding: 12,
+        fontSize: 12,
+        color: "#92400e",
+        lineHeight: 1.5,
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 8,
+      }}>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+          <circle cx="8" cy="8" r="7" stroke="#d97706" strokeWidth="1.5"/>
+          <path d="M8 5v3.5M8 10.5v.5" stroke="#d97706" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <span>{t("profile.manageHint")}</span>
       </div>
     </div>
   );

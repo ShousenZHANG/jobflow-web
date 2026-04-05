@@ -35,10 +35,10 @@ async function init() {
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === "TRIGGER_FILL") {
       performFill().then((result) => {
-        sendResponse({ success: true, data: result });
+        sendResponse({ success: true, ...result });
       }).catch((err: unknown) => {
         const errorMessage = err instanceof Error ? err.message : "Fill failed";
-        sendResponse({ success: false, error: errorMessage });
+        sendResponse({ success: false, error: errorMessage, filled: 0, skipped: 0 });
       });
       return true;
     }
@@ -218,11 +218,21 @@ async function performFill() {
     currentDetection.atsProvider,
   );
 
+  // Signal fill start to widget
+  if (widget) {
+    widget.setFillProgress(0, currentDetection.fields.length, "filling");
+  }
+
   const result = fillFields(currentDetection.fields, currentProfile, historicalOverrides);
 
-  // Update widget if present
+  // Signal fill complete to widget
   if (widget) {
+    widget.setFillProgress(result.filled, currentDetection.fields.length, "done");
     widget.setFields(currentDetection.fields);
+    // Reset progress after showing result
+    setTimeout(() => {
+      if (widget) widget.setFillProgress(0, 0, "idle");
+    }, 3000);
   }
 
   // Attempt multi-step form advancement

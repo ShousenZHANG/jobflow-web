@@ -21,6 +21,9 @@ export class FloatingWidget {
   private fields: DetectedField[] = [];
   private profile: FlatProfile = {};
   private callbacks: WidgetCallbacks;
+  private fillProgress: { filled: number; total: number; status: "idle" | "filling" | "done" } = {
+    filled: 0, total: 0, status: "idle",
+  };
 
   constructor(container: HTMLDivElement, callbacks: WidgetCallbacks) {
     this.root = container;
@@ -35,6 +38,11 @@ export class FloatingWidget {
 
   setProfile(profile: FlatProfile | null | undefined): void {
     this.profile = profile ?? {};
+    this.render();
+  }
+
+  setFillProgress(filled: number, total: number, status: "idle" | "filling" | "done"): void {
+    this.fillProgress = { filled, total, status };
     this.render();
   }
 
@@ -63,6 +71,14 @@ export class FloatingWidget {
     }
   }
 
+  private logoSvg(size: number): string {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none">
+      <circle cx="10.5" cy="10.5" r="5" stroke="white" stroke-width="2" fill="none"/>
+      <line x1="14" y1="14" x2="18" y2="18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <path d="M8.5 10.5h4M10.5 8.5v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
+  }
+
   private renderCollapsed(): void {
     const matched = this.getMatchedCount();
     this.root.replaceChildren();
@@ -77,16 +93,17 @@ export class FloatingWidget {
     const badge = document.createElement("div");
     badge.className = "jf-collapsed";
 
-    const logo = document.createElement("span");
-    logo.className = "jf-logo";
-    logo.textContent = "J";
-    badge.appendChild(logo);
+    const logoSpan = document.createElement("span");
+    logoSpan.className = "jf-logo";
+    logoSpan.innerHTML = this.logoSvg(22);
+    badge.appendChild(logoSpan);
 
     if (matched > 0) {
       const count = document.createElement("span");
       count.className = "jf-collapsed-badge";
       count.textContent = String(matched);
       badge.appendChild(count);
+      badge.classList.add("jf-collapsed--has-fields");
     }
 
     badge.addEventListener("click", () => this.toggle());
@@ -100,8 +117,8 @@ export class FloatingWidget {
     this.root.style.width = "320px";
     this.root.style.maxHeight = "480px";
     this.root.style.background = "#fff";
-    this.root.style.borderRadius = "12px";
-    this.root.style.boxShadow = "0 8px 32px rgba(0,0,0,0.12)";
+    this.root.style.borderRadius = "14px";
+    this.root.style.boxShadow = "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)";
 
     const matched = this.getMatchedCount();
 
@@ -110,30 +127,64 @@ export class FloatingWidget {
     header.className = "jf-header";
 
     const headerLeft = document.createElement("div");
+    headerLeft.className = "jf-header-left";
+
+    const logoSpan = document.createElement("span");
+    logoSpan.className = "jf-header-logo-icon";
+    logoSpan.innerHTML = this.logoSvg(16);
+    headerLeft.appendChild(logoSpan);
+
     const title = document.createElement("span");
     title.className = "jf-header-title";
     title.textContent = "Joblit";
+    headerLeft.appendChild(title);
+
     const badgeSpan = document.createElement("span");
     badgeSpan.className = "jf-header-badge";
     badgeSpan.textContent = `${matched}/${this.fields.length}`;
-    headerLeft.append(title, badgeSpan);
+    headerLeft.appendChild(badgeSpan);
 
     const headerActions = document.createElement("div");
     headerActions.className = "jf-header-actions";
+
     const minimizeBtn = document.createElement("button");
     minimizeBtn.className = "jf-header-btn";
     minimizeBtn.title = "Minimize";
-    minimizeBtn.textContent = "_";
+    minimizeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
     minimizeBtn.addEventListener("click", () => this.toggle());
+
     const closeBtn = document.createElement("button");
     closeBtn.className = "jf-header-btn";
     closeBtn.title = "Close";
-    closeBtn.textContent = "x";
+    closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
     closeBtn.addEventListener("click", () => this.toggle());
-    headerActions.append(minimizeBtn, closeBtn);
 
+    headerActions.append(minimizeBtn, closeBtn);
     header.append(headerLeft, headerActions);
     this.root.appendChild(header);
+
+    // Fill progress bar (if filling)
+    if (this.fillProgress.status !== "idle") {
+      const progressWrap = document.createElement("div");
+      progressWrap.className = "jf-fill-progress";
+
+      const progressBar = document.createElement("div");
+      progressBar.className = "jf-fill-progress-bar";
+
+      if (this.fillProgress.status === "filling") {
+        const pct = this.fillProgress.total > 0
+          ? Math.round((this.fillProgress.filled / this.fillProgress.total) * 100)
+          : 0;
+        progressBar.style.width = `${pct}%`;
+        progressBar.classList.add("jf-fill-progress-bar--active");
+      } else {
+        progressBar.style.width = "100%";
+        progressBar.classList.add("jf-fill-progress-bar--done");
+      }
+
+      progressWrap.appendChild(progressBar);
+      this.root.appendChild(progressWrap);
+    }
 
     // Body — field list
     const body = document.createElement("div");
@@ -182,7 +233,7 @@ export class FloatingWidget {
     footer.className = "jf-footer";
     const fillBtn = document.createElement("button");
     fillBtn.className = "jf-btn-primary jf-fill-btn";
-    fillBtn.textContent = t("widget.fillAll");
+    fillBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12l3-8h6l3 8M4.5 8h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t("widget.fillAll")}`;
     const recordBtn = document.createElement("button");
     recordBtn.className = "jf-btn-secondary jf-record-btn";
     recordBtn.textContent = t("widget.record");

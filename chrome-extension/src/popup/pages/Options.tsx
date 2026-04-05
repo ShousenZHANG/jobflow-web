@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { STORAGE_KEYS, DEFAULT_API_BASE } from "@ext/shared/constants";
 import { t } from "@ext/shared/i18n";
+import { checkmarkSvg } from "@ext/shared/logo";
 
 interface Preferences {
   autoFill: boolean;
@@ -48,61 +49,61 @@ export function Options() {
   );
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-          {t("options.apiBase")}
-        </div>
-        <input
-          type="url"
-          value={apiBase}
-          onChange={(e) => setApiBase(e.target.value)}
-          placeholder={DEFAULT_API_BASE}
-          style={{
-            width: "100%",
-            padding: "8px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 6,
-            fontSize: 13,
-            boxSizing: "border-box",
-          }}
-        />
-        <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>
-          {t("options.apiBaseDesc")}
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* API Base */}
+      <div>
+        <div className="jl-section-label">{t("options.apiBase")}</div>
+        <div className="jl-input-group" style={{ marginBottom: 0 }}>
+          <input
+            type="url"
+            value={apiBase}
+            onChange={(e) => setApiBase(e.target.value)}
+            placeholder={DEFAULT_API_BASE}
+            className="jl-input"
+            style={{ fontSize: 12, height: 36 }}
+          />
+          <div className="jl-input-hint">{t("options.apiBaseDesc")}</div>
         </div>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
-          {t("options.behavior")}
+      {/* Behavior toggles */}
+      <div>
+        <div className="jl-section-label">{t("options.behavior")}</div>
+        <div className="jl-card" style={{ padding: "4px 14px" }}>
+          <ToggleRow
+            label={t("options.autoFill")}
+            description="Automatically fills detected forms when page loads"
+            checked={prefs.autoFill}
+            onChange={() => togglePref("autoFill")}
+          />
+          <ToggleRow
+            label={t("options.showWidget")}
+            description="Shows floating widget on supported ATS pages"
+            checked={prefs.showWidget}
+            onChange={() => togglePref("showWidget")}
+          />
         </div>
-        <ToggleRow
-          label={t("options.autoFill")}
-          checked={prefs.autoFill}
-          onChange={() => togglePref("autoFill")}
-        />
-        <ToggleRow
-          label={t("options.showWidget")}
-          checked={prefs.showWidget}
-          onChange={() => togglePref("showWidget")}
-        />
       </div>
 
+      {/* Save button */}
       <button
         onClick={handleSave}
-        style={{
+        className={`jl-btn ${saved ? "jl-btn--outline" : "jl-btn--primary"}`}
+        style={saved ? {
           width: "100%",
-          padding: "10px 16px",
-          background: "#2563eb",
-          color: "#fff",
-          border: "none",
-          borderRadius: 6,
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
+          borderColor: "var(--jl-emerald-200)",
+          color: "var(--jl-emerald-700)",
+          background: "var(--jl-emerald-50)",
+        } : { width: "100%" }}
       >
-        {saved ? t("options.saved") : t("options.save")}
+        {saved ? (
+          <>
+            <span dangerouslySetInnerHTML={{ __html: checkmarkSvg(14) }} />
+            {t("options.saved")}
+          </>
+        ) : (
+          t("options.save")
+        )}
       </button>
     </div>
   );
@@ -110,32 +111,30 @@ export function Options() {
 
 function ToggleRow({
   label,
+  description,
   checked,
   onChange,
 }: {
   label: string;
+  description?: string;
   checked: boolean;
   onChange: () => void;
 }) {
   return (
-    <label
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "8px 0",
-        borderBottom: "1px solid #f0f0f0",
-        cursor: "pointer",
-        fontSize: 13,
-      }}
-    >
-      <span>{label}</span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        style={{ width: 16, height: 16, accentColor: "#2563eb" }}
-      />
+    <label className="jl-toggle-row">
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 500 }}>{label}</div>
+        {description && (
+          <div style={{ fontSize: 11, color: "var(--jl-text-muted)", marginTop: 1 }}>
+            {description}
+          </div>
+        )}
+      </div>
+      <div className="jl-toggle">
+        <input type="checkbox" checked={checked} onChange={onChange} />
+        <div className="jl-toggle-track" />
+        <div className="jl-toggle-thumb" />
+      </div>
     </label>
   );
 }

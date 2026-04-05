@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { t } from "@ext/shared/i18n";
+import { logoIconSvg, checkmarkSvg, spinnerSvg } from "@ext/shared/logo";
 
 interface DashboardProps {
   onDisconnect: () => void;
@@ -16,11 +17,19 @@ interface ProfileData {
   };
 }
 
+type FillState =
+  | { status: "idle" }
+  | { status: "filling" }
+  | { status: "success"; filled: number; total: number; message?: string }
+  | { status: "error"; message: string };
+
 export function Dashboard({ onDisconnect }: DashboardProps) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState("");
+  const [fillState, setFillState] = useState<FillState>({ status: "idle" });
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const disconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     chrome.runtime.sendMessage({ type: "GET_FLAT_PROFILE" }, (response) => {
@@ -35,137 +44,198 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
         setError(response.error);
       }
     });
+
+    return () => {
+      if (disconnectTimer.current) clearTimeout(disconnectTimer.current);
+    };
   }, []);
 
-  const handleDisconnect = useCallback(() => {
-    chrome.runtime.sendMessage({ type: "CLEAR_TOKEN" }, () => {
-      onDisconnect();
-    });
-  }, [onDisconnect]);
-
   const handleFillNow = useCallback(() => {
+    setFillState({ status: "filling" });
+
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: "TRIGGER_FILL" }, () => {
-          if (chrome.runtime.lastError) return;
-          window.close();
+        chrome.tabs.sendMessage(tabs[0].id, { type: "TRIGGER_FILL" }, (response) => {
+          if (chrome.runtime.lastError) {
+            setFillState({ status: "error", message: t("error.fillFailed") });
+            return;
+          }
+          if (response?.filled !== undefined) {
+            setFillState({
+              status: "success",
+              filled: response.filled ?? 0,
+              total: (response.filled ?? 0) + (response.skipped ?? 0),
+              message: response.message,
+            });
+            // Auto-close after showing result
+            setTimeout(() => window.close(), 2000);
+          } else {
+            setFillState({
+              status: "success",
+              filled: 0,
+              total: 0,
+              message: "Fill triggered",
+            });
+            setTimeout(() => window.close(), 1500);
+          }
+        });
+      } else {
+        setFillState({ status: "error", message: "No active tab found" });
+      }
+    });
+  }, []);
+
+  const handleToggleWidget = useCallback(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: "TOGGLE_WIDGET" }, () => {
+          void chrome.runtime.lastError;
         });
       }
     });
   }, []);
 
+  const handleDisconnect = useCallback(() => {
+    if (!confirmDisconnect) {
+      setConfirmDisconnect(true);
+      disconnectTimer.current = setTimeout(() => setConfirmDisconnect(false), 3000);
+      return;
+    }
+    chrome.runtime.sendMessage({ type: "CLEAR_TOKEN" }, () => {
+      onDisconnect();
+    });
+  }, [confirmDisconnect, onDisconnect]);
+
+  // Initial for avatar
+  const initial = (profile?.flat?.fullName ?? "?")[0].toUpperCase();
+
   return (
-    <div>
-      <div style={{
-        background: "#f0f9ff",
-        border: "1px solid #bae6fd",
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 16,
-      }}>
-        <div style={{ fontSize: 11, color: "#0369a1", fontWeight: 600, marginBottom: 4 }}>
-          {t("auth.connected")}
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Profile Card */}
+      <div className="jl-card jl-card--emerald">
         {loading ? (
-          <div style={{ color: "#666", fontSize: 13 }}>{t("app.loading")}</div>
-        ) : profile ? (
-          <>
-            <div style={{ fontSize: 15, fontWeight: 600 }}>
-              {profile.flat?.fullName ?? "—"}
-            </div>
-            <div style={{ fontSize: 13, color: "#555" }}>
-              {profile.flat?.currentTitle}
-              {profile.flat?.currentCompany ? ` @ ${profile.flat.currentCompany}` : ""}
-            </div>
-            <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
-              {profile.flat?.email} &middot; {profile.profileName} ({profile.locale})
-            </div>
-          </>
-        ) : error ? (
-          <div style={{ color: "#dc2626", fontSize: 13 }}>
-            {error}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className="jl-skeleton" style={{ width: 120, height: 16 }} />
+            <div className="jl-skeleton" style={{ width: 180, height: 12 }} />
+            <div className="jl-skeleton" style={{ width: 140, height: 12 }} />
           </div>
+        ) : profile ? (
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 12,
+              background: "var(--jl-emerald-100)", color: "var(--jl-emerald-700)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 700, fontSize: 16, flexShrink: 0,
+            }}>
+              {initial}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--jl-text-primary)" }}>
+                {profile.flat?.fullName ?? "—"}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--jl-text-secondary)", marginTop: 1 }}>
+                {profile.flat?.currentTitle}
+                {profile.flat?.currentCompany ? ` @ ${profile.flat.currentCompany}` : ""}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--jl-text-muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                <span>{profile.flat?.email}</span>
+                <span style={{ color: "var(--jl-border)" }}>&middot;</span>
+                <span className="jl-badge jl-badge--success" style={{ fontSize: 10 }}>
+                  {t("auth.connected")}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : error ? (
+          <div style={{ color: "var(--jl-error)", fontSize: 13 }}>{error}</div>
         ) : (
-          <div style={{ color: "#666", fontSize: 13 }}>
+          <div style={{ color: "var(--jl-text-muted)", fontSize: 13 }}>
             {t("dashboard.noProfile")}
           </div>
         )}
       </div>
 
-      <button
-        onClick={handleFillNow}
-        style={{
-          width: "100%",
-          padding: "10px 16px",
-          background: "#2563eb",
-          color: "#fff",
-          border: "none",
-          borderRadius: 6,
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: "pointer",
-          marginBottom: 8,
-        }}
-      >
-        {t("dashboard.fillNow")}
-      </button>
+      {/* Fill Button with State */}
+      {fillState.status === "idle" && (
+        <button onClick={handleFillNow} className="jl-btn jl-btn--primary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M2 12l3-8h6l3 8M4.5 8h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {t("dashboard.fillNow")}
+        </button>
+      )}
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <kbd
-          style={{
-            flex: 1,
-            padding: "8px",
-            background: "#f1f5f9",
-            border: "1px solid #e2e8f0",
-            borderRadius: 6,
-            fontSize: 12,
-            textAlign: "center",
-            color: "#64748b",
-            fontFamily: "system-ui, sans-serif",
-          }}
-        >
+      {fillState.status === "filling" && (
+        <div className="jl-card" style={{ textAlign: "center", padding: "16px 14px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
+            <span dangerouslySetInnerHTML={{ __html: spinnerSvg(16) }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--jl-emerald-700)" }}>
+              Filling form fields...
+            </span>
+          </div>
+          <div className="jl-progress">
+            <div className="jl-progress-bar jl-progress-bar--indeterminate" />
+          </div>
+        </div>
+      )}
+
+      {fillState.status === "success" && (
+        <div className="jl-card" style={{ textAlign: "center", padding: "16px 14px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+            <div
+              className="jl-success-check"
+              style={{ width: 36, height: 36 }}
+              dangerouslySetInnerHTML={{ __html: checkmarkSvg(20) }}
+            />
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--jl-emerald-700)" }}>
+              {fillState.filled}/{fillState.total} fields filled
+            </div>
+            {fillState.total > fillState.filled && (
+              <div className="jl-badge jl-badge--warning" style={{ fontSize: 11 }}>
+                {fillState.total - fillState.filled} skipped
+              </div>
+            )}
+            <div style={{ fontSize: 11, color: "var(--jl-text-muted)", marginTop: 2 }}>
+              Closing in a moment...
+            </div>
+          </div>
+        </div>
+      )}
+
+      {fillState.status === "error" && (
+        <div>
+          <div className="jl-error-msg" style={{ marginBottom: 8 }}>
+            <span>{fillState.message}</span>
+          </div>
+          <button onClick={() => setFillState({ status: "idle" })} className="jl-btn jl-btn--outline" style={{ width: "100%" }}>
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* Shortcut & Widget toggle */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <div className="jl-kbd" style={{ flex: 1, justifyContent: "center" }}>
           Alt+Shift+F
-        </kbd>
-        <button
-          onClick={() => {
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-              if (tabs[0]?.id) {
-                chrome.tabs.sendMessage(tabs[0].id, { type: "TOGGLE_WIDGET" }, () => {
-                  void chrome.runtime.lastError;
-                });
-              }
-            });
-          }}
-          style={{
-            flex: 1,
-            padding: "8px",
-            background: "#f1f5f9",
-            border: "1px solid #e2e8f0",
-            borderRadius: 6,
-            fontSize: 12,
-            cursor: "pointer",
-          }}
-        >
+        </div>
+        <button onClick={handleToggleWidget} className="jl-btn jl-btn--outline" style={{ flex: 1 }}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+            <circle cx="11" cy="8" r="2" stroke="currentColor" strokeWidth="1.5"/>
+          </svg>
           {t("dashboard.toggleWidget")}
         </button>
       </div>
 
-      <hr style={{ border: "none", borderTop: "1px solid #e5e7eb", margin: "16px 0" }} />
+      <hr className="jl-divider" />
 
+      {/* Disconnect */}
       <button
         onClick={handleDisconnect}
-        style={{
-          width: "100%",
-          padding: "8px 16px",
-          background: "transparent",
-          color: "#dc2626",
-          border: "1px solid #fecaca",
-          borderRadius: 6,
-          fontSize: 13,
-          cursor: "pointer",
-        }}
+        className={`jl-btn ${confirmDisconnect ? "jl-btn--danger" : "jl-btn--ghost"}`}
+        style={{ width: "100%", fontSize: 12 }}
       >
-        {t("auth.disconnect")}
+        {confirmDisconnect ? "Click again to confirm disconnect" : t("auth.disconnect")}
       </button>
     </div>
   );
