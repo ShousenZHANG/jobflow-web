@@ -5,7 +5,7 @@
 
 import type { FlatProfile } from "../content/filler/formFiller";
 
-export interface ProfileMatch {
+interface ProfileMatch {
   profilePath: string;
   confidence: number;
 }

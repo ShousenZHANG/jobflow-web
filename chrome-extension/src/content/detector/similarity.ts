@@ -43,7 +43,7 @@ export function signatureSimilarity(sig1: string, sig2: string): number {
  * Match detected fields against historical submissions.
  * Returns a map of fieldSelector → previously submitted value.
  */
-export interface HistoricalMatch {
+interface HistoricalMatch {
   fieldSelector: string;
   value: string;
   source: "exact" | "same_ats_domain" | "same_ats" | "user_rule";

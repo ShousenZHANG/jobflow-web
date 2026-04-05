@@ -465,21 +465,6 @@ export class FloatingWidget {
     setTimeout(() => toast.remove(), 2000);
   }
 
-  /** Save any remaining unsaved edits and exit review mode. */
-  private handleSaveAll(): void {
-    // All edits are already auto-saved individually, but handle any edge cases
-    for (const [selector, edit] of this.edits) {
-      const field = this.fields.find((f) => f.selector === selector);
-      if (field) this.saveFieldRule(field, edit.value);
-    }
-
-    this.callbacks.onRecordSubmission();
-    this.edits.clear();
-    this.mode = "browse";
-    this.fillProgress = { filled: 0, total: 0, status: "idle" };
-    this.render();
-  }
-
   /** User confirms fill looks good — record and exit review. */
   private handleDone(): void {
     this.callbacks.onRecordSubmission();
