@@ -380,8 +380,8 @@ model FieldMappingRule {
 
   fieldSelector  String
   fieldLabel     String?
-  atsProvider    String?
-  pageDomain     String?
+  atsProvider    String   @default("")
+  pageDomain     String   @default("")
 
   profilePath    String
   staticValue    String?

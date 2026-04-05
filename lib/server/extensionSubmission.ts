@@ -79,22 +79,28 @@ export interface UpsertMappingRuleInput {
 }
 
 export async function upsertFieldMappingRule(input: UpsertMappingRuleInput) {
-  const { userId, fieldSelector, atsProvider, pageDomain, ...rest } = input;
+  const { userId, fieldSelector, ...rest } = input;
+
+  // Normalize empty strings to "" consistently for the composite unique key.
+  // The DB unique constraint is (userId, fieldSelector, atsProvider, pageDomain),
+  // so we must use the same value in both `where` and `create`.
+  const atsProvider = input.atsProvider?.trim() || "";
+  const pageDomain = input.pageDomain?.trim() || "";
 
   return prisma.fieldMappingRule.upsert({
     where: {
       userId_fieldSelector_atsProvider_pageDomain: {
         userId,
         fieldSelector,
-        atsProvider: atsProvider ?? "",
-        pageDomain: pageDomain ?? "",
+        atsProvider,
+        pageDomain,
       },
     },
     create: {
       userId,
       fieldSelector,
-      atsProvider: atsProvider ?? null,
-      pageDomain: pageDomain ?? null,
+      atsProvider,
+      pageDomain,
       profilePath: rest.profilePath,
       fieldLabel: rest.fieldLabel ?? null,
       staticValue: rest.staticValue ?? null,

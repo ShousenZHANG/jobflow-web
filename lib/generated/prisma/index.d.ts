@@ -20645,8 +20645,8 @@ export namespace Prisma {
     userId: string
     fieldSelector: string
     fieldLabel: string | null
-    atsProvider: string | null
-    pageDomain: string | null
+    atsProvider: string
+    pageDomain: string
     profilePath: string
     staticValue: string | null
     source: string
@@ -20763,8 +20763,8 @@ export namespace Prisma {
       userId: string
       fieldSelector: string
       fieldLabel: string | null
-      atsProvider: string | null
-      pageDomain: string | null
+      atsProvider: string
+      pageDomain: string
       profilePath: string
       staticValue: string | null
       source: string
@@ -24515,8 +24515,8 @@ export namespace Prisma {
     userId?: UuidFilter<"FieldMappingRule"> | string
     fieldSelector?: StringFilter<"FieldMappingRule"> | string
     fieldLabel?: StringNullableFilter<"FieldMappingRule"> | string | null
-    atsProvider?: StringNullableFilter<"FieldMappingRule"> | string | null
-    pageDomain?: StringNullableFilter<"FieldMappingRule"> | string | null
+    atsProvider?: StringFilter<"FieldMappingRule"> | string
+    pageDomain?: StringFilter<"FieldMappingRule"> | string
     profilePath?: StringFilter<"FieldMappingRule"> | string
     staticValue?: StringNullableFilter<"FieldMappingRule"> | string | null
     source?: StringFilter<"FieldMappingRule"> | string
@@ -24532,8 +24532,8 @@ export namespace Prisma {
     userId?: SortOrder
     fieldSelector?: SortOrder
     fieldLabel?: SortOrderInput | SortOrder
-    atsProvider?: SortOrderInput | SortOrder
-    pageDomain?: SortOrderInput | SortOrder
+    atsProvider?: SortOrder
+    pageDomain?: SortOrder
     profilePath?: SortOrder
     staticValue?: SortOrderInput | SortOrder
     source?: SortOrder
@@ -24553,8 +24553,8 @@ export namespace Prisma {
     userId?: UuidFilter<"FieldMappingRule"> | string
     fieldSelector?: StringFilter<"FieldMappingRule"> | string
     fieldLabel?: StringNullableFilter<"FieldMappingRule"> | string | null
-    atsProvider?: StringNullableFilter<"FieldMappingRule"> | string | null
-    pageDomain?: StringNullableFilter<"FieldMappingRule"> | string | null
+    atsProvider?: StringFilter<"FieldMappingRule"> | string
+    pageDomain?: StringFilter<"FieldMappingRule"> | string
     profilePath?: StringFilter<"FieldMappingRule"> | string
     staticValue?: StringNullableFilter<"FieldMappingRule"> | string | null
     source?: StringFilter<"FieldMappingRule"> | string
@@ -24570,8 +24570,8 @@ export namespace Prisma {
     userId?: SortOrder
     fieldSelector?: SortOrder
     fieldLabel?: SortOrderInput | SortOrder
-    atsProvider?: SortOrderInput | SortOrder
-    pageDomain?: SortOrderInput | SortOrder
+    atsProvider?: SortOrder
+    pageDomain?: SortOrder
     profilePath?: SortOrder
     staticValue?: SortOrderInput | SortOrder
     source?: SortOrder
@@ -24594,8 +24594,8 @@ export namespace Prisma {
     userId?: UuidWithAggregatesFilter<"FieldMappingRule"> | string
     fieldSelector?: StringWithAggregatesFilter<"FieldMappingRule"> | string
     fieldLabel?: StringNullableWithAggregatesFilter<"FieldMappingRule"> | string | null
-    atsProvider?: StringNullableWithAggregatesFilter<"FieldMappingRule"> | string | null
-    pageDomain?: StringNullableWithAggregatesFilter<"FieldMappingRule"> | string | null
+    atsProvider?: StringWithAggregatesFilter<"FieldMappingRule"> | string
+    pageDomain?: StringWithAggregatesFilter<"FieldMappingRule"> | string
     profilePath?: StringWithAggregatesFilter<"FieldMappingRule"> | string
     staticValue?: StringNullableWithAggregatesFilter<"FieldMappingRule"> | string | null
     source?: StringWithAggregatesFilter<"FieldMappingRule"> | string
@@ -26084,8 +26084,8 @@ export namespace Prisma {
     id?: string
     fieldSelector: string
     fieldLabel?: string | null
-    atsProvider?: string | null
-    pageDomain?: string | null
+    atsProvider?: string
+    pageDomain?: string
     profilePath: string
     staticValue?: string | null
     source?: string
@@ -26101,8 +26101,8 @@ export namespace Prisma {
     userId: string
     fieldSelector: string
     fieldLabel?: string | null
-    atsProvider?: string | null
-    pageDomain?: string | null
+    atsProvider?: string
+    pageDomain?: string
     profilePath: string
     staticValue?: string | null
     source?: string
@@ -26116,8 +26116,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fieldSelector?: StringFieldUpdateOperationsInput | string
     fieldLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    atsProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    pageDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    atsProvider?: StringFieldUpdateOperationsInput | string
+    pageDomain?: StringFieldUpdateOperationsInput | string
     profilePath?: StringFieldUpdateOperationsInput | string
     staticValue?: NullableStringFieldUpdateOperationsInput | string | null
     source?: StringFieldUpdateOperationsInput | string
@@ -26133,8 +26133,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     fieldSelector?: StringFieldUpdateOperationsInput | string
     fieldLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    atsProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    pageDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    atsProvider?: StringFieldUpdateOperationsInput | string
+    pageDomain?: StringFieldUpdateOperationsInput | string
     profilePath?: StringFieldUpdateOperationsInput | string
     staticValue?: NullableStringFieldUpdateOperationsInput | string | null
     source?: StringFieldUpdateOperationsInput | string
@@ -26149,8 +26149,8 @@ export namespace Prisma {
     userId: string
     fieldSelector: string
     fieldLabel?: string | null
-    atsProvider?: string | null
-    pageDomain?: string | null
+    atsProvider?: string
+    pageDomain?: string
     profilePath: string
     staticValue?: string | null
     source?: string
@@ -26164,8 +26164,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fieldSelector?: StringFieldUpdateOperationsInput | string
     fieldLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    atsProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    pageDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    atsProvider?: StringFieldUpdateOperationsInput | string
+    pageDomain?: StringFieldUpdateOperationsInput | string
     profilePath?: StringFieldUpdateOperationsInput | string
     staticValue?: NullableStringFieldUpdateOperationsInput | string | null
     source?: StringFieldUpdateOperationsInput | string
@@ -26180,8 +26180,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     fieldSelector?: StringFieldUpdateOperationsInput | string
     fieldLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    atsProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    pageDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    atsProvider?: StringFieldUpdateOperationsInput | string
+    pageDomain?: StringFieldUpdateOperationsInput | string
     profilePath?: StringFieldUpdateOperationsInput | string
     staticValue?: NullableStringFieldUpdateOperationsInput | string | null
     source?: StringFieldUpdateOperationsInput | string
@@ -29884,8 +29884,8 @@ export namespace Prisma {
     id?: string
     fieldSelector: string
     fieldLabel?: string | null
-    atsProvider?: string | null
-    pageDomain?: string | null
+    atsProvider?: string
+    pageDomain?: string
     profilePath: string
     staticValue?: string | null
     source?: string
@@ -29899,8 +29899,8 @@ export namespace Prisma {
     id?: string
     fieldSelector: string
     fieldLabel?: string | null
-    atsProvider?: string | null
-    pageDomain?: string | null
+    atsProvider?: string
+    pageDomain?: string
     profilePath: string
     staticValue?: string | null
     source?: string
@@ -30422,8 +30422,8 @@ export namespace Prisma {
     userId?: UuidFilter<"FieldMappingRule"> | string
     fieldSelector?: StringFilter<"FieldMappingRule"> | string
     fieldLabel?: StringNullableFilter<"FieldMappingRule"> | string | null
-    atsProvider?: StringNullableFilter<"FieldMappingRule"> | string | null
-    pageDomain?: StringNullableFilter<"FieldMappingRule"> | string | null
+    atsProvider?: StringFilter<"FieldMappingRule"> | string
+    pageDomain?: StringFilter<"FieldMappingRule"> | string
     profilePath?: StringFilter<"FieldMappingRule"> | string
     staticValue?: StringNullableFilter<"FieldMappingRule"> | string | null
     source?: StringFilter<"FieldMappingRule"> | string
@@ -33276,8 +33276,8 @@ export namespace Prisma {
     id?: string
     fieldSelector: string
     fieldLabel?: string | null
-    atsProvider?: string | null
-    pageDomain?: string | null
+    atsProvider?: string
+    pageDomain?: string
     profilePath: string
     staticValue?: string | null
     source?: string
@@ -33804,8 +33804,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fieldSelector?: StringFieldUpdateOperationsInput | string
     fieldLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    atsProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    pageDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    atsProvider?: StringFieldUpdateOperationsInput | string
+    pageDomain?: StringFieldUpdateOperationsInput | string
     profilePath?: StringFieldUpdateOperationsInput | string
     staticValue?: NullableStringFieldUpdateOperationsInput | string | null
     source?: StringFieldUpdateOperationsInput | string
@@ -33819,8 +33819,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fieldSelector?: StringFieldUpdateOperationsInput | string
     fieldLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    atsProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    pageDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    atsProvider?: StringFieldUpdateOperationsInput | string
+    pageDomain?: StringFieldUpdateOperationsInput | string
     profilePath?: StringFieldUpdateOperationsInput | string
     staticValue?: NullableStringFieldUpdateOperationsInput | string | null
     source?: StringFieldUpdateOperationsInput | string
@@ -33834,8 +33834,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fieldSelector?: StringFieldUpdateOperationsInput | string
     fieldLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    atsProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    pageDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    atsProvider?: StringFieldUpdateOperationsInput | string
+    pageDomain?: StringFieldUpdateOperationsInput | string
     profilePath?: StringFieldUpdateOperationsInput | string
     staticValue?: NullableStringFieldUpdateOperationsInput | string | null
     source?: StringFieldUpdateOperationsInput | string
