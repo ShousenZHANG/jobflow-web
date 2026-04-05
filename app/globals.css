@@ -431,6 +431,286 @@ body {
   }
 }
 
+/* ── Extension token manager ── */
+.ext-card {
+  border-radius: 16px;
+  border: 1.5px solid oklch(0.92 0.01 250);
+  background: white;
+  padding: 20px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+.ext-card:hover {
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+}
+.ext-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid oklch(0.92 0.01 250);
+  padding: 0 12px;
+  font-size: 13px;
+  color: oklch(0.25 0.02 255);
+  background: oklch(0.985 0.003 250);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.ext-input:focus {
+  outline: none;
+  border-color: oklch(0.55 0.16 160);
+  box-shadow: 0 0 0 3px oklch(0.55 0.16 160 / 0.1);
+}
+.ext-input::placeholder {
+  color: oklch(0.65 0.01 250);
+}
+.ext-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: oklch(0.55 0.16 160);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 150ms ease, transform 100ms ease, box-shadow 150ms ease;
+}
+.ext-btn-primary:hover:not(:disabled) {
+  background: oklch(0.48 0.16 160);
+  box-shadow: 0 2px 8px -2px oklch(0.55 0.16 160 / 0.4);
+}
+.ext-btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.ext-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Token reveal card */
+.ext-token-reveal {
+  margin-top: 14px;
+  border-radius: 12px;
+  border: 1.5px solid oklch(0.85 0.1 85);
+  background: linear-gradient(135deg, oklch(0.97 0.04 85), oklch(0.98 0.02 60));
+  padding: 14px;
+  animation: ext-reveal 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes ext-reveal {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.ext-token-code {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  border-radius: 8px;
+  border: 1px solid oklch(0.88 0.06 85);
+  background: white;
+  padding: 6px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: oklch(0.35 0.04 85);
+  line-height: 1.5;
+}
+
+/* Copy button with success morph */
+.ext-btn-copy {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1.5px solid oklch(0.82 0.08 85);
+  background: oklch(0.94 0.06 85);
+  font-size: 12px;
+  font-weight: 600;
+  color: oklch(0.4 0.08 85);
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+.ext-btn-copy:hover {
+  background: oklch(0.90 0.08 85);
+  border-color: oklch(0.78 0.1 85);
+}
+.ext-btn-copy:active {
+  transform: scale(0.95);
+}
+.ext-btn-copy--done {
+  background: oklch(0.55 0.16 160);
+  border-color: oklch(0.55 0.16 160);
+  color: white;
+}
+.ext-btn-copy-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Count badge */
+.ext-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: oklch(0.94 0.01 250);
+  font-size: 11px;
+  font-weight: 700;
+  color: oklch(0.45 0.02 250);
+}
+
+/* Empty state */
+.ext-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+/* Token row with entrance/exit animations */
+.ext-token-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 12px;
+  border: 1.5px solid oklch(0.94 0.005 250);
+  background: oklch(0.985 0.003 250);
+  padding: 12px 14px;
+  transition: border-color 150ms ease, background 150ms ease, transform 300ms ease, opacity 300ms ease;
+}
+.ext-token-row:hover {
+  border-color: oklch(0.90 0.01 250);
+  background: oklch(0.975 0.005 250);
+}
+.ext-token-row--enter {
+  animation: ext-row-enter 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes ext-row-enter {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.ext-token-row--exit {
+  opacity: 0;
+  transform: translateX(20px) scale(0.97);
+  pointer-events: none;
+}
+
+/* Token activity dot */
+.ext-token-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: oklch(0.85 0.01 250);
+  flex-shrink: 0;
+}
+.ext-token-dot--active {
+  background: oklch(0.65 0.2 160);
+  box-shadow: 0 0 0 3px oklch(0.65 0.2 160 / 0.15);
+}
+
+/* Revoke button */
+.ext-btn-revoke {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1.5px solid oklch(0.92 0.02 20);
+  background: oklch(0.98 0.01 20);
+  font-size: 11px;
+  font-weight: 600;
+  color: oklch(0.55 0.2 25);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 150ms ease;
+}
+.ext-btn-revoke:hover:not(:disabled) {
+  background: oklch(0.95 0.04 20);
+  border-color: oklch(0.85 0.06 20);
+  color: oklch(0.45 0.22 25);
+}
+.ext-btn-revoke:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.ext-btn-revoke:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Setup instructions */
+.ext-instructions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ext-instructions li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: oklch(0.4 0.02 250);
+  line-height: 1.5;
+}
+.ext-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: oklch(0.95 0.01 250);
+  font-size: 11px;
+  font-weight: 700;
+  color: oklch(0.5 0.02 250);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Dialog buttons */
+.ext-dialog-cancel {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+.ext-dialog-destructive {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  background: oklch(0.55 0.22 25) !important;
+  color: white !important;
+  transition: background 150ms ease, transform 100ms ease !important;
+}
+.ext-dialog-destructive:hover {
+  background: oklch(0.48 0.22 25) !important;
+}
+.ext-dialog-destructive:active {
+  transform: scale(0.97);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ext-token-reveal,
+  .ext-token-row--enter {
+    animation: none;
+  }
+  .ext-token-row--exit {
+    transition: none;
+  }
+}
+
 /* ── Legal pages (Privacy / Terms) ── */
 .legal-page {
   display: grid;
