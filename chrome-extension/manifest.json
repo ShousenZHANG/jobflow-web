@@ -14,15 +14,8 @@
     "activeTab",
     "scripting"
   ],
-  "optional_host_permissions": [
-    "https://*/*"
-  ],
   "host_permissions": [
-    "https://*.greenhouse.io/*",
-    "https://jobs.lever.co/*",
-    "https://*.myworkdayjobs.com/*",
-    "https://*.icims.com/*",
-    "https://*.successfactors.com/*"
+    "https://*/*"
   ],
   "background": {
     "service_worker": "src/background/service-worker.ts",
@@ -37,16 +30,11 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://*.greenhouse.io/*",
-        "https://jobs.lever.co/*",
-        "https://*.myworkdayjobs.com/*",
-        "https://*.icims.com/*",
-        "https://*.successfactors.com/*"
-      ],
+      "matches": ["https://*/*"],
       "js": ["src/content/index.ts"],
       "css": [],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "commands": {

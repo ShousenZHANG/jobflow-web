@@ -1,6 +1,6 @@
 import type { DetectedField } from "@ext/shared/types";
 import { FieldCategory, PROFILE_KEY_MAP } from "@ext/shared/fieldTaxonomy";
-import { simulateInput, simulateSelect, simulateRadio, simulateCheckbox } from "./inputSimulator";
+import { simulateInput, simulateSelect, simulateRadio, simulateCheckbox, simulateCustomDropdown } from "./inputSimulator";
 
 /** Escape a string for use in a CSS attribute selector. */
 const cssEscape = typeof CSS !== "undefined" && CSS.escape
@@ -104,6 +104,17 @@ export function fillFields(
 function fillSingleField(field: DetectedField, value: string): boolean {
   const el = field.element;
 
+  // Custom dropdown (React/Vue combobox)
+  if (
+    el.getAttribute("role") === "combobox" ||
+    el.getAttribute("role") === "listbox" ||
+    (el as HTMLElement).dataset?.automationId?.includes("Dropdown")
+  ) {
+    // Fire-and-forget async dropdown interaction; optimistically report success
+    void simulateCustomDropdown(el as HTMLElement, value);
+    return true;
+  }
+
   // Select dropdown
   if (el instanceof HTMLSelectElement) {
     return simulateSelect(el, value);
@@ -145,13 +156,18 @@ export function advanceMultiStepForm(doc: Document): boolean {
     'button',
   ];
 
-  const nextPatterns = /^(next|continue|proceed|下一步|继续)$/i;
+  const NEXT_PATTERNS = /^(next|continue|proceed|save\s*(?:&|and)\s*continue|save\s*&\s*next|下一步|继续|保存并继续)$/i;
+  const SUBMIT_PATTERNS = /^(submit|apply|投递|提交申请|submit\s*application|apply\s*now)$/i;
 
   for (const selector of nextButtonSelectors) {
     const buttons = doc.querySelectorAll<HTMLElement>(selector);
     for (const btn of buttons) {
       const text = btn.textContent?.trim() ?? "";
-      if (nextPatterns.test(text)) {
+      if (SUBMIT_PATTERNS.test(text)) {
+        // Reached submit button — stop and let user review
+        return false;
+      }
+      if (NEXT_PATTERNS.test(text)) {
         btn.click();
         return true;
       }

@@ -14,6 +14,7 @@ let widget: FloatingWidget | null = null;
 let currentDetection: FormDetectionResult | null = null;
 let currentProfile: FlatProfile | null = null;
 let cleanupSubmitListener: (() => void) | null = null;
+const isIframe = window !== window.top;
 
 /** Load user preferences from storage. */
 async function loadPreferences(): Promise<{ autoFill: boolean; showWidget: boolean }> {
@@ -28,8 +29,39 @@ async function loadPreferences(): Promise<{ autoFill: boolean; showWidget: boole
   });
 }
 
+/** Set up submit interception for detected fields. */
+function setupSubmitIntercept(detection: FormDetectionResult) {
+  cleanupSubmitListener?.();
+  cleanupSubmitListener = interceptFormSubmits(
+    detection.fields,
+    detection.atsProvider,
+  );
+}
+
 /** Main entry point for the content script. */
 async function init() {
+  // Known ATS domains — always initialize
+  const KNOWN_ATS_PATTERNS = [
+    /greenhouse\.io/i, /lever\.co/i, /myworkdayjobs\.com/i, /workday\.com/i,
+    /icims\.com/i, /successfactors\.com/i, /taleo\.net/i, /smartrecruiters\.com/i,
+    /bamboohr\.com/i, /jobvite\.com/i, /ashbyhq\.com/i, /rippling\.com/i,
+    /careers|jobs|apply|application/i,
+  ];
+  const isKnownAts = KNOWN_ATS_PATTERNS.some(p => p.test(location.href));
+  const hasFormElements = document.querySelector("input, textarea, select, form");
+
+  if (!hasFormElements && !isKnownAts && !isIframe) {
+    // No forms on this page — set up a lazy observer and exit
+    const lazyObs = new MutationObserver(() => {
+      if (document.querySelector("input, textarea, select, form")) {
+        lazyObs.disconnect();
+        init(); // Re-initialize now that forms exist
+      }
+    });
+    lazyObs.observe(document.body, { childList: true, subtree: true });
+    return;
+  }
+
   const prefs = await loadPreferences();
 
   // Listen for messages from background/popup
@@ -51,27 +83,32 @@ async function init() {
     }
   });
 
-  // Auto-detect forms after page loads
-  setTimeout(() => {
-    currentDetection = detectForms(document);
-    if (currentDetection.fields.length > 0) {
-      // Mount widget if preference enabled
-      if (prefs.showWidget) {
+  // Exponential retry for SPA-rendered forms
+  const autoFillEnabled = prefs.autoFill;
+  const DETECTION_DELAYS = [500, 1500, 3000, 6000];
+  let detected = false;
+
+  for (const delay of DETECTION_DELAYS) {
+    await new Promise(resolve => setTimeout(resolve, delay));
+    const result = detectForms(document);
+    if (result.fields.length > 0) {
+      currentDetection = result;
+      if (!isIframe) {
         initWidget(currentDetection);
       }
-
-      // Set up submit interception
-      cleanupSubmitListener = interceptFormSubmits(
-        currentDetection.fields,
-        currentDetection.atsProvider,
-      );
-
-      // Auto-fill if preference enabled
-      if (prefs.autoFill) {
-        performFill();
+      setupSubmitIntercept(currentDetection);
+      if (autoFillEnabled) {
+        await performFill();
       }
+      detected = true;
+      break;
     }
-  }, 1000);
+  }
+
+  if (!detected) {
+    // No forms found after all retries — still set up MutationObserver
+    currentDetection = detectForms(document);
+  }
 
   // Watch for SPA navigation / dynamic form loading
   let lastUrl = window.location.href;
@@ -86,17 +123,19 @@ async function init() {
       }
 
       const newDetection = detectForms(document);
-      if (newDetection.fields.length > 0 && newDetection.fields.length !== currentDetection?.fields.length) {
-        currentDetection = newDetection;
-        if (widget) {
-          widget.setFields(newDetection.fields);
+      if (newDetection.fields.length > 0) {
+        const newSelectors = new Set(newDetection.fields.map(f => f.selector));
+        const oldSelectors = new Set(currentDetection?.fields.map(f => f.selector) ?? []);
+        const changed = newSelectors.size !== oldSelectors.size ||
+          [...newSelectors].some(s => !oldSelectors.has(s));
+        if (changed) {
+          currentDetection = newDetection;
+          if (widget) {
+            widget.setFields(newDetection.fields);
+          }
+          // Re-setup submit interception
+          setupSubmitIntercept(newDetection);
         }
-        // Re-setup submit interception
-        cleanupSubmitListener?.();
-        cleanupSubmitListener = interceptFormSubmits(
-          newDetection.fields,
-          newDetection.atsProvider,
-        );
       }
     } catch (err) {
       if (process.env.NODE_ENV !== "production") console.warn("[Joblit] MutationObserver error:", err);
@@ -170,7 +209,9 @@ function toggleWidget() {
       currentDetection = detectForms(document);
     }
     if (currentDetection.fields.length > 0) {
-      initWidget(currentDetection);
+      if (!isIframe) {
+        initWidget(currentDetection);
+      }
       // Widget starts collapsed — expand it immediately so fields are visible
       if (widget) {
         widget.toggle();

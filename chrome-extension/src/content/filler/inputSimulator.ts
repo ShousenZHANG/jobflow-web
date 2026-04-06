@@ -104,3 +104,47 @@ export function simulateCheckbox(el: HTMLInputElement, checked: boolean): void {
     el.dispatchEvent(new Event("click", { bubbles: true }));
   }
 }
+
+/**
+ * Simulate interaction with a custom (non-native) dropdown component.
+ * Handles React/Vue/Angular custom select/combobox components.
+ */
+export async function simulateCustomDropdown(
+  trigger: HTMLElement,
+  value: string,
+): Promise<boolean> {
+  // Open the dropdown
+  trigger.focus();
+  trigger.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+  trigger.click();
+
+  // Wait for options to render
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  // Search for options in various patterns
+  const optionSelectors = [
+    '[role="option"]',
+    '[role="menuitem"]',
+    'li[data-value]',
+    '.option',
+    '[class*="option"]',
+    '[class*="Option"]',
+  ];
+
+  const normalizedValue = value.toLowerCase().trim();
+
+  for (const selector of optionSelectors) {
+    const options = document.querySelectorAll(selector);
+    for (const option of options) {
+      const text = (option.textContent ?? "").trim().toLowerCase();
+      const dataValue = (option as HTMLElement).dataset.value?.toLowerCase();
+      if (text === normalizedValue || dataValue === normalizedValue || text.includes(normalizedValue)) {
+        (option as HTMLElement).click();
+        trigger.dispatchEvent(new Event("change", { bubbles: true }));
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
