@@ -275,7 +275,13 @@ async function fetchHistoricalOverrides(
 
 /** Perform form detection and filling. */
 async function performFill() {
-  if (!currentDetection) {
+  // Always re-detect forms fresh — the user may have clicked Fill after
+  // the page finished loading (SPA), or fields may have changed since init.
+  currentDetection = detectForms(document);
+
+  if (currentDetection.fields.length === 0) {
+    // Last resort: wait 1s for SPA render and try once more
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     currentDetection = detectForms(document);
   }
 
@@ -283,14 +289,12 @@ async function performFill() {
     return { filled: 0, skipped: 0, message: "No form fields detected on this page." };
   }
 
-  // Fetch flat profile if not cached
-  if (!currentProfile) {
-    const response = await sendMessage<{ flat: FlatProfile }>({ type: "GET_FLAT_PROFILE" });
-    if (!response.success || !response.data?.flat) {
-      return { filled: 0, skipped: 0, message: "Could not load profile. Please check your connection." };
-    }
-    currentProfile = response.data.flat;
+  // Always fetch fresh profile to ensure latest data
+  const response = await sendMessage<{ flat: FlatProfile }>({ type: "GET_FLAT_PROFILE" });
+  if (!response.success || !response.data?.flat) {
+    return { filled: 0, skipped: 0, message: "Could not load profile. Please check your connection." };
   }
+  currentProfile = response.data.flat;
 
   // Fetch historical overrides (non-blocking on failure)
   const historicalOverrides = await fetchHistoricalOverrides(

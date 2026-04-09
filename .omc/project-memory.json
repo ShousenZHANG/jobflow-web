@@ -316,6 +316,12 @@
   },
   "hotPaths": [
     {
+      "path": "chrome-extension\\src\\content\\index.ts",
+      "accessCount": 6,
+      "lastAccessed": 1775734390915,
+      "type": "file"
+    },
+    {
       "path": "app\\(marketing)\\page.tsx",
       "accessCount": 4,
       "lastAccessed": 1775733201477,
