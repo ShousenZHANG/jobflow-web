@@ -37,8 +37,6 @@ interface FieldEdit {
   source: "user";
 }
 
-type WidgetMode = "browse" | "review";
-
 export class FloatingWidget {
   private root: HTMLDivElement;
   private collapsed = true;
@@ -48,7 +46,6 @@ export class FloatingWidget {
   private fillProgress: { filled: number; total: number; status: "idle" | "filling" | "done" } = {
     filled: 0, total: 0, status: "idle",
   };
-  private mode: WidgetMode = "browse";
   /** True while saveAllEdits is in progress — prevents double-submit. */
   private saving = false;
   /** Map of fieldSelector → user-edited value */
@@ -61,11 +58,11 @@ export class FloatingWidget {
   private atsProvider = "";
   /** Page domain for current page */
   private pageDomain = "";
-  /** Poll timer for detecting manual field changes during review mode. */
+  /** Poll timer for detecting field changes after fill. */
   private fieldPollTimer: ReturnType<typeof setInterval> | null = null;
   /** Last-known DOM values per field — used to detect external changes. */
   private lastFieldValues: Map<string, string> = new Map();
-  /** Cleanup functions for event listeners added during review mode. */
+  /** Cleanup functions for event listeners added after fill. */
   private fieldChangeCleanups: (() => void)[] = [];
 
   constructor(container: HTMLDivElement, callbacks: WidgetCallbacks) {
@@ -92,7 +89,7 @@ export class FloatingWidget {
   setFillProgress(filled: number, total: number, status: "idle" | "filling" | "done"): void {
     this.fillProgress = { filled, total, status };
     if (status === "done") {
-      this.mode = "review";
+      // Start watching for manual field changes (e.g. dropdown selections)
       this.startWatchingFields();
     }
     this.render();
@@ -263,9 +260,7 @@ export class FloatingWidget {
 
     const badgeSpan = document.createElement("span");
     badgeSpan.className = "jf-header-badge";
-    badgeSpan.textContent = this.mode === "review"
-      ? t("widget.review")
-      : `${matched}/${this.fields.length}`;
+    badgeSpan.textContent = `${matched}/${this.fields.length}`;
     headerLeft.appendChild(badgeSpan);
 
     const headerActions = document.createElement("div");
@@ -312,17 +307,6 @@ export class FloatingWidget {
       this.root.appendChild(progressWrap);
     }
 
-    // ── Mode label bar (review mode) ──
-    if (this.mode === "review") {
-      const reviewBar = document.createElement("div");
-      reviewBar.className = "jf-review-bar";
-      reviewBar.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-      const reviewText = document.createElement("span");
-      reviewText.textContent = t("widget.reviewHint");
-      reviewBar.appendChild(reviewText);
-      this.root.appendChild(reviewBar);
-    }
-
     // ── Body — field list ──
     const body = document.createElement("div");
     body.className = "jf-body";
@@ -349,37 +333,7 @@ export class FloatingWidget {
     const footer = document.createElement("div");
     footer.className = "jf-footer";
 
-    if (this.mode === "review") {
-      if (this.edits.size > 0) {
-        // Pending edits: show "Save N Changes" + "Skip"
-        const actions = document.createElement("div");
-        actions.className = "jf-footer-actions";
-
-        const saveBtn = document.createElement("button");
-        saveBtn.className = "jf-btn-primary";
-        saveBtn.textContent = t("widget.saveChanges", { count: this.edits.size });
-        saveBtn.disabled = this.saving;
-        saveBtn.addEventListener("click", () => this.saveAllEdits());
-
-        const skipBtn = document.createElement("button");
-        skipBtn.className = "jf-btn-secondary";
-        skipBtn.textContent = t("widget.skip");
-        skipBtn.addEventListener("click", () => {
-          this.edits.clear();
-          this.render();
-        });
-
-        actions.append(saveBtn, skipBtn);
-        footer.appendChild(actions);
-      } else {
-        // No pending edits: show "Looks Good"
-        const doneBtn = document.createElement("button");
-        doneBtn.className = "jf-btn-primary";
-        doneBtn.textContent = t("widget.looksGood");
-        doneBtn.addEventListener("click", () => this.handleDone());
-        footer.appendChild(doneBtn);
-      }
-    } else if (this.fillProgress.status === "filling") {
+    if (this.fillProgress.status === "filling") {
       // Filling in progress — show disabled button with spinner
       const fillingBtn = document.createElement("button");
       fillingBtn.className = "jf-btn-primary jf-fill-btn";
@@ -391,8 +345,29 @@ export class FloatingWidget {
       fillingLabel.textContent = t("widget.filling");
       fillingBtn.append(spinner, fillingLabel);
       footer.appendChild(fillingBtn);
+    } else if (this.edits.size > 0) {
+      // Pending edits: show "Save N Changes" + "Discard"
+      const actions = document.createElement("div");
+      actions.className = "jf-footer-actions";
+
+      const saveBtn = document.createElement("button");
+      saveBtn.className = "jf-btn-primary";
+      saveBtn.textContent = t("widget.saveChanges", { count: this.edits.size });
+      saveBtn.disabled = this.saving;
+      saveBtn.addEventListener("click", () => this.saveAllEdits());
+
+      const discardBtn = document.createElement("button");
+      discardBtn.className = "jf-btn-secondary";
+      discardBtn.textContent = t("widget.skip");
+      discardBtn.addEventListener("click", () => {
+        this.edits.clear();
+        this.render();
+      });
+
+      actions.append(saveBtn, discardBtn);
+      footer.appendChild(actions);
     } else {
-      // Browse mode: Fill All
+      // Default: Fill All
       const fillBtn = document.createElement("button");
       fillBtn.className = "jf-btn-primary jf-fill-btn";
       const fillIcon = document.createElement("span");
@@ -736,7 +711,6 @@ export class FloatingWidget {
 
   /** Compare DOM values against snapshots; add new external edits to the edits map. */
   private checkFieldChanges(): void {
-    if (this.mode !== "review") return;
     let changed = false;
 
     for (const field of this.fields) {
@@ -763,13 +737,9 @@ export class FloatingWidget {
     if (changed) this.render();
   }
 
-  /** User confirms fill looks good — record and exit review. */
-  private handleDone(): void {
-    this.stopWatchingFields();
+  /** Record submission (called externally when user submits the form). */
+  recordSubmission(): void {
     this.callbacks.onRecordSubmission();
-    this.mode = "browse";
-    this.fillProgress = { filled: 0, total: 0, status: "idle" };
-    this.render();
   }
 
   destroy(): void {

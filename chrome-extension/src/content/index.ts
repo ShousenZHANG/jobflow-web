@@ -103,10 +103,7 @@ async function init() {
     return;
   }
 
-  const prefs = await loadPreferences();
-
   // Exponential retry for SPA-rendered forms
-  const autoFillEnabled = prefs.autoFill;
   const DETECTION_DELAYS = [500, 1500, 3000, 6000];
   let detected = false;
 
@@ -119,9 +116,6 @@ async function init() {
         await initWidget(currentDetection);
       }
       setupSubmitIntercept(currentDetection);
-      if (autoFillEnabled) {
-        await performFill();
-      }
       detected = true;
       break;
     }
