@@ -9,7 +9,6 @@ import {
   KeyRound,
   Link2,
   Zap,
-  Monitor,
   Keyboard,
   MousePointer,
   ChevronRight,
@@ -17,6 +16,7 @@ import {
   RefreshCcw,
   Layers,
   Clock,
+  Brain,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -32,6 +32,12 @@ const ATS_PLATFORMS = [
   { name: "Workday", domain: "*.myworkdayjobs.com" },
   { name: "iCIMS", domain: "*.icims.com" },
   { name: "SuccessFactors", domain: "*.successfactors.com" },
+  { name: "Taleo", domain: "*.taleo.net" },
+  { name: "SmartRecruiters", domain: "*.smartrecruiters.com" },
+  { name: "BambooHR", domain: "*.bamboohr.com" },
+  { name: "Jobvite", domain: "*.jobvite.com" },
+  { name: "Ashby", domain: "*.ashbyhq.com" },
+  { name: "Rippling", domain: "*.rippling.com" },
   { name: "Generic Forms", domain: "Any page with form fields" },
 ];
 
@@ -249,9 +255,9 @@ export default async function ExtensionGuidePage() {
             <p className="mb-5 text-sm text-slate-600">{t("useDesc")}</p>
             <div className="grid gap-3 sm:grid-cols-3">
               {[
-                { icon: Monitor, titleKey: "useMethod1Title" as const, descKey: "useMethod1Desc" as const },
+                { icon: MousePointer, titleKey: "useMethod1Title" as const, descKey: "useMethod1Desc" as const },
                 { icon: Keyboard, titleKey: "useMethod2Title" as const, descKey: "useMethod2Desc" as const },
-                { icon: MousePointer, titleKey: "useMethod3Title" as const, descKey: "useMethod3Desc" as const },
+                { icon: Layers, titleKey: "useMethod3Title" as const, descKey: "useMethod3Desc" as const },
               ].map(({ icon: Icon, titleKey, descKey }) => (
                 <div
                   key={titleKey}
@@ -306,6 +312,7 @@ export default async function ExtensionGuidePage() {
                 { q: "faq2Q" as const, a: "faq2A" as const, icon: RefreshCcw },
                 { q: "faq3Q" as const, a: "faq3A" as const, icon: Layers },
                 { q: "faq4Q" as const, a: "faq4A" as const, icon: Clock },
+                { q: "faq5Q" as const, a: "faq5A" as const, icon: Brain },
               ].map(({ q, a, icon: Icon }) => (
                 <details
                   key={q}
