@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "highlight.js/styles/github.css";
-import { CheckSquare, MapPin, Search, SlidersHorizontal, Square, Trash2, X } from "lucide-react";
+import { CheckSquare, MapPin, Plus, Search, SlidersHorizontal, Square, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -484,9 +484,10 @@ export function JobsClient({
                   variant="outline"
                   size="sm"
                   onClick={() => setAddJobOpen(true)}
-                  className="col-span-2 h-8 text-xs"
+                  className="col-span-2 h-8 gap-1.5 rounded-lg border-dashed border-slate-300 text-xs font-medium text-slate-600 transition-colors hover:border-emerald-300 hover:bg-emerald-50/60 hover:text-emerald-700"
                 >
-                  Add job
+                  <Plus className="h-3 w-3" />
+                  Add Job
                 </Button>
               )}
             </div>
@@ -578,10 +579,11 @@ export function JobsClient({
             {market === "AU" && (
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 onClick={() => setAddJobOpen(true)}
-                className="h-10 rounded-lg px-4 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 lg:w-auto"
+                className="h-10 gap-1.5 rounded-xl border-dashed border-slate-300 px-4 text-sm font-medium text-slate-600 transition-all duration-150 hover:border-emerald-300 hover:bg-emerald-50/60 hover:text-emerald-700 lg:w-auto"
               >
+                <Plus className="h-3.5 w-3.5" />
                 Add job
               </Button>
             )}
