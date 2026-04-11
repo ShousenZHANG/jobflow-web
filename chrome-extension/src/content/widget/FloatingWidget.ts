@@ -538,12 +538,15 @@ export class FloatingWidget {
   /** Persist a single field edit as a knowledge base rule. */
   private async saveFieldRule(field: DetectedField, value: string): Promise<boolean> {
     const profileMatch = matchValueToProfile(value, this.profile);
+    // Map category to profile key (e.g. "first_name" → "firstName")
+    const profileKey = PROFILE_KEY_MAP[field.category];
 
     const rule: FieldRuleData = {
       fieldSelector: field.selector,
       fieldLabel: field.labelText || field.name || "",
-      profilePath: profileMatch?.profilePath ?? field.category,
-      staticValue: profileMatch ? undefined : value,
+      profilePath: profileMatch?.profilePath ?? profileKey ?? field.category,
+      // Always store staticValue — user explicitly chose this value over the profile
+      staticValue: value,
       atsProvider: this.atsProvider,
       pageDomain: this.pageDomain,
       scope: "ats",
