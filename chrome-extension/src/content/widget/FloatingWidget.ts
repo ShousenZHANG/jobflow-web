@@ -65,6 +65,8 @@ export class FloatingWidget {
   private fieldPollTimer: ReturnType<typeof setInterval> | null = null;
   /** Last-known DOM values per field — used to detect external changes. */
   private lastFieldValues: Map<string, string> = new Map();
+  /** Cleanup functions for event listeners added during review mode. */
+  private fieldChangeCleanups: (() => void)[] = [];
 
   constructor(container: HTMLDivElement, callbacks: WidgetCallbacks) {
     this.root = container;
@@ -602,23 +604,37 @@ export class FloatingWidget {
   // ── Field change detection (review mode) ──
 
   private static PLACEHOLDER_RE = /^(select\.{0,3}|choose\.{0,3}|请选择|-- .+ --)$/i;
+  private static ARROW_RE = /[▼▾▸►◄↓↑⌄⌃\u25bc\u25be\ue5cf]/g;
 
-  /** Start polling form field values to detect manual user changes (e.g. dropdown selection). */
+  /** Start watching form field values to detect manual user changes (e.g. dropdown selection). */
   private startWatchingFields(): void {
     this.stopWatchingFields();
     // Snapshot current DOM values
     for (const field of this.fields) {
       this.lastFieldValues.set(field.selector, this.readFieldValueFromDOM(field));
     }
-    this.fieldPollTimer = setInterval(() => this.checkFieldChanges(), 1000);
+
+    // Fast path: document-level event delegation catches native select/input changes instantly
+    const onChangeCapture = () => this.checkFieldChanges();
+    document.addEventListener("change", onChangeCapture, { capture: true });
+    document.addEventListener("input", onChangeCapture, { capture: true });
+    this.fieldChangeCleanups.push(
+      () => document.removeEventListener("change", onChangeCapture, { capture: true }),
+      () => document.removeEventListener("input", onChangeCapture, { capture: true }),
+    );
+
+    // Slow path: poll every 800ms for custom dropdown changes that don't fire native events
+    this.fieldPollTimer = setInterval(() => this.checkFieldChanges(), 800);
   }
 
-  /** Stop polling for field changes. */
+  /** Stop watching for field changes and clean up all listeners. */
   private stopWatchingFields(): void {
     if (this.fieldPollTimer) {
       clearInterval(this.fieldPollTimer);
       this.fieldPollTimer = null;
     }
+    for (const cleanup of this.fieldChangeCleanups) cleanup();
+    this.fieldChangeCleanups = [];
     this.lastFieldValues.clear();
   }
 
@@ -630,12 +646,64 @@ export class FloatingWidget {
     } catch { /* invalid selector */ }
     if (!el) el = field.element as HTMLElement;
 
-    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return el.value.trim();
+    // 1. Native <select> — read selected option text
     if (el instanceof HTMLSelectElement) {
-      return (el.options[el.selectedIndex]?.text ?? el.value).trim();
+      const opt = el.options[el.selectedIndex];
+      return opt ? (opt.text || opt.value).trim() : "";
     }
-    // Custom dropdown — strip arrow characters, collapse whitespace
-    return (el.textContent ?? "").replace(/[▼▾▸►◄↓↑⌄⌃\u25bc\u25be]/g, "").replace(/\s+/g, " ").trim();
+
+    // 2. Check if this element lives inside a custom dropdown container.
+    //    Custom dropdowns (React Select, Workday, Greenhouse) render a visible
+    //    display element but may NOT update the native input.value.
+    const dropdownText = this.readDropdownDisplayText(el, field.labelText);
+    if (dropdownText) return dropdownText;
+
+    // 3. Native input/textarea — read .value (works when framework updates native value)
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+      return el.value.trim();
+    }
+
+    // 4. Fallback for other custom elements
+    return (el.textContent ?? "").replace(/\s+/g, " ").trim();
+  }
+
+  /** Walk up from an element to find a dropdown container and read its displayed selection text. */
+  private readDropdownDisplayText(el: HTMLElement, labelText: string): string {
+    // Walk up to 4 levels looking for a dropdown container
+    let node: HTMLElement | null = el;
+    for (let depth = 0; depth < 4 && node; depth++) {
+      const role = node.getAttribute("role");
+      const cls = node.className?.toLowerCase?.() ?? "";
+      const isDropdown =
+        role === "combobox" || role === "listbox" ||
+        node.dataset?.automationId?.includes("Dropdown") ||
+        cls.includes("select-menu") || cls.includes("dropdown") ||
+        cls.includes("combobox") || cls.includes("listbox");
+
+      if (isDropdown) {
+        // Try specific value display selectors first (React Select, custom UIs)
+        const valueEl = node.querySelector(
+          '[class*="singleValue"], [class*="SingleValue"], ' +
+          '[class*="selected-option"], [class*="selectedOption"], ' +
+          '[class*="current-selection"], [data-value]',
+        );
+        if (valueEl?.textContent?.trim()) return valueEl.textContent.trim();
+
+        // Fallback: full container text minus arrows
+        let text = (node.textContent ?? "")
+          .replace(FloatingWidget.ARROW_RE, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        // Strip label prefix if container includes it
+        if (labelText && text.startsWith(labelText)) {
+          text = text.slice(labelText.length).trim();
+        }
+        if (text) return text;
+        break;
+      }
+      node = node.parentElement;
+    }
+    return "";
   }
 
   /** Compare DOM values against snapshots; add new external edits to the edits map. */
