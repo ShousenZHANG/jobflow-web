@@ -15,8 +15,8 @@ export interface WidgetCallbacks {
   onFill: () => void;
   onRecordSubmission: () => void;
   onCorrectMapping: (fieldSelector: string, newProfilePath: string) => void;
-  /** Save a field correction as a knowledge base rule. */
-  onSaveRule: (rule: FieldRuleData) => void;
+  /** Save a field correction as a knowledge base rule. Returns true if persisted. */
+  onSaveRule: (rule: FieldRuleData) => Promise<boolean>;
   /** Apply a value to a form field immediately. */
   onApplyValue: (fieldSelector: string, value: string) => void;
 }
@@ -181,7 +181,46 @@ export class FloatingWidget {
       badge.classList.add("jf-collapsed--has-fields");
     }
 
-    badge.addEventListener("click", () => this.toggle());
+    // Drag-to-reposition: distinguish click (<3px) from drag
+    let startX = 0, startY = 0, dragging = false;
+    badge.addEventListener("mousedown", (e: MouseEvent) => {
+      startX = e.clientX;
+      startY = e.clientY;
+      dragging = false;
+
+      const onMove = (ev: MouseEvent) => {
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        if (!dragging && Math.abs(dx) + Math.abs(dy) > 3) dragging = true;
+        if (dragging) {
+          const host = document.getElementById("joblit-autofill-widget");
+          if (!host) return;
+          const rect = host.getBoundingClientRect();
+          const newRight = Math.max(0, window.innerWidth - rect.right - dx);
+          const newBottom = Math.max(0, window.innerHeight - rect.bottom - dy);
+          this.root.style.right = `${newRight}px`;
+          this.root.style.bottom = `${newBottom}px`;
+          startX = ev.clientX;
+          startY = ev.clientY;
+        }
+      };
+
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        if (!dragging) {
+          this.toggle();
+        } else {
+          // Persist position
+          const right = this.root.style.right;
+          const bottom = this.root.style.bottom;
+          chrome.storage.local.set({ widgetPosition: { right, bottom } });
+        }
+      };
+
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
     this.root.appendChild(badge);
   }
 
@@ -436,16 +475,16 @@ export class FloatingWidget {
   }
 
   /** Commit an edit: apply to form, auto-save to knowledge base. */
-  private commitEdit(field: DetectedField, value: string): void {
+  private async commitEdit(field: DetectedField, value: string): Promise<void> {
     const trimmed = value.trim();
 
     if (trimmed) {
       this.edits.set(field.selector, { value: trimmed, source: "user" });
       // Apply value to the actual form field immediately
       this.callbacks.onApplyValue(field.selector, trimmed);
-      // Auto-save to knowledge base — no extra "Save All" step needed
-      this.saveFieldRule(field, trimmed);
-      this.showToast(t("widget.ruleSaved"));
+      // Save to knowledge base and show result
+      const saved = await this.saveFieldRule(field, trimmed);
+      this.showToast(saved ? t("widget.ruleSaved") : t("widget.ruleSaveFailed"));
     } else {
       this.edits.delete(field.selector);
     }
@@ -455,7 +494,7 @@ export class FloatingWidget {
   }
 
   /** Persist a single field edit as a knowledge base rule. */
-  private saveFieldRule(field: DetectedField, value: string): void {
+  private async saveFieldRule(field: DetectedField, value: string): Promise<boolean> {
     const profileMatch = matchValueToProfile(value, this.profile);
 
     const rule: FieldRuleData = {
@@ -468,7 +507,7 @@ export class FloatingWidget {
       scope: "ats",
     };
 
-    this.callbacks.onSaveRule(rule);
+    return this.callbacks.onSaveRule(rule);
   }
 
   /** Show a brief toast notification inside the widget. */

@@ -25,6 +25,15 @@ export function mountWidget(): { shadowRoot: ShadowRoot; container: HTMLDivEleme
   container.id = "joblit-widget-root";
   shadowRoot.appendChild(container);
 
+  // Restore persisted widget position
+  chrome.storage.local.get("widgetPosition", (result) => {
+    const pos = result.widgetPosition;
+    if (pos?.right && pos?.bottom) {
+      container.style.right = pos.right;
+      container.style.bottom = pos.bottom;
+    }
+  });
+
   return { shadowRoot, container };
 }
 

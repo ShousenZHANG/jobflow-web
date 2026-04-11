@@ -57,6 +57,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "widget.saveAll": "Save All",
     "widget.looksGood": "Looks Good",
     "widget.ruleSaved": "Saved to knowledge base",
+    "widget.ruleSaveFailed": "Save failed — will retry later",
 
     // Errors
     "error.network": "Network error. Please check your connection.",
@@ -122,6 +123,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "widget.saveAll": "全部保存",
     "widget.looksGood": "确认无误",
     "widget.ruleSaved": "已保存到知识库",
+    "widget.ruleSaveFailed": "保存失败 — 稍后重试",
 
     "error.network": "网络错误，请检查网络连接。",
     "error.notAuthenticated": "未认证，请连接 Joblit 账户。",

@@ -16,6 +16,12 @@ let currentProfile: FlatProfile | null = null;
 let cleanupSubmitListener: (() => void) | null = null;
 const isIframe = window !== window.top;
 
+/** Simple debounce — collapses rapid calls into one after `ms` of silence. */
+function debounce(fn: () => void, ms: number): () => void {
+  let timer: ReturnType<typeof setTimeout>;
+  return () => { clearTimeout(timer); timer = setTimeout(fn, ms); };
+}
+
 /** Load user preferences from storage. */
 async function loadPreferences(): Promise<{ autoFill: boolean; showWidget: boolean }> {
   return new Promise((resolve) => {
@@ -112,7 +118,7 @@ async function init() {
 
   // Watch for SPA navigation / dynamic form loading
   let lastUrl = window.location.href;
-  const observer = new MutationObserver(() => {
+  const debouncedDetect = debounce(() => {
     try {
       // Detect SPA URL changes
       const currentUrl = window.location.href;
@@ -140,7 +146,8 @@ async function init() {
     } catch (err) {
       if (process.env.NODE_ENV !== "production") console.warn("[Joblit] MutationObserver error:", err);
     }
-  });
+  }, 500);
+  const observer = new MutationObserver(debouncedDetect);
 
   observer.observe(document.body, { childList: true, subtree: true });
 }
@@ -163,23 +170,24 @@ async function initWidget(detection: FormDetectionResult) {
         data: { type: "CORRECT_MAPPING", fieldSelector, newProfilePath },
       });
     },
-    onSaveRule: (rule: FieldRuleData) => {
+    onSaveRule: async (rule: FieldRuleData): Promise<boolean> => {
       // Determine scope-based atsProvider/pageDomain
       const atsProvider = rule.scope === "global" ? "" : rule.atsProvider;
       const pageDomain = rule.scope === "site" ? rule.pageDomain : "";
 
-      sendMessage({
+      const response = await sendMessage({
         type: "PUT_FIELD_MAPPING",
         data: {
           fieldSelector: rule.fieldSelector,
           fieldLabel: rule.fieldLabel,
           profilePath: rule.profilePath,
-          staticValue: rule.staticValue ?? null,
+          staticValue: rule.staticValue || undefined,
           atsProvider,
           pageDomain,
           source: "user",
         },
       });
+      return response.success;
     },
     onApplyValue: (fieldSelector: string, value: string) => {
       // Find the actual DOM element and apply the value

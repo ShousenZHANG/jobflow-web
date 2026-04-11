@@ -52,17 +52,19 @@ export async function fetchProfile(locale = "en-AU") {
   return (await res.json()).data;
 }
 
-/** Fetch the flattened profile for form filling. Uses cache if fresh. */
-export async function fetchFlatProfile(locale = "en-AU") {
-  const cached = await chrome.storage.local.get(STORAGE_KEYS.CACHED_PROFILE);
-  const cachedProfile = cached[STORAGE_KEYS.CACHED_PROFILE];
+/** Fetch the flattened profile for form filling. Uses cache if fresh unless force=true. */
+export async function fetchFlatProfile(locale = "en-AU", force = false) {
+  if (!force) {
+    const cached = await chrome.storage.local.get(STORAGE_KEYS.CACHED_PROFILE);
+    const cachedProfile = cached[STORAGE_KEYS.CACHED_PROFILE];
 
-  if (
-    cachedProfile &&
-    cachedProfile.locale === locale &&
-    Date.now() - cachedProfile.fetchedAt < PROFILE_CACHE_TTL
-  ) {
-    return cachedProfile.data;
+    if (
+      cachedProfile &&
+      cachedProfile.locale === locale &&
+      Date.now() - cachedProfile.fetchedAt < PROFILE_CACHE_TTL
+    ) {
+      return cachedProfile.data;
+    }
   }
 
   const res = await apiFetch(`/api/ext/profile/flat?locale=${encodeURIComponent(locale)}`);

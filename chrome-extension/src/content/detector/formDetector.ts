@@ -50,6 +50,11 @@ export function detectFields(doc: Document, adapter: AtsAdapter): DetectedField[
     const inputType = getInputType(el);
     if (SKIP_TYPES.has(inputType)) continue;
     if (!isVisible(el)) continue;
+    if (
+      (el as HTMLInputElement).disabled ||
+      (el as HTMLInputElement).readOnly ||
+      el.getAttribute("aria-disabled") === "true"
+    ) continue;
 
     const { category, confidence, labelText } = classifyField(el);
 

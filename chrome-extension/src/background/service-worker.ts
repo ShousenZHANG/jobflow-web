@@ -47,7 +47,7 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
     }
 
     case "GET_FLAT_PROFILE": {
-      const flat = await fetchFlatProfile(message.locale);
+      const flat = await fetchFlatProfile(message.locale, message.force);
       return { success: true, data: flat };
     }
 
@@ -78,7 +78,8 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
       } catch (err) {
         if (process.env.NODE_ENV !== "production") console.warn("[Joblit] Field mapping save failed, queuing:", err);
         await enqueue("field_mapping", message.data as Record<string, unknown>);
-        return { success: true };
+        const errorMessage = err instanceof Error ? err.message : "Save failed";
+        return { success: false, error: errorMessage };
       }
     }
 

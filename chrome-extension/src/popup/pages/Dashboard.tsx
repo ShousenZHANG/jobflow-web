@@ -23,11 +23,22 @@ type FillState =
   | { status: "success"; filled: number; total: number; message?: string; sources?: { profile: number; historical: number; default: number } }
   | { status: "error"; message: string };
 
+interface RecentSubmission {
+  id: string;
+  pageDomain: string;
+  atsProvider: string;
+  filledCount: number;
+  fieldCount: number;
+  createdAt: string;
+}
+
 export function Dashboard({ onDisconnect }: DashboardProps) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [fillState, setFillState] = useState<FillState>({ status: "idle" });
+  const [refreshing, setRefreshing] = useState(false);
+  const [recentSubs, setRecentSubs] = useState<RecentSubmission[]>([]);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const disconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,9 +56,30 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
       }
     });
 
+    // Fetch recent submissions for history section
+    chrome.runtime.sendMessage(
+      { type: "GET_SUBMISSIONS", params: { limit: 5 } },
+      (response) => {
+        if (response?.success && Array.isArray(response.data)) {
+          setRecentSubs(response.data);
+        }
+      },
+    );
+
     return () => {
       if (disconnectTimer.current) clearTimeout(disconnectTimer.current);
     };
+  }, []);
+
+  const handleRefreshProfile = useCallback(() => {
+    setRefreshing(true);
+    chrome.runtime.sendMessage({ type: "GET_FLAT_PROFILE", force: true }, (response) => {
+      setRefreshing(false);
+      if (response?.success && response.data) {
+        setProfile(response.data);
+        setError("");
+      }
+    });
   }, []);
 
   const handleFillNow = useCallback(() => {
@@ -136,7 +168,7 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
             }}>
               {initial}
             </div>
-            <div style={{ minWidth: 0 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 15, fontWeight: 600, color: "var(--jl-text-primary)" }}>
                 {profile.flat?.fullName ?? "—"}
               </div>
@@ -152,6 +184,18 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
                 </span>
               </div>
             </div>
+            <button
+              onClick={handleRefreshProfile}
+              className="jl-btn jl-btn--ghost"
+              title="Refresh profile"
+              style={{ padding: 6, flexShrink: 0, opacity: refreshing ? 0.5 : 0.6 }}
+              disabled={refreshing}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ animation: refreshing ? "spin 1s linear infinite" : "none" }}>
+                <path d="M14 8A6 6 0 1 1 8 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M8 0l3 2-3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           </div>
         ) : error ? (
           <div style={{ color: "var(--jl-error)", fontSize: 13 }}>{error}</div>
@@ -247,6 +291,51 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
           {t("dashboard.toggleWidget")}
         </button>
       </div>
+
+      {/* Recent Submissions */}
+      {recentSubs.length > 0 && (
+        <>
+          <hr className="jl-divider" />
+          <div className="jl-section-label" style={{ margin: 0, fontSize: 11 }}>
+            {t("history.title")}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {recentSubs.map((sub) => {
+              const ratio = sub.fieldCount > 0
+                ? Math.round((sub.filledCount / sub.fieldCount) * 100)
+                : 0;
+              const seconds = Math.floor((Date.now() - new Date(sub.createdAt).getTime()) / 1000);
+              const timeAgo = seconds < 60 ? "just now"
+                : seconds < 3600 ? `${Math.floor(seconds / 60)}m`
+                : seconds < 86400 ? `${Math.floor(seconds / 3600)}h`
+                : `${Math.floor(seconds / 86400)}d`;
+              return (
+                <div key={sub.id} className="jl-card" style={{ padding: "6px 10px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 500, color: "var(--jl-text-primary)",
+                      maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {sub.pageDomain}
+                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{
+                        fontSize: 9, padding: "1px 5px", borderRadius: 4,
+                        background: ratio >= 80 ? "#f0fdf4" : ratio >= 50 ? "#fffbeb" : "#fef2f2",
+                        color: ratio >= 80 ? "#065f46" : ratio >= 50 ? "#854d0e" : "#991b1b",
+                        fontWeight: 500,
+                      }}>
+                        {sub.filledCount}/{sub.fieldCount}
+                      </span>
+                      <span style={{ fontSize: 9, color: "var(--jl-text-muted)" }}>{timeAgo}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <hr className="jl-divider" />
 

@@ -35,7 +35,7 @@ export interface FormDetectionResult {
 /** Message types for chrome.runtime messaging. */
 export type MessageType =
   | { type: "GET_PROFILE"; locale?: string }
-  | { type: "GET_FLAT_PROFILE"; locale?: string }
+  | { type: "GET_FLAT_PROFILE"; locale?: string; force?: boolean }
   | { type: "FILL_FORM" }
   | { type: "RECORD_SUBMISSION"; data: Record<string, unknown> }
   | { type: "GET_SUBMISSIONS"; params?: SubmissionQueryParams }

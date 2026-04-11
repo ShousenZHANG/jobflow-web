@@ -107,6 +107,15 @@ function fillSingleField(field: DetectedField, value: string): boolean {
     ? document.querySelector<HTMLElement>(field.selector) ?? field.element
     : field.element) as HTMLElement;
 
+  // Skip disabled, readonly, or aria-disabled fields
+  if (
+    (el as HTMLInputElement).disabled ||
+    (el as HTMLInputElement).readOnly ||
+    el.getAttribute("aria-disabled") === "true"
+  ) {
+    return false;
+  }
+
   // Custom dropdown (React/Vue combobox)
   if (
     el.getAttribute("role") === "combobox" ||
