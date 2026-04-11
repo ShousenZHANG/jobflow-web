@@ -69,8 +69,8 @@ export default async function PrivacyPolicyPage() {
         {/* Grid: content + sidebar TOC */}
         <div className="legal-page">
           <main>
-            {/* Mobile TOC */}
-            <LegalTableOfContents items={TOC_ITEMS} />
+            {/* Mobile TOC — only renders the collapsible toggle (hidden at lg+) */}
+            <LegalTableOfContents items={TOC_ITEMS} variant="mobile" />
 
             {/* Intro */}
             <div className="legal-body py-4">
@@ -239,9 +239,9 @@ export default async function PrivacyPolicyPage() {
             </Link>
           </main>
 
-          {/* Desktop sidebar */}
+          {/* Desktop sidebar — only renders the sticky nav (hidden below lg) */}
           <aside>
-            <LegalTableOfContents items={TOC_ITEMS} />
+            <LegalTableOfContents items={TOC_ITEMS} variant="desktop" />
           </aside>
         </div>
 

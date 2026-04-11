@@ -134,7 +134,11 @@ export function JobsClient({
     }
   }, [items, batchSelectMode, batchSelectedIds]);
 
-  // Lock scroll on the app shell
+  // Lock scroll on the app shell.
+  // Re-apply after any modal closes — Radix AlertDialog temporarily sets
+  // `overflow: hidden` on <body> while open, which can desync the scroll
+  // state of .app-shell when the dialog unmounts.
+  const anyDialogOpen = deleteConfirmOpen || batchDeleteConfirmOpen || addJobOpen || previewOpen || ext.externalDialogOpen;
   useEffect(() => {
     if (typeof document === "undefined") return;
     const appShell = document.querySelector<HTMLElement>(".app-shell");
@@ -143,7 +147,7 @@ export function JobsClient({
     return () => {
       appShell.classList.remove("jobs-scroll-lock");
     };
-  }, []);
+  }, [anyDialogOpen]);
 
   // Cleanup PDF object URL
   useEffect(() => {
