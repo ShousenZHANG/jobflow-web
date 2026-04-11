@@ -15,6 +15,8 @@ let currentDetection: FormDetectionResult | null = null;
 let currentProfile: FlatProfile | null = null;
 let cleanupSubmitListener: (() => void) | null = null;
 const isIframe = window !== window.top;
+/** Prevent duplicate onMessage listener if init() is called more than once (e.g. via lazyObs). */
+let messageListenerRegistered = false;
 
 /** Simple debounce — collapses rapid calls into one after `ms` of silence. */
 function debounce(fn: () => void, ms: number): () => void {
@@ -70,24 +72,26 @@ async function init() {
 
   const prefs = await loadPreferences();
 
-  // Listen for messages from background/popup
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.type === "TRIGGER_FILL") {
-      performFill().then((result) => {
-        sendResponse({ success: true, ...result });
-      }).catch((err: unknown) => {
-        const errorMessage = err instanceof Error ? err.message : "Fill failed";
-        sendResponse({ success: false, error: errorMessage, filled: 0, skipped: 0 });
-      });
-      return true;
-    }
+  // Listen for messages from background/popup — register only once across re-inits
+  if (!messageListenerRegistered) {
+    messageListenerRegistered = true;
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+      if (message.type === "TRIGGER_FILL") {
+        performFill().then((result) => {
+          sendResponse({ success: true, ...result });
+        }).catch((err: unknown) => {
+          const errorMessage = err instanceof Error ? err.message : "Fill failed";
+          sendResponse({ success: false, error: errorMessage, filled: 0, skipped: 0 });
+        });
+        return true;
+      }
 
-    if (message.type === "TOGGLE_WIDGET") {
-      toggleWidget();
-      sendResponse({ success: true });
-      return true;
-    }
-  });
+      if (message.type === "TOGGLE_WIDGET") {
+        toggleWidget().then(() => sendResponse({ success: true })).catch(() => sendResponse({ success: true }));
+        return true;
+      }
+    });
+  }
 
   // Exponential retry for SPA-rendered forms
   const autoFillEnabled = prefs.autoFill;
@@ -210,7 +214,7 @@ async function initWidget(detection: FormDetectionResult) {
 }
 
 /** Toggle widget visibility. */
-function toggleWidget() {
+async function toggleWidget(): Promise<void> {
   if (!isWidgetMounted()) {
     // Detect forms on demand if not yet detected (e.g. user clicks before 1s timeout)
     if (!currentDetection || currentDetection.fields.length === 0) {
@@ -218,9 +222,9 @@ function toggleWidget() {
     }
     if (currentDetection.fields.length > 0) {
       if (!isIframe) {
-        initWidget(currentDetection);
+        // Await so that `widget` is assigned before we call toggle()
+        await initWidget(currentDetection);
       }
-      // Widget starts collapsed — expand it immediately so fields are visible
       if (widget) {
         widget.toggle();
       }

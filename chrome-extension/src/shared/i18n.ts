@@ -60,6 +60,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "widget.ruleSaveFailed": "Save failed — will retry later",
     "widget.saveChanges": "Save {count} Changes",
     "widget.allSaved": "All changes saved",
+    "widget.partialSaved": "{saved}/{total} changes saved",
     "widget.skip": "Skip",
 
     // Errors
@@ -129,6 +130,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "widget.ruleSaveFailed": "保存失败 — 稍后重试",
     "widget.saveChanges": "保存 {count} 项修改",
     "widget.allSaved": "所有修改已保存",
+    "widget.partialSaved": "已保存 {saved}/{total} 项",
     "widget.skip": "跳过",
 
     "error.network": "网络错误，请检查网络连接。",

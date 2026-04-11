@@ -1,5 +1,6 @@
 import type { DetectedField } from "@ext/shared/types";
 import type { FlatProfile } from "../filler/formFiller";
+import { PROFILE_KEY_MAP } from "@ext/shared/fieldTaxonomy";
 
 /**
  * Generate a structural fingerprint for a form.
@@ -100,11 +101,14 @@ export function matchFieldsFromHistory(
       );
     }
 
-    // Same category match (cross-domain knowledge)
+    // Same category match (cross-domain knowledge) — compare against camelCase profile key
     if (!rule) {
-      rule = rules.find(
-        (r) => r.profilePath === field.category && r.source === "user",
-      );
+      const camelKey = PROFILE_KEY_MAP[field.category];
+      if (camelKey) {
+        rule = rules.find(
+          (r) => r.profilePath === camelKey && r.source === "user",
+        );
+      }
     }
 
     if (rule) {

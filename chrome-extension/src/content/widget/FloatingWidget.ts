@@ -49,6 +49,8 @@ export class FloatingWidget {
     filled: 0, total: 0, status: "idle",
   };
   private mode: WidgetMode = "browse";
+  /** True while saveAllEdits is in progress — prevents double-submit. */
+  private saving = false;
   /** Map of fieldSelector → user-edited value */
   private edits: Map<string, FieldEdit> = new Map();
   /** Which field is currently being edited (selector) */
@@ -265,13 +267,15 @@ export class FloatingWidget {
     const minimizeBtn = document.createElement("button");
     minimizeBtn.className = "jf-header-btn";
     minimizeBtn.title = "Minimize";
-    minimizeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    minimizeBtn.setAttribute("aria-label", "Minimize widget");
+    minimizeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
     minimizeBtn.addEventListener("click", () => this.toggle());
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "jf-header-btn";
     closeBtn.title = "Close";
-    closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    closeBtn.setAttribute("aria-label", "Close widget");
+    closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
     closeBtn.addEventListener("click", () => this.toggle());
 
     headerActions.append(minimizeBtn, closeBtn);
@@ -346,7 +350,8 @@ export class FloatingWidget {
 
         const saveBtn = document.createElement("button");
         saveBtn.className = "jf-btn-primary";
-        saveBtn.textContent = t("widget.saveChanges").replace("{count}", String(this.edits.size));
+        saveBtn.textContent = t("widget.saveChanges", { count: this.edits.size });
+        saveBtn.disabled = this.saving;
         saveBtn.addEventListener("click", () => this.saveAllEdits());
 
         const skipBtn = document.createElement("button");
@@ -435,7 +440,8 @@ export class FloatingWidget {
       const confirmBtn = document.createElement("button");
       confirmBtn.className = "jf-edit-confirm";
       confirmBtn.title = "Confirm";
-      confirmBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      confirmBtn.setAttribute("aria-label", "Confirm edit");
+      confirmBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       confirmBtn.addEventListener("click", () => {
         this.commitEdit(field, input.value);
       });
@@ -443,7 +449,8 @@ export class FloatingWidget {
       const cancelBtn = document.createElement("button");
       cancelBtn.className = "jf-edit-cancel";
       cancelBtn.title = "Cancel";
-      cancelBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+      cancelBtn.setAttribute("aria-label", "Cancel edit");
+      cancelBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
       cancelBtn.addEventListener("click", () => {
         this.editingField = null;
         this.render();
@@ -462,7 +469,8 @@ export class FloatingWidget {
       const editBtn = document.createElement("button");
       editBtn.className = "jf-edit-btn";
       editBtn.title = t("widget.edit");
-      editBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M7.5 2l2.5 2.5L4 10.5H1.5V8L7.5 2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      editBtn.setAttribute("aria-label", `${t("widget.edit")}: ${field.labelText || field.name || "field"}`);
+      editBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M7.5 2l2.5 2.5L4 10.5H1.5V8L7.5 2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       editBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         this.editingField = field.selector;
@@ -514,30 +522,43 @@ export class FloatingWidget {
 
   /** Batch-save all pending edits to the knowledge base. */
   private async saveAllEdits(): Promise<void> {
+    if (this.saving) return;
     const entries = Array.from(this.edits.entries());
     if (entries.length === 0) return;
 
-    let savedCount = 0;
-    for (const [selector, edit] of entries) {
-      const field = this.fields.find((f) => f.selector === selector);
-      if (!field) continue;
-      const ok = await this.saveFieldRule(field, edit.value);
-      if (ok) savedCount++;
-    }
+    this.saving = true;
+    this.render(); // Show disabled save button immediately
 
-    if (savedCount === entries.length) {
-      this.showToast(t("widget.allSaved"));
-    } else {
-      this.showToast(`${savedCount}/${entries.length} saved`);
-    }
+    try {
+      const savedSelectors: string[] = [];
 
-    // Promote saved edits into fillResults so they persist visually after clearing edits
-    for (const [selector, edit] of entries) {
-      this.fillResults.set(selector, { filled: true, source: "historical", value: edit.value });
-    }
+      for (const [selector, edit] of entries) {
+        const field = this.fields.find((f) => f.selector === selector);
+        if (!field) continue;
+        const ok = await this.saveFieldRule(field, edit.value);
+        if (ok) savedSelectors.push(selector);
+      }
 
-    this.edits.clear();
-    this.render();
+      const savedCount = savedSelectors.length;
+      if (savedCount === entries.length) {
+        this.showToast(t("widget.allSaved"));
+      } else {
+        this.showToast(t("widget.partialSaved", { saved: savedCount, total: entries.length }));
+      }
+
+      // Promote ONLY successfully saved edits into fillResults
+      for (const selector of savedSelectors) {
+        const edit = this.edits.get(selector);
+        if (edit) {
+          this.fillResults.set(selector, { filled: true, source: "historical", value: edit.value });
+        }
+        this.edits.delete(selector);
+      }
+      // Failed edits remain in this.edits for retry
+    } finally {
+      this.saving = false;
+      this.render();
+    }
   }
 
   /** Persist a single field edit as a knowledge base rule. */

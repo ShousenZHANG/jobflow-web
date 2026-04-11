@@ -27,7 +27,9 @@ async function getToken(): Promise<string | null> {
   return token;
 }
 
-/** Make an authenticated request to the Joblit API. */
+const API_TIMEOUT_MS = 15_000;
+
+/** Make an authenticated request to the Joblit API with a 15s timeout. */
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const [base, token] = await Promise.all([getApiBase(), getToken()]);
 
@@ -35,14 +37,27 @@ async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
     throw new Error("Not authenticated. Please connect your Joblit account.");
   }
 
-  return fetch(`${base}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...init?.headers,
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  try {
+    return await fetch(`${base}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...init?.headers,
+      },
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(`Request timed out after ${API_TIMEOUT_MS / 1000}s`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Fetch the user's active resume profile. */

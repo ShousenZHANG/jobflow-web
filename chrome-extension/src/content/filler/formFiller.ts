@@ -102,10 +102,17 @@ export function fillFields(
 
 /** Fill a single field based on its element type. */
 function fillSingleField(field: DetectedField, value: string): boolean {
-  // Re-query the element by selector to handle stale references (SPA re-renders)
-  const el = (field.selector
-    ? document.querySelector<HTMLElement>(field.selector) ?? field.element
-    : field.element) as HTMLElement;
+  // Re-query the element by selector to handle stale references (SPA re-renders).
+  // querySelector throws a SyntaxError for invalid selectors (e.g. from exotic ATS field names).
+  let queried: HTMLElement | null = null;
+  if (field.selector) {
+    try {
+      queried = document.querySelector<HTMLElement>(field.selector);
+    } catch {
+      // Invalid CSS selector — fall through to field.element reference
+    }
+  }
+  const el = (queried ?? field.element) as HTMLElement;
 
   // Skip disabled, readonly, or aria-disabled fields
   if (
@@ -219,10 +226,15 @@ export function highlightUnfilledFields(fields: DetectedField[]): () => void {
   const highlighted: HTMLElement[] = [];
 
   for (const field of fields) {
-    // Re-query element by selector
-    const el = field.selector
-      ? document.querySelector<HTMLElement>(field.selector)
-      : null;
+    // Re-query element by selector — guard against invalid CSS selectors
+    let el: HTMLElement | null = null;
+    if (field.selector) {
+      try {
+        el = document.querySelector<HTMLElement>(field.selector);
+      } catch {
+        // Invalid selector — skip this field
+      }
+    }
     if (!el) continue;
 
     // Check if field is empty

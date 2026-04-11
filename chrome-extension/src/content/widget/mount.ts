@@ -242,6 +242,7 @@ function getWidgetStyles(): string {
 
     .jf-btn-primary:hover { background: #047857; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3); }
     .jf-btn-primary:active { transform: scale(0.97); }
+    .jf-btn-primary:disabled { background: #6ee7b7; cursor: not-allowed; box-shadow: none; transform: none; opacity: 0.7; }
 
     .jf-btn-secondary {
       display: inline-flex;
