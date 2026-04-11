@@ -45,12 +45,15 @@ export function simulateInput(el: HTMLElement, value: string): void {
     return;
   }
 
-  // Dispatch events in the order frameworks expect
-  // Use InputEvent for 'input' — React 16+ listens for this specific type
-  el.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
-  el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
+  // Dispatch events in the order frameworks expect.
+  // - beforeinput: some frameworks (Vue 3, Angular) listen for this
+  // - input: React 16+ listens for this specific type via native event delegation
+  // - composed: true is required for events to cross shadow DOM boundaries (React 17+)
+  el.dispatchEvent(new FocusEvent("focus", { bubbles: true, composed: true }));
+  el.dispatchEvent(new InputEvent("beforeinput", { bubbles: true, composed: true, inputType: "insertText", data: value }));
+  el.dispatchEvent(new InputEvent("input", { bubbles: true, composed: true, inputType: "insertText", data: value }));
   el.dispatchEvent(new Event("change", { bubbles: true }));
-  el.dispatchEvent(new FocusEvent("blur", { bubbles: true }));
+  el.dispatchEvent(new FocusEvent("blur", { bubbles: true, composed: true }));
 }
 
 /** Simulate selecting an option in a <select> element. */
@@ -66,8 +69,16 @@ export function simulateSelect(el: HTMLSelectElement, value: string): boolean {
 
   if (!target) return false;
 
-  el.value = target.value;
+  // Use native setter for React controlled selects (same pattern as simulateInput)
+  const nativeSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+  if (nativeSetter) {
+    nativeSetter.call(el, target.value);
+  } else {
+    el.value = target.value;
+  }
+
   el.dispatchEvent(new Event("change", { bubbles: true }));
+  el.dispatchEvent(new InputEvent("input", { bubbles: true, composed: true }));
   return true;
 }
 

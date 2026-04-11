@@ -114,13 +114,20 @@ function fillSingleField(field: DetectedField, value: string): boolean {
   }
   const el = (queried ?? field.element) as HTMLElement;
 
-  // Skip disabled, readonly, or aria-disabled fields
+  // Skip disabled or aria-disabled fields
   if (
     (el as HTMLInputElement).disabled ||
-    (el as HTMLInputElement).readOnly ||
     el.getAttribute("aria-disabled") === "true"
   ) {
     return false;
+  }
+  // Skip truly readonly fields, but allow readonly inputs in dropdown components
+  if ((el as HTMLInputElement).readOnly) {
+    const role = el.getAttribute("role");
+    const parentRole = el.parentElement?.getAttribute("role");
+    if (role !== "combobox" && role !== "listbox" && parentRole !== "combobox" && parentRole !== "listbox") {
+      return false;
+    }
   }
 
   // Custom dropdown (React/Vue combobox) — check element AND parent containers.
@@ -181,23 +188,19 @@ function findDropdownTrigger(el: HTMLElement): HTMLElement | null {
     return el;
   }
 
-  // 2. For standard text inputs, only treat as dropdown if they have ARIA dropdown
-  //    attributes. Plain text/email/tel/number inputs are NEVER dropdowns.
+  // 2. For standard text inputs with explicit ARIA dropdown attributes → return as trigger
   if (el instanceof HTMLInputElement) {
-    const type = el.type.toLowerCase();
-    if (["text", "email", "tel", "url", "number", "search", "password"].includes(type)) {
-      if (
-        el.getAttribute("aria-expanded") !== null ||
-        el.getAttribute("aria-haspopup") === "listbox" ||
-        el.getAttribute("aria-autocomplete") !== null
-      ) {
-        return el; // Searchable combobox input
-      }
-      return null; // Regular text input — not a dropdown
+    if (
+      el.getAttribute("aria-expanded") !== null ||
+      el.getAttribute("aria-haspopup") === "listbox" ||
+      el.getAttribute("aria-autocomplete") !== null
+    ) {
+      return el; // Searchable combobox input
     }
   }
 
-  // 3. Walk up to find a dropdown container (for non-standard elements only)
+  // 3. Walk up to find a dropdown container (works for ALL element types including
+  //    text inputs that live inside a role="combobox" parent — e.g. React Select)
   let parent = el.parentElement;
   for (let i = 0; i < 4 && parent; i++) {
     if (

@@ -52,9 +52,17 @@ export function detectFields(doc: Document, adapter: AtsAdapter): DetectedField[
     if (!isVisible(el)) continue;
     if (
       (el as HTMLInputElement).disabled ||
-      (el as HTMLInputElement).readOnly ||
       el.getAttribute("aria-disabled") === "true"
     ) continue;
+    // Allow readonly inputs that are part of dropdown/combobox components
+    // (React Select uses readonly inputs as click triggers)
+    if ((el as HTMLInputElement).readOnly) {
+      const role = el.getAttribute("role");
+      const parentRole = el.parentElement?.getAttribute("role");
+      if (role !== "combobox" && role !== "listbox" && parentRole !== "combobox" && parentRole !== "listbox") {
+        continue; // Skip truly readonly fields
+      }
+    }
 
     const { category, confidence, labelText } = classifyField(el);
 
