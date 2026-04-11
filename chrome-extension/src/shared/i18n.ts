@@ -47,6 +47,7 @@ const messages: Record<Locale, Record<string, string>> = {
 
     // Widget
     "widget.fillAll": "Fill All",
+    "widget.filling": "Filling...",
     "widget.record": "Record",
     "widget.noFields": "No form fields detected on this page.",
     "widget.edit": "Edit value",
@@ -117,6 +118,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "profile.manageHint": "在 Joblit 网页端管理完整简历信息。",
 
     "widget.fillAll": "全部填充",
+    "widget.filling": "填充中...",
     "widget.record": "记录",
     "widget.noFields": "当前页面未检测到表单字段。",
     "widget.edit": "编辑",

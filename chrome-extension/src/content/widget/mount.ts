@@ -244,6 +244,16 @@ function getWidgetStyles(): string {
     .jf-btn-primary:active { transform: scale(0.97); }
     .jf-btn-primary:disabled { background: #6ee7b7; cursor: not-allowed; box-shadow: none; transform: none; opacity: 0.7; }
 
+    .jf-spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: jf-spin 0.6s linear infinite;
+    }
+    @keyframes jf-spin { to { transform: rotate(360deg); } }
+
     .jf-btn-secondary {
       display: inline-flex;
       align-items: center;
