@@ -61,6 +61,10 @@ export class FloatingWidget {
   private atsProvider = "";
   /** Page domain for current page */
   private pageDomain = "";
+  /** Poll timer for detecting manual field changes during review mode. */
+  private fieldPollTimer: ReturnType<typeof setInterval> | null = null;
+  /** Last-known DOM values per field — used to detect external changes. */
+  private lastFieldValues: Map<string, string> = new Map();
 
   constructor(container: HTMLDivElement, callbacks: WidgetCallbacks) {
     this.root = container;
@@ -87,6 +91,7 @@ export class FloatingWidget {
     this.fillProgress = { filled, total, status };
     if (status === "done") {
       this.mode = "review";
+      this.startWatchingFields();
     }
     this.render();
   }
@@ -594,8 +599,77 @@ export class FloatingWidget {
     setTimeout(() => toast.remove(), 2000);
   }
 
+  // ── Field change detection (review mode) ──
+
+  private static PLACEHOLDER_RE = /^(select\.{0,3}|choose\.{0,3}|请选择|-- .+ --)$/i;
+
+  /** Start polling form field values to detect manual user changes (e.g. dropdown selection). */
+  private startWatchingFields(): void {
+    this.stopWatchingFields();
+    // Snapshot current DOM values
+    for (const field of this.fields) {
+      this.lastFieldValues.set(field.selector, this.readFieldValueFromDOM(field));
+    }
+    this.fieldPollTimer = setInterval(() => this.checkFieldChanges(), 1000);
+  }
+
+  /** Stop polling for field changes. */
+  private stopWatchingFields(): void {
+    if (this.fieldPollTimer) {
+      clearInterval(this.fieldPollTimer);
+      this.fieldPollTimer = null;
+    }
+    this.lastFieldValues.clear();
+  }
+
+  /** Read the current value of a form field directly from the DOM. */
+  private readFieldValueFromDOM(field: DetectedField): string {
+    let el: HTMLElement | null = null;
+    try {
+      el = field.selector ? document.querySelector<HTMLElement>(field.selector) : null;
+    } catch { /* invalid selector */ }
+    if (!el) el = field.element as HTMLElement;
+
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return el.value.trim();
+    if (el instanceof HTMLSelectElement) {
+      return (el.options[el.selectedIndex]?.text ?? el.value).trim();
+    }
+    // Custom dropdown — strip arrow characters, collapse whitespace
+    return (el.textContent ?? "").replace(/[▼▾▸►◄↓↑⌄⌃\u25bc\u25be]/g, "").replace(/\s+/g, " ").trim();
+  }
+
+  /** Compare DOM values against snapshots; add new external edits to the edits map. */
+  private checkFieldChanges(): void {
+    if (this.mode !== "review") return;
+    let changed = false;
+
+    for (const field of this.fields) {
+      // Skip fields the user is actively editing in the widget or already edited
+      if (this.edits.has(field.selector) || this.editingField === field.selector) continue;
+
+      const currentValue = this.readFieldValueFromDOM(field);
+      const lastValue = this.lastFieldValues.get(field.selector) ?? "";
+
+      // Skip empty or placeholder values
+      if (!currentValue || FloatingWidget.PLACEHOLDER_RE.test(currentValue)) continue;
+
+      if (currentValue !== lastValue) {
+        this.lastFieldValues.set(field.selector, currentValue);
+        // Only register as edit if different from the already-filled value
+        const existingValue = this.getFieldValue(field);
+        if (currentValue !== existingValue) {
+          this.edits.set(field.selector, { value: currentValue, source: "user" });
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) this.render();
+  }
+
   /** User confirms fill looks good — record and exit review. */
   private handleDone(): void {
+    this.stopWatchingFields();
     this.callbacks.onRecordSubmission();
     this.mode = "browse";
     this.fillProgress = { filled: 0, total: 0, status: "idle" };
@@ -603,6 +677,7 @@ export class FloatingWidget {
   }
 
   destroy(): void {
+    this.stopWatchingFields();
     this.root.replaceChildren();
   }
 }
