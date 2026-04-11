@@ -17,6 +17,10 @@ let cleanupSubmitListener: (() => void) | null = null;
 const isIframe = window !== window.top;
 /** Prevent duplicate onMessage listener if init() is called more than once (e.g. via lazyObs). */
 let messageListenerRegistered = false;
+/** Prevent duplicate MutationObserver on re-init. */
+let observerRegistered = false;
+/** Prevent concurrent performFill calls from corrupting widget state. */
+let fillInProgress = false;
 
 /** Simple debounce — collapses rapid calls into one after `ms` of silence. */
 function debounce(fn: () => void, ms: number): () => void {
@@ -157,9 +161,11 @@ async function init() {
       if (process.env.NODE_ENV !== "production") console.warn("[Joblit] MutationObserver error:", err);
     }
   }, 500);
-  const observer = new MutationObserver(debouncedDetect);
-
-  observer.observe(document.body, { childList: true, subtree: true });
+  if (!observerRegistered) {
+    observerRegistered = true;
+    const observer = new MutationObserver(debouncedDetect);
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
 }
 
 /** Initialize the floating widget. */
@@ -293,6 +299,12 @@ async function fetchHistoricalOverrides(
 
 /** Perform form detection and filling. */
 async function performFill() {
+  // Prevent concurrent fills from corrupting widget state (e.g. auto-fill +
+  // manual click, or multi-step recursive fill calling performFill again)
+  if (fillInProgress) return { filled: 0, skipped: 0, message: "Fill already in progress." };
+  fillInProgress = true;
+
+  try {
   // Always re-detect forms fresh — the user may have clicked Fill after
   // the page finished loading (SPA), or fields may have changed since init.
   currentDetection = detectForms(document);
@@ -385,6 +397,9 @@ async function performFill() {
     totalDetected: currentDetection.fields.length,
     message: `Filled ${result.filled} of ${currentDetection.fields.length} fields (${currentDetection.atsProvider}).`,
   };
+  } finally {
+    fillInProgress = false;
+  }
 }
 
 // Run

@@ -157,7 +157,7 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
   }, [confirmDisconnect, onDisconnect]);
 
   // Initial for avatar
-  const initial = (profile?.flat?.fullName ?? "?")[0].toUpperCase();
+  const initial = (profile?.flat?.fullName || "?")[0].toUpperCase();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
