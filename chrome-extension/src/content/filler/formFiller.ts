@@ -123,14 +123,12 @@ function fillSingleField(field: DetectedField, value: string): boolean {
     return false;
   }
 
-  // Custom dropdown (React/Vue combobox)
-  if (
-    el.getAttribute("role") === "combobox" ||
-    el.getAttribute("role") === "listbox" ||
-    (el as HTMLElement).dataset?.automationId?.includes("Dropdown")
-  ) {
-    // Fire-and-forget async dropdown interaction; optimistically report success
-    void simulateCustomDropdown(el as HTMLElement, value);
+  // Custom dropdown (React/Vue combobox) — check element AND parent containers.
+  // Form detector finds <input> elements, but the combobox role is often on a
+  // parent <div>. Walk up to 4 levels to find the dropdown container.
+  const dropdownTrigger = findDropdownTrigger(el);
+  if (dropdownTrigger) {
+    void simulateCustomDropdown(dropdownTrigger, value);
     return true;
   }
 
@@ -160,6 +158,35 @@ function fillSingleField(field: DetectedField, value: string): boolean {
   // Standard text/email/tel/textarea/contenteditable
   simulateInput(el, value);
   return true;
+}
+
+/**
+ * Walk up the DOM from an element to find a custom dropdown container.
+ * Returns the container element (to pass to simulateCustomDropdown) or null.
+ */
+function findDropdownTrigger(el: HTMLElement): HTMLElement | null {
+  let node: HTMLElement | null = el;
+  for (let depth = 0; depth < 5 && node; depth++) {
+    const role = node.getAttribute("role");
+    const cls = node.className?.toLowerCase?.() ?? "";
+    if (
+      role === "combobox" || role === "listbox" ||
+      node.dataset?.automationId?.includes("Dropdown") ||
+      cls.includes("select-menu") || cls.includes("combobox") ||
+      cls.includes("listbox")
+    ) {
+      return node;
+    }
+    // Also check for common dropdown wrapper class patterns (but avoid overly broad matches)
+    if (
+      (cls.includes("dropdown") || cls.includes("selectcontainer") || cls.includes("select-container")) &&
+      depth > 0 // Don't match the input itself, only parents
+    ) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+  return null;
 }
 
 /**
