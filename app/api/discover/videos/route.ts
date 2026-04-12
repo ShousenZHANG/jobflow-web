@@ -13,45 +13,56 @@ function daysAgoISO(n: number): string {
   return d.toISOString();
 }
 
-async function fetchYouTube(): Promise<VideoItem[]> {
-  const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) return [];
+// Multiple broader queries to maximize results while staying on-topic
+const SEARCH_QUERIES = [
+  "Claude AI tutorial",
+  "Anthropic Claude coding",
+  "RAG tutorial LLM",
+  "AI agent building 2026",
+  "Claude Code programming",
+];
 
-  // Step 1: Search for Claude/Anthropic/RAG focused videos
-  const searchUrl = new URL("https://www.googleapis.com/youtube/v3/search");
-  searchUrl.searchParams.set("part", "snippet");
-  searchUrl.searchParams.set("q", "Claude Anthropic RAG AI agent tutorial");
-  searchUrl.searchParams.set("type", "video");
-  searchUrl.searchParams.set("order", "date");
-  searchUrl.searchParams.set("publishedAfter", daysAgoISO(14));
-  searchUrl.searchParams.set("maxResults", "15");
-  searchUrl.searchParams.set("relevanceLanguage", "en");
-  searchUrl.searchParams.set("key", apiKey);
+async function searchYouTube(
+  query: string,
+  apiKey: string,
+  maxResults: number,
+): Promise<string[]> {
+  const url = new URL("https://www.googleapis.com/youtube/v3/search");
+  url.searchParams.set("part", "snippet");
+  url.searchParams.set("q", query);
+  url.searchParams.set("type", "video");
+  url.searchParams.set("order", "relevance");
+  url.searchParams.set("publishedAfter", daysAgoISO(30));
+  url.searchParams.set("maxResults", String(maxResults));
+  url.searchParams.set("relevanceLanguage", "en");
+  url.searchParams.set("videoDuration", "medium"); // 4-20 min (skip shorts)
+  url.searchParams.set("key", apiKey);
 
-  const searchRes = await fetch(searchUrl.toString());
-  if (!searchRes.ok) throw new Error(`YouTube Search API ${searchRes.status}`);
+  const res = await fetch(url.toString());
+  if (!res.ok) return [];
 
-  const searchJson = await searchRes.json();
-  const searchItems: any[] = searchJson.items ?? [];
-  const videoIds = searchItems
+  const json = await res.json();
+  return (json.items ?? [])
     .map((item: any) => item.id?.videoId)
     .filter(Boolean);
+}
 
+async function fetchVideoStats(
+  videoIds: string[],
+  apiKey: string,
+): Promise<VideoItem[]> {
   if (videoIds.length === 0) return [];
 
-  // Step 2: Fetch video statistics (view counts) in batch
-  const statsUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
-  statsUrl.searchParams.set("part", "statistics,snippet");
-  statsUrl.searchParams.set("id", videoIds.join(","));
-  statsUrl.searchParams.set("key", apiKey);
+  const url = new URL("https://www.googleapis.com/youtube/v3/videos");
+  url.searchParams.set("part", "statistics,snippet");
+  url.searchParams.set("id", videoIds.join(","));
+  url.searchParams.set("key", apiKey);
 
-  const statsRes = await fetch(statsUrl.toString());
-  if (!statsRes.ok) throw new Error(`YouTube Videos API ${statsRes.status}`);
+  const res = await fetch(url.toString());
+  if (!res.ok) return [];
 
-  const statsJson = await statsRes.json();
-  const statsItems: any[] = statsJson.items ?? [];
-
-  return statsItems.map((item) => ({
+  const json = await res.json();
+  return (json.items ?? []).map((item: any) => ({
     id: item.id,
     title: item.snippet?.title ?? "",
     url: `https://www.youtube.com/watch?v=${item.id}`,
@@ -64,6 +75,34 @@ async function fetchYouTube(): Promise<VideoItem[]> {
     publishedAt: item.snippet?.publishedAt ?? "",
     description: (item.snippet?.description ?? "").slice(0, 200),
   }));
+}
+
+async function fetchYouTube(): Promise<VideoItem[]> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return [];
+
+  // Step 1: Run multiple search queries in parallel (5 queries × 6 results each)
+  const searchResults = await Promise.all(
+    SEARCH_QUERIES.map((q) => searchYouTube(q, apiKey, 6)),
+  );
+
+  // Step 2: Deduplicate video IDs
+  const seen = new Set<string>();
+  const uniqueIds: string[] = [];
+  for (const ids of searchResults) {
+    for (const id of ids) {
+      if (!seen.has(id)) {
+        seen.add(id);
+        uniqueIds.push(id);
+      }
+    }
+  }
+
+  // Step 3: Fetch stats in batch (max 50 per request)
+  const videos = await fetchVideoStats(uniqueIds.slice(0, 50), apiKey);
+
+  // Step 4: Sort by view count descending
+  return videos.sort((a, b) => b.viewCount - a.viewCount);
 }
 
 export async function GET(request: Request) {

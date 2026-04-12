@@ -36,17 +36,6 @@ export interface VideoItem {
   description: string;
 }
 
-export interface MarketItem {
-  id: string;
-  question: string;
-  url: string;
-  outcomes: string[];
-  prices: number[];
-  volume24h: number;
-  imageUrl: string;
-  endDate: string;
-}
-
 export interface TrendingResponse {
   repos: TrendingRepo[];
   cached: boolean;
@@ -61,12 +50,6 @@ export interface NewsResponse {
 
 export interface VideosResponse {
   items: VideoItem[];
-  cached: boolean;
-  fetchedAt: string;
-}
-
-export interface MarketsResponse {
-  items: MarketItem[];
   cached: boolean;
   fetchedAt: string;
 }
