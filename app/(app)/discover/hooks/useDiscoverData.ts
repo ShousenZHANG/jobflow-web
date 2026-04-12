@@ -22,11 +22,11 @@ export function useTrendingRepos(period: "weekly" | "monthly" = "weekly") {
   });
 }
 
-export function useNews(source: "all" | "hn" | "devto" | "reddit" = "all") {
+export function useNews() {
   return useQuery<NewsResponse>({
-    queryKey: ["discover-news", source],
+    queryKey: ["discover-news"],
     queryFn: async () => {
-      const res = await fetch(`/api/discover/news?source=${source}`);
+      const res = await fetch("/api/discover/news");
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
         throw new Error(json?.error ?? "Failed to load news");

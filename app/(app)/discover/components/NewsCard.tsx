@@ -1,4 +1,4 @@
-import { Flame, MessageSquare, ExternalLink } from "lucide-react";
+import { ArrowUpCircle, MessageSquare, ExternalLink } from "lucide-react";
 import type { NewsItem } from "../types";
 
 function relativeTime(iso: string): string {
@@ -10,54 +10,30 @@ function relativeTime(iso: string): string {
   return `${days}d ago`;
 }
 
-const SOURCE_STYLES = {
-  hn: {
-    label: "Hacker News",
-    badge: "bg-orange-50 text-orange-700",
-  },
-  devto: {
-    label: "Dev.to",
-    badge: "bg-slate-100 text-slate-700",
-  },
-  reddit: {
-    label: "Reddit",
-    badge: "bg-red-50 text-red-700",
-  },
-} as const;
+function formatScore(n: number): string {
+  if (n >= 10_000) return `${(n / 1000).toFixed(1)}k`;
+  if (n >= 1_000) return `${(n / 1000).toFixed(1)}k`;
+  return String(n);
+}
 
 export function NewsCard({ item }: { item: NewsItem }) {
-  const source = SOURCE_STYLES[item.source];
-  const isHot = item.score > 200;
+  const isHot = item.score >= 500;
 
   return (
     <article className="group relative flex flex-col rounded-xl border border-slate-200 bg-white transition-all duration-150 hover:border-slate-300 hover:shadow-md">
-      {/* Cover image (Dev.to only) */}
-      {item.coverImage && (
-        <div className="relative h-32 overflow-hidden rounded-t-xl bg-slate-100">
-          <img
-            src={item.coverImage}
-            alt=""
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
-          />
-        </div>
-      )}
-
       <div className="flex flex-1 flex-col p-4">
-        {/* Source badge + score */}
+        {/* Score + subreddit badge */}
         <div className="mb-2 flex items-center justify-between">
-          <span
-            className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${source.badge}`}
-          >
-            {source.label}
+          <span className="rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
+            Reddit
           </span>
           <span
             className={`flex items-center gap-1 text-xs font-semibold ${
               isHot ? "text-orange-600" : "text-slate-500"
             }`}
           >
-            {isHot && <Flame className="h-3 w-3 fill-orange-400 text-orange-400" />}
-            {item.score}
+            <ArrowUpCircle className={`h-3.5 w-3.5 ${isHot ? "text-orange-500" : ""}`} />
+            {formatScore(item.score)}
           </span>
         </div>
 
@@ -71,7 +47,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
           {item.title}
         </a>
 
-        {/* Description (Dev.to only) */}
+        {/* Description preview */}
         {item.description && (
           <p className="mb-2 line-clamp-2 text-[12px] leading-relaxed text-slate-500">
             {item.description}
@@ -81,6 +57,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
         {/* Footer */}
         <div className="mt-auto flex items-center justify-between pt-2 text-[11px] text-slate-400">
           <div className="flex items-center gap-2">
+            <span>u/{item.author}</span>
             <span>{relativeTime(item.publishedAt)}</span>
             {item.commentCount > 0 && (
               <span className="flex items-center gap-0.5">
@@ -94,7 +71,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-0.5 font-medium text-slate-400 transition-colors hover:text-emerald-600"
-            aria-label={`Read ${item.title}`}
+            aria-label={`Read: ${item.title}`}
           >
             Read
             <ExternalLink className="h-3 w-3" />
