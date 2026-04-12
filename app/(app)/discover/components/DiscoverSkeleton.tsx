@@ -59,20 +59,3 @@ export function VideoSkeleton() {
   );
 }
 
-export function MarketSkeleton() {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-slate-200 bg-white p-4">
-          <Skeleton className="mb-3 h-4 w-full" />
-          <Skeleton className="mb-1.5 h-5 w-3/4 rounded-full" />
-          <Skeleton className="mb-3 h-5 w-1/2 rounded-full" />
-          <div className="flex gap-3">
-            <Skeleton className="h-3 w-14" />
-            <Skeleton className="h-3 w-20" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

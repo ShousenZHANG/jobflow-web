@@ -1,14 +1,6 @@
 import { Play, Eye } from "lucide-react";
 import type { VideoItem } from "../types";
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 1) return "just now";
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
+import { relativeTime, formatCount } from "../utils";
 
 export function VideoCard({ item }: { item: VideoItem }) {
   return (
@@ -60,9 +52,7 @@ export function VideoCard({ item }: { item: VideoItem }) {
           {item.viewCount > 0 && (
             <span className="ml-auto flex shrink-0 items-center gap-0.5 font-medium text-slate-500">
               <Eye className="h-3 w-3" />
-              {item.viewCount >= 1000
-                ? `${(item.viewCount / 1000).toFixed(1)}K`
-                : item.viewCount}
+              {formatCount(item.viewCount)}
             </span>
           )}
         </div>

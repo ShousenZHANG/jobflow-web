@@ -11,7 +11,7 @@ export function VideoList() {
   const { data, isLoading, error } = useVideos();
 
   const items = data?.items ?? [];
-  const noApiKey = (data as any)?.noApiKey === true;
+  const noApiKey = data?.noApiKey === true;
 
   if (noApiKey && !isLoading) {
     return (

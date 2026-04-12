@@ -20,6 +20,8 @@ const SEARCH_QUERIES = [
   "RAG tutorial LLM",
   "AI agent building 2026",
   "Claude Code programming",
+  "AI harness engineering",
+  "software engineering AI tools",
 ];
 
 async function searchYouTube(

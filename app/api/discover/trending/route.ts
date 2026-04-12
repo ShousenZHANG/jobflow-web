@@ -39,7 +39,7 @@ async function fetchOSSInsight(
     ownerAvatar: row.repo_name
       ? `https://github.com/${row.repo_name.split("/")[0]}.png?size=64`
       : "",
-    pushedAt: new Date().toISOString(),
+    pushedAt: "", // OSS Insight does not provide push date
   }));
 }
 

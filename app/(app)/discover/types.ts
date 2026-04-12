@@ -52,4 +52,5 @@ export interface VideosResponse {
   items: VideoItem[];
   cached: boolean;
   fetchedAt: string;
+  noApiKey?: boolean;
 }

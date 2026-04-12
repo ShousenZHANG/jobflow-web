@@ -1,5 +1,6 @@
 import { Star, GitFork, ExternalLink } from "lucide-react";
 import type { TrendingRepo } from "../types";
+import { relativeTime, formatCount } from "../utils";
 
 /** Language → dot color mapping */
 const LANG_COLORS: Record<string, string> = {
@@ -16,21 +17,6 @@ const LANG_COLORS: Record<string, string> = {
   Ruby: "bg-red-600",
   PHP: "bg-indigo-400",
 };
-
-function formatStars(n: number): string {
-  if (n >= 10_000) return `${(n / 1000).toFixed(1)}k`;
-  if (n >= 1_000) return `${(n / 1000).toFixed(1)}k`;
-  return String(n);
-}
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 1) return "just now";
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
 
 export function TrendingRepoCard({ repo }: { repo: TrendingRepo }) {
   const langColor = repo.language
@@ -95,13 +81,15 @@ export function TrendingRepoCard({ repo }: { repo: TrendingRepo }) {
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1 font-semibold text-amber-600">
             <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-            {formatStars(repo.stars)}
+            {formatCount(repo.stars)}
           </span>
           <span className="flex items-center gap-1">
             <GitFork className="h-3 w-3" />
-            {formatStars(repo.forks)}
+            {formatCount(repo.forks)}
           </span>
-          <span>Updated {relativeTime(repo.pushedAt)}</span>
+          {repo.pushedAt && (
+            <span>Updated {relativeTime(repo.pushedAt)}</span>
+          )}
         </div>
         <a
           href={repo.url}

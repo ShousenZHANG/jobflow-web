@@ -1,20 +1,6 @@
 import { ArrowUpCircle, MessageSquare, ExternalLink } from "lucide-react";
 import type { NewsItem } from "../types";
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 1) return "just now";
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-function formatScore(n: number): string {
-  if (n >= 10_000) return `${(n / 1000).toFixed(1)}k`;
-  if (n >= 1_000) return `${(n / 1000).toFixed(1)}k`;
-  return String(n);
-}
+import { relativeTime, formatCount } from "../utils";
 
 export function NewsCard({ item }: { item: NewsItem }) {
   const isHot = item.score >= 500;
@@ -33,7 +19,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
             }`}
           >
             <ArrowUpCircle className={`h-3.5 w-3.5 ${isHot ? "text-orange-500" : ""}`} />
-            {formatScore(item.score)}
+            {formatCount(item.score)}
           </span>
         </div>
 

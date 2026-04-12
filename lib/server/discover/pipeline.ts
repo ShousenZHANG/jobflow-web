@@ -75,10 +75,6 @@ export function runPipeline(input: PipelineInput): PipelineOutput {
     );
     c.engagementScore = engagementScore(bestEngagement);
     c.freshnessScore = freshnessScore(c.publishedAt);
-    c.sourceQualityScore =
-      (c.sources.reduce((s, src) => s + (SOURCE_QUALITY[src] ?? 0.5), 0) /
-        c.sources.length) *
-      100;
   }
 
   // 4. Normalize RRF scores to 0-100 range, then compute final
