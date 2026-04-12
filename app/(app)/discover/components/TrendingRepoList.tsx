@@ -1,32 +1,25 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTrendingRepos } from "../hooks/useDiscoverData";
 import { TrendingRepoCard } from "./TrendingRepoCard";
 import { TrendingSkeleton } from "./DiscoverSkeleton";
 
-const LANGUAGE_FILTERS = ["All", "Python", "TypeScript", "Rust", "Go", "Java"];
-
 export function TrendingRepoList() {
   const [period, setPeriod] = useState<"weekly" | "monthly">("weekly");
-  const [langFilter, setLangFilter] = useState("All");
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useTrendingRepos(period);
 
-  const filtered = useMemo(() => {
-    if (!data?.repos) return [];
-    if (langFilter === "All") return data.repos;
-    return data.repos.filter((r) => r.language === langFilter);
-  }, [data?.repos, langFilter]);
+  const repos = data?.repos ?? [];
 
   return (
     <section>
       {/* Section header */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold text-slate-900 lg:text-lg">
-          GitHub Trending
+          Top 30 This Week
         </h2>
         <select
           value={period}
@@ -37,24 +30,6 @@ export function TrendingRepoList() {
           <option value="weekly">This week</option>
           <option value="monthly">This month</option>
         </select>
-      </div>
-
-      {/* Language filter pills */}
-      <div className="mb-4 flex flex-wrap gap-1.5">
-        {LANGUAGE_FILTERS.map((lang) => (
-          <button
-            key={lang}
-            type="button"
-            onClick={() => setLangFilter(lang)}
-            className={`rounded-lg px-3 py-1 text-xs font-medium transition-all duration-150 ${
-              langFilter === lang
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            {lang}
-          </button>
-        ))}
       </div>
 
       {/* Content */}
@@ -75,13 +50,13 @@ export function TrendingRepoList() {
             Retry
           </button>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : repos.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate-500">
-          No repos found for this filter.
+          No trending repos found.
         </p>
       ) : (
         <div className="grid gap-3">
-          {filtered.map((repo) => (
+          {repos.map((repo) => (
             <TrendingRepoCard key={repo.id} repo={repo} />
           ))}
         </div>

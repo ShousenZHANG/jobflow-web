@@ -19,6 +19,10 @@ const SOURCE_STYLES = {
     label: "Dev.to",
     badge: "bg-slate-100 text-slate-700",
   },
+  reddit: {
+    label: "Reddit",
+    badge: "bg-red-50 text-red-700",
+  },
 } as const;
 
 export function NewsCard({ item }: { item: NewsItem }) {

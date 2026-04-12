@@ -9,12 +9,13 @@ import { NewsSkeleton } from "./DiscoverSkeleton";
 
 const SOURCE_TABS = [
   { value: "all", label: "All" },
+  { value: "reddit", label: "Reddit" },
   { value: "hn", label: "Hacker News" },
   { value: "devto", label: "Dev.to" },
 ] as const;
 
 export function NewsList() {
-  const [sourceFilter, setSourceFilter] = useState<"all" | "hn" | "devto">("all");
+  const [sourceFilter, setSourceFilter] = useState<"all" | "hn" | "devto" | "reddit">("all");
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useNews();
 

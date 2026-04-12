@@ -107,11 +107,52 @@ async function fetchDevTo(): Promise<DiscoverItem[]> {
   }));
 }
 
+// ── Reddit (free public JSON API) ──
+
+const SUBREDDITS = ["artificial", "MachineLearning"];
+
+async function fetchReddit(): Promise<DiscoverItem[]> {
+  const results: DiscoverItem[] = [];
+
+  for (const sub of SUBREDDITS) {
+    try {
+      const res = await fetch(
+        `https://www.reddit.com/r/${sub}/top.json?t=week&limit=15`,
+        { headers: { "User-Agent": "Joblit-Discover/1.0" } },
+      );
+      if (!res.ok) continue;
+      const json = await res.json();
+      const posts: any[] = json?.data?.children ?? [];
+
+      for (const { data: p } of posts) {
+        results.push({
+          id: `reddit-${p.id}`,
+          source: "reddit",
+          title: p.title,
+          url: p.url?.startsWith("https://www.reddit.com")
+            ? `https://www.reddit.com${p.permalink}`
+            : p.url ?? `https://www.reddit.com${p.permalink}`,
+          body: (p.selftext ?? "").slice(0, 300),
+          author: p.author ?? "",
+          publishedAt: new Date((p.created_utc ?? 0) * 1000).toISOString(),
+          engagement: { score: p.score ?? 0, comments: p.num_comments ?? 0 },
+          relevance: 0.75,
+          tags: [],
+        });
+      }
+    } catch {
+      // Skip failed subreddit, continue with others
+    }
+  }
+
+  return results;
+}
+
 /** Convert pipeline Candidate back to the NewsItem format the frontend expects. */
 function candidateToNewsItem(
   c: ReturnType<typeof runPipeline>["candidates"][number],
 ): NewsItem {
-  const primarySource = c.sources[0] as "hn" | "devto";
+  const primarySource = c.sources[0] as "hn" | "devto" | "reddit";
   const bestItem = c.items[0];
   return {
     id: bestItem?.id ?? c.key,
@@ -155,6 +196,8 @@ export async function GET(request: Request) {
       fetchers.push({ key: "hn", fn: fetchHN() });
     if (source === "all" || source === "devto")
       fetchers.push({ key: "devto", fn: fetchDevTo() });
+    if (source === "all" || source === "reddit")
+      fetchers.push({ key: "reddit", fn: fetchReddit() });
 
     const results = await Promise.all(fetchers.map((f) => f.fn));
 
@@ -169,7 +212,7 @@ export async function GET(request: Request) {
     // Run the full pipeline: dedup → RRF fusion → scoring → author cap → clustering
     const { candidates } = runPipeline({
       streams,
-      sourceWeights: { hn: 1.0, devto: 1.0 },
+      sourceWeights: { hn: 1.0, devto: 1.0, reddit: 1.0 },
       authorCap: 2,
       minSourceSlots: 2,
     });
