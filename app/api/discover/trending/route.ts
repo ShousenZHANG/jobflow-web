@@ -13,7 +13,7 @@ async function fetchOSSInsight(
   period: "weekly" | "monthly",
 ): Promise<TrendingRepo[]> {
   const ossPeriod = period === "weekly" ? "past_week" : "past_month";
-  const url = `https://api.ossinsight.io/v1/trends/repos?period=${ossPeriod}&limit=30`;
+  const url = `https://api.ossinsight.io/v1/trends/repos?period=${ossPeriod}&limit=20`;
 
   const res = await fetch(url, {
     headers: { Accept: "application/json", "User-Agent": "Joblit-Discover/1.0" },
@@ -59,7 +59,7 @@ async function fetchGitHubSearch(
   url.searchParams.set("q", `created:>${since} stars:>50`);
   url.searchParams.set("sort", "stars");
   url.searchParams.set("order", "desc");
-  url.searchParams.set("per_page", "30");
+  url.searchParams.set("per_page", "20");
 
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
