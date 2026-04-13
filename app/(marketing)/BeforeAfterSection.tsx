@@ -4,6 +4,7 @@ import { Wand2 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { renderBoldText } from "./renderBoldText";
+import { ScrollWordReveal } from "./ScrollWordReveal";
 
 const DURATION = 0.6;
 
@@ -85,14 +86,11 @@ export function BeforeAfterSection() {
         </motion.div>
       </div>
 
-      <motion.p
-        className="mt-10 text-center text-[1.0625rem] font-medium text-slate-500"
-        initial={base} whileInView={visible}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ delay: noMotion ? 0 : 0.4, duration: noMotion ? 0 : DURATION }}
-      >
-        {t("beforeAfterTagline")}
-      </motion.p>
+      <ScrollWordReveal
+        text={t("beforeAfterTagline")}
+        highlight={["every", "bullet.", "bullet", "application.", "application", "your", "your."]}
+        className="mx-auto mt-12 max-w-3xl text-center text-[1.25rem] font-medium leading-relaxed sm:text-[1.5rem]"
+      />
     </section>
   );
 }

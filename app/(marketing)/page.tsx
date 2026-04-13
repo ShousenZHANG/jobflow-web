@@ -9,6 +9,7 @@ import { BeforeAfterSection } from "./BeforeAfterSection";
 import { FinalCTA } from "./FinalCTA";
 import { LandingBackground } from "./LandingBackground";
 import { ScrollProgress } from "./ScrollProgress";
+import { Navbar } from "./Navbar";
 
 /* ── SEO ──────────────────────────────────────────────── */
 
@@ -44,6 +45,7 @@ export default async function HomePage() {
       />
 
       <ScrollProgress />
+      <Navbar />
 
       <div className="marketing-edu relative min-h-[100dvh] overflow-hidden">
         <div className="edu-bg" aria-hidden="true" />
@@ -56,22 +58,10 @@ export default async function HomePage() {
           {t("skipToContent")}
         </a>
 
-        <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-7xl flex-col items-center px-4 pb-10 pt-4 text-center sm:px-6 sm:pb-14 md:pt-5 lg:px-8">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="edu-landing-logo-only self-start text-[15px] font-semibold tracking-tight text-slate-800 transition-colors hover:text-slate-900 focus-visible:outline focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-            aria-label="Joblit home"
-          >
-            <span className="inline-flex items-center gap-2">
-              <Search className="h-5 w-5 text-emerald-700" strokeWidth={2.25} />
-              Joblit
-            </span>
-          </Link>
-
-          {/* Sections — Apple-style cinematic breathing with no dividers */}
+        <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-7xl flex-col items-center px-4 pb-10 text-center sm:px-6 sm:pb-14 lg:px-8">
+          {/* Sections */}
           <main id="main-content" className="flex w-full flex-col items-center">
-            <div className="pt-10 sm:pt-16">
+            <div className="pt-24 sm:pt-28">
               <HeroSection
                 heroTitle={t("heroTitle")}
                 heroSubtitle={t("heroSubtitle")}
@@ -79,10 +69,18 @@ export default async function HomePage() {
                 badgeLabel={t("badge")}
               />
             </div>
-            <HowItWorksSection />
-            <FeaturesGrid />
-            <BeforeAfterSection />
-            <FinalCTA />
+            <div id="how-it-works" className="w-full scroll-mt-24">
+              <HowItWorksSection />
+            </div>
+            <div id="features" className="w-full scroll-mt-24">
+              <FeaturesGrid />
+            </div>
+            <div id="before-after" className="w-full scroll-mt-24">
+              <BeforeAfterSection />
+            </div>
+            <div id="get-started" className="w-full scroll-mt-24">
+              <FinalCTA />
+            </div>
           </main>
 
           {/* Footer */}
