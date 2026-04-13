@@ -12,11 +12,12 @@ type SmartCTAProps = {
 
 export function SmartCTA({ label, className }: SmartCTAProps) {
   const { status } = useSession();
-  const href = status === "authenticated" ? "/jobs" : "/login";
+  const href = status === "authenticated" ? "/jobs" : status === "unauthenticated" ? "/login" : "#";
+  const loading = status === "loading";
 
   return (
-    <Button asChild size="lg" className={className}>
-      <Link href={href}>
+    <Button asChild size="lg" className={className} aria-disabled={loading}>
+      <Link href={href} tabIndex={loading ? -1 : undefined} style={loading ? { pointerEvents: "none", opacity: 0.6 } : undefined}>
         {label} <ArrowRight className="h-4 w-4 shrink-0" />
       </Link>
     </Button>

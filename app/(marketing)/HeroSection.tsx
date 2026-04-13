@@ -75,7 +75,7 @@ export function HeroSection({
             const isGradient = word === "AI-tailored";
             return (
               <motion.span
-                key={i}
+                key={`${word}-${i}`}
                 className={`inline-block ${isGradient ? "bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent" : ""}`}
                 initial={{ opacity: 0, y: noMotion ? 0 : 10 }}
                 animate={{

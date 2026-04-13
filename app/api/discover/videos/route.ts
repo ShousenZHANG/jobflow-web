@@ -41,10 +41,7 @@ async function searchYouTube(
   url.searchParams.set("key", apiKey);
 
   const res = await fetch(url.toString(), { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) {
-    console.warn(`YouTube search "${query}" returned ${res.status}`);
-    return [];
-  }
+  if (!res.ok) return [];
 
   const json = await res.json();
   return (json.items ?? [])
