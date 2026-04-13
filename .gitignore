@@ -71,3 +71,7 @@ next-env.d.ts
 !lib/
 !lib/server/
 !lib/server/**/*.ts
+
+# Design reference docs (getdesign artifacts)
+docs/design-references/
+DESIGN.md
