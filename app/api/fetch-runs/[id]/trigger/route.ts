@@ -9,6 +9,7 @@ import type { Prisma } from "@/lib/generated/prisma";
 export const runtime = "nodejs";
 
 const ParamsSchema = z.object({ id: z.string().uuid() });
+const IDEMPOTENCY_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 
 function envOrThrow(key: string) {
   const v = process.env[key];
@@ -19,6 +20,8 @@ function envOrThrow(key: string) {
 type DispatchMeta = {
   inFlightAt?: string;
   dispatchedAt?: string;
+  idempotencyKey?: string;
+  idempotencyAt?: string;
 };
 
 function readDispatchMeta(raw: unknown): DispatchMeta {
@@ -30,6 +33,8 @@ function readDispatchMeta(raw: unknown): DispatchMeta {
   return {
     inFlightAt: typeof m.inFlightAt === "string" ? m.inFlightAt : undefined,
     dispatchedAt: typeof m.dispatchedAt === "string" ? m.dispatchedAt : undefined,
+    idempotencyKey: typeof m.idempotencyKey === "string" ? m.idempotencyKey : undefined,
+    idempotencyAt: typeof m.idempotencyAt === "string" ? m.idempotencyAt : undefined,
   };
 }
 
@@ -43,6 +48,8 @@ function withDispatchMeta(raw: unknown, patch: Partial<DispatchMeta>) {
   const next: DispatchMeta = { ...current, ...patch };
   if (!next.inFlightAt) delete next.inFlightAt;
   if (!next.dispatchedAt) delete next.dispatchedAt;
+  if (!next.idempotencyKey) delete next.idempotencyKey;
+  if (!next.idempotencyAt) delete next.idempotencyAt;
 
   return {
     ...base,
@@ -50,7 +57,24 @@ function withDispatchMeta(raw: unknown, patch: Partial<DispatchMeta>) {
   };
 }
 
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+/**
+ * Stable 32-bit signed integer hash of a UUID for pg_advisory_xact_lock(bigint).
+ * Postgres accepts a 64-bit bigint but also supports a 2-arg form using two
+ * 32-bit ints — we use the single-arg form and pass a 31-bit positive value.
+ * Collisions across different runIds are acceptable — lock is per-run, worst
+ * case is two unrelated runs serializing trigger calls briefly.
+ */
+function runIdToAdvisoryKey(uuid: string): number {
+  // djb2-style hash, masked to 31 bits so it fits a signed 32-bit range
+  // and never hits the sign bit (some drivers serialize negative bigints oddly).
+  let h = 5381;
+  for (let i = 0; i < uuid.length; i++) {
+    h = ((h << 5) + h + uuid.charCodeAt(i)) | 0;
+  }
+  return h & 0x7fffffff;
+}
+
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   let session: SessionContext;
   try {
     session = await requireSession();
@@ -64,41 +88,94 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   const parsed = ParamsSchema.safeParse(params);
   if (!parsed.success) return NextResponse.json({ error: "INVALID_PARAMS" }, { status: 400 });
 
-  const run = await prisma.fetchRun.findFirst({
-    where: { id: parsed.data.id, userId },
-    select: { id: true, status: true, market: true, queries: true, updatedAt: true },
-  });
-  if (!run) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
-  if (run.status !== "QUEUED") {
-    return NextResponse.json({ error: "INVALID_STATE", status: run.status }, { status: 409 });
-  }
+  const runId = parsed.data.id;
+  const idempotencyKey = req.headers.get("Idempotency-Key")?.trim() || null;
+  const advisoryKey = runIdToAdvisoryKey(runId);
 
-  const dispatchMeta = readDispatchMeta(run.queries);
-  if (dispatchMeta.dispatchedAt || dispatchMeta.inFlightAt) {
-    // Idempotent trigger: already dispatched (or dispatch in flight). Keep QUEUED until worker starts.
+  // Pessimistic lock via Postgres transaction-scoped advisory lock.
+  // Only one concurrent trigger per runId can hold this lock; others get
+  // LOCK_CONTENDED immediately and return the canonical "alreadyDispatched"
+  // response without racing against GitHub.
+  const txResult = await prisma.$transaction(async (tx) => {
+    const lockRows = await tx.$queryRaw<{ locked: boolean }[]>`
+      SELECT pg_try_advisory_xact_lock(${advisoryKey}::bigint) AS locked
+    `;
+    if (!lockRows?.[0]?.locked) {
+      return { kind: "lock_contended" as const };
+    }
+
+    const run = await tx.fetchRun.findFirst({
+      where: { id: runId, userId },
+      select: { id: true, status: true, market: true, queries: true },
+    });
+    if (!run) return { kind: "not_found" as const };
+    if (run.status !== "QUEUED") {
+      return { kind: "invalid_state" as const, status: run.status };
+    }
+
+    const meta = readDispatchMeta(run.queries);
+
+    // Idempotency: if caller replays same key within window, return prior result.
+    if (idempotencyKey && meta.idempotencyKey === idempotencyKey && meta.idempotencyAt) {
+      const ageMs = Date.now() - Date.parse(meta.idempotencyAt);
+      if (!Number.isNaN(ageMs) && ageMs < IDEMPOTENCY_WINDOW_MS) {
+        return {
+          kind: "idempotent_replay" as const,
+          alreadyDispatched: Boolean(meta.dispatchedAt || meta.inFlightAt),
+        };
+      }
+    }
+
+    if (meta.dispatchedAt || meta.inFlightAt) {
+      return { kind: "already_dispatched" as const };
+    }
+
+    // Claim the dispatch slot inside this transaction — row won't change
+    // between this update and commit because we hold the advisory lock.
+    await tx.fetchRun.update({
+      where: { id: runId },
+      data: {
+        queries: withDispatchMeta(run.queries, {
+          inFlightAt: new Date().toISOString(),
+          ...(idempotencyKey
+            ? {
+                idempotencyKey,
+                idempotencyAt: new Date().toISOString(),
+              }
+            : {}),
+        }),
+      },
+    });
+
+    return { kind: "locked" as const, market: run.market, queries: run.queries };
+  });
+
+  if (txResult.kind === "lock_contended" || txResult.kind === "already_dispatched") {
     return NextResponse.json({ ok: true, alreadyDispatched: true });
   }
+  if (txResult.kind === "idempotent_replay") {
+    return NextResponse.json({
+      ok: true,
+      alreadyDispatched: txResult.alreadyDispatched,
+      idempotent: true,
+    });
+  }
+  if (txResult.kind === "not_found") {
+    return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+  }
+  if (txResult.kind === "invalid_state") {
+    return NextResponse.json({ error: "INVALID_STATE", status: txResult.status }, { status: 409 });
+  }
 
+  // txResult.kind === "locked" — we hold the dispatch slot, send GitHub dispatch.
   const owner = envOrThrow("GITHUB_OWNER");
   const repo = envOrThrow("GITHUB_REPO");
   const token = envOrThrow("GITHUB_TOKEN");
   const workflow =
-    run.market === "CN"
+    txResult.market === "CN"
       ? process.env.GITHUB_CN_WORKFLOW_FILE || "cn-fetch.yml"
       : process.env.GITHUB_WORKFLOW_FILE || "jobspy-fetch.yml";
   const ref = process.env.GITHUB_REF || "master";
-
-  // Take a short-lived lock to prevent double-dispatch. We keep status=QUEUED until the worker reports RUNNING.
-  const inFlightAt = new Date().toISOString();
-  const lockedQueries = withDispatchMeta(run.queries, { inFlightAt });
-  const locked = await prisma.fetchRun.updateMany({
-    where: { id: run.id, userId, status: "QUEUED", updatedAt: run.updatedAt },
-    data: { queries: lockedQueries },
-  });
-
-  if (locked.count === 0) {
-    return NextResponse.json({ ok: true, alreadyDispatched: true });
-  }
 
   const ghRes = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflow}/dispatches`,
@@ -109,12 +186,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
         Accept: "application/vnd.github+json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        ref,
-        inputs: {
-          runId: run.id,
-        },
-      }),
+      body: JSON.stringify({ ref, inputs: { runId } }),
     },
   );
 
@@ -122,8 +194,8 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     const text = await ghRes.text().catch(() => "");
     // Best-effort unlock so the user can retry.
     await prisma.fetchRun.updateMany({
-      where: { id: run.id, userId, status: "QUEUED" },
-      data: { queries: run.queries as Prisma.InputJsonValue },
+      where: { id: runId, userId, status: "QUEUED" },
+      data: { queries: txResult.queries as Prisma.InputJsonValue },
     });
     return NextResponse.json(
       { error: "GITHUB_DISPATCH_FAILED", status: ghRes.status, details: text },
@@ -133,9 +205,9 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
   // Mark dispatch complete (still QUEUED until worker starts).
   await prisma.fetchRun.updateMany({
-    where: { id: run.id, userId, status: "QUEUED" },
+    where: { id: runId, userId, status: "QUEUED" },
     data: {
-      queries: withDispatchMeta(run.queries, {
+      queries: withDispatchMeta(txResult.queries, {
         inFlightAt: undefined,
         dispatchedAt: new Date().toISOString(),
       }),
@@ -144,4 +216,3 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
   return NextResponse.json({ ok: true });
 }
-

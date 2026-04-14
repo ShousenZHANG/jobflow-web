@@ -192,8 +192,22 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
     if (!runId) return;
     let alive = true;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    const pollingStartedAt = Date.now();
 
-    const scheduleNextPoll = (delayMs = 3000) => {
+    /**
+     * Progressive backoff — fresh runs tend to flip state fast, old ones sit idle.
+     * 0-30s   → 3s (tight feedback during queue handoff)
+     * 30s-2m  → 8s (worker is scraping, low-frequency updates)
+     * 2m+     → 15s (long tail; user can always manual-refresh)
+     */
+    const nextDelayMs = () => {
+      const elapsed = Date.now() - pollingStartedAt;
+      if (elapsed < 30_000) return 3_000;
+      if (elapsed < 120_000) return 8_000;
+      return 15_000;
+    };
+
+    const scheduleNextPoll = (delayMs: number) => {
       if (!alive) return;
       pollTimer = setTimeout(() => {
         void poll();
@@ -236,7 +250,7 @@ export function FetchStatusProvider({ children }: { children: React.ReactNode })
         }
       } finally {
         if (shouldContinue) {
-          scheduleNextPoll();
+          scheduleNextPoll(nextDelayMs());
         }
       }
     };

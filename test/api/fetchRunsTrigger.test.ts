@@ -2,12 +2,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const fetchRunStore = vi.hoisted(() => ({
   findFirst: vi.fn(),
+  findFirstInTx: vi.fn(),
+  updateInTx: vi.fn(),
   updateMany: vi.fn(),
+  queryRawLock: vi.fn(),
 }));
 
 vi.mock("@/lib/server/prisma", () => ({
   prisma: {
-    fetchRun: fetchRunStore,
+    fetchRun: {
+      findFirst: fetchRunStore.findFirst,
+      updateMany: fetchRunStore.updateMany,
+    },
+    // $transaction hands a tx client with the same shape as `prisma`; we re-route
+    // the tx's fetchRun calls to dedicated mocks so tests can assert them.
+    $transaction: async (cb: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        fetchRun: {
+          findFirst: fetchRunStore.findFirstInTx,
+          update: fetchRunStore.updateInTx,
+        },
+        $queryRaw: fetchRunStore.queryRawLock,
+      };
+      return cb(tx);
+    },
   },
 }));
 
@@ -24,11 +42,24 @@ import { POST } from "@/app/api/fetch-runs/[id]/trigger/route";
 
 const RUN_ID = "550e8400-e29b-41d4-a716-446655440000";
 
+function mockAuthedUser(userId = "user-1") {
+  (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+    user: { id: userId },
+  });
+}
+
+function mockLockAcquired(locked = true) {
+  fetchRunStore.queryRawLock.mockResolvedValue([{ locked }]);
+}
+
 describe("fetch run trigger api", () => {
   beforeEach(() => {
     (getServerSession as unknown as ReturnType<typeof vi.fn>).mockReset();
     fetchRunStore.findFirst.mockReset();
+    fetchRunStore.findFirstInTx.mockReset();
+    fetchRunStore.updateInTx.mockReset();
     fetchRunStore.updateMany.mockReset();
+    fetchRunStore.queryRawLock.mockReset();
     process.env.GITHUB_OWNER = "o";
     process.env.GITHUB_REPO = "r";
     process.env.GITHUB_TOKEN = "t";
@@ -36,56 +67,164 @@ describe("fetch run trigger api", () => {
     process.env.GITHUB_REF = "master";
   });
 
-  it("keeps QUEUED and takes a dispatch lock instead of setting RUNNING", async () => {
-    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      user: { id: "user-1" },
-    });
-    fetchRunStore.findFirst.mockResolvedValueOnce({
+  it("acquires advisory lock and dispatches GitHub workflow", async () => {
+    mockAuthedUser();
+    mockLockAcquired(true);
+    fetchRunStore.findFirstInTx.mockResolvedValueOnce({
       id: RUN_ID,
       status: "QUEUED",
+      market: "AU",
       queries: { title: "Software Engineer", queries: ["Software Engineer"] },
-      updatedAt: new Date("2026-02-14T00:00:00Z"),
     });
+    fetchRunStore.updateInTx.mockResolvedValueOnce({});
     fetchRunStore.updateMany.mockResolvedValue({ count: 1 });
 
-    // 204 responses cannot include a body in the Response constructor.
     const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const res = await POST(new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }), {
-      params: Promise.resolve({ id: RUN_ID }),
-    });
+    const res = await POST(
+      new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }),
+      { params: Promise.resolve({ id: RUN_ID }) },
+    );
 
     expect(res.status).toBe(200);
-    expect(fetchRunStore.updateMany).toHaveBeenCalled();
+    expect(fetchRunStore.queryRawLock).toHaveBeenCalled();
+    expect(fetchRunStore.updateInTx).toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalled();
   });
 
-  it("is idempotent when already dispatched", async () => {
-    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      user: { id: "user-1" },
-    });
-    fetchRunStore.findFirst.mockResolvedValueOnce({
+  it("returns alreadyDispatched when advisory lock is contended", async () => {
+    mockAuthedUser();
+    mockLockAcquired(false); // competing request holds the lock
+
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const res = await POST(
+      new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }),
+      { params: Promise.resolve({ id: RUN_ID }) },
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.alreadyDispatched).toBe(true);
+    expect(fetchRunStore.findFirstInTx).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("is idempotent when already dispatched (dispatchMeta flag set)", async () => {
+    mockAuthedUser();
+    mockLockAcquired(true);
+    fetchRunStore.findFirstInTx.mockResolvedValueOnce({
       id: RUN_ID,
       status: "QUEUED",
+      market: "AU",
       queries: {
         title: "Software Engineer",
         queries: ["Software Engineer"],
         dispatchMeta: { dispatchedAt: "2026-02-14T00:00:01.000Z" },
       },
-      updatedAt: new Date("2026-02-14T00:00:00Z"),
     });
 
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    const res = await POST(new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }), {
-      params: Promise.resolve({ id: RUN_ID }),
-    });
+    const res = await POST(
+      new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }),
+      { params: Promise.resolve({ id: RUN_ID }) },
+    );
     const json = await res.json();
 
     expect(res.status).toBe(200);
     expect(json.alreadyDispatched).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("replays prior result within idempotency window when Idempotency-Key matches", async () => {
+    mockAuthedUser();
+    mockLockAcquired(true);
+    fetchRunStore.findFirstInTx.mockResolvedValueOnce({
+      id: RUN_ID,
+      status: "QUEUED",
+      market: "AU",
+      queries: {
+        title: "SWE",
+        queries: ["SWE"],
+        dispatchMeta: {
+          idempotencyKey: "client-key-abc",
+          idempotencyAt: new Date().toISOString(),
+          dispatchedAt: new Date().toISOString(),
+        },
+      },
+    });
+
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const res = await POST(
+      new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, {
+        method: "POST",
+        headers: { "Idempotency-Key": "client-key-abc" },
+      }),
+      { params: Promise.resolve({ id: RUN_ID }) },
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.idempotent).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 when run does not belong to user", async () => {
+    mockAuthedUser();
+    mockLockAcquired(true);
+    fetchRunStore.findFirstInTx.mockResolvedValueOnce(null);
+
+    const res = await POST(
+      new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }),
+      { params: Promise.resolve({ id: RUN_ID }) },
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 409 when run is not in QUEUED state", async () => {
+    mockAuthedUser();
+    mockLockAcquired(true);
+    fetchRunStore.findFirstInTx.mockResolvedValueOnce({
+      id: RUN_ID,
+      status: "RUNNING",
+      market: "AU",
+      queries: {},
+    });
+
+    const res = await POST(
+      new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }),
+      { params: Promise.resolve({ id: RUN_ID }) },
+    );
+    expect(res.status).toBe(409);
+  });
+
+  it("unlocks when GitHub dispatch fails so user can retry", async () => {
+    mockAuthedUser();
+    mockLockAcquired(true);
+    fetchRunStore.findFirstInTx.mockResolvedValueOnce({
+      id: RUN_ID,
+      status: "QUEUED",
+      market: "AU",
+      queries: { title: "SWE", queries: ["SWE"] },
+    });
+    fetchRunStore.updateInTx.mockResolvedValueOnce({});
+    fetchRunStore.updateMany.mockResolvedValue({ count: 1 });
+
+    const fetchMock = vi.fn(async () => new Response("boom", { status: 500 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const res = await POST(
+      new Request(`http://localhost/api/fetch-runs/${RUN_ID}/trigger`, { method: "POST" }),
+      { params: Promise.resolve({ id: RUN_ID }) },
+    );
+    expect(res.status).toBe(502);
+    // First updateMany = unlock (reset queries), second is not called after error
+    expect(fetchRunStore.updateMany).toHaveBeenCalledTimes(1);
   });
 });
