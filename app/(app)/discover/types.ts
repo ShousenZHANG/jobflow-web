@@ -57,4 +57,11 @@ export interface VideosResponse {
   cached: boolean;
   fetchedAt: string;
   noApiKey?: boolean;
+  /**
+   * True when the upstream YouTube quota was exhausted and we served the
+   * last-known-good payload from the DB cache regardless of its TTL. UI
+   * surfaces this as a subtle "Updated X ago" banner instead of a hard
+   * empty state.
+   */
+  stale?: boolean;
 }

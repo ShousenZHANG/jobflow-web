@@ -98,6 +98,11 @@ export type FieldMappingRule = $Result.DefaultSelection<Prisma.$FieldMappingRule
  * 
  */
 export type OnboardingState = $Result.DefaultSelection<Prisma.$OnboardingStatePayload>
+/**
+ * Model DiscoverVideoCache
+ * 
+ */
+export type DiscoverVideoCache = $Result.DefaultSelection<Prisma.$DiscoverVideoCachePayload>
 
 /**
  * Enums
@@ -476,6 +481,16 @@ export class PrismaClient<
     * ```
     */
   get onboardingState(): Prisma.OnboardingStateDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.discoverVideoCache`: Exposes CRUD operations for the **DiscoverVideoCache** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DiscoverVideoCaches
+    * const discoverVideoCaches = await prisma.discoverVideoCache.findMany()
+    * ```
+    */
+  get discoverVideoCache(): Prisma.DiscoverVideoCacheDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -526,7 +541,7 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 7.6.0
+   * Prisma Client JS version: 7.7.0
    * Query Engine version: 75cbdc1eb7150937890ad5465d861175c6624711
    */
   export type PrismaVersion = {
@@ -926,7 +941,8 @@ export namespace Prisma {
     ExtensionToken: 'ExtensionToken',
     FormSubmission: 'FormSubmission',
     FieldMappingRule: 'FieldMappingRule',
-    OnboardingState: 'OnboardingState'
+    OnboardingState: 'OnboardingState',
+    DiscoverVideoCache: 'DiscoverVideoCache'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -942,7 +958,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "job" | "applicationBatch" | "applicationBatchTask" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "activeResumeProfile" | "application" | "promptRuleTemplate" | "extensionToken" | "formSubmission" | "fieldMappingRule" | "onboardingState"
+      modelProps: "user" | "account" | "session" | "job" | "applicationBatch" | "applicationBatchTask" | "deletedJobUrl" | "dailyCheckin" | "fetchRun" | "resumeProfile" | "activeResumeProfile" | "application" | "promptRuleTemplate" | "extensionToken" | "formSubmission" | "fieldMappingRule" | "onboardingState" | "discoverVideoCache"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2204,6 +2220,80 @@ export namespace Prisma {
           }
         }
       }
+      DiscoverVideoCache: {
+        payload: Prisma.$DiscoverVideoCachePayload<ExtArgs>
+        fields: Prisma.DiscoverVideoCacheFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DiscoverVideoCacheFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DiscoverVideoCacheFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>
+          }
+          findFirst: {
+            args: Prisma.DiscoverVideoCacheFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DiscoverVideoCacheFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>
+          }
+          findMany: {
+            args: Prisma.DiscoverVideoCacheFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>[]
+          }
+          create: {
+            args: Prisma.DiscoverVideoCacheCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>
+          }
+          createMany: {
+            args: Prisma.DiscoverVideoCacheCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DiscoverVideoCacheCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>[]
+          }
+          delete: {
+            args: Prisma.DiscoverVideoCacheDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>
+          }
+          update: {
+            args: Prisma.DiscoverVideoCacheUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>
+          }
+          deleteMany: {
+            args: Prisma.DiscoverVideoCacheDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DiscoverVideoCacheUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DiscoverVideoCacheUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>[]
+          }
+          upsert: {
+            args: Prisma.DiscoverVideoCacheUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiscoverVideoCachePayload>
+          }
+          aggregate: {
+            args: Prisma.DiscoverVideoCacheAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDiscoverVideoCache>
+          }
+          groupBy: {
+            args: Prisma.DiscoverVideoCacheGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DiscoverVideoCacheGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DiscoverVideoCacheCountArgs<ExtArgs>
+            result: $Utils.Optional<DiscoverVideoCacheCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2329,6 +2419,7 @@ export namespace Prisma {
     formSubmission?: FormSubmissionOmit
     fieldMappingRule?: FieldMappingRuleOmit
     onboardingState?: OnboardingStateOmit
+    discoverVideoCache?: DiscoverVideoCacheOmit
   }
 
   /* Types for Logging */
@@ -22727,6 +22818,989 @@ export namespace Prisma {
 
 
   /**
+   * Model DiscoverVideoCache
+   */
+
+  export type AggregateDiscoverVideoCache = {
+    _count: DiscoverVideoCacheCountAggregateOutputType | null
+    _min: DiscoverVideoCacheMinAggregateOutputType | null
+    _max: DiscoverVideoCacheMaxAggregateOutputType | null
+  }
+
+  export type DiscoverVideoCacheMinAggregateOutputType = {
+    key: string | null
+    fetchedAt: Date | null
+    expiresAt: Date | null
+  }
+
+  export type DiscoverVideoCacheMaxAggregateOutputType = {
+    key: string | null
+    fetchedAt: Date | null
+    expiresAt: Date | null
+  }
+
+  export type DiscoverVideoCacheCountAggregateOutputType = {
+    key: number
+    payload: number
+    fetchedAt: number
+    expiresAt: number
+    _all: number
+  }
+
+
+  export type DiscoverVideoCacheMinAggregateInputType = {
+    key?: true
+    fetchedAt?: true
+    expiresAt?: true
+  }
+
+  export type DiscoverVideoCacheMaxAggregateInputType = {
+    key?: true
+    fetchedAt?: true
+    expiresAt?: true
+  }
+
+  export type DiscoverVideoCacheCountAggregateInputType = {
+    key?: true
+    payload?: true
+    fetchedAt?: true
+    expiresAt?: true
+    _all?: true
+  }
+
+  export type DiscoverVideoCacheAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DiscoverVideoCache to aggregate.
+     */
+    where?: DiscoverVideoCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiscoverVideoCaches to fetch.
+     */
+    orderBy?: DiscoverVideoCacheOrderByWithRelationInput | DiscoverVideoCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DiscoverVideoCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiscoverVideoCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiscoverVideoCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DiscoverVideoCaches
+    **/
+    _count?: true | DiscoverVideoCacheCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DiscoverVideoCacheMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DiscoverVideoCacheMaxAggregateInputType
+  }
+
+  export type GetDiscoverVideoCacheAggregateType<T extends DiscoverVideoCacheAggregateArgs> = {
+        [P in keyof T & keyof AggregateDiscoverVideoCache]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDiscoverVideoCache[P]>
+      : GetScalarType<T[P], AggregateDiscoverVideoCache[P]>
+  }
+
+
+
+
+  export type DiscoverVideoCacheGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DiscoverVideoCacheWhereInput
+    orderBy?: DiscoverVideoCacheOrderByWithAggregationInput | DiscoverVideoCacheOrderByWithAggregationInput[]
+    by: DiscoverVideoCacheScalarFieldEnum[] | DiscoverVideoCacheScalarFieldEnum
+    having?: DiscoverVideoCacheScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DiscoverVideoCacheCountAggregateInputType | true
+    _min?: DiscoverVideoCacheMinAggregateInputType
+    _max?: DiscoverVideoCacheMaxAggregateInputType
+  }
+
+  export type DiscoverVideoCacheGroupByOutputType = {
+    key: string
+    payload: JsonValue
+    fetchedAt: Date
+    expiresAt: Date
+    _count: DiscoverVideoCacheCountAggregateOutputType | null
+    _min: DiscoverVideoCacheMinAggregateOutputType | null
+    _max: DiscoverVideoCacheMaxAggregateOutputType | null
+  }
+
+  type GetDiscoverVideoCacheGroupByPayload<T extends DiscoverVideoCacheGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DiscoverVideoCacheGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DiscoverVideoCacheGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DiscoverVideoCacheGroupByOutputType[P]>
+            : GetScalarType<T[P], DiscoverVideoCacheGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DiscoverVideoCacheSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    payload?: boolean
+    fetchedAt?: boolean
+    expiresAt?: boolean
+  }, ExtArgs["result"]["discoverVideoCache"]>
+
+  export type DiscoverVideoCacheSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    payload?: boolean
+    fetchedAt?: boolean
+    expiresAt?: boolean
+  }, ExtArgs["result"]["discoverVideoCache"]>
+
+  export type DiscoverVideoCacheSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    payload?: boolean
+    fetchedAt?: boolean
+    expiresAt?: boolean
+  }, ExtArgs["result"]["discoverVideoCache"]>
+
+  export type DiscoverVideoCacheSelectScalar = {
+    key?: boolean
+    payload?: boolean
+    fetchedAt?: boolean
+    expiresAt?: boolean
+  }
+
+  export type DiscoverVideoCacheOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"key" | "payload" | "fetchedAt" | "expiresAt", ExtArgs["result"]["discoverVideoCache"]>
+
+  export type $DiscoverVideoCachePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DiscoverVideoCache"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      key: string
+      payload: Prisma.JsonValue
+      fetchedAt: Date
+      expiresAt: Date
+    }, ExtArgs["result"]["discoverVideoCache"]>
+    composites: {}
+  }
+
+  type DiscoverVideoCacheGetPayload<S extends boolean | null | undefined | DiscoverVideoCacheDefaultArgs> = $Result.GetResult<Prisma.$DiscoverVideoCachePayload, S>
+
+  type DiscoverVideoCacheCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DiscoverVideoCacheFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DiscoverVideoCacheCountAggregateInputType | true
+    }
+
+  export interface DiscoverVideoCacheDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DiscoverVideoCache'], meta: { name: 'DiscoverVideoCache' } }
+    /**
+     * Find zero or one DiscoverVideoCache that matches the filter.
+     * @param {DiscoverVideoCacheFindUniqueArgs} args - Arguments to find a DiscoverVideoCache
+     * @example
+     * // Get one DiscoverVideoCache
+     * const discoverVideoCache = await prisma.discoverVideoCache.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DiscoverVideoCacheFindUniqueArgs>(args: SelectSubset<T, DiscoverVideoCacheFindUniqueArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DiscoverVideoCache that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DiscoverVideoCacheFindUniqueOrThrowArgs} args - Arguments to find a DiscoverVideoCache
+     * @example
+     * // Get one DiscoverVideoCache
+     * const discoverVideoCache = await prisma.discoverVideoCache.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DiscoverVideoCacheFindUniqueOrThrowArgs>(args: SelectSubset<T, DiscoverVideoCacheFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DiscoverVideoCache that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiscoverVideoCacheFindFirstArgs} args - Arguments to find a DiscoverVideoCache
+     * @example
+     * // Get one DiscoverVideoCache
+     * const discoverVideoCache = await prisma.discoverVideoCache.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DiscoverVideoCacheFindFirstArgs>(args?: SelectSubset<T, DiscoverVideoCacheFindFirstArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DiscoverVideoCache that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiscoverVideoCacheFindFirstOrThrowArgs} args - Arguments to find a DiscoverVideoCache
+     * @example
+     * // Get one DiscoverVideoCache
+     * const discoverVideoCache = await prisma.discoverVideoCache.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DiscoverVideoCacheFindFirstOrThrowArgs>(args?: SelectSubset<T, DiscoverVideoCacheFindFirstOrThrowArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DiscoverVideoCaches that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiscoverVideoCacheFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DiscoverVideoCaches
+     * const discoverVideoCaches = await prisma.discoverVideoCache.findMany()
+     * 
+     * // Get first 10 DiscoverVideoCaches
+     * const discoverVideoCaches = await prisma.discoverVideoCache.findMany({ take: 10 })
+     * 
+     * // Only select the `key`
+     * const discoverVideoCacheWithKeyOnly = await prisma.discoverVideoCache.findMany({ select: { key: true } })
+     * 
+     */
+    findMany<T extends DiscoverVideoCacheFindManyArgs>(args?: SelectSubset<T, DiscoverVideoCacheFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DiscoverVideoCache.
+     * @param {DiscoverVideoCacheCreateArgs} args - Arguments to create a DiscoverVideoCache.
+     * @example
+     * // Create one DiscoverVideoCache
+     * const DiscoverVideoCache = await prisma.discoverVideoCache.create({
+     *   data: {
+     *     // ... data to create a DiscoverVideoCache
+     *   }
+     * })
+     * 
+     */
+    create<T extends DiscoverVideoCacheCreateArgs>(args: SelectSubset<T, DiscoverVideoCacheCreateArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DiscoverVideoCaches.
+     * @param {DiscoverVideoCacheCreateManyArgs} args - Arguments to create many DiscoverVideoCaches.
+     * @example
+     * // Create many DiscoverVideoCaches
+     * const discoverVideoCache = await prisma.discoverVideoCache.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DiscoverVideoCacheCreateManyArgs>(args?: SelectSubset<T, DiscoverVideoCacheCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DiscoverVideoCaches and returns the data saved in the database.
+     * @param {DiscoverVideoCacheCreateManyAndReturnArgs} args - Arguments to create many DiscoverVideoCaches.
+     * @example
+     * // Create many DiscoverVideoCaches
+     * const discoverVideoCache = await prisma.discoverVideoCache.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DiscoverVideoCaches and only return the `key`
+     * const discoverVideoCacheWithKeyOnly = await prisma.discoverVideoCache.createManyAndReturn({
+     *   select: { key: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DiscoverVideoCacheCreateManyAndReturnArgs>(args?: SelectSubset<T, DiscoverVideoCacheCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DiscoverVideoCache.
+     * @param {DiscoverVideoCacheDeleteArgs} args - Arguments to delete one DiscoverVideoCache.
+     * @example
+     * // Delete one DiscoverVideoCache
+     * const DiscoverVideoCache = await prisma.discoverVideoCache.delete({
+     *   where: {
+     *     // ... filter to delete one DiscoverVideoCache
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DiscoverVideoCacheDeleteArgs>(args: SelectSubset<T, DiscoverVideoCacheDeleteArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DiscoverVideoCache.
+     * @param {DiscoverVideoCacheUpdateArgs} args - Arguments to update one DiscoverVideoCache.
+     * @example
+     * // Update one DiscoverVideoCache
+     * const discoverVideoCache = await prisma.discoverVideoCache.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DiscoverVideoCacheUpdateArgs>(args: SelectSubset<T, DiscoverVideoCacheUpdateArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DiscoverVideoCaches.
+     * @param {DiscoverVideoCacheDeleteManyArgs} args - Arguments to filter DiscoverVideoCaches to delete.
+     * @example
+     * // Delete a few DiscoverVideoCaches
+     * const { count } = await prisma.discoverVideoCache.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DiscoverVideoCacheDeleteManyArgs>(args?: SelectSubset<T, DiscoverVideoCacheDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DiscoverVideoCaches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiscoverVideoCacheUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DiscoverVideoCaches
+     * const discoverVideoCache = await prisma.discoverVideoCache.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DiscoverVideoCacheUpdateManyArgs>(args: SelectSubset<T, DiscoverVideoCacheUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DiscoverVideoCaches and returns the data updated in the database.
+     * @param {DiscoverVideoCacheUpdateManyAndReturnArgs} args - Arguments to update many DiscoverVideoCaches.
+     * @example
+     * // Update many DiscoverVideoCaches
+     * const discoverVideoCache = await prisma.discoverVideoCache.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DiscoverVideoCaches and only return the `key`
+     * const discoverVideoCacheWithKeyOnly = await prisma.discoverVideoCache.updateManyAndReturn({
+     *   select: { key: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DiscoverVideoCacheUpdateManyAndReturnArgs>(args: SelectSubset<T, DiscoverVideoCacheUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DiscoverVideoCache.
+     * @param {DiscoverVideoCacheUpsertArgs} args - Arguments to update or create a DiscoverVideoCache.
+     * @example
+     * // Update or create a DiscoverVideoCache
+     * const discoverVideoCache = await prisma.discoverVideoCache.upsert({
+     *   create: {
+     *     // ... data to create a DiscoverVideoCache
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DiscoverVideoCache we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DiscoverVideoCacheUpsertArgs>(args: SelectSubset<T, DiscoverVideoCacheUpsertArgs<ExtArgs>>): Prisma__DiscoverVideoCacheClient<$Result.GetResult<Prisma.$DiscoverVideoCachePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DiscoverVideoCaches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiscoverVideoCacheCountArgs} args - Arguments to filter DiscoverVideoCaches to count.
+     * @example
+     * // Count the number of DiscoverVideoCaches
+     * const count = await prisma.discoverVideoCache.count({
+     *   where: {
+     *     // ... the filter for the DiscoverVideoCaches we want to count
+     *   }
+     * })
+    **/
+    count<T extends DiscoverVideoCacheCountArgs>(
+      args?: Subset<T, DiscoverVideoCacheCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DiscoverVideoCacheCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DiscoverVideoCache.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiscoverVideoCacheAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DiscoverVideoCacheAggregateArgs>(args: Subset<T, DiscoverVideoCacheAggregateArgs>): Prisma.PrismaPromise<GetDiscoverVideoCacheAggregateType<T>>
+
+    /**
+     * Group by DiscoverVideoCache.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiscoverVideoCacheGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DiscoverVideoCacheGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DiscoverVideoCacheGroupByArgs['orderBy'] }
+        : { orderBy?: DiscoverVideoCacheGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DiscoverVideoCacheGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDiscoverVideoCacheGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DiscoverVideoCache model
+   */
+  readonly fields: DiscoverVideoCacheFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DiscoverVideoCache.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DiscoverVideoCacheClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DiscoverVideoCache model
+   */
+  interface DiscoverVideoCacheFieldRefs {
+    readonly key: FieldRef<"DiscoverVideoCache", 'String'>
+    readonly payload: FieldRef<"DiscoverVideoCache", 'Json'>
+    readonly fetchedAt: FieldRef<"DiscoverVideoCache", 'DateTime'>
+    readonly expiresAt: FieldRef<"DiscoverVideoCache", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DiscoverVideoCache findUnique
+   */
+  export type DiscoverVideoCacheFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which DiscoverVideoCache to fetch.
+     */
+    where: DiscoverVideoCacheWhereUniqueInput
+  }
+
+  /**
+   * DiscoverVideoCache findUniqueOrThrow
+   */
+  export type DiscoverVideoCacheFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which DiscoverVideoCache to fetch.
+     */
+    where: DiscoverVideoCacheWhereUniqueInput
+  }
+
+  /**
+   * DiscoverVideoCache findFirst
+   */
+  export type DiscoverVideoCacheFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which DiscoverVideoCache to fetch.
+     */
+    where?: DiscoverVideoCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiscoverVideoCaches to fetch.
+     */
+    orderBy?: DiscoverVideoCacheOrderByWithRelationInput | DiscoverVideoCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DiscoverVideoCaches.
+     */
+    cursor?: DiscoverVideoCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiscoverVideoCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiscoverVideoCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DiscoverVideoCaches.
+     */
+    distinct?: DiscoverVideoCacheScalarFieldEnum | DiscoverVideoCacheScalarFieldEnum[]
+  }
+
+  /**
+   * DiscoverVideoCache findFirstOrThrow
+   */
+  export type DiscoverVideoCacheFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which DiscoverVideoCache to fetch.
+     */
+    where?: DiscoverVideoCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiscoverVideoCaches to fetch.
+     */
+    orderBy?: DiscoverVideoCacheOrderByWithRelationInput | DiscoverVideoCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DiscoverVideoCaches.
+     */
+    cursor?: DiscoverVideoCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiscoverVideoCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiscoverVideoCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DiscoverVideoCaches.
+     */
+    distinct?: DiscoverVideoCacheScalarFieldEnum | DiscoverVideoCacheScalarFieldEnum[]
+  }
+
+  /**
+   * DiscoverVideoCache findMany
+   */
+  export type DiscoverVideoCacheFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which DiscoverVideoCaches to fetch.
+     */
+    where?: DiscoverVideoCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiscoverVideoCaches to fetch.
+     */
+    orderBy?: DiscoverVideoCacheOrderByWithRelationInput | DiscoverVideoCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DiscoverVideoCaches.
+     */
+    cursor?: DiscoverVideoCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiscoverVideoCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiscoverVideoCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DiscoverVideoCaches.
+     */
+    distinct?: DiscoverVideoCacheScalarFieldEnum | DiscoverVideoCacheScalarFieldEnum[]
+  }
+
+  /**
+   * DiscoverVideoCache create
+   */
+  export type DiscoverVideoCacheCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * The data needed to create a DiscoverVideoCache.
+     */
+    data: XOR<DiscoverVideoCacheCreateInput, DiscoverVideoCacheUncheckedCreateInput>
+  }
+
+  /**
+   * DiscoverVideoCache createMany
+   */
+  export type DiscoverVideoCacheCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DiscoverVideoCaches.
+     */
+    data: DiscoverVideoCacheCreateManyInput | DiscoverVideoCacheCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DiscoverVideoCache createManyAndReturn
+   */
+  export type DiscoverVideoCacheCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * The data used to create many DiscoverVideoCaches.
+     */
+    data: DiscoverVideoCacheCreateManyInput | DiscoverVideoCacheCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DiscoverVideoCache update
+   */
+  export type DiscoverVideoCacheUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * The data needed to update a DiscoverVideoCache.
+     */
+    data: XOR<DiscoverVideoCacheUpdateInput, DiscoverVideoCacheUncheckedUpdateInput>
+    /**
+     * Choose, which DiscoverVideoCache to update.
+     */
+    where: DiscoverVideoCacheWhereUniqueInput
+  }
+
+  /**
+   * DiscoverVideoCache updateMany
+   */
+  export type DiscoverVideoCacheUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DiscoverVideoCaches.
+     */
+    data: XOR<DiscoverVideoCacheUpdateManyMutationInput, DiscoverVideoCacheUncheckedUpdateManyInput>
+    /**
+     * Filter which DiscoverVideoCaches to update
+     */
+    where?: DiscoverVideoCacheWhereInput
+    /**
+     * Limit how many DiscoverVideoCaches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DiscoverVideoCache updateManyAndReturn
+   */
+  export type DiscoverVideoCacheUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * The data used to update DiscoverVideoCaches.
+     */
+    data: XOR<DiscoverVideoCacheUpdateManyMutationInput, DiscoverVideoCacheUncheckedUpdateManyInput>
+    /**
+     * Filter which DiscoverVideoCaches to update
+     */
+    where?: DiscoverVideoCacheWhereInput
+    /**
+     * Limit how many DiscoverVideoCaches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DiscoverVideoCache upsert
+   */
+  export type DiscoverVideoCacheUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * The filter to search for the DiscoverVideoCache to update in case it exists.
+     */
+    where: DiscoverVideoCacheWhereUniqueInput
+    /**
+     * In case the DiscoverVideoCache found by the `where` argument doesn't exist, create a new DiscoverVideoCache with this data.
+     */
+    create: XOR<DiscoverVideoCacheCreateInput, DiscoverVideoCacheUncheckedCreateInput>
+    /**
+     * In case the DiscoverVideoCache was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DiscoverVideoCacheUpdateInput, DiscoverVideoCacheUncheckedUpdateInput>
+  }
+
+  /**
+   * DiscoverVideoCache delete
+   */
+  export type DiscoverVideoCacheDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+    /**
+     * Filter which DiscoverVideoCache to delete.
+     */
+    where: DiscoverVideoCacheWhereUniqueInput
+  }
+
+  /**
+   * DiscoverVideoCache deleteMany
+   */
+  export type DiscoverVideoCacheDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DiscoverVideoCaches to delete
+     */
+    where?: DiscoverVideoCacheWhereInput
+    /**
+     * Limit how many DiscoverVideoCaches to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DiscoverVideoCache without action
+   */
+  export type DiscoverVideoCacheDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiscoverVideoCache
+     */
+    select?: DiscoverVideoCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiscoverVideoCache
+     */
+    omit?: DiscoverVideoCacheOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -23007,6 +24081,16 @@ export namespace Prisma {
   };
 
   export type OnboardingStateScalarFieldEnum = (typeof OnboardingStateScalarFieldEnum)[keyof typeof OnboardingStateScalarFieldEnum]
+
+
+  export const DiscoverVideoCacheScalarFieldEnum: {
+    key: 'key',
+    payload: 'payload',
+    fetchedAt: 'fetchedAt',
+    expiresAt: 'expiresAt'
+  };
+
+  export type DiscoverVideoCacheScalarFieldEnum = (typeof DiscoverVideoCacheScalarFieldEnum)[keyof typeof DiscoverVideoCacheScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -24675,6 +25759,53 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"OnboardingState"> | Date | string
   }
 
+  export type DiscoverVideoCacheWhereInput = {
+    AND?: DiscoverVideoCacheWhereInput | DiscoverVideoCacheWhereInput[]
+    OR?: DiscoverVideoCacheWhereInput[]
+    NOT?: DiscoverVideoCacheWhereInput | DiscoverVideoCacheWhereInput[]
+    key?: StringFilter<"DiscoverVideoCache"> | string
+    payload?: JsonFilter<"DiscoverVideoCache">
+    fetchedAt?: DateTimeFilter<"DiscoverVideoCache"> | Date | string
+    expiresAt?: DateTimeFilter<"DiscoverVideoCache"> | Date | string
+  }
+
+  export type DiscoverVideoCacheOrderByWithRelationInput = {
+    key?: SortOrder
+    payload?: SortOrder
+    fetchedAt?: SortOrder
+    expiresAt?: SortOrder
+  }
+
+  export type DiscoverVideoCacheWhereUniqueInput = Prisma.AtLeast<{
+    key?: string
+    AND?: DiscoverVideoCacheWhereInput | DiscoverVideoCacheWhereInput[]
+    OR?: DiscoverVideoCacheWhereInput[]
+    NOT?: DiscoverVideoCacheWhereInput | DiscoverVideoCacheWhereInput[]
+    payload?: JsonFilter<"DiscoverVideoCache">
+    fetchedAt?: DateTimeFilter<"DiscoverVideoCache"> | Date | string
+    expiresAt?: DateTimeFilter<"DiscoverVideoCache"> | Date | string
+  }, "key">
+
+  export type DiscoverVideoCacheOrderByWithAggregationInput = {
+    key?: SortOrder
+    payload?: SortOrder
+    fetchedAt?: SortOrder
+    expiresAt?: SortOrder
+    _count?: DiscoverVideoCacheCountOrderByAggregateInput
+    _max?: DiscoverVideoCacheMaxOrderByAggregateInput
+    _min?: DiscoverVideoCacheMinOrderByAggregateInput
+  }
+
+  export type DiscoverVideoCacheScalarWhereWithAggregatesInput = {
+    AND?: DiscoverVideoCacheScalarWhereWithAggregatesInput | DiscoverVideoCacheScalarWhereWithAggregatesInput[]
+    OR?: DiscoverVideoCacheScalarWhereWithAggregatesInput[]
+    NOT?: DiscoverVideoCacheScalarWhereWithAggregatesInput | DiscoverVideoCacheScalarWhereWithAggregatesInput[]
+    key?: StringWithAggregatesFilter<"DiscoverVideoCache"> | string
+    payload?: JsonWithAggregatesFilter<"DiscoverVideoCache">
+    fetchedAt?: DateTimeWithAggregatesFilter<"DiscoverVideoCache"> | Date | string
+    expiresAt?: DateTimeWithAggregatesFilter<"DiscoverVideoCache"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email?: string | null
@@ -26267,6 +27398,55 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DiscoverVideoCacheCreateInput = {
+    key: string
+    payload: JsonNullValueInput | InputJsonValue
+    fetchedAt: Date | string
+    expiresAt: Date | string
+  }
+
+  export type DiscoverVideoCacheUncheckedCreateInput = {
+    key: string
+    payload: JsonNullValueInput | InputJsonValue
+    fetchedAt: Date | string
+    expiresAt: Date | string
+  }
+
+  export type DiscoverVideoCacheUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiscoverVideoCacheUncheckedUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiscoverVideoCacheCreateManyInput = {
+    key: string
+    payload: JsonNullValueInput | InputJsonValue
+    fetchedAt: Date | string
+    expiresAt: Date | string
+  }
+
+  export type DiscoverVideoCacheUpdateManyMutationInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiscoverVideoCacheUncheckedUpdateManyInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -27656,6 +28836,25 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumOnboardingStageFilter<$PrismaModel>
     _max?: NestedEnumOnboardingStageFilter<$PrismaModel>
+  }
+
+  export type DiscoverVideoCacheCountOrderByAggregateInput = {
+    key?: SortOrder
+    payload?: SortOrder
+    fetchedAt?: SortOrder
+    expiresAt?: SortOrder
+  }
+
+  export type DiscoverVideoCacheMaxOrderByAggregateInput = {
+    key?: SortOrder
+    fetchedAt?: SortOrder
+    expiresAt?: SortOrder
+  }
+
+  export type DiscoverVideoCacheMinOrderByAggregateInput = {
+    key?: SortOrder
+    fetchedAt?: SortOrder
+    expiresAt?: SortOrder
   }
 
   export type AccountCreateNestedManyWithoutUserInput = {

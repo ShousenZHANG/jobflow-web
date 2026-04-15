@@ -413,3 +413,19 @@ model OnboardingState {
 
   @@index([userId, stage, updatedAt])
 }
+
+// Persistent cache for the Discover → Videos pipeline. Replaces the
+// previous in-memory Map, which was wiped on every serverless cold
+// start and caused the YouTube quota (10k units/day) to drain within
+// a single user session. The cron pre-warmer at
+// /api/discover/refresh-videos writes here; the user-facing route
+// /api/discover/videos reads here and falls back to stale rows when
+// the upstream API returns quotaExceeded.
+model DiscoverVideoCache {
+  key       String   @id // e.g. "videos:claude:week"
+  payload   Json
+  fetchedAt DateTime
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}

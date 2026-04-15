@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, RefreshCw, KeyRound, Star, Clock } from "lucide-react";
+import { AlertCircle, RefreshCw, KeyRound, Star, Clock, Info } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useVideos } from "../hooks/useDiscoverData";
+import { relativeTime } from "../utils";
 import {
   useFavoritedVideos,
   useWatchedVideos,
@@ -158,6 +159,7 @@ export function VideoList() {
   const { data, isLoading, error } = useVideos(category, timeWindow);
   const rawItems = data?.items ?? [];
   const noApiKey = data?.noApiKey === true;
+  const isStale = data?.stale === true;
 
   const items = useMemo(() => {
     const ranked = rankVideos(rawItems, sort, category, watched.ids);
@@ -312,6 +314,19 @@ export function VideoList() {
             : "No videos in this category yet. Try a different filter."}
         </p>
       ) : (
+        <>
+          {isStale && data?.fetchedAt && (
+            <div
+              role="status"
+              className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700"
+            >
+              <Info className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span>
+                YouTube quota reached. Showing cached results from{" "}
+                {relativeTime(data.fetchedAt)}.
+              </span>
+            </div>
+          )}
         <div className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
           {items.map((item) => (
             <VideoCard
@@ -324,6 +339,7 @@ export function VideoList() {
             />
           ))}
         </div>
+        </>
       )}
     </section>
   );
