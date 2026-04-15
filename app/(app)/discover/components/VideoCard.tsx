@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import {
   Play,
   Eye,
@@ -17,9 +16,6 @@ interface VideoCardProps {
   item: VideoItem;
   isWatched: boolean;
   isFavorited: boolean;
-  isPlaying: boolean;
-  onPlay: (id: string) => void;
-  onClose: () => void;
   onToggleFavorite: (id: string) => void;
   onMarkWatched: (id: string) => void;
 }
@@ -28,18 +24,11 @@ export function VideoCard({
   item,
   isWatched,
   isFavorited,
-  isPlaying,
-  onPlay,
-  onClose,
   onToggleFavorite,
   onMarkWatched,
 }: VideoCardProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  const handlePlayClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    onPlay(item.id);
-    // Auto-mark as watched when user opens player
+  const handleOpen = () => {
+    // Mark watched when user opens the video on YouTube.
     if (!isWatched) onMarkWatched(item.id);
   };
 
@@ -52,101 +41,78 @@ export function VideoCard({
   return (
     <article
       className={`group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-150 hover:border-slate-300 hover:shadow-md ${
-        isWatched && !isPlaying ? "opacity-70" : "opacity-100"
+        isWatched ? "opacity-70" : "opacity-100"
       }`}
     >
-      {/* Thumbnail / inline player */}
-      <div className="relative aspect-video overflow-hidden bg-slate-100">
-        {isPlaying ? (
-          <>
-            <iframe
-              ref={iframeRef}
-              src={`https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1`}
-              title={item.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              className="h-full w-full"
-            />
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close player"
-              className="absolute right-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur transition-colors hover:bg-black/85"
-            >
-              Close
-            </button>
-          </>
+      {/* Thumbnail — click-through to YouTube in new tab */}
+      <a
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleOpen}
+        aria-label={`Play on YouTube: ${item.title}`}
+        className="group/thumb relative block aspect-video overflow-hidden bg-slate-100"
+      >
+        {item.thumbnailUrl ? (
+          <img
+            src={item.thumbnailUrl}
+            alt=""
+            className="h-full w-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
+            loading="lazy"
+          />
         ) : (
-          <button
-            type="button"
-            onClick={handlePlayClick}
-            aria-label={`Play: ${item.title}`}
-            className="group/thumb relative block h-full w-full"
-          >
-            {item.thumbnailUrl ? (
-              <img
-                src={item.thumbnailUrl}
-                alt=""
-                className="h-full w-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <Play className="h-8 w-8 text-slate-300" />
-              </div>
-            )}
-
-            {/* Watched check */}
-            {isWatched && (
-              <div
-                className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md backdrop-blur"
-                title="Watched"
-              >
-                <Check className="h-3 w-3" />
-                <span>Watched</span>
-              </div>
-            )}
-
-            {/* Trusted badge */}
-            {item.isTrusted && (
-              <div
-                className={`absolute right-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white shadow-md backdrop-blur ${
-                  item.trustTier === 1
-                    ? "bg-emerald-600/95"
-                    : item.trustTier === 2
-                      ? "bg-teal-600/90"
-                      : "bg-slate-600/90"
-                }`}
-                title={
-                  item.trustTier === 1
-                    ? "Official / Foundational creator"
-                    : item.trustTier === 2
-                      ? "Top independent voice"
-                      : "Niche expert"
-                }
-              >
-                <BadgeCheck className="h-3 w-3" />
-                <span>
-                  {item.trustTier === 1
-                    ? "Official"
-                    : item.trustTier === 2
-                      ? "Trusted"
-                      : "Expert"}
-                </span>
-              </div>
-            )}
-
-            {/* Play overlay */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-200 group-hover/thumb:bg-black/20">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 shadow-lg transition-transform duration-200 group-hover/thumb:scale-110">
-                <Play className="h-4 w-4 fill-white text-white" />
-              </div>
-            </div>
-          </button>
+          <div className="flex h-full items-center justify-center">
+            <Play className="h-8 w-8 text-slate-300" />
+          </div>
         )}
-      </div>
+
+        {/* Watched check */}
+        {isWatched && (
+          <div
+            className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md backdrop-blur"
+            title="Watched"
+          >
+            <Check className="h-3 w-3" />
+            <span>Watched</span>
+          </div>
+        )}
+
+        {/* Trusted badge */}
+        {item.isTrusted && (
+          <div
+            className={`absolute right-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white shadow-md backdrop-blur ${
+              item.trustTier === 1
+                ? "bg-emerald-600/95"
+                : item.trustTier === 2
+                  ? "bg-teal-600/90"
+                  : "bg-slate-600/90"
+            }`}
+            title={
+              item.trustTier === 1
+                ? "Official / Foundational creator"
+                : item.trustTier === 2
+                  ? "Top independent voice"
+                  : "Niche expert"
+            }
+          >
+            <BadgeCheck className="h-3 w-3" />
+            <span>
+              {item.trustTier === 1
+                ? "Official"
+                : item.trustTier === 2
+                  ? "Trusted"
+                  : "Expert"}
+            </span>
+          </div>
+        )}
+
+        {/* Play overlay — purely visual affordance */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-200 group-hover/thumb:bg-black/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 shadow-lg transition-transform duration-200 group-hover/thumb:scale-110">
+            <Play className="h-4 w-4 fill-white text-white" />
+          </div>
+        </div>
+      </a>
 
       {/* Body */}
       <div className="p-2.5 sm:p-3">
@@ -155,9 +121,7 @@ export function VideoCard({
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => {
-              if (!isWatched) onMarkWatched(item.id);
-            }}
+            onClick={handleOpen}
             className="mb-1 line-clamp-2 flex-1 text-sm font-semibold leading-snug text-slate-900 transition-colors hover:text-emerald-700"
           >
             {item.title}
@@ -166,7 +130,9 @@ export function VideoCard({
             <button
               type="button"
               onClick={handleFavoriteClick}
-              aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+              aria-label={
+                isFavorited ? "Remove from favorites" : "Add to favorites"
+              }
               aria-pressed={isFavorited}
               className={`rounded-md p-1 transition-colors ${
                 isFavorited
@@ -182,6 +148,7 @@ export function VideoCard({
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleOpen}
               aria-label="Open on YouTube"
               className="rounded-md p-1 text-slate-300 transition-colors hover:bg-slate-100 hover:text-slate-600"
             >

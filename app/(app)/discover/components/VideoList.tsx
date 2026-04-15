@@ -141,7 +141,6 @@ export function VideoList() {
       : "month",
   );
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [playingId, setPlayingId] = useState<string | null>(null);
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams.toString());
@@ -155,11 +154,6 @@ export function VideoList() {
     router.replace(qs ? `?${qs}` : "?", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, sort, timeWindow]);
-
-  // Close inline player when switching category/sort/window/favorites
-  useEffect(() => {
-    setPlayingId(null);
-  }, [category, sort, timeWindow, showFavoritesOnly]);
 
   const { data, isLoading, error } = useVideos(category, timeWindow);
   const rawItems = data?.items ?? [];
@@ -325,9 +319,6 @@ export function VideoList() {
               item={item}
               isWatched={watched.has(item.id)}
               isFavorited={favorites.has(item.id)}
-              isPlaying={playingId === item.id}
-              onPlay={setPlayingId}
-              onClose={() => setPlayingId(null)}
               onToggleFavorite={favorites.toggle}
               onMarkWatched={watched.add}
             />
