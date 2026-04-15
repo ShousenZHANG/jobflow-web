@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { motion, useReducedMotion } from "framer-motion";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 const LINKS = [
   { key: "navHowItWorks", href: "#how-it-works" },
@@ -90,17 +91,20 @@ export function Navbar() {
           ))}
         </ul>
 
-        {/* CTA */}
-        <Link
-          href={ctaHref}
-          aria-disabled={status === "loading"}
-          tabIndex={status === "loading" ? -1 : undefined}
-          className={`rounded-full bg-slate-900 px-4 py-1.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md ${
-            status === "loading" ? "pointer-events-none opacity-60" : ""
-          }`}
-        >
-          {ctaLabel}
-        </Link>
+        {/* Right: locale switcher + CTA */}
+        <div className="flex items-center gap-2">
+          <LocaleSwitcher />
+          <Link
+            href={ctaHref}
+            aria-disabled={status === "loading"}
+            tabIndex={status === "loading" ? -1 : undefined}
+            className={`rounded-full bg-slate-900 px-4 py-1.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md ${
+              status === "loading" ? "pointer-events-none opacity-60" : ""
+            }`}
+          >
+            {ctaLabel}
+          </Link>
+        </div>
       </div>
     </motion.nav>
   );
