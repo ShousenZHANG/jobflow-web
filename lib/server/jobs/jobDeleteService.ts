@@ -108,14 +108,15 @@ export async function batchDeleteJobs(
 
   const canonicalUrls = jobs.map((j) => canonicalizeJobUrl(j.jobUrl));
 
+  // Replace N individual upserts with a single createMany(skipDuplicates).
+  // Per-batch query count drops from (N + 2) to 3, which keeps the whole
+  // transaction comfortably inside Neon's per-statement budget even when
+  // a chunk arrives at the absolute MAX_BATCH_SIZE.
   await prisma.$transaction([
-    ...canonicalUrls.map((url) =>
-      prisma.deletedJobUrl.upsert({
-        where: { userId_jobUrl: { userId, jobUrl: url } },
-        update: {},
-        create: { userId, jobUrl: url },
-      }),
-    ),
+    prisma.deletedJobUrl.createMany({
+      data: canonicalUrls.map((url) => ({ userId, jobUrl: url })),
+      skipDuplicates: true,
+    }),
     prisma.application.deleteMany({ where: { userId, jobId: { in: foundIds } } }),
     prisma.job.deleteMany({ where: { id: { in: foundIds }, userId } }),
   ]);

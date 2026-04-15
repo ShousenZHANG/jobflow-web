@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useGuide } from "@/app/GuideContext";
 import type { JobItem, JobsResponse, JobStatus, JobsQueryRollbackPatch } from "../types";
 import { getErrorMessage } from "../types";
+import { runChunkedBatchDelete } from "./runChunkedBatchDelete";
 
 function getStatusFilterFromJobsQueryKey(queryKey: readonly unknown[]): JobStatus | "ALL" {
   const serializedQuery = typeof queryKey[1] === "string" ? queryKey[1] : "";
@@ -311,14 +312,32 @@ export function useJobMutations({
 
   const batchDeleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const res = await fetch("/api/jobs/batch-delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
+      // Selections that exceed the server's per-request cap (100) used to
+      // surface as a hard "Failed to batch delete" error. We now chunk
+      // client-side, dispatch sequentially (so Neon's connection pool isn't
+      // hammered), and aggregate the result. A single failed chunk does
+      // NOT abort the whole operation — see runChunkedBatchDelete docstring.
+      const summary = await runChunkedBatchDelete({
+        ids,
+        sendChunk: async (chunk) => {
+          const res = await fetch("/api/jobs/batch-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: chunk }),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            throw new Error(json?.error || "Failed to batch delete");
+          }
+          return json as { deleted: number; notFound: number };
+        },
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to batch delete");
-      return json as { deleted: number; notFound: number };
+      if (summary.failedIds.length > 0 && summary.deleted === 0) {
+        // Every chunk failed — surface as a real error so onError runs and
+        // the optimistic update gets rolled back fully.
+        throw summary.firstError ?? new Error("Failed to batch delete");
+      }
+      return summary;
     },
     onMutate: async (ids) => {
       setError(null);
@@ -387,11 +406,33 @@ export function useJobMutations({
         className: "border-rose-200 bg-rose-50 text-rose-900 animate-in fade-in zoom-in-95",
       });
     },
-    onSuccess: (_data, ids) => {
+    onSuccess: (data, ids) => {
       // Refetch to get accurate totalCount and reset scroll trigger
       void queryClient.invalidateQueries({ queryKey: ["jobs"], refetchType: "active" });
+
+      const deleted = data.deleted;
+      const failed = data.failedIds.length;
+
+      if (failed > 0 && deleted > 0) {
+        // Partial success: report what worked + flag what didn't. Failed
+        // ids are un-suppressed so they reappear in the list after refetch.
+        setSuppressedDeletedIds((prev) => {
+          const next = new Set(prev);
+          for (const id of data.failedIds) next.delete(id);
+          return next;
+        });
+        toast({
+          title: `${deleted} of ${ids.length} jobs deleted`,
+          description: `${failed} could not be removed — try again.`,
+          variant: "destructive",
+          duration: 3200,
+          className: "border-amber-200 bg-amber-50 text-amber-900 animate-in fade-in zoom-in-95",
+        });
+        return;
+      }
+
       toast({
-        title: `${ids.length} ${ids.length === 1 ? "job" : "jobs"} deleted`,
+        title: `${deleted} ${deleted === 1 ? "job" : "jobs"} deleted`,
         description: "The selected jobs were removed.",
         duration: 1800,
         className: "border-emerald-200 bg-emerald-50 text-emerald-900 animate-in fade-in zoom-in-95",
