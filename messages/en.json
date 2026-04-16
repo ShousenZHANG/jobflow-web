@@ -470,5 +470,16 @@
     "s13Title": "13. Contact Us",
     "s13": "If you have questions about these Terms, please contact us at:",
     "s13Email": "eddy@joblit.tech"
+  },
+  "loginPage": {
+    "secureSignIn": "Secure sign in",
+    "welcomeBack": "Welcome back",
+    "subtitle": "Jump back into your job search and keep your shortlist moving.",
+    "continueGoogle": "Continue with Google",
+    "continueGithub": "Continue with GitHub",
+    "agreementPrefix": "By signing in, you agree to our",
+    "terms": "Terms",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy"
   }
 }

@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Github, Search } from "lucide-react";
 import { Fredoka, Nunito } from "next/font/google";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -23,6 +25,7 @@ const nunito = Nunito({
 export default function LoginPage() {
   const { status } = useSession();
   const router = useRouter();
+  const t = useTranslations("loginPage");
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -48,24 +51,27 @@ export default function LoginPage() {
 
       <div className="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center py-16">
         <div className="edu-card w-full max-w-lg text-left">
-          <div className="flex items-center gap-3">
-            <div className="edu-logo">
-              <Search className="h-4 w-4 text-emerald-700" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="edu-logo">
+                <Search className="h-4 w-4 text-emerald-700" />
+              </div>
+              <span className="text-sm font-semibold text-slate-900">Joblit</span>
             </div>
-            <span className="text-sm font-semibold text-slate-900">Joblit</span>
+            <LocaleSwitcher />
           </div>
           <div className="mt-5">
             <span className="edu-pill inline-flex items-center gap-2 text-xs font-semibold">
-              Secure sign in
+              {t("secureSignIn")}
             </span>
           </div>
-          <h1 className="edu-title mt-4 text-3xl text-slate-900">Welcome back</h1>
+          <h1 className="edu-title mt-4 text-3xl text-slate-900">{t("welcomeBack")}</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Jump back into your job search and keep your shortlist moving.
+            {t("subtitle")}
           </p>
           <div className="mt-6 flex flex-col gap-3">
             <Button onClick={() => handleSignIn("google")} className="edu-cta edu-cta--press w-full">
-              Continue with Google
+              {t("continueGoogle")}
             </Button>
             <Button
               onClick={() => handleSignIn("github")}
@@ -73,22 +79,21 @@ export default function LoginPage() {
               className="edu-outline edu-cta--press w-full gap-2"
             >
               <Github className="h-4 w-4" />
-              Continue with GitHub
+              {t("continueGithub")}
             </Button>
           </div>
           <p className="mt-4 text-xs text-slate-500">
-            By signing in, you agree to our{" "}
+            {t("agreementPrefix")}{" "}
             <Link href="/terms" className="text-slate-700 underline decoration-slate-300 underline-offset-2 transition-colors hover:text-emerald-700 hover:decoration-emerald-300">
-              Terms
+              {t("terms")}
             </Link>{" "}
-            and{" "}
+            {t("and")}{" "}
             <Link href="/privacy" className="text-slate-700 underline decoration-slate-300 underline-offset-2 transition-colors hover:text-emerald-700 hover:decoration-emerald-300">
-              Privacy Policy
-            </Link>.
+              {t("privacyPolicy")}
+            </Link>
           </p>
         </div>
       </div>
     </main>
   );
 }
-

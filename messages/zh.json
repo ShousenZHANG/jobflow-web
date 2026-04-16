@@ -470,5 +470,16 @@
     "s13Title": "13. 联系我们",
     "s13": "如果您对本条款有疑问，请通过以下方式联系我们：",
     "s13Email": "eddy@joblit.tech"
+  },
+  "loginPage": {
+    "secureSignIn": "安全登录",
+    "welcomeBack": "欢迎回来",
+    "subtitle": "继续你的求职之旅，保持你的筛选进度。",
+    "continueGoogle": "使用 Google 登录",
+    "continueGithub": "使用 GitHub 登录",
+    "agreementPrefix": "登录即表示你同意我们的",
+    "terms": "使用条款",
+    "and": "和",
+    "privacyPolicy": "隐私政策"
   }
 }
