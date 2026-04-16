@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, RefreshCw, KeyRound, Star, Clock, Info } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -161,12 +161,32 @@ export function VideoList() {
   const noApiKey = data?.noApiKey === true;
   const isStale = data?.stale === true;
 
+  // Stable watched snapshot — we only want the "watched sinks to bottom"
+  // partition to apply on data refresh / sort / category change, NOT every
+  // time the user clicks a card. Otherwise the just-clicked card teleports
+  // to the end of the list and looks like it vanished. Clicking still
+  // updates the `watched` set used for the badge via VideoCard props.
+  const watchedSnapshotRef = useRef<Set<string>>(new Set());
+  const snapshotKey = `${category}|${sort}|${timeWindow}|${rawItems.length}`;
+  const lastSnapshotKeyRef = useRef<string>("");
+  if (lastSnapshotKeyRef.current !== snapshotKey) {
+    lastSnapshotKeyRef.current = snapshotKey;
+    watchedSnapshotRef.current = new Set(watched.ids);
+  }
+
   const items = useMemo(() => {
-    const ranked = rankVideos(rawItems, sort, category, watched.ids);
+    const ranked = rankVideos(
+      rawItems,
+      sort,
+      category,
+      watchedSnapshotRef.current,
+    );
     return showFavoritesOnly
       ? ranked.filter((v) => favorites.has(v.id))
       : ranked;
-  }, [rawItems, sort, category, watched.ids, favorites, showFavoritesOnly]);
+    // watched.ids intentionally omitted — see snapshotKey comment above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawItems, sort, category, favorites, showFavoritesOnly]);
 
   const favCount = favorites.ids.size;
 
