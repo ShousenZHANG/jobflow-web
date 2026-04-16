@@ -417,7 +417,7 @@ export function JobsClient({
         role="search"
         aria-label="Job search"
         data-testid="jobs-toolbar"
-        className="relative rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur lg:rounded-3xl lg:border-2 lg:border-slate-900/10 lg:bg-white/80 lg:p-5 lg:shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)]"
+        className="relative rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur lg:rounded-3xl lg:border-2 lg:border-slate-900/10 lg:bg-white/80 lg:px-4 lg:py-3 lg:shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)]"
       >
         {loading ? (
           <div className="absolute top-0 left-0 right-0 z-10 h-0.5 overflow-hidden rounded-t-2xl lg:rounded-t-3xl">
@@ -539,79 +539,71 @@ export function JobsClient({
           )}
         </div>
 
-        {/* Desktop: full horizontal toolbar */}
-        <div className="hidden lg:grid lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_0.9fr_auto] lg:items-end lg:gap-4">
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">{t("titleOrKeywords")}</div>
-            <JobSearchBar
-              q={q}
-              onQueryChange={setQ}
-              onSubmit={triggerSearch}
-              placeholder={t("placeholder")}
-              isDebouncing={q !== "" && q !== debouncedQ}
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">{t("location")}</div>
-            <div className="relative">
-              <MapPin className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Select
-                value={locationFilter}
-                onValueChange={(v) => { startTransition(() => { setLocationFilter(v); }); }}
-              >
-                <SelectTrigger className="pl-9">
-                  <SelectValue placeholder={tc("allLocations")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">{tc("allLocations")}</SelectItem>
-                  {(market === "CN" ? CN_LOCATION_OPTIONS : AU_LOCATION_OPTIONS).map((loc) => (
-                    <SelectItem key={loc.value} value={loc.value}>{loc.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">{t("jobLevel")}</div>
+        {/* Desktop: compact single-row toolbar.
+            Inline-icon pattern (Linear, GitHub, Notion) removes label rows
+            and saves ~50px of vertical space — critical since the list and
+            detail panels share the remaining viewport height. Each Select
+            keeps an accessible name via SelectTrigger's `aria-label` fallback
+            through placeholder text. */}
+        <div className="hidden lg:grid lg:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_0.9fr_auto] lg:items-center lg:gap-3">
+          <JobSearchBar
+            q={q}
+            onQueryChange={setQ}
+            onSubmit={triggerSearch}
+            placeholder={t("placeholder")}
+            isDebouncing={q !== "" && q !== debouncedQ}
+          />
+          <div className="relative">
+            <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Select
-              value={jobLevelFilter}
-              onValueChange={(v) => { startTransition(() => { setJobLevelFilter(v); }); }}
+              value={locationFilter}
+              onValueChange={(v) => { startTransition(() => { setLocationFilter(v); }); }}
             >
-              <SelectTrigger>
-                <SelectValue placeholder={tc("allLevels")} />
+              <SelectTrigger className="h-9 pl-9 text-sm" aria-label={t("location")}>
+                <SelectValue placeholder={tc("allLocations")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">{tc("allLevels")}</SelectItem>
-                {jobLevelOptions.map((level) => (
-                  <SelectItem key={level} value={level}>{level}</SelectItem>
+                <SelectItem value="ALL">{tc("allLocations")}</SelectItem>
+                {(market === "CN" ? CN_LOCATION_OPTIONS : AU_LOCATION_OPTIONS).map((loc) => (
+                  <SelectItem key={loc.value} value={loc.value}>{loc.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">{t("status")}</div>
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => { startTransition(() => { setStatusFilter(v as JobStatus | "ALL"); }); }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={tc("all")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{tc("all")}</SelectItem>
-                <SelectItem value="NEW">{t("statusNew")}</SelectItem>
-                <SelectItem value="APPLIED">{t("statusApplied")}</SelectItem>
-                <SelectItem value="REJECTED">{t("statusRejected")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2" data-testid="jobs-sort">
-            <div className="text-xs text-muted-foreground">{t("posted")}</div>
+          <Select
+            value={jobLevelFilter}
+            onValueChange={(v) => { startTransition(() => { setJobLevelFilter(v); }); }}
+          >
+            <SelectTrigger className="h-9 text-sm" aria-label={t("jobLevel")}>
+              <SelectValue placeholder={tc("allLevels")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">{tc("allLevels")}</SelectItem>
+              {jobLevelOptions.map((level) => (
+                <SelectItem key={level} value={level}>{level}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => { startTransition(() => { setStatusFilter(v as JobStatus | "ALL"); }); }}
+          >
+            <SelectTrigger className="h-9 text-sm" aria-label={t("status")}>
+              <SelectValue placeholder={tc("all")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">{tc("all")}</SelectItem>
+              <SelectItem value="NEW">{t("statusNew")}</SelectItem>
+              <SelectItem value="APPLIED">{t("statusApplied")}</SelectItem>
+              <SelectItem value="REJECTED">{t("statusRejected")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <div data-testid="jobs-sort">
             <Select
               value={sortOrder}
               onValueChange={(v) => { startTransition(() => { setSortOrder(v as "newest" | "oldest"); }); }}
             >
-              <SelectTrigger className="h-9 bg-muted/40">
+              <SelectTrigger className="h-9 bg-muted/40 text-sm" aria-label={t("posted")}>
                 <SelectValue placeholder={t("posted")} />
               </SelectTrigger>
               <SelectContent>
@@ -620,13 +612,13 @@ export function JobsClient({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-end gap-2">
+          <div className="flex items-center gap-2">
             {market === "AU" && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setAddJobOpen(true)}
-                className="h-10 gap-1.5 rounded-xl border-dashed border-slate-300 px-4 text-sm font-medium text-slate-600 transition-all duration-150 hover:border-emerald-300 hover:bg-emerald-50/60 hover:text-emerald-700 lg:w-auto"
+                className="h-9 shrink-0 gap-1.5 rounded-xl border-dashed border-slate-300 px-3 text-sm font-medium text-slate-600 transition-all duration-150 hover:border-emerald-300 hover:bg-emerald-50/60 hover:text-emerald-700"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Add job
@@ -635,7 +627,7 @@ export function JobsClient({
             <Button
               onClick={triggerSearch}
               disabled={loading}
-              className="h-10 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.97] disabled:opacity-50 lg:w-auto"
+              className="h-9 shrink-0 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.97] disabled:opacity-50"
             >
               <Search className="mr-1.5 h-4 w-4" />
               {tc("search")}
@@ -644,7 +636,7 @@ export function JobsClient({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
         <TierFilter
           value={minScoreTier}
           onChange={(next) => startTransition(() => setMinScoreTier(next))}
