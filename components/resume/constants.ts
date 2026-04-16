@@ -52,3 +52,13 @@ export const defaultLinks: ResumeLink[] = [
 
 export const SECTION_IDS = ["personal", "summary", "experience", "projects", "education", "skills"] as const;
 export type SectionId = typeof SECTION_IDS[number];
+
+/** EN: Personal → Summary → Experience → Projects → Education → Skills */
+const SECTION_IDS_EN: readonly SectionId[] = ["personal", "summary", "experience", "projects", "education", "skills"];
+
+/** CN: Personal → Education → Experience → Projects → Skills (no Summary — matches LaTeX template order) */
+const SECTION_IDS_CN: readonly SectionId[] = ["personal", "education", "experience", "projects", "skills"];
+
+export function getSectionIds(locale: string): readonly SectionId[] {
+  return locale === "zh-CN" ? SECTION_IDS_CN : SECTION_IDS_EN;
+}

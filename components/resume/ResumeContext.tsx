@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useToast } from "@/hooks/use-toast";
 import { useGuide } from "@/app/GuideContext";
@@ -10,7 +10,7 @@ import { useResumeProfiles } from "./useResumeProfiles";
 import type { UseResumeFormReturn } from "./useResumeForm";
 import type { UseResumePreviewReturn } from "./useResumePreview";
 import type { UseResumeProfilesReturn } from "./useResumeProfiles";
-import type { SectionId } from "./constants";
+import { getSectionIds, type SectionId } from "./constants";
 
 type ResumeContextValue = UseResumeFormReturn &
   UseResumePreviewReturn &
@@ -39,6 +39,15 @@ export function ResumeFormProvider({ children }: { children: ReactNode }) {
   const locale = globalLocale.startsWith("zh") ? "zh-CN" : "en-AU";
 
   const [activeSection, setActiveSection] = useState<SectionId>("personal");
+  // Reset activeSection when locale changes if the current section doesn't
+  // exist in the new locale's layout (e.g. "summary" doesn't exist in CN).
+  const validSections = getSectionIds(locale);
+  useEffect(() => {
+    if (!validSections.includes(activeSection)) {
+      setActiveSection("personal");
+    }
+  }, [locale, activeSection, validSections]);
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(false);

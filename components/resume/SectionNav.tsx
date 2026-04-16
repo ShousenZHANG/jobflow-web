@@ -3,6 +3,7 @@
 import { User, FileText, Briefcase, FolderKanban, GraduationCap, Wrench, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useResumeContext } from "./ResumeContext";
 import type { SectionId } from "./constants";
+import { getSectionIds } from "./constants";
 import { cn } from "@/lib/utils";
 
 type SectionTranslationKey = "personalInfo" | "summary" | "experience" | "projects" | "education" | "skills";
@@ -23,13 +24,15 @@ interface SectionNavProps {
 }
 
 export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) {
-  const { activeSection, setActiveSection, t } = useResumeContext();
+  const { activeSection, setActiveSection, locale, t } = useResumeContext();
+  const visibleSectionIds = getSectionIds(locale);
+  const visibleSections = SECTION_CONFIG.filter((s) => visibleSectionIds.includes(s.id));
 
   return (
     <nav className={cn("flex", className)} aria-label="Resume sections">
       {/* Desktop: vertical list */}
       <div className="hidden lg:flex lg:w-full lg:flex-col lg:gap-1">
-        {SECTION_CONFIG.map(({ id, tKey, icon: Icon }) => {
+        {visibleSections.map(({ id, tKey, icon: Icon }) => {
           const isActive = activeSection === id;
           return (
             <button
@@ -86,7 +89,7 @@ export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) 
 
       {/* Mobile: horizontal scrollable tabs */}
       <div className="scrollbar-hide flex w-full gap-2 overflow-x-auto px-4 py-2 lg:hidden">
-        {SECTION_CONFIG.map(({ id, tKey, icon: Icon }) => {
+        {visibleSections.map(({ id, tKey, icon: Icon }) => {
           const isActive = activeSection === id;
           return (
             <button
