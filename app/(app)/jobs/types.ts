@@ -1,5 +1,19 @@
 export type JobStatus = "NEW" | "APPLIED" | "REJECTED";
 
+export type MatchTier = "strong" | "good" | "fair" | "weak";
+
+export type MatchBreakdown = {
+  tier: MatchTier;
+  matchedSkills: string[];
+  missingSkills: string[];
+  breakdown: {
+    skillsScore: number;
+    titleScore: number;
+    levelScore: number;
+    experienceScore: number;
+  };
+};
+
 export type JobItem = {
   id: string;
   jobUrl: string;
@@ -14,6 +28,18 @@ export type JobItem = {
   coverPdfUrl?: string | null;
   createdAt: string;
   updatedAt: string;
+  matchScore?: number | null;
+  matchBreakdown?: MatchBreakdown | null;
+};
+
+export type MinScoreTier = "any" | "fair" | "good" | "strong";
+
+/** Same thresholds as `lib/shared/matchScore.ts` scoreToTier. */
+export const MIN_SCORE_FOR_TIER: Record<MinScoreTier, number> = {
+  any: 0,
+  fair: 45,
+  good: 65,
+  strong: 80,
 };
 
 export type JobsResponse = {

@@ -8,7 +8,7 @@ export async function listJobsWithRelevance(
   userId: string,
   query: JobListQuery,
 ): Promise<JobListResult> {
-  const { q, limit, cursor, status, market, location, jobLevel } = query;
+  const { q, limit, cursor, status, market, location, jobLevel, minScore } = query;
   if (!q) throw new Error("listJobsWithRelevance requires q parameter");
 
   const escaped = escapeLikePattern(q);
@@ -26,6 +26,10 @@ export async function listJobsWithRelevance(
   if (status) conditions.push(Prisma.sql`j."status" = ${status}::"JobStatus"`);
   if (market) conditions.push(Prisma.sql`j."market" = ${market}`);
   if (jobLevel) conditions.push(Prisma.sql`LOWER(j."jobLevel") = LOWER(${jobLevel})`);
+  if (typeof minScore === "number" && minScore > 0) {
+    // Keep null-scored rows so the user sees jobs that haven't been scored yet.
+    conditions.push(Prisma.sql`(j."matchScore" IS NULL OR j."matchScore" >= ${minScore})`);
+  }
 
   if (location && !location.startsWith("state:")) {
     const locPattern = `%${escapeLikePattern(location)}%`;
@@ -53,6 +57,8 @@ export async function listJobsWithRelevance(
     resumePdfUrl: string | null;
     resumePdfName: string | null;
     coverPdfUrl: string | null;
+    matchScore: number | null;
+    matchBreakdown: unknown;
   };
 
   const [rows, countResult] = await Promise.all([
@@ -61,6 +67,7 @@ export async function listJobsWithRelevance(
         j."id", j."jobUrl", j."title", j."company", j."location",
         j."jobType", j."jobLevel", j."status", j."market",
         j."createdAt", j."updatedAt",
+        j."matchScore", j."matchBreakdown",
         a."resumePdfUrl", a."resumePdfName", a."coverPdfUrl"
       FROM "Job" j
       LEFT JOIN LATERAL (
@@ -107,6 +114,7 @@ export async function listJobsWithRelevance(
     `jobLevel=${jobLevel ?? ""}`,
     `sort=${sort}`,
     `market=${market ?? ""}`,
+    `minScore=${minScore ?? 0}`,
   ].join("|");
 
   const etag = buildJobsListEtag({

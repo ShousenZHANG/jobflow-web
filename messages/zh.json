@@ -164,7 +164,40 @@
     "company": "公司",
     "type": "类型",
     "tabDetail": "详情",
-    "mobileTablistLabel": "职位列表与详情"
+    "mobileTablistLabel": "职位列表与详情",
+    "matchSummary": "共 {total} 条，当前显示 {shown}",
+    "rescoreAll": "重新评分",
+    "rescoringLabel": "评分中…",
+    "rescoreDone": "已完成 {count} 条评分",
+    "rescoreFailed": "评分失败",
+    "rescoreNoProfile": "请先完善简历",
+    "rescoreNoProfileDesc": "需要你的技能和经验才能计算匹配度。"
+  },
+  "matchScore": {
+    "matchScore": "匹配度",
+    "matched": "命中",
+    "missing": "缺失",
+    "breakdown": "细分",
+    "bSkills": "技能",
+    "bTitle": "标题",
+    "bLevel": "级别",
+    "bYears": "年限",
+    "notScored": "尚未评分",
+    "notScoredDesc": "保存简历后点击「重新评分」查看匹配度。",
+    "filterLabel": "匹配度筛选",
+    "hiddenCount": "隐藏 {count} 条 — 显示全部",
+    "tier": {
+      "strong": "强",
+      "good": "良好",
+      "fair": "一般",
+      "weak": "弱"
+    },
+    "filterOption": {
+      "strong": "强 80+",
+      "good": "良好 65+",
+      "fair": "一般 45+",
+      "any": "全部"
+    }
   },
   "fetch": {
     "searchRoles": "搜索职位",

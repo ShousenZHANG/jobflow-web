@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "highlight.js/styles/github.css";
-import { CheckSquare, MapPin, Plus, Search, SlidersHorizontal, Square, Trash2, X } from "lucide-react";
+import { CheckSquare, MapPin, Plus, RefreshCw, Search, SlidersHorizontal, Square, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,6 +29,7 @@ import { JobSearchBar } from "./components/JobSearchBar";
 import { ExternalGenerateDialog } from "./components/ExternalGenerateDialog";
 import { PdfPreviewDialog } from "./components/PdfPreviewDialog";
 import { JobDetailPanel } from "./components/JobDetailPanel";
+import { TierFilter } from "./components/TierFilter";
 import { cn } from "@/lib/utils";
 import { AU_LOCATION_OPTIONS, CN_LOCATION_OPTIONS, getUserTimeZone } from "./utils/constants";
 
@@ -55,6 +56,7 @@ export function JobsClient({
     locationFilter, setLocationFilter,
     jobLevelFilter, setJobLevelFilter,
     sortOrder, setSortOrder,
+    minScoreTier, setMinScoreTier,
     market,
     queryString,
   } = useJobFilters();
@@ -66,6 +68,49 @@ export function JobsClient({
   const [isPending, startTransition] = useTransition();
   const resultsScrollRef = useRef<HTMLDivElement | null>(null);
   const [suppressedDeletedIds, setSuppressedDeletedIds] = useState<Set<string>>(new Set());
+  const [rescoring, setRescoring] = useState(false);
+
+  const handleRescoreAll = useCallback(async () => {
+    if (rescoring) return;
+    setRescoring(true);
+    try {
+      const res = await fetch("/api/jobs/rescore", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force: true }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        scored?: number;
+        skippedReason?: "NO_PROFILE" | "NO_JOBS";
+      };
+      if (!res.ok) {
+        toast({
+          title: t("rescoreFailed"),
+          variant: "destructive",
+          duration: 2400,
+        });
+        return;
+      }
+      if (json.skippedReason === "NO_PROFILE") {
+        toast({
+          title: t("rescoreNoProfile"),
+          description: t("rescoreNoProfileDesc"),
+          variant: "destructive",
+          duration: 3200,
+        });
+        return;
+      }
+      toast({
+        title: t("rescoreDone", { count: json.scored ?? 0 }),
+        duration: 1800,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    } catch {
+      toast({ title: t("rescoreFailed"), variant: "destructive", duration: 2400 });
+    } finally {
+      setRescoring(false);
+    }
+  }, [rescoring, queryClient, toast, t]);
 
   const {
     items, totalCount, nextCursor, loading, loadingInitial, loadingMore,
@@ -596,6 +641,34 @@ export function JobsClient({
               {tc("search")}
             </Button>
           </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <TierFilter
+          value={minScoreTier}
+          onChange={(next) => startTransition(() => setMinScoreTier(next))}
+        />
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground">
+            {t("matchSummary", {
+              shown: items.length,
+              total: totalCount ?? items.length,
+            })}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleRescoreAll}
+            disabled={rescoring}
+            className="h-8 gap-1.5 rounded-full border-slate-200 text-xs"
+          >
+            <RefreshCw
+              className={`h-3 w-3 ${rescoring ? "animate-spin" : ""}`}
+            />
+            {rescoring ? t("rescoringLabel") : t("rescoreAll")}
+          </Button>
         </div>
       </div>
 

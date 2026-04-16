@@ -2,6 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { CheckSquare, Square } from "lucide-react";
 import type { JobItem, JobStatus } from "../types";
+import { MatchScoreBadge } from "./MatchScoreBadge";
 
 function formatInsertedTime(iso: string) {
   const createdAt = new Date(iso);
@@ -87,7 +88,13 @@ function JobListItemInner({
           className="min-w-0 flex-1 cursor-pointer px-3 py-3 text-left"
         >
           <div className="flex items-center justify-between gap-2">
-            <Badge className={STATUS_CLASS[job.status]}>{job.status}</Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge className={STATUS_CLASS[job.status]}>{job.status}</Badge>
+              <MatchScoreBadge
+                score={job.matchScore}
+                breakdown={job.matchBreakdown}
+              />
+            </div>
             <span
               className="text-xs text-muted-foreground"
               title={formatLocalDateTime(job.createdAt, timeZone)}
