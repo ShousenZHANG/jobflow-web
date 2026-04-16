@@ -1133,6 +1133,16 @@ export function ResumeForm() {
     [buildPayload, hasAnyContent, pdfUrl, toast],
   );
 
+  // Auto-generate preview on initial load when saved profile has content.
+  // Fires once per mount — the previewOpen-gated effect below handles
+  // subsequent updates (mobile dialog open, payload changes).
+  const initialPreviewDone = useRef(false);
+  useEffect(() => {
+    if (initialPreviewDone.current || !hasAnyContent) return;
+    initialPreviewDone.current = true;
+    schedulePreview(600);
+  }, [hasAnyContent, schedulePreview]);
+
   useEffect(() => {
     if (!previewOpen || !hasAnyContent) {
       return;
