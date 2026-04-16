@@ -165,9 +165,7 @@
     "type": "Type",
     "tabDetail": "Detail",
     "mobileTablistLabel": "Jobs list and detail",
-    "matchSummary": "Showing {shown} of {total}",
     "rescoreAll": "Rescore all",
-    "rescoringLabel": "Rescoring…",
     "rescoreDone": "Scored {count} jobs",
     "rescoreFailed": "Rescore failed",
     "rescoreNoProfile": "Set up your resume first",
@@ -181,7 +179,6 @@
     "notScored": "Not scored yet",
     "notScoredDesc": "Save a resume profile and click \"Rescore all\" to compute fit.",
     "filterLabel": "Match filter",
-    "hiddenCount": "{count} hidden — show all",
     "tier": {
       "strong": "Strong",
       "good": "Good",

@@ -146,11 +146,11 @@ describe("JobsClient", () => {
     expect(fitCalls).toHaveLength(0);
   });
 
-  it("shows sort and results in the top toolbar", () => {
+  it("shows the filter toolbar with match filter", () => {
     renderWithClient(<JobsClient initialItems={[baseJob]} initialCursor={null} />);
 
     const toolbar = screen.getAllByTestId("jobs-toolbar")[0];
-    expect(within(toolbar).getByTestId("jobs-sort")).toBeInTheDocument();
+    expect(within(toolbar).getByTestId("jobs-match-filter")).toBeInTheDocument();
   });
 
   it("hides setup and batch progress controls on jobs toolbar", async () => {

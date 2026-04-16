@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "highlight.js/styles/github.css";
-import { CheckSquare, MapPin, Plus, RefreshCw, Search, SlidersHorizontal, Square, Trash2, X } from "lucide-react";
+import { CheckSquare, MapPin, Plus, RefreshCw, Search, SlidersHorizontal, Square, Target, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,7 +29,6 @@ import { JobSearchBar } from "./components/JobSearchBar";
 import { ExternalGenerateDialog } from "./components/ExternalGenerateDialog";
 import { PdfPreviewDialog } from "./components/PdfPreviewDialog";
 import { JobDetailPanel } from "./components/JobDetailPanel";
-import { TierFilter } from "./components/TierFilter";
 import { cn } from "@/lib/utils";
 import { AU_LOCATION_OPTIONS, CN_LOCATION_OPTIONS, getUserTimeZone } from "./utils/constants";
 
@@ -45,6 +44,7 @@ export function JobsClient({
   const t = useTranslations("jobs");
   const tc = useTranslations("common");
   const tn = useTranslations("nav");
+  const tMatch = useTranslations("matchScore");
   const { runId: fetchRunId, status: fetchStatus, importedCount: fetchImportedCount } = useFetchStatus();
   const guideHighlightClass =
     "ring-2 ring-emerald-400 ring-offset-2 ring-offset-white shadow-[0_0_0_4px_rgba(16,185,129,0.18)]";
@@ -55,7 +55,6 @@ export function JobsClient({
     statusFilter, setStatusFilter,
     locationFilter, setLocationFilter,
     jobLevelFilter, setJobLevelFilter,
-    sortOrder, setSortOrder,
     minScoreTier, setMinScoreTier,
     market,
     queryString,
@@ -214,7 +213,7 @@ export function JobsClient({
     locationFilter !== "ALL",
     jobLevelFilter !== "ALL",
     statusFilter !== "ALL",
-    sortOrder !== "newest",
+    minScoreTier !== "good",
   ].filter(Boolean).length;
 
   function triggerSearch() {
@@ -509,20 +508,21 @@ export function JobsClient({
                   <SelectItem value="REJECTED">{t("statusRejected")}</SelectItem>
                 </SelectContent>
               </Select>
-              <div data-testid="jobs-sort">
-                <Select
-                  value={sortOrder}
-                  onValueChange={(v) => { startTransition(() => { setSortOrder(v as "newest" | "oldest"); }); }}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder={t("posted")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">{t("newestFirst")}</SelectItem>
-                    <SelectItem value="oldest">{t("oldestFirst")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select
+                value={minScoreTier}
+                onValueChange={(v) => { startTransition(() => { setMinScoreTier(v as typeof minScoreTier); }); }}
+              >
+                <SelectTrigger className="h-8 text-xs" aria-label={tMatch("filterLabel")}>
+                  <Target className="mr-1 h-3 w-3 shrink-0 text-slate-400" aria-hidden />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="strong">{tMatch("filterOption.strong")}</SelectItem>
+                  <SelectItem value="good">{tMatch("filterOption.good")}</SelectItem>
+                  <SelectItem value="fair">{tMatch("filterOption.fair")}</SelectItem>
+                  <SelectItem value="any">{tMatch("filterOption.any")}</SelectItem>
+                </SelectContent>
+              </Select>
               {market === "AU" && (
                 <Button
                   type="button"
@@ -598,17 +598,20 @@ export function JobsClient({
               <SelectItem value="REJECTED">{t("statusRejected")}</SelectItem>
             </SelectContent>
           </Select>
-          <div data-testid="jobs-sort">
+          <div className="relative" data-testid="jobs-match-filter">
+            <Target className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Select
-              value={sortOrder}
-              onValueChange={(v) => { startTransition(() => { setSortOrder(v as "newest" | "oldest"); }); }}
+              value={minScoreTier}
+              onValueChange={(v) => { startTransition(() => { setMinScoreTier(v as typeof minScoreTier); }); }}
             >
-              <SelectTrigger className="h-9 bg-muted/40 text-sm" aria-label={t("posted")}>
-                <SelectValue placeholder={t("posted")} />
+              <SelectTrigger className="h-9 pl-9 text-sm" aria-label={tMatch("filterLabel")}>
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">{t("newestFirst")}</SelectItem>
-                <SelectItem value="oldest">{t("oldestFirst")}</SelectItem>
+                <SelectItem value="strong">{tMatch("filterOption.strong")}</SelectItem>
+                <SelectItem value="good">{tMatch("filterOption.good")}</SelectItem>
+                <SelectItem value="fair">{tMatch("filterOption.fair")}</SelectItem>
+                <SelectItem value="any">{tMatch("filterOption.any")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -632,35 +635,19 @@ export function JobsClient({
               <Search className="mr-1.5 h-4 w-4" />
               {tc("search")}
             </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleRescoreAll}
+              disabled={rescoring}
+              title={t("rescoreAll")}
+              aria-label={t("rescoreAll")}
+              className="h-9 w-9 shrink-0 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${rescoring ? "animate-spin" : ""}`} />
+            </Button>
           </div>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <TierFilter
-          value={minScoreTier}
-          onChange={(next) => startTransition(() => setMinScoreTier(next))}
-        />
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground">
-            {t("matchSummary", {
-              shown: items.length,
-              total: totalCount ?? items.length,
-            })}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleRescoreAll}
-            disabled={rescoring}
-            className="h-8 gap-1.5 rounded-full border-slate-200 text-xs"
-          >
-            <RefreshCw
-              className={`h-3 w-3 ${rescoring ? "animate-spin" : ""}`}
-            />
-            {rescoring ? t("rescoringLabel") : t("rescoreAll")}
-          </Button>
         </div>
       </div>
 

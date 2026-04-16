@@ -165,9 +165,7 @@
     "type": "类型",
     "tabDetail": "详情",
     "mobileTablistLabel": "职位列表与详情",
-    "matchSummary": "共 {total} 条，当前显示 {shown}",
     "rescoreAll": "重新评分",
-    "rescoringLabel": "评分中…",
     "rescoreDone": "已完成 {count} 条评分",
     "rescoreFailed": "评分失败",
     "rescoreNoProfile": "请先完善简历",
@@ -181,7 +179,6 @@
     "notScored": "尚未评分",
     "notScoredDesc": "保存简历后点击「重新评分」查看匹配度。",
     "filterLabel": "匹配度筛选",
-    "hiddenCount": "隐藏 {count} 条 — 显示全部",
     "tier": {
       "strong": "强",
       "good": "良好",
