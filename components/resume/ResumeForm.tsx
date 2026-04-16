@@ -1133,25 +1133,21 @@ export function ResumeForm() {
     [buildPayload, hasAnyContent, pdfUrl, toast],
   );
 
-  // Auto-generate preview on initial load when saved profile has content.
-  // Fires once per mount — the previewOpen-gated effect below handles
-  // subsequent updates (mobile dialog open, payload changes).
-  const initialPreviewDone = useRef(false);
+  // Auto-generate (and live-update) the PDF preview whenever the draft
+  // payload changes and the form has content. The previous implementation
+  // gated this on `previewOpen` (mobile dialog state) which meant the
+  // desktop PreviewPanel never received auto-updates — users had to
+  // manually click refresh. Removing the gate makes both desktop and
+  // mobile behave like Kickresume/Enhancv: preview updates as you type.
+  // The `shouldSkip` guard inside schedulePreview deduplicates by
+  // payloadKey, so identical payloads never fire twice.
   useEffect(() => {
-    if (initialPreviewDone.current || !hasAnyContent) return;
-    initialPreviewDone.current = true;
-    schedulePreview(600);
-  }, [hasAnyContent, schedulePreview]);
-
-  useEffect(() => {
-    if (!previewOpen || !hasAnyContent) {
-      return;
-    }
+    if (!hasAnyContent) return;
     schedulePreview(450, false, {
       payload: previewDraftPayload,
       payloadKey: previewDraftKey,
     });
-  }, [hasAnyContent, previewDraftKey, previewDraftPayload, previewOpen, schedulePreview]);
+  }, [hasAnyContent, previewDraftKey, previewDraftPayload, schedulePreview]);
 
   const handleCreateProfile = async (mode: "copy" | "blank" = "copy") => {
     if (profileCreating || profileSwitching || profileDeleting) return;
