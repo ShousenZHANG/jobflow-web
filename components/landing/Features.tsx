@@ -11,6 +11,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { SectionKicker } from "./SectionKicker";
 
 // Features — asymmetric 6-column grid (1 xwide + 1 wide + 4 standard) that
 // mirrors Landing.html. The xwide card is the anchor feature (match
@@ -84,9 +85,7 @@ export function Features() {
       {...revealOnce}
     >
       <div className="mb-14 text-center">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-emerald-700">
-          Why Joblit
-        </div>
+        <SectionKicker>Why Joblit</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Built for the{" "}
           <em className="font-serif italic text-brand-emerald-700">

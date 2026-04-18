@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import { fadeUp, revealOnce } from "./lib/motion";
+import { SectionKicker } from "./SectionKicker";
 
 // FAQ accordion. Controlled (single-open) because Landing.html only
 // highlights one item at a time and leaves the rest closed. The plus icon
@@ -55,9 +56,7 @@ export function Faq() {
       {...revealOnce}
     >
       <div className="mb-12 text-center">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-emerald-700">
-          Questions
-        </div>
+        <SectionKicker>Questions</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Honest answers to{" "}
           <em className="font-serif italic text-brand-emerald-700">real</em>{" "}

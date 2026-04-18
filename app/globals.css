@@ -93,6 +93,11 @@
   --dur-fast: 150ms;
   --dur-base: 220ms;
   --dur-slow: 400ms;
+
+  /* Translucent nav pill bg animated by Nav.tsx on scroll. Split into a
+     dedicated token so dark-mode can swap the whole color without the
+     component needing a dark: variant. */
+  --landing-nav-bg: rgba(255, 255, 255, 0.82);
 }
 
 .dark {
@@ -112,6 +117,9 @@
   --brand-emerald-100: rgba(6, 95, 70, 0.32);
   --brand-emerald-200: rgba(16, 185, 129, 0.38);
   --brand-emerald-800: #a7f3d0;
+  /* Nav pill needs a darker translucent base so the blur still reads
+     over dark hero gradients. */
+  --landing-nav-bg: rgba(15, 23, 42, 0.72);
 }
 
 @theme inline {

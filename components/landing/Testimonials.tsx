@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { SectionKicker } from "./SectionKicker";
 
 // Testimonials — 3 quote cards. Uses a large serif opening quote glyph
 // to anchor each card visually (matches Landing.html `.quote::before`).
@@ -56,9 +57,7 @@ export function Testimonials() {
       {...revealOnce}
     >
       <div className="mb-12 text-center">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-emerald-700">
-          Candidates
-        </div>
+        <SectionKicker>Candidates</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Less time applying.{" "}
           <em className="font-serif italic text-brand-emerald-700">

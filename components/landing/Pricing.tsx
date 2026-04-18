@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { SectionKicker } from "./SectionKicker";
 
 // Pricing — 3 tiers matching Landing.html `.prices`. Featured card lifts
 // on hover (and is visibly elevated at rest via shadow-elevated-emerald)
@@ -80,9 +81,7 @@ export function Pricing() {
       {...revealOnce}
     >
       <div className="mb-14 text-center">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-emerald-700">
-          Pricing
-        </div>
+        <SectionKicker>Pricing</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Free to start.{" "}
           <em className="font-serif italic text-brand-emerald-700">

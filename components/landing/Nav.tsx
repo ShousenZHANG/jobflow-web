@@ -66,17 +66,34 @@ export function Nav() {
       aria-label="Primary"
       initial={reduced ? undefined : { opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="fixed inset-x-0 top-3 z-50 mx-auto flex w-full max-w-6xl items-center justify-between px-4 sm:top-4 sm:px-6"
     >
-      <div
+      {/* Inner pill: continuous motion.div so scale + bg + shadow
+          interpolate smoothly instead of class-flipping on the threshold.
+          Tuned to settle in ~420ms with a spring-out curve that matches
+          the rest of the page's motion language. */}
+      <motion.div
+        aria-hidden={false}
+        animate={{
+          scale: scrolled ? 0.97 : 1,
+          backgroundColor: scrolled
+            ? "var(--landing-nav-bg, rgba(255,255,255,0.82))"
+            : "rgba(255,255,255,0)",
+          boxShadow: scrolled
+            ? "0 12px 32px -14px rgba(15, 23, 42, 0.18)"
+            : "0 0 0 0 rgba(15, 23, 42, 0)",
+          backdropFilter: scrolled ? "blur(18px)" : "blur(0px)",
+        }}
+        transition={{
+          duration: reduced ? 0 : 0.42,
+          ease: [0.22, 1, 0.36, 1],
+        }}
         className={
-          "flex w-full items-center justify-between rounded-full px-4 py-2 transition-all duration-300 sm:px-5 " +
-          (scrolled
-            ? "scale-[0.97] border border-border/60 bg-background/80 shadow-md backdrop-blur-xl"
-            : "bg-transparent")
+          "flex w-full items-center justify-between rounded-full px-4 py-2 sm:px-5 " +
+          (scrolled ? "border border-border/60" : "border border-transparent")
         }
-        style={{ transformOrigin: "top center" }}
+        style={{ transformOrigin: "top center", willChange: "transform" }}
       >
         <Link
           href="/"
@@ -130,7 +147,7 @@ export function Nav() {
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>
-      </div>
+      </motion.div>
     </motion.nav>
   );
 }

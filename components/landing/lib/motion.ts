@@ -7,11 +7,11 @@ import type { Variants } from "framer-motion";
 const SPRING_EASE = [0.16, 1, 0.3, 1] as const;
 
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 32 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, ease: SPRING_EASE },
+    transition: { duration: 0.65, ease: SPRING_EASE },
   },
 };
 
@@ -50,11 +50,15 @@ export const floatIn = (delay: number): Variants => ({
 
 /**
  * Standard reveal-on-scroll props. Spread onto any `<motion.*>` element
- * to reveal it once when 20% of it enters the viewport. Pair with one of
- * the variants above via `variants={fadeUp}`.
+ * to reveal it once when the section crosses the viewport bottom. The
+ * negative top margin fires the observer ~10% before the element enters
+ * the viewport so long sections (Features, Pricing) never sit visible
+ * in their "hidden" state — critical for the reveal to read as smooth
+ * on trackpad scroll. `amount: 0.15` keeps the trigger honest on very
+ * tall cards without waiting until the user has already scrolled past.
  */
 export const revealOnce = {
   initial: "hidden",
   whileInView: "show",
-  viewport: { once: true, amount: 0.2 },
+  viewport: { once: true, amount: 0.15, margin: "0px 0px -10% 0px" },
 } as const;

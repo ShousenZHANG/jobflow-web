@@ -41,8 +41,9 @@ export function DeepDiveResume() {
         <motion.div variants={stagger}>
           <motion.div
             variants={fadeUp}
-            className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-emerald-700"
+            className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-emerald-700"
           >
+            <span aria-hidden className="inline-block h-px w-4 bg-brand-emerald-600" />
             Resume studio
           </motion.div>
           <motion.h3

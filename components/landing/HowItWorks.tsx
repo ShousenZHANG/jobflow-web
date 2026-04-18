@@ -4,6 +4,7 @@ import { FileEdit, FileText, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { SectionKicker } from "./SectionKicker";
 
 // HowItWorks — 3 numbered steps connected by a faint gradient rail (only
 // visible at ≥md). Each step is a surface card with the step number as a
@@ -50,9 +51,7 @@ export function HowItWorks() {
       {...revealOnce}
     >
       <div className="mb-14 text-center">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-emerald-700">
-          How it works
-        </div>
+        <SectionKicker>How it works</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Submit-ready applications in{" "}
           <em className="font-serif italic text-brand-emerald-700">
