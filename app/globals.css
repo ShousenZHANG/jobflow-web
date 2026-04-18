@@ -44,6 +44,109 @@
   --shadow-deep: 0px 30px 60px -16px rgba(5,150,105,0.18), 0px 12px 28px -8px rgba(0,0,0,0.06);
 }
 
+/* ========================================================================
+   Joblit landing tokens (from .claude/skills/colors_and_type.css)
+   Scoped NEW tokens only — do not collide with existing shadcn primitives.
+   Used by components/landing/*.tsx (server component page imports clients).
+   ======================================================================== */
+:root {
+  /* Brand emerald palette */
+  --brand-blue: oklch(0.56 0.19 255);
+  --brand-emerald: #059669;
+  --brand-emerald-50: #ecfdf5;
+  --brand-emerald-100: #d1fae5;
+  --brand-emerald-600: #059669;
+  --brand-emerald-700: #047857;
+
+  /* Match tier palette (cards, badges) */
+  --tier-strong-bg: #d1fae5;
+  --tier-strong-fg: #065f46;
+  --tier-strong-ring: #a7f3d0;
+  --tier-good-bg: #ccfbf1;
+  --tier-good-fg: #115e59;
+  --tier-good-ring: #99f6e4;
+  --tier-fair-bg: #fef3c7;
+  --tier-fair-fg: #92400e;
+  --tier-fair-ring: #fde68a;
+  --tier-weak-bg: #e2e8f0;
+  --tier-weak-fg: #475569;
+  --tier-weak-ring: #cbd5e1;
+
+  /* Semantic */
+  --success: oklch(0.55 0.16 160);
+  --warning: oklch(0.78 0.13 75);
+  --info: oklch(0.62 0.12 230);
+
+  /* Landing shadows (extend existing --shadow-card/elevated/deep) */
+  --shadow-card-emerald: 3px 5px 30px 0 rgba(5, 150, 105, 0.1);
+  --shadow-elevated-emerald: 0 20px 40px -12px rgba(5, 150, 105, 0.14),
+    0 8px 20px -6px rgba(0, 0, 0, 0.05);
+
+  /* Motion curves (framer-motion + CSS fallback) */
+  --ease-out: cubic-bezier(0.25, 0.4, 0.25, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 400ms;
+}
+
+.dark {
+  --tier-strong-bg: rgba(6, 95, 70, 0.25);
+  --tier-strong-fg: #a7f3d0;
+  --tier-strong-ring: rgba(16, 185, 129, 0.35);
+  --tier-good-bg: rgba(17, 94, 89, 0.25);
+  --tier-good-fg: #99f6e4;
+  --tier-fair-bg: rgba(146, 64, 14, 0.25);
+  --tier-fair-fg: #fde68a;
+  --tier-weak-bg: rgba(71, 85, 105, 0.25);
+  --tier-weak-fg: #cbd5e1;
+}
+
+@theme inline {
+  /* Expose the landing tokens as Tailwind v4 utility-aware variables. */
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-emerald: var(--brand-emerald);
+  --color-brand-emerald-50: var(--brand-emerald-50);
+  --color-brand-emerald-100: var(--brand-emerald-100);
+  --color-brand-emerald-600: var(--brand-emerald-600);
+  --color-brand-emerald-700: var(--brand-emerald-700);
+  --color-tier-strong-bg: var(--tier-strong-bg);
+  --color-tier-strong-fg: var(--tier-strong-fg);
+  --color-tier-good-bg: var(--tier-good-bg);
+  --color-tier-good-fg: var(--tier-good-fg);
+  --color-tier-fair-bg: var(--tier-fair-bg);
+  --color-tier-fair-fg: var(--tier-fair-fg);
+  --color-tier-weak-bg: var(--tier-weak-bg);
+  --color-tier-weak-fg: var(--tier-weak-fg);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --shadow-card-emerald: var(--shadow-card-emerald);
+  --shadow-elevated-emerald: var(--shadow-elevated-emerald);
+  --ease-out: var(--ease-out);
+  --ease-spring: var(--ease-spring);
+}
+
+/* Landing keyframes used by Tailwind animate-[...] arbitrary utilities. */
+@keyframes landing-fill-bar {
+  from { width: 0%; }
+  to { width: var(--fill-target, 100%); }
+}
+
+@keyframes landing-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes landing-caret {
+  50% { opacity: 0; }
+}
+
+@keyframes landing-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -1,0 +1,379 @@
+"use client";
+
+import Link from "next/link";
+import {
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
+  MapPin,
+  Play,
+  Search,
+  Star,
+} from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { floatIn } from "./lib/motion";
+
+// Hero — the biggest single block on the page. Sections:
+//   1. Eyebrow + pulsing green dot ("New · Self-learning extension").
+//   2. Hero title with italic serif emphasis + subtitle + dual CTA.
+//   3. Meta strip — "4,281 applications tailored this week · Free forever".
+//   4. Hero canvas: 3-column product mock (sidebar + job list + detail)
+//      with a score bar that animates from 0 → 88% on mount.
+//   5. Three floating callouts that fade in around the canvas at
+//      staggered delays (0.3s / 0.6s / 0.9s).
+//
+// Tilt / parallax from Landing.html is intentionally omitted — it looked
+// great on desktop but reads as noise on touch devices and introduces a
+// scroll-jank risk inside a Next.js page. The product mock is already
+// busy enough on its own.
+
+interface JobRow {
+  title: string;
+  company: string;
+  location: string;
+  score: number;
+  tier: "strong" | "good" | "fair" | "weak";
+  timeAgo: string;
+}
+
+const JOB_ROWS: JobRow[] = [
+  {
+    title: "Sr. Frontend Engineer",
+    company: "Stripe",
+    location: "San Francisco",
+    score: 88,
+    tier: "strong",
+    timeAgo: "3h",
+  },
+  {
+    title: "Staff Product Designer",
+    company: "Linear",
+    location: "Remote",
+    score: 74,
+    tier: "good",
+    timeAgo: "5h",
+  },
+  {
+    title: "Design Engineer",
+    company: "Figma",
+    location: "New York",
+    score: 81,
+    tier: "strong",
+    timeAgo: "1d",
+  },
+  {
+    title: "Platform Engineer",
+    company: "PlanetScale",
+    location: "Remote",
+    score: 52,
+    tier: "fair",
+    timeAgo: "2d",
+  },
+];
+
+const TIER_BG: Record<JobRow["tier"], string> = {
+  strong: "bg-brand-emerald-100 text-brand-emerald-700",
+  good: "bg-[theme(colors.tier-good-bg)] text-[theme(colors.tier-good-fg)]",
+  fair: "bg-[theme(colors.tier-fair-bg)] text-[theme(colors.tier-fair-fg)]",
+  weak: "bg-[theme(colors.tier-weak-bg)] text-[theme(colors.tier-weak-fg)]",
+};
+
+export function Hero() {
+  const reduced = useReducedMotion();
+  const [activeRow, setActiveRow] = useState(0);
+
+  // Rotate the "active" row every 2.6s — matches Landing.html JS.
+  useEffect(() => {
+    if (reduced) return;
+    const id = window.setInterval(() => {
+      setActiveRow((i) => (i + 1) % JOB_ROWS.length);
+    }, 2600);
+    return () => window.clearInterval(id);
+  }, [reduced]);
+
+  return (
+    <section
+      data-testid="landing-hero"
+      className="relative mx-auto w-full max-w-6xl px-6 pb-24 pt-16 sm:pt-24 lg:px-10"
+    >
+      {/* Eyebrow */}
+      <motion.div
+        initial={reduced ? undefined : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-center"
+      >
+        <span className="inline-flex items-center gap-2 rounded-full border border-brand-emerald-200 bg-brand-emerald-50 px-3 py-1 text-xs font-semibold text-brand-emerald-700">
+          <span
+            aria-hidden
+            className="relative flex h-1.5 w-1.5 items-center justify-center"
+          >
+            <span className="absolute inline-flex h-full w-full animate-[landing-pulse_2s_ease-in-out_infinite] rounded-full bg-brand-emerald-500" />
+            <span className="relative h-1.5 w-1.5 rounded-full bg-brand-emerald-600" />
+          </span>
+          <span className="rounded-full bg-brand-emerald-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+            New
+          </span>
+          Self-learning extension · v0.1
+        </span>
+      </motion.div>
+
+      {/* Title */}
+      <motion.h1
+        initial={reduced ? undefined : { opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="mx-auto mt-6 max-w-3xl text-balance text-center text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl"
+      >
+        The job search,
+        <br />
+        <em className="bg-gradient-to-br from-brand-emerald-700 via-brand-emerald-600 to-[#14b8a6] bg-clip-text font-serif italic text-transparent">
+          re-engineered.
+        </em>
+      </motion.h1>
+
+      {/* Subtitle */}
+      <motion.p
+        initial={reduced ? undefined : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mx-auto mt-6 max-w-2xl text-balance text-center text-base leading-relaxed text-muted-foreground sm:text-lg"
+      >
+        Joblit fetches roles, scores them against your profile, tailors your
+        resume per JD, and auto-fills the applications. One workstation. Zero
+        copy-paste.
+      </motion.p>
+
+      {/* CTA */}
+      <motion.div
+        initial={reduced ? undefined : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+      >
+        <Link
+          href="/login"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-transform hover:-translate-y-px hover:bg-foreground/90"
+        >
+          Start free
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Link>
+        <Link
+          href="#how"
+          className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-background/70 px-6 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+        >
+          <Play className="h-4 w-4" aria-hidden />
+          Watch demo
+        </Link>
+      </motion.div>
+
+      {/* Meta */}
+      <motion.div
+        initial={reduced ? undefined : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="mt-6 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground sm:flex-row sm:gap-4"
+      >
+        <span>
+          <strong className="font-semibold text-foreground">4,281</strong>{" "}
+          applications tailored this week
+        </span>
+        <span aria-hidden className="hidden h-1 w-1 rounded-full bg-border sm:block" />
+        <span>Free forever · no credit card</span>
+      </motion.div>
+
+      {/* Canvas */}
+      <motion.div
+        initial={reduced ? undefined : { opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="relative mx-auto mt-16 max-w-5xl"
+      >
+        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-background shadow-[var(--shadow-elevated-emerald)]">
+          {/* App mock: 3-col grid */}
+          <div className="grid grid-cols-[180px_260px_1fr] min-h-[360px]">
+            {/* Sidebar */}
+            <div className="hidden border-r border-border/50 bg-muted/30 p-4 text-sm md:block">
+              <div className="mb-4 flex items-center gap-2 text-xs font-semibold">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-emerald-50 ring-1 ring-brand-emerald-100">
+                  <Search className="h-3.5 w-3.5 text-brand-emerald-700" aria-hidden />
+                </span>
+                Joblit
+              </div>
+              <ul className="flex flex-col gap-1 text-xs">
+                <li className="flex items-center justify-between rounded-md bg-brand-emerald-50 px-2 py-1.5 font-semibold text-brand-emerald-700">
+                  <span className="inline-flex items-center gap-2">
+                    <Briefcase className="h-3.5 w-3.5" aria-hidden />
+                    Jobs
+                  </span>
+                  <span className="rounded bg-brand-emerald-100 px-1.5 text-[10px]">
+                    47
+                  </span>
+                </li>
+                {["Fetch", "Resume", "Discover", "Extension"].map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-md px-2 py-1.5 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Job list */}
+            <div className="border-r border-border/50 bg-background/40 p-3">
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Results
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {JOB_ROWS.map((row, i) => (
+                  <li
+                    key={row.title}
+                    className={
+                      "rounded-lg border border-l-4 px-3 py-2 transition-colors " +
+                      (i === activeRow
+                        ? "border-l-brand-emerald-500 bg-brand-emerald-50/40"
+                        : "border-l-transparent bg-background/60")
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={
+                          "rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider " +
+                          TIER_BG[row.tier]
+                        }
+                      >
+                        {row.score}%
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {row.timeAgo}
+                      </span>
+                    </div>
+                    <div className="mt-1 truncate text-xs font-semibold text-foreground">
+                      {row.title}
+                    </div>
+                    <div className="truncate text-[10px] text-muted-foreground">
+                      {row.company} · {row.location}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Detail */}
+            <div className="p-5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Detail
+              </div>
+              <div className="mt-1 text-base font-semibold text-foreground">
+                Sr. Frontend Engineer
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Stripe · San Francisco
+              </div>
+
+              {/* Score card */}
+              <div className="mt-4 rounded-xl border border-brand-emerald-200 bg-brand-emerald-50/60 p-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-brand-emerald-800">
+                    Match score
+                  </span>
+                  <span className="text-brand-emerald-700">88%</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-brand-emerald-100">
+                  <motion.div
+                    initial={reduced ? { width: "88%" } : { width: 0 }}
+                    animate={{ width: "88%" }}
+                    transition={{ duration: 1.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full rounded-full bg-brand-emerald-600"
+                  />
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {["React", "TypeScript", "Next.js", "A11y"].map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-brand-emerald-800 ring-1 ring-brand-emerald-200"
+                    >
+                      ✓ {tag}
+                    </span>
+                  ))}
+                  <span className="rounded-full bg-[theme(colors.tier-fair-bg)] px-2 py-0.5 text-[10px] font-medium text-[theme(colors.tier-fair-fg)]">
+                    — Ruby
+                  </span>
+                </div>
+              </div>
+
+              <ul className="mt-4 flex flex-col gap-1.5 text-xs text-muted-foreground">
+                <li className="flex items-start gap-1.5">
+                  <CheckCircle2
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-emerald-600"
+                    strokeWidth={2.5}
+                    aria-hidden
+                  />
+                  +3 skills matched
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <CheckCircle2
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-emerald-600"
+                    strokeWidth={2.5}
+                    aria-hidden
+                  />
+                  Rewrote summary for design-systems fit
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Floating callouts */}
+        <motion.div
+          variants={floatIn(0.8)}
+          initial={reduced ? undefined : "hidden"}
+          animate="show"
+          className="absolute -left-4 top-10 hidden items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-emerald-100 text-brand-emerald-700">
+            <CheckCircle2 className="h-4 w-4" aria-hidden />
+          </span>
+          <div className="text-xs">
+            <div className="font-semibold text-foreground">+3 skills matched</div>
+            <div className="text-muted-foreground">vs. your base resume</div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          variants={floatIn(1.1)}
+          initial={reduced ? undefined : "hidden"}
+          animate="show"
+          className="absolute -right-4 top-32 hidden items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[theme(colors.tier-fair-bg)] text-[theme(colors.tier-fair-fg)]">
+            <Star className="h-4 w-4" aria-hidden />
+          </span>
+          <div className="text-xs">
+            <div className="font-semibold text-foreground">Tailored in 4.2s</div>
+            <div className="text-muted-foreground">ready to export PDF</div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          variants={floatIn(1.4)}
+          initial={reduced ? undefined : "hidden"}
+          animate="show"
+          className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-emerald-100 text-brand-emerald-700">
+            <MapPin className="h-4 w-4" aria-hidden />
+          </span>
+          <div className="text-xs">
+            <div className="font-semibold text-foreground">47 roles fetched</div>
+            <div className="text-muted-foreground">from 6 job boards</div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+    </section>
+  );
+}

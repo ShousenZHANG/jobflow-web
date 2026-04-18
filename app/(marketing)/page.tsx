@@ -1,26 +1,39 @@
 import type { Metadata } from "next";
-import { Search } from "lucide-react";
-import Link from "next/link";
-import { getTranslations } from "next-intl/server";
-import { HeroSection } from "./HeroSection";
-import { HowItWorksSection } from "./HowItWorksSection";
-import { FeaturesGrid } from "./FeaturesGrid";
-import { BeforeAfterSection } from "./BeforeAfterSection";
-import { FinalCTA } from "./FinalCTA";
-import { LandingBackground } from "./LandingBackground";
-import { ScrollProgress } from "./ScrollProgress";
-import { Navbar } from "./Navbar";
+import { Cta } from "@/components/landing/Cta";
+import { DeepDiveATS } from "@/components/landing/DeepDiveATS";
+import { DeepDiveFetch } from "@/components/landing/DeepDiveFetch";
+import { DeepDiveResume } from "@/components/landing/DeepDiveResume";
+import { Faq } from "@/components/landing/Faq";
+import { Features } from "@/components/landing/Features";
+import { Footer } from "@/components/landing/Footer";
+import { Hero } from "@/components/landing/Hero";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { LogoBar } from "@/components/landing/LogoBar";
+import { Nav } from "@/components/landing/Nav";
+import { Pricing } from "@/components/landing/Pricing";
+import { Stats } from "@/components/landing/Stats";
+import { Testimonials } from "@/components/landing/Testimonials";
 
 /* ── SEO ──────────────────────────────────────────────── */
 
 const TITLE = "AI-tailored resumes for every job you apply to";
-const DESC = "Fetch roles, generate a custom CV and cover letter matched to each JD, export PDF. One workflow, zero copy-paste.";
+const DESC =
+  "Fetch roles, generate a custom CV and cover letter matched to each JD, export PDF. One workflow, zero copy-paste.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
-  openGraph: { title: `Joblit — ${TITLE}`, description: DESC, type: "website", siteName: "Joblit" },
-  twitter: { card: "summary_large_image", title: `Joblit — ${TITLE}`, description: DESC },
+  openGraph: {
+    title: `Joblit — ${TITLE}`,
+    description: DESC,
+    type: "website",
+    siteName: "Joblit",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Joblit — ${TITLE}`,
+    description: DESC,
+  },
 };
 
 const jsonLd = {
@@ -34,74 +47,35 @@ const jsonLd = {
 
 /* ── Page ─────────────────────────────────────────────── */
 
-export default async function HomePage() {
-  const t = await getTranslations("marketing");
-
+/**
+ * Marketing landing page. Server component that stitches the 14 landing
+ * sections from `components/landing/`. Each section is "use client" so it
+ * can run framer-motion reveals and count-ups — but the page shell
+ * renders from the server so HTML arrives first for SEO and LCP.
+ */
+export default function MarketingPage() {
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-
-      <ScrollProgress />
-      <Navbar />
-
-      <div className="marketing-edu relative min-h-[100dvh] overflow-hidden">
-        <div className="edu-bg" aria-hidden="true" />
-        <LandingBackground />
-
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:border-2 focus:border-slate-800 focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-900 focus:shadow-lg focus:outline-none"
-        >
-          {t("skipToContent")}
-        </a>
-
-        <div className="edu-page-enter relative z-[2] mx-auto flex w-full max-w-7xl flex-col items-center px-4 pb-10 text-center sm:px-6 sm:pb-14 lg:px-8">
-          {/* Sections */}
-          <main id="main-content" className="flex w-full flex-col items-center">
-            <div className="pt-24 sm:pt-28">
-              <HeroSection
-                heroTitle={t("heroTitle")}
-                heroSubtitle={t("heroSubtitle")}
-                ctaLabel={t("cta")}
-                badgeLabel={t("badge")}
-              />
-            </div>
-            <div id="how-it-works" className="w-full scroll-mt-24">
-              <HowItWorksSection />
-            </div>
-            <div id="features" className="w-full scroll-mt-24">
-              <FeaturesGrid />
-            </div>
-            <div id="before-after" className="w-full scroll-mt-24">
-              <BeforeAfterSection />
-            </div>
-            <div id="get-started" className="w-full scroll-mt-24">
-              <FinalCTA />
-            </div>
-          </main>
-
-          {/* Footer */}
-          <footer className="edu-footer-slim mt-auto w-full max-w-5xl pt-12 text-center sm:pt-16" role="contentinfo">
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-slate-500">
-              <Link href="/" className="flex items-center gap-1.5 font-semibold text-slate-800">
-                <Search className="h-4 w-4 text-emerald-700" />
-                Joblit
-              </Link>
-              <span aria-hidden="true">·</span>
-              <Link href="/privacy" className="transition-colors hover:text-slate-700">Privacy</Link>
-              <span aria-hidden="true">·</span>
-              <Link href="/terms" className="transition-colors hover:text-slate-700">Terms</Link>
-              <span aria-hidden="true">·</span>
-              <Link href="/get-extension" className="transition-colors hover:text-slate-700">{t("extensionLink")}</Link>
-              <span aria-hidden="true">·</span>
-              <span>&copy; {new Date().getFullYear()} {t("allRightsReserved")}</span>
-            </div>
-          </footer>
-        </div>
-      </div>
+      <main className="relative flex flex-col overflow-x-hidden bg-background text-foreground">
+        <Nav />
+        <Hero />
+        <LogoBar />
+        <HowItWorks />
+        <Features />
+        <DeepDiveResume />
+        <DeepDiveATS />
+        <DeepDiveFetch />
+        <Stats />
+        <Testimonials />
+        <Pricing />
+        <Faq />
+        <Cta />
+        <Footer />
+      </main>
     </>
   );
 }
