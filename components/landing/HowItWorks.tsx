@@ -3,7 +3,7 @@
 import { FileEdit, FileText, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { fadeUp, stagger, useReveal } from "./lib/motion";
 import { SectionKicker } from "./SectionKicker";
 
 // HowItWorks — 3 numbered steps connected by a faint gradient rail (only
@@ -42,13 +42,14 @@ const STEPS: Step[] = [
 ];
 
 export function HowItWorks() {
+  const reveal = useReveal();
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-howitworks"
       id="how"
       className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="mb-14 text-center">
         <SectionKicker>How it works</SectionKicker>

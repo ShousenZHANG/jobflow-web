@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { fadeUp, stagger, useReveal } from "./lib/motion";
 import { SectionKicker } from "./SectionKicker";
 
 // Testimonials — 3 quote cards. Uses a large serif opening quote glyph
@@ -49,12 +49,13 @@ const ACCENT_BG: Record<NonNullable<Quote["accent"]>, string> = {
 };
 
 export function Testimonials() {
+  const reveal = useReveal();
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-testimonials"
       className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="mb-12 text-center">
         <SectionKicker>Candidates</SectionKicker>

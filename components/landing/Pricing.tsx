@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { fadeUp, stagger, useReveal } from "./lib/motion";
 import { SectionKicker } from "./SectionKicker";
 
 // Pricing — 3 tiers matching Landing.html `.prices`. Featured card lifts
@@ -72,13 +72,14 @@ const TIERS: Tier[] = [
 ];
 
 export function Pricing() {
+  const reveal = useReveal();
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-pricing"
       id="pricing"
       className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="mb-14 text-center">
         <SectionKicker>Pricing</SectionKicker>

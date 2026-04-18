@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeUp, revealOnce } from "./lib/motion";
+import { fadeUp, useReveal } from "./lib/motion";
 
 // Footer — 5-column grid (brand + 4 link sections) matching Landing.html
 // `footer.site`. Uses lucide Search glyph for the logo mark, otherwise
@@ -49,13 +49,14 @@ const COLUMNS: Array<{ heading: string; links: { label: string; href: string }[]
 ];
 
 export function Footer() {
+  const reveal = useReveal();
   return (
     <motion.footer
+      {...reveal}
       data-testid="landing-footer"
       role="contentinfo"
       className="border-t border-border/60 bg-background"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:px-10">
         <div className="grid gap-10 md:grid-cols-[1.6fr_repeat(4,1fr)]">

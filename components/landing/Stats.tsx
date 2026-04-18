@@ -2,7 +2,7 @@
 
 import { useInView, motion } from "framer-motion";
 import { useRef } from "react";
-import { fadeUp, revealOnce } from "./lib/motion";
+import { fadeUp } from "./lib/motion";
 import { useCountUp } from "./lib/useCountUp";
 
 // Stats strip. Dark emerald gradient so it reads as a distinct "product
@@ -47,7 +47,15 @@ function StatCell({ stat, active }: { stat: Stat; active: boolean }) {
 
 export function Stats() {
   const ref = useRef<HTMLElement | null>(null);
-  const inView = useInView(ref, { once: true, amount: 0.4 });
+  // Single observer drives both the fade-up reveal on the section
+  // chrome and the count-up animation on the numbers inside.
+  // amount: 0.25 waits until the band is clearly on-screen so the
+  // numbers don't tick past while the user is still scrolling in.
+  const inView = useInView(ref, {
+    once: true,
+    amount: 0.25,
+    margin: "0px 0px 15% 0px",
+  });
 
   return (
     <motion.section
@@ -55,7 +63,8 @@ export function Stats() {
       data-testid="landing-stats"
       className="mx-auto my-20 w-full max-w-6xl px-6 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
+      initial="hidden"
+      animate={inView ? "show" : "hidden"}
     >
       <div className="grid gap-10 rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#052f24] to-[#022c22] px-8 py-12 text-white sm:grid-cols-2 sm:px-12 sm:py-16 md:grid-cols-4">
         {STATS.map((s) => (

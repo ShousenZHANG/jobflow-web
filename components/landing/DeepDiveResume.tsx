@@ -2,7 +2,7 @@
 
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { fadeUp, stagger, useReveal } from "./lib/motion";
 
 // Deep-dive #1 — resume studio before/after. Two stacked card mocks with
 // placeholder bars representing bullet points. Highlight blocks on the
@@ -30,12 +30,13 @@ function Bar({ width, highlight = false }: { width: string; highlight?: boolean 
 }
 
 export function DeepDiveResume() {
+  const reveal = useReveal();
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-deepdive-resume"
       className="mx-auto w-full max-w-6xl px-6 py-20 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <motion.div variants={stagger}>

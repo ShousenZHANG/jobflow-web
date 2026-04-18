@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { fadeUp, stagger, useReveal } from "./lib/motion";
 import { SectionKicker } from "./SectionKicker";
 
 // Features — asymmetric 6-column grid (1 xwide + 1 wide + 4 standard) that
@@ -76,13 +76,14 @@ const SPAN_CLASS: Record<Feature["span"], string> = {
 };
 
 export function Features() {
+  const reveal = useReveal();
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-features"
       id="product"
       className="mx-auto w-full max-w-6xl px-6 py-24 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="mb-14 text-center">
         <SectionKicker>Why Joblit</SectionKicker>

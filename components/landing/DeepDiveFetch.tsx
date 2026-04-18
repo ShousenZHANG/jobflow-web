@@ -2,7 +2,7 @@
 
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeUp, revealOnce, stagger } from "./lib/motion";
+import { fadeUp, stagger, useReveal } from "./lib/motion";
 
 // Deep-dive #3 — parallel fetch across boards. The 5 progress rows
 // include one "running" row with a shimmer strip (CSS keyframe
@@ -38,12 +38,13 @@ const STATUS_STYLE: Record<FetchRow["status"], string> = {
 };
 
 export function DeepDiveFetch() {
+  const reveal = useReveal();
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-deepdive-fetch"
       className="mx-auto w-full max-w-6xl px-6 py-20 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <motion.div variants={stagger}>

@@ -3,19 +3,20 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeUp, revealOnce } from "./lib/motion";
+import { fadeUp, useReveal } from "./lib/motion";
 
 // Final CTA banner. The radial emerald gradients at the corners match
 // Landing.html's `.cta-banner` — implemented as Tailwind gradient utilities
 // so dark-mode overrides from globals.css pick up automatically.
 
 export function Cta() {
+  const reveal = useReveal();
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-cta"
       className="mx-auto my-16 w-full max-w-6xl px-6 sm:my-24 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-brand-emerald-50 via-background to-background px-8 py-16 text-center sm:px-16 sm:py-20">
         <div

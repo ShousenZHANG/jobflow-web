@@ -1,4 +1,7 @@
-import type { Variants } from "framer-motion";
+"use client";
+
+import { useInView, type Variants } from "framer-motion";
+import { useRef, type RefObject } from "react";
 
 // Shared framer-motion variants for the marketing landing. Import these
 // instead of hand-rolling values per section so reveal timing stays
@@ -55,16 +58,48 @@ export const floatIn = (delay: number): Variants => ({
  * the threshold low enough that tall sections (Features, Pricing) don't
  * sit visible in their hidden state, and a POSITIVE bottom margin
  * expands the IntersectionObserver root 15% below the viewport so the
- * reveal *pre-fires* while the element is still scrolling in — the
- * user sees a confident "rises into view" instead of a late pop after
- * they've already parsed the content.
+ * reveal *pre-fires* while the element is still scrolling in.
  *
- * Note: Motion's rootMargin follows CSS convention where POSITIVE values
- * EXPAND the root; an earlier iteration used negative values which
- * silently delayed reveals (looked like animations were dead).
+ * Retained for components that already use the prop spread. New sections
+ * should prefer {@link useReveal} below — the hook form avoids a class
+ * of propagation bugs where `whileInView` on a motion.section with
+ * child variants would occasionally miss its initial intersection
+ * after hydration.
  */
 export const revealOnce = {
   initial: "hidden",
   whileInView: "show",
   viewport: { once: true, amount: 0.12, margin: "0px 0px 15% 0px" },
 } as const;
+
+export interface RevealProps {
+  ref: RefObject<HTMLElement | null>;
+  initial: "hidden";
+  animate: "hidden" | "show";
+}
+
+/**
+ * Hook-based reveal trigger. Use instead of {@link revealOnce} when the
+ * component needs deterministic reveal firing — this uses an explicit
+ * `useInView` observer attached to the returned ref, and sets the
+ * `animate` prop directly rather than relying on framer-motion's
+ * internal `whileInView` watcher (which has shown timing bugs under
+ * Next.js App Router hydration in our testing).
+ *
+ * Usage:
+ *   const reveal = useReveal();
+ *   return <motion.section {...reveal} variants={fadeUp}>...</motion.section>;
+ */
+export function useReveal(): RevealProps {
+  const ref = useRef<HTMLElement | null>(null);
+  const inView = useInView(ref, {
+    once: true,
+    amount: 0.12,
+    margin: "0px 0px 15% 0px",
+  });
+  return {
+    ref,
+    initial: "hidden",
+    animate: inView ? "show" : "hidden",
+  };
+}

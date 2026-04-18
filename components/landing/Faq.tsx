@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useState } from "react";
-import { fadeUp, revealOnce } from "./lib/motion";
+import { fadeUp, useReveal } from "./lib/motion";
 import { SectionKicker } from "./SectionKicker";
 
 // FAQ accordion. Controlled (single-open) because Landing.html only
@@ -46,14 +46,15 @@ const QAS: QA[] = [
 export function Faq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const reduced = useReducedMotion();
+  const reveal = useReveal();
 
   return (
     <motion.section
+      {...reveal}
       data-testid="landing-faq"
       id="faq"
       className="mx-auto w-full max-w-3xl px-6 py-24 sm:px-10"
       variants={fadeUp}
-      {...revealOnce}
     >
       <div className="mb-12 text-center">
         <SectionKicker>Questions</SectionKicker>
