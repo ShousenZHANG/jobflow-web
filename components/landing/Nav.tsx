@@ -61,38 +61,36 @@ export function Nav() {
     status === "authenticated" ? "Open app" : "Start free";
 
   return (
-    <motion.nav
+    // Sticky (not fixed) so the nav genuinely FOLLOWS scroll within the
+    // document flow — fixed was placing the nav in viewport-relative
+    // space which read as "stuck at top, not following". No transform
+    // on this wrapper so sticky works reliably.
+    <nav
       data-testid="landing-nav"
       aria-label="Primary"
-      initial={reduced ? undefined : { opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed inset-x-0 top-3 z-50 mx-auto flex w-full max-w-6xl items-center justify-between px-4 sm:top-4 sm:px-6"
+      className="sticky top-3 z-50 mx-auto w-full max-w-6xl px-4 sm:top-4 sm:px-6"
     >
-      {/* Inner pill: continuous motion.div so scale + bg + shadow
-          interpolate smoothly instead of class-flipping on the threshold.
-          Tuned to settle in ~420ms with a spring-out curve that matches
-          the rest of the page's motion language. */}
+      {/* Inner pill: always on (bg + blur + border + shadow even at rest,
+          matching Landing.html baseline). Scrolling tightens padding,
+          shrinks scale 0.97, and swaps to an emerald-tinged elevated
+          shadow so the shift is unmistakable. */}
       <motion.div
-        aria-hidden={false}
+        initial={reduced ? undefined : { opacity: 0, y: -12 }}
         animate={{
+          opacity: 1,
+          y: 0,
           scale: scrolled ? 0.97 : 1,
-          backgroundColor: scrolled
-            ? "var(--landing-nav-bg, rgba(255,255,255,0.82))"
-            : "rgba(255,255,255,0)",
+          paddingTop: scrolled ? 7 : 9,
+          paddingBottom: scrolled ? 7 : 9,
           boxShadow: scrolled
-            ? "0 12px 32px -14px rgba(15, 23, 42, 0.18)"
-            : "0 0 0 0 rgba(15, 23, 42, 0)",
-          backdropFilter: scrolled ? "blur(18px)" : "blur(0px)",
+            ? "0 14px 36px -16px rgba(5, 150, 105, 0.28), 0 4px 12px -4px rgba(15, 23, 42, 0.08)"
+            : "0 8px 24px -12px rgba(5, 150, 105, 0.14), 0 2px 6px -2px rgba(15, 23, 42, 0.04)",
         }}
         transition={{
-          duration: reduced ? 0 : 0.42,
+          duration: reduced ? 0 : 0.38,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className={
-          "flex w-full items-center justify-between rounded-full px-4 py-2 sm:px-5 " +
-          (scrolled ? "border border-border/60" : "border border-transparent")
-        }
+        className="flex w-full items-center justify-between rounded-full border border-border/60 bg-[var(--landing-nav-bg,rgba(255,255,255,0.82))] px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-5"
         style={{ transformOrigin: "top center", willChange: "transform" }}
       >
         <Link
@@ -148,6 +146,6 @@ export function Nav() {
           </Link>
         </div>
       </motion.div>
-    </motion.nav>
+    </nav>
   );
 }
