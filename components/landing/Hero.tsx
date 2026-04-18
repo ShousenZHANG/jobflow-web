@@ -282,7 +282,7 @@ export function Hero() {
                 Sr. Frontend Engineer
               </div>
               <div className="text-xs text-muted-foreground">
-                Stripe · San Francisco
+                Stripe · San Francisco · Full-time
               </div>
 
               {/* Score card */}
@@ -323,7 +323,7 @@ export function Hero() {
                     strokeWidth={2.5}
                     aria-hidden
                   />
-                  +3 skills matched
+                  Added 3 React perf bullets
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2
