@@ -12,8 +12,14 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { fadeUp, floatIn, stagger } from "./lib/motion";
+
+// Run a layout effect on the client, noop on the server, so we can
+// flip the mount flag before first paint (React would log a warning
+// if we used useLayoutEffect unconditionally during SSR).
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 // Hero — the biggest single block on the page. Sections:
 //   1. Eyebrow + pulsing green dot ("New · Self-learning extension").
@@ -84,6 +90,17 @@ export function Hero() {
   const reduced = useReducedMotion();
   const [activeRow, setActiveRow] = useState(0);
   const t = useTranslations("landing.hero");
+  // Two-phase mount: SSR paints the hidden state (opacity 0 / y 40),
+  // then the layout effect flips `mounted` true on the first client
+  // frame so framer-motion runs a real transition from hidden → show.
+  // Without this, framer-motion sees `animate="show"` during hydration
+  // and skips the tween — the user sees the final state instantly on
+  // fast connections, which reads as "no animation".
+  const [mounted, setMounted] = useState(false);
+  useIsomorphicLayoutEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   // Rotate the "active" row every 2.6s — matches Landing.html JS.
   useEffect(() => {
@@ -128,7 +145,7 @@ export function Hero() {
       <motion.div
         variants={introStagger}
         initial="hidden"
-        animate="show"
+        animate={mounted ? "show" : "hidden"}
       >
       {/* Eyebrow — first thing to appear on page load, bolder
           20px rise so the motion reads even on fast connections. */}
@@ -233,7 +250,7 @@ export function Hero() {
           <motion.div
             variants={stagger}
             initial={reduced ? undefined : "hidden"}
-            animate="show"
+            animate={mounted ? "show" : reduced ? undefined : "hidden"}
             transition={{ delayChildren: 0.55, staggerChildren: 0.09 }}
             className="grid min-h-[360px] grid-cols-1 sm:grid-cols-[260px_1fr] md:grid-cols-[180px_260px_1fr]"
           >
@@ -397,7 +414,7 @@ export function Hero() {
         <motion.div
           variants={floatIn(0.8)}
           initial={reduced ? undefined : "hidden"}
-          animate="show"
+          animate={mounted ? "show" : reduced ? undefined : "hidden"}
           className="absolute -left-4 top-10 hidden items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-emerald-100 text-brand-emerald-700">
@@ -412,7 +429,7 @@ export function Hero() {
         <motion.div
           variants={floatIn(1.1)}
           initial={reduced ? undefined : "hidden"}
-          animate="show"
+          animate={mounted ? "show" : reduced ? undefined : "hidden"}
           className="absolute -right-4 top-32 hidden items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[theme(colors.tier-fair-bg)] text-[theme(colors.tier-fair-fg)]">
@@ -427,7 +444,7 @@ export function Hero() {
         <motion.div
           variants={floatIn(1.4)}
           initial={reduced ? undefined : "hidden"}
-          animate="show"
+          animate={mounted ? "show" : reduced ? undefined : "hidden"}
           className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-emerald-100 text-brand-emerald-700">
