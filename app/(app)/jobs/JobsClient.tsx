@@ -818,18 +818,6 @@ export function JobsClient({
                 >
                   {t("statusRejected")}
                 </FilterPill>
-                <FilterPill
-                  active={locationFilter === "REMOTE"}
-                  onClick={() =>
-                    startTransition(() =>
-                      setLocationFilter(
-                        locationFilter === "REMOTE" ? "ALL" : "REMOTE",
-                      ),
-                    )
-                  }
-                >
-                  {t("statusRemote")}
-                </FilterPill>
               </div>
             </div>
           )}
