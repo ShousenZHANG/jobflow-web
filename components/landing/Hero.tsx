@@ -99,11 +99,12 @@ export function Hero() {
       data-testid="landing-hero"
       className="relative mx-auto w-full max-w-6xl px-6 pb-24 pt-16 sm:pt-24 lg:px-10"
     >
-      {/* Eyebrow */}
+      {/* Eyebrow — first thing to appear on page load, bolder
+          20px rise so the motion reads even on fast connections. */}
       <motion.div
-        initial={reduced ? undefined : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         className="flex items-center justify-center"
       >
         <span className="inline-flex items-center gap-2 rounded-full border border-brand-emerald-200 bg-brand-emerald-50 px-3 py-1 text-xs font-semibold text-brand-emerald-700">
@@ -123,9 +124,9 @@ export function Hero() {
 
       {/* Title */}
       <motion.h1
-        initial={reduced ? undefined : { opacity: 0, y: 16 }}
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 32 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
+        transition={{ duration: 0.75, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
         className="mx-auto mt-6 max-w-3xl text-balance text-center text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl"
       >
         {t("titleLine1")}
@@ -137,9 +138,9 @@ export function Hero() {
 
       {/* Subtitle */}
       <motion.p
-        initial={reduced ? undefined : { opacity: 0, y: 12 }}
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.6, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
         className="mx-auto mt-6 max-w-2xl text-balance text-center text-base leading-relaxed text-muted-foreground sm:text-lg"
       >
         {t("subtitle")}
@@ -147,9 +148,9 @@ export function Hero() {
 
       {/* CTA */}
       <motion.div
-        initial={reduced ? undefined : { opacity: 0, y: 12 }}
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
+        transition={{ duration: 0.55, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
         className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
       >
         <Link
@@ -170,9 +171,9 @@ export function Hero() {
 
       {/* Meta */}
       <motion.div
-        initial={reduced ? undefined : { opacity: 0 }}
+        initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
+        transition={{ duration: 0.5, delay: 0.38 }}
         className="mt-6 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground sm:flex-row sm:gap-4"
       >
         <span>
@@ -182,11 +183,12 @@ export function Hero() {
         <span>{t("metaFree")}</span>
       </motion.div>
 
-      {/* Canvas */}
+      {/* Canvas — frame lifts in starting just after the CTA so the
+          motion feels continuous with the headline cascade. */}
       <motion.div
-        initial={reduced ? undefined : { opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 56, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.95, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
         className="relative mx-auto mt-16 max-w-5xl"
       >
         <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-background shadow-[var(--shadow-elevated-emerald)]">
@@ -199,7 +201,7 @@ export function Hero() {
             variants={stagger}
             initial={reduced ? undefined : "hidden"}
             animate="show"
-            transition={{ delayChildren: 0.9, staggerChildren: 0.08 }}
+            transition={{ delayChildren: 0.55, staggerChildren: 0.09 }}
             className="grid min-h-[360px] grid-cols-1 sm:grid-cols-[260px_1fr] md:grid-cols-[180px_260px_1fr]"
           >
             {/* Sidebar */}
