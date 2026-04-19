@@ -409,20 +409,24 @@ export function JobsClient({
         <div aria-live="polite" className="sr-only">
           {totalCount !== undefined ? `${totalCount} jobs found` : "Loading jobs"}
         </div>
+        {/* Mobile-only toolbar. Desktop search/filter row was moved
+            into the results (list) column header to match the
+            reference layout and reclaim vertical space for the detail
+            pane. See the desktop-only block further down. */}
         <div
         role="search"
         aria-label="Job search"
         data-testid="jobs-toolbar"
-        className="relative rounded-2xl border border-border/70 bg-background/90 p-3 shadow-sm backdrop-blur lg:rounded-3xl lg:border-2 lg:border-border/50 lg:bg-background/85 lg:px-4 lg:py-3 lg:shadow-[0_20px_45px_-35px_rgba(15,23,42,0.35)]"
+        className="relative rounded-2xl border border-border/70 bg-background/90 p-3 shadow-sm backdrop-blur lg:hidden"
       >
         {loading ? (
-          <div className="absolute top-0 left-0 right-0 z-10 h-0.5 overflow-hidden rounded-t-2xl lg:rounded-t-3xl">
+          <div className="absolute top-0 left-0 right-0 z-10 h-0.5 overflow-hidden rounded-t-2xl">
             <div className="h-full w-1/3 animate-[shimmer_1.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-brand-emerald-500 to-transparent" />
           </div>
         ) : null}
 
         {/* Mobile: compact search + filter toggle */}
-        <div className="flex flex-col gap-2 lg:hidden">
+        <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <JobSearchBar
@@ -521,99 +525,6 @@ export function JobsClient({
           )}
         </div>
 
-        {/* Desktop: compact single-row toolbar.
-            Inline-icon pattern (Linear, GitHub, Notion) removes label rows
-            and saves ~50px of vertical space — critical since the list and
-            detail panels share the remaining viewport height. Each Select
-            keeps an accessible name via SelectTrigger's `aria-label` fallback
-            through placeholder text. */}
-        <div className="hidden lg:grid lg:grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto] lg:items-center lg:gap-3">
-          <JobSearchBar
-            q={q}
-            onQueryChange={setQ}
-            onSubmit={triggerSearch}
-            placeholder={t("placeholder")}
-            isDebouncing={q !== "" && q !== debouncedQ}
-          />
-          <div className="relative">
-            <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-            <Select
-              value={locationFilter}
-              onValueChange={(v) => { startTransition(() => { setLocationFilter(v); }); }}
-            >
-              <SelectTrigger className="h-9 pl-9 text-sm" aria-label={t("location")}>
-                <SelectValue placeholder={tc("allLocations")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{tc("allLocations")}</SelectItem>
-                {(market === "CN" ? CN_LOCATION_OPTIONS : AU_LOCATION_OPTIONS).map((loc) => (
-                  <SelectItem key={loc.value} value={loc.value}>{loc.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Select
-            value={jobLevelFilter}
-            onValueChange={(v) => { startTransition(() => { setJobLevelFilter(v); }); }}
-          >
-            <SelectTrigger className="h-9 text-sm" aria-label={t("jobLevel")}>
-              <SelectValue placeholder={tc("allLevels")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{tc("allLevels")}</SelectItem>
-              {jobLevelOptions.map((level) => (
-                <SelectItem key={level} value={level}>{level}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => { startTransition(() => { setStatusFilter(v as JobStatus | "ALL"); }); }}
-          >
-            <SelectTrigger className="h-9 text-sm" aria-label={t("status")}>
-              <SelectValue placeholder={tc("all")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{tc("all")}</SelectItem>
-              <SelectItem value="NEW">{t("statusNew")}</SelectItem>
-              <SelectItem value="APPLIED">{t("statusApplied")}</SelectItem>
-              <SelectItem value="REJECTED">{t("statusRejected")}</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-2">
-            {market === "AU" && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setAddJobOpen(true)}
-                className="h-9 shrink-0 gap-1.5 rounded-xl border-dashed border-border px-3 text-sm font-medium text-muted-foreground transition-all duration-150 hover:border-brand-emerald-300 hover:bg-brand-emerald-50/60 hover:text-brand-emerald-700"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add job
-              </Button>
-            )}
-            <Button
-              onClick={triggerSearch}
-              disabled={loading}
-              className="h-9 shrink-0 rounded-xl bg-gradient-to-r from-brand-emerald-500 to-brand-emerald-600 px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:from-brand-emerald-600 hover:to-brand-emerald-700 hover:shadow-lg hover:brightness-105 active:scale-[0.97] disabled:opacity-50"
-            >
-              <Search className="mr-1.5 h-4 w-4" />
-              {tc("search")}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleRescoreAll}
-              disabled={rescoring}
-              title={t("rescoreAll")}
-              aria-label={t("rescoreAll")}
-              className="h-9 w-9 shrink-0 rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${rescoring ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-        </div>
       </div>
 
       {activeError ? (
@@ -672,6 +583,144 @@ export function JobsClient({
             mobileTab !== "list" && "hidden lg:flex",
           )}
         >
+          {/* Desktop toolbar — lives inside the list column (not above
+              the two-pane grid) so the detail pane stretches full
+              height. Compact three-row stack tuned for the 380px
+              column width. */}
+          <div className="hidden shrink-0 border-b border-border/60 p-3 lg:block">
+            {loading ? (
+              <div className="absolute top-0 left-0 right-0 z-10 h-0.5 overflow-hidden">
+                <div className="h-full w-1/3 animate-[shimmer_1.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-brand-emerald-500 to-transparent" />
+              </div>
+            ) : null}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <JobSearchBar
+                    q={q}
+                    onQueryChange={setQ}
+                    onSubmit={triggerSearch}
+                    placeholder={t("placeholder")}
+                    isDebouncing={q !== "" && q !== debouncedQ}
+                  />
+                </div>
+                <Button
+                  onClick={triggerSearch}
+                  disabled={loading}
+                  className="h-9 shrink-0 rounded-xl bg-gradient-to-r from-brand-emerald-500 to-brand-emerald-600 px-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-brand-emerald-600 hover:to-brand-emerald-700 hover:shadow-md hover:brightness-105 active:scale-[0.97] disabled:opacity-50"
+                  aria-label={tc("search")}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRescoreAll}
+                  disabled={rescoring}
+                  title={t("rescoreAll")}
+                  aria-label={t("rescoreAll")}
+                  className="h-9 w-9 shrink-0 rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${rescoring ? "animate-spin" : ""}`}
+                  />
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                  <MapPin
+                    className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <Select
+                    value={locationFilter}
+                    onValueChange={(v) => {
+                      startTransition(() => {
+                        setLocationFilter(v);
+                      });
+                    }}
+                  >
+                    <SelectTrigger
+                      className="h-8 pl-8 text-xs"
+                      aria-label={t("location")}
+                    >
+                      <SelectValue placeholder={tc("allLocations")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">{tc("allLocations")}</SelectItem>
+                      {(market === "CN"
+                        ? CN_LOCATION_OPTIONS
+                        : AU_LOCATION_OPTIONS
+                      ).map((loc) => (
+                        <SelectItem key={loc.value} value={loc.value}>
+                          {loc.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Select
+                  value={jobLevelFilter}
+                  onValueChange={(v) => {
+                    startTransition(() => {
+                      setJobLevelFilter(v);
+                    });
+                  }}
+                >
+                  <SelectTrigger
+                    className="h-8 text-xs"
+                    aria-label={t("jobLevel")}
+                  >
+                    <SelectValue placeholder={tc("allLevels")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">{tc("allLevels")}</SelectItem>
+                    {jobLevelOptions.map((level) => (
+                      <SelectItem key={level} value={level}>
+                        {level}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v) => {
+                    startTransition(() => {
+                      setStatusFilter(v as JobStatus | "ALL");
+                    });
+                  }}
+                >
+                  <SelectTrigger
+                    className="h-8 flex-1 text-xs"
+                    aria-label={t("status")}
+                  >
+                    <SelectValue placeholder={tc("all")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">{tc("all")}</SelectItem>
+                    <SelectItem value="NEW">{t("statusNew")}</SelectItem>
+                    <SelectItem value="APPLIED">{t("statusApplied")}</SelectItem>
+                    <SelectItem value="REJECTED">{t("statusRejected")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {market === "AU" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setAddJobOpen(true)}
+                    className="h-8 shrink-0 gap-1 rounded-lg border-dashed border-border px-2.5 text-xs font-medium text-muted-foreground transition-all duration-150 hover:border-brand-emerald-300 hover:bg-brand-emerald-50/60 hover:text-brand-emerald-700"
+                    aria-label="Add job"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
           {batchSelectMode ? (
             <div className="flex items-center justify-between border-b bg-brand-emerald-50/60 px-4 py-2.5 text-sm">
               <div className="flex items-center gap-2">

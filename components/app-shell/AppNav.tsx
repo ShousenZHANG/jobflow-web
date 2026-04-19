@@ -73,7 +73,7 @@ export function AppNav() {
     <nav
       data-testid="app-nav"
       aria-label="Primary"
-      className="sticky top-3 z-50 mx-auto w-full max-w-7xl px-4 sm:top-4 sm:px-6"
+      className="sticky top-3 z-50 mx-auto w-full max-w-[1360px] px-4 sm:top-4 sm:px-6"
     >
       <motion.div
         initial={{ opacity: 0, y: -10 }}
