@@ -13,7 +13,7 @@ export function ResumeActionBar() {
 
   return (
     <div
-      className="sticky bottom-0 z-10 border-t border-slate-900/10 bg-white/90 px-4 py-3 backdrop-blur-sm"
+      className="sticky bottom-0 z-10 border-t border-border bg-background/90 px-4 py-3 backdrop-blur-sm"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       data-guide-anchor="resume_setup"
       data-testid="resume-action-bar"

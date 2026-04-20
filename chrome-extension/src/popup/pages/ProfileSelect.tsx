@@ -114,9 +114,9 @@ export function ProfileSelect() {
         ) : (
           <div className="jl-empty" style={{ padding: "16px 0" }}>
             <div className="jl-empty-icon" style={{ width: 36, height: 36, borderRadius: 10 }}>
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="5.5" r="3" stroke="#9ca3af" strokeWidth="1.5"/>
-                <path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round"/>
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" style={{ color: "var(--jl-text-muted)" }}>
+                <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
             <div className="jl-empty-desc">{t("profile.noProfile")}</div>

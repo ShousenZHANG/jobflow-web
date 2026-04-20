@@ -24,7 +24,7 @@ export function TrendingRepoList() {
         <select
           value={period}
           onChange={(e) => setPeriod(e.target.value as "weekly" | "monthly")}
-          className="rounded-lg border border-border bg-white px-2.5 py-1 text-xs font-medium text-muted-foreground outline-none transition-colors focus:border-brand-emerald-300 focus:ring-1 focus:ring-brand-emerald-100"
+          className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground outline-none transition-colors focus:border-brand-emerald-300 focus:ring-1 focus:ring-brand-emerald-100"
           aria-label="Time period"
         >
           <option value="weekly">This week</option>

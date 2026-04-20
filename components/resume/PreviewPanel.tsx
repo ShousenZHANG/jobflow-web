@@ -25,8 +25,8 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
   return (
     <div className={cn("flex flex-col", className)}>
       {/* Header */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-b border-slate-900/10 bg-white/90 px-3">
-        <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+      <div className="flex h-11 shrink-0 items-center justify-between border-b border-border bg-background/90 px-3">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {t("pdfPreview")}
         </span>
         <div className="flex items-center gap-1.5">
@@ -50,7 +50,7 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
               Download PDF
             </a>
           ) : (
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-slate-100 px-3 text-xs font-medium text-slate-400 cursor-not-allowed">
+            <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-muted px-3 text-xs font-medium text-muted-foreground/70 cursor-not-allowed">
               <Download className="h-3.5 w-3.5" />
               PDF
             </span>
@@ -59,13 +59,13 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
       </div>
 
       {/* Preview area */}
-      <div className="relative flex-1 overflow-hidden bg-slate-50">
+      <div className="relative flex-1 overflow-hidden bg-muted/40 dark:bg-muted/20">
         {/* A4 skeleton loading state */}
         {previewStatus === "idle" && !pdfUrl && (
           <div className="flex h-full items-center justify-center p-4">
             <div className="w-full max-w-[340px]">
               {/* A4 proportioned rectangle (1:1.414) */}
-              <div className="aspect-[1/1.414] w-full rounded-sm bg-white shadow-sm border border-slate-200 flex items-center justify-center">
+              <div className="aspect-[1/1.414] w-full rounded-sm bg-card shadow-sm border border-border flex items-center justify-center">
                 <p className="text-xs text-muted-foreground px-4 text-center">
                   {t("preview")}
                 </p>
@@ -77,7 +77,7 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
         {previewStatus === "loading" && !pdfUrl && (
           <div className="flex h-full items-center justify-center p-4">
             <div className="w-full max-w-[340px]">
-              <div className="aspect-[1/1.414] w-full animate-pulse rounded-sm bg-slate-200" />
+              <div className="aspect-[1/1.414] w-full animate-pulse rounded-sm bg-muted" />
             </div>
           </div>
         )}
@@ -91,7 +91,7 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
         )}
 
         {previewStatus === "loading" && pdfUrl && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-xs text-slate-500">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/60 text-xs text-muted-foreground">
             {t("previewGenerating") ?? "Generating preview…"}
           </div>
         )}

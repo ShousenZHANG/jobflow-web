@@ -1366,8 +1366,8 @@ export function ResumeForm() {
     <div
       className={
         framed
-          ? "relative rounded-lg border border-slate-900/10 bg-white/60 p-2"
-          : "relative h-full w-full overflow-hidden rounded-none bg-white"
+          ? "relative rounded-lg border border-border bg-card/60 p-2"
+          : "relative h-full w-full overflow-hidden rounded-none bg-card"
       }
     >
       {previewUrl ? (
@@ -1376,7 +1376,7 @@ export function ResumeForm() {
           src={previewUrl}
           className={
             framed
-              ? `${heightClass} w-full rounded-md border border-slate-900/10 bg-white`
+              ? `${heightClass} w-full rounded-md border border-border bg-card`
               : `${heightClass} w-full`
           }
         />
@@ -1389,8 +1389,8 @@ export function ResumeForm() {
         <div
           className={
             framed
-              ? "absolute inset-0 flex items-center justify-center rounded-lg bg-white/70 text-xs text-slate-500"
-              : "absolute inset-0 flex items-center justify-center bg-white/70 text-xs text-slate-500"
+              ? "absolute inset-0 flex items-center justify-center rounded-lg bg-background/70 text-xs text-muted-foreground"
+              : "absolute inset-0 flex items-center justify-center bg-background/70 text-xs text-muted-foreground"
           }
         >
           Generating preview…
@@ -1425,7 +1425,7 @@ export function ResumeForm() {
       return (
         <div className="space-y-5">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">{t("personalInfo")}</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("personalInfo")}</h2>
             <p className="text-sm text-muted-foreground">
               {t("personalInfoDesc")}
             </p>
@@ -1554,7 +1554,7 @@ export function ResumeForm() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-slate-900">{t("links")}</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t("links")}</h3>
                 <p className="text-sm text-muted-foreground">
                   {t("linksDesc")}
                 </p>
@@ -1608,7 +1608,7 @@ export function ResumeForm() {
       return (
         <div className="space-y-3">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">{t("summary")}</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("summary")}</h2>
             <p className="text-sm text-muted-foreground">
               {t("summaryDesc")}
             </p>
@@ -1643,7 +1643,7 @@ export function ResumeForm() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">{t("experience")}</h2>
+              <h2 className="text-base font-semibold text-foreground">{t("experience")}</h2>
               <p className="text-sm text-muted-foreground">{t("experienceDesc")}</p>
             </div>
             <Button type="button" variant="secondary" onClick={addExperience}>
@@ -1670,11 +1670,11 @@ export function ResumeForm() {
                             setExpandedExperienceIndex(index);
                           }
                         }}
-                        className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+                        className="rounded-2xl border border-border bg-card/70 p-4"
                       >
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-slate-900">{t("experienceN", { n: index + 1 })}</p>
+                            <p className="text-sm font-semibold text-foreground">{t("experienceN", { n: index + 1 })}</p>
                             <p className="truncate text-xs text-muted-foreground">
                               {entry.title || entry.company ? `${entry.title || t("untitled")} · ${entry.company || t("company")}` : t("draft")}
                             </p>
@@ -1737,9 +1737,9 @@ export function ResumeForm() {
                               </Button>
                             ) : null}
                             {expandedExperienceIndex === index ? (
-                              <ChevronDown className="h-4 w-4 text-slate-500" />
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
                             ) : (
-                              <ChevronRight className="h-4 w-4 text-slate-500" />
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             )}
                           </div>
                         </summary>
@@ -1819,7 +1819,7 @@ export function ResumeForm() {
                           <Button
                             type="button"
                             variant="ghost"
-                            className="text-xs text-slate-500 hover:text-slate-900"
+                            className="text-xs text-muted-foreground hover:text-foreground"
                             onClick={() => removeExperienceLink(index, linkIndex)}
                           >
                             {t("remove")}
@@ -1870,7 +1870,7 @@ export function ResumeForm() {
                             <Button
                               type="button"
                               variant="ghost"
-                              className="text-xs text-slate-500 hover:text-slate-900"
+                              className="text-xs text-muted-foreground hover:text-foreground"
                               onClick={() => removeExperienceBullet(index, bulletIndex)}
                             >
                               {t("remove")}
@@ -1897,7 +1897,7 @@ export function ResumeForm() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">{t("projects")}</h2>
+              <h2 className="text-base font-semibold text-foreground">{t("projects")}</h2>
               <p className="text-sm text-muted-foreground">{t("projectsDesc")}</p>
             </div>
             <Button type="button" variant="secondary" onClick={addProject}>
@@ -1924,11 +1924,11 @@ export function ResumeForm() {
                             setExpandedProjectIndex(index);
                           }
                         }}
-                        className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+                        className="rounded-2xl border border-border bg-card/70 p-4"
                       >
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-slate-900">{t("projectN", { n: index + 1 })}</p>
+                            <p className="text-sm font-semibold text-foreground">{t("projectN", { n: index + 1 })}</p>
                             <p className="truncate text-xs text-muted-foreground">
                               {entry.name ? `${entry.name}${entry.stack ? ` · ${entry.stack}` : ""}` : t("draft")}
                             </p>
@@ -1991,9 +1991,9 @@ export function ResumeForm() {
                               </Button>
                             ) : null}
                             {expandedProjectIndex === index ? (
-                              <ChevronDown className="h-4 w-4 text-slate-500" />
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
                             ) : (
-                              <ChevronRight className="h-4 w-4 text-slate-500" />
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             )}
                           </div>
                         </summary>
@@ -2066,7 +2066,7 @@ export function ResumeForm() {
                           <Button
                             type="button"
                             variant="ghost"
-                            className="text-xs text-slate-500 hover:text-slate-900"
+                            className="text-xs text-muted-foreground hover:text-foreground"
                             onClick={() => removeProjectLink(index, linkIndex)}
                           >
                             {t("remove")}
@@ -2117,7 +2117,7 @@ export function ResumeForm() {
                             <Button
                               type="button"
                               variant="ghost"
-                              className="text-xs text-slate-500 hover:text-slate-900"
+                              className="text-xs text-muted-foreground hover:text-foreground"
                               onClick={() => removeProjectBullet(index, bulletIndex)}
                             >
                               {t("remove")}
@@ -2144,7 +2144,7 @@ export function ResumeForm() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">{t("education")}</h2>
+              <h2 className="text-base font-semibold text-foreground">{t("education")}</h2>
               <p className="text-sm text-muted-foreground">{t("educationDesc")}</p>
             </div>
             <Button type="button" variant="secondary" onClick={addEducation}>
@@ -2164,9 +2164,9 @@ export function ResumeForm() {
                 {education.map((entry, index) => (
                   <SortableItem key={`education-${index}`} id={toSortableId("education", index)}>
                     {({ dragHandleProps }) => (
-                      <div className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4">
+                      <div className="space-y-3 rounded-2xl border border-border bg-card/70 p-4">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium text-slate-800">{t("educationN", { n: index + 1 })}</p>
+                          <p className="text-sm font-medium text-foreground">{t("educationN", { n: index + 1 })}</p>
                           <div className="flex items-center gap-1">
                             <Button
                               type="button"
@@ -2272,7 +2272,7 @@ export function ResumeForm() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">{t("skills")}</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("skills")}</h2>
             <p className="text-sm text-muted-foreground">{t("skillsDesc")}</p>
           </div>
           <Button type="button" variant="secondary" onClick={addSkillGroup}>
@@ -2292,9 +2292,9 @@ export function ResumeForm() {
               {skills.map((group, index) => (
                 <SortableItem key={`skill-${index}`} id={toSortableId("skill", index)}>
                   {({ dragHandleProps }) => (
-                    <div className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4">
+                    <div className="space-y-3 rounded-2xl border border-border bg-card/70 p-4">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium text-slate-800">{t("groupN", { n: index + 1 })}</p>
+                        <p className="text-sm font-medium text-foreground">{t("groupN", { n: index + 1 })}</p>
                         <div className="flex items-center gap-1">
                           <Button
                             type="button"
@@ -2380,7 +2380,7 @@ export function ResumeForm() {
             <DialogDescription>{t("pdfPreviewDesc")}</DialogDescription>
           </DialogHeader>
           <div className="flex h-full flex-col">
-            <div className="flex h-11 items-center justify-end border-b border-slate-900/10 bg-white/90 px-3 gap-2">
+            <div className="flex h-11 items-center justify-end border-b border-border bg-background/90 px-3 gap-2">
               {pdfUrl && previewStatus === "ready" && (
                 <a
                   href={pdfUrl}
@@ -2404,7 +2404,7 @@ export function ResumeForm() {
                 </Button>
               </DialogClose>
             </div>
-            <div className="flex-1 bg-white">
+            <div className="flex-1 bg-card">
               {renderPreviewFrame("h-full", false)}
             </div>
           </div>
@@ -2413,12 +2413,12 @@ export function ResumeForm() {
 
       <div className="space-y-6 lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start lg:gap-6 lg:space-y-0">
         <aside className="hidden lg:block lg:sticky lg:top-20">
-          <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t("resumeSetup")}</p>
-            <p className="mt-1 text-sm text-slate-700">
+          <div className="rounded-2xl border border-border bg-card/70 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("resumeSetup")}</p>
+            <p className="mt-1 text-sm text-foreground/80">
               {t("stepOf", { current: currentStep + 1, total: steps.length })}
             </p>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
                 style={{ width: `${progressPercent}%` }}
@@ -2436,8 +2436,8 @@ export function ResumeForm() {
                     step.status === "current"
                       ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                       : step.status === "complete"
-                        ? "border-emerald-200 bg-emerald-50/50 text-slate-700"
-                        : "border-slate-200 bg-white text-slate-500"
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
+                        : "border-border bg-card text-muted-foreground"
                   } ${!step.available ? "opacity-50" : "hover:border-emerald-300"}`}
                 >
                   <span>{step.label}</span>
@@ -2464,7 +2464,7 @@ export function ResumeForm() {
                   className={`min-h-11 rounded-full border px-4 py-2 text-sm transition ${
                     isActive
                       ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                      : "border-slate-200 bg-white text-slate-600"
+                      : "border-border bg-card text-muted-foreground"
                   } ${!isAvailable ? "opacity-50" : "hover:border-emerald-300"}`}
                 >
                   {step}
@@ -2473,8 +2473,8 @@ export function ResumeForm() {
             })}
           </div>
 
-          <div className="rounded-2xl border border-slate-900/10 bg-white/70 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t("masterResumeVersion")}</p>
+          <div className="rounded-2xl border border-border bg-card/70 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("masterResumeVersion")}</p>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row">
               <Label htmlFor="resume-profile-select" className="sr-only">
                 {t("resumeVersion")}
@@ -2490,7 +2490,7 @@ export function ResumeForm() {
                   }
                 }}
                 disabled={profileSwitching || profileCreating || profileDeleting}
-                className="min-h-11 w-full flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="min-h-11 w-full flex-1 rounded-xl border border-input bg-card px-3 text-sm text-foreground shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-muted"
               >
                 {profiles.length === 0 ? (
                   <option value="">{t("unsavedVersion")}</option>
@@ -2554,20 +2554,20 @@ export function ResumeForm() {
                 disabled={profileDeleting}
               />
             </div>
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-muted-foreground">
               {t("versionCloneHint")}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t("currentStep")}</p>
+          <div className="rounded-2xl border border-border bg-card/70 px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("currentStep")}</p>
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="text-base font-semibold text-slate-900">{currentStepLabel}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-base font-semibold text-foreground">{currentStepLabel}</p>
+              <p className="text-xs text-muted-foreground">
                 {currentStep + 1}/{steps.length}
               </p>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
                 style={{ width: `${progressPercent}%` }}
@@ -2575,12 +2575,12 @@ export function ResumeForm() {
             </div>
           </div>
 
-          <div className="min-h-[420px] rounded-2xl border border-slate-900/10 bg-white/70 p-4 sm:min-h-[540px] sm:p-6">
+          <div className="min-h-[420px] rounded-2xl border border-border bg-card/70 p-4 sm:min-h-[540px] sm:p-6">
             {renderStep()}
           </div>
 
           <div
-            className="sticky bottom-2 z-20 rounded-2xl border border-slate-900/10 bg-white/95 p-3 shadow-sm backdrop-blur sm:bottom-3"
+            className="sticky bottom-2 z-20 rounded-2xl border border-border bg-background/95 p-3 shadow-sm backdrop-blur sm:bottom-3"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.5rem)" }}
             data-guide-anchor="resume_setup"
             data-testid="resume-action-bar"

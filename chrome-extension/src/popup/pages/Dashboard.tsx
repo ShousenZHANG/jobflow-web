@@ -260,12 +260,12 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
             {fillState.sources && (fillState.sources.profile > 0 || fillState.sources.historical > 0) && (
               <div style={{ display: "flex", gap: 4, justifyContent: "center", marginTop: 4 }}>
                 {fillState.sources.profile > 0 && (
-                  <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 4, background: "#f0fdf4", color: "#065f46", border: "1px solid #d1fae5" }}>
+                  <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 4, background: "var(--jl-success-bg)", color: "var(--jl-emerald-800)", border: "1px solid var(--jl-emerald-100)" }}>
                     {fillState.sources.profile} from profile
                   </span>
                 )}
                 {fillState.sources.historical > 0 && (
-                  <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 4, background: "#eff6ff", color: "#1e40af", border: "1px solid #bfdbfe" }}>
+                  <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 4, background: "var(--jl-blue-50)", color: "var(--jl-blue-700)", border: "1px solid var(--jl-blue-200)" }}>
                     {fillState.sources.historical} from history
                   </span>
                 )}
@@ -332,8 +332,8 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                       <span style={{
                         fontSize: 9, padding: "1px 5px", borderRadius: 4,
-                        background: ratio >= 80 ? "#f0fdf4" : ratio >= 50 ? "#fffbeb" : "#fef2f2",
-                        color: ratio >= 80 ? "#065f46" : ratio >= 50 ? "#854d0e" : "#991b1b",
+                        background: ratio >= 80 ? "var(--jl-success-bg)" : ratio >= 50 ? "var(--jl-amber-50)" : "var(--jl-red-50)",
+                        color: ratio >= 80 ? "var(--jl-emerald-800)" : ratio >= 50 ? "var(--jl-amber-800)" : "var(--jl-red-800)",
                         fontWeight: 500,
                       }}>
                         {sub.filledCount}/{sub.fieldCount}

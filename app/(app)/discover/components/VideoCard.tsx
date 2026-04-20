@@ -40,7 +40,7 @@ export function VideoCard({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-xl border border-border bg-white transition-all duration-150 hover:border-border hover:shadow-md ${
+      className={`group relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-150 hover:border-border hover:shadow-md ${
         isWatched ? "opacity-70" : "opacity-100"
       }`}
     >
@@ -62,14 +62,14 @@ export function VideoCard({
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <Play className="h-8 w-8 text-slate-300" />
+            <Play className="h-8 w-8 text-muted-foreground/60" />
           </div>
         )}
 
         {/* Watched check */}
         {isWatched && (
           <div
-            className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md backdrop-blur"
+            className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md backdrop-blur dark:bg-slate-700/90"
             title="Watched"
           >
             <Check className="h-3 w-3" />
@@ -137,7 +137,7 @@ export function VideoCard({
               className={`rounded-md p-1 transition-colors ${
                 isFavorited
                   ? "text-amber-500 hover:bg-amber-50"
-                  : "text-slate-300 hover:bg-muted hover:text-amber-500"
+                  : "text-muted-foreground/60 hover:bg-muted hover:text-amber-500"
               }`}
             >
               <Star
@@ -150,7 +150,7 @@ export function VideoCard({
               rel="noopener noreferrer"
               onClick={handleOpen}
               aria-label="Open on YouTube"
-              className="rounded-md p-1 text-slate-300 transition-colors hover:bg-muted hover:text-muted-foreground"
+              className="rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </a>

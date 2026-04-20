@@ -12,7 +12,7 @@ export function SectionShell({ title, description, action, children }: SectionSh
     <div className="space-y-6 py-2">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+          <h2 className="text-base font-semibold text-foreground">{title}</h2>
           {description ? (
             <p className="text-sm text-muted-foreground">{description}</p>
           ) : null}

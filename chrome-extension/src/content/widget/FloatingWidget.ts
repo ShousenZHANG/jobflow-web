@@ -234,9 +234,9 @@ export class FloatingWidget {
 
     this.root.style.width = "340px";
     this.root.style.maxHeight = "520px";
-    this.root.style.background = "#fff";
+    this.root.style.background = "var(--jf-bg)";
     this.root.style.borderRadius = "14px";
-    this.root.style.boxShadow = "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)";
+    this.root.style.boxShadow = "var(--jf-shadow-card)";
 
     const matched = this.getMatchedCount();
 
@@ -459,10 +459,10 @@ export class FloatingWidget {
         const badge = document.createElement("span");
         badge.className = "jf-source-badge";
         if (fillResult.source === "profile") {
-          badge.style.cssText = "font-size:9px;padding:1px 4px;border-radius:4px;margin-left:4px;background:#f0fdf4;color:#065f46;border:1px solid #d1fae5;";
+          badge.style.cssText = "font-size:9px;padding:1px 4px;border-radius:4px;margin-left:4px;background:var(--jf-emerald-50);color:var(--jf-emerald-800);border:1px solid var(--jf-emerald-100);";
           badge.textContent = "profile";
         } else if (fillResult.source === "historical") {
-          badge.style.cssText = "font-size:9px;padding:1px 4px;border-radius:4px;margin-left:4px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;";
+          badge.style.cssText = "font-size:9px;padding:1px 4px;border-radius:4px;margin-left:4px;background:var(--jf-blue-50);color:var(--jf-blue-700);border:1px solid var(--jf-blue-200);";
           badge.textContent = "historical";
         }
         item.append(dot, label, val, badge, editBtn);

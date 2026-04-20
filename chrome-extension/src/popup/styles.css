@@ -46,6 +46,83 @@
   /* Transition */
   --jl-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --jl-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Neutral helpers (overridden in dark) */
+  --jl-neutral-bg: #f3f4f6;
+  --jl-neutral-border: #d1d5db;
+  --jl-skeleton-start: #f0f0f0;
+  --jl-skeleton-mid: #e0e0e0;
+  --jl-toggle-off: #d1d5db;
+  --jl-toggle-thumb: #ffffff;
+  --jl-warning-text: #92400e;
+  --jl-error-text: #b91c1c;
+
+  /* Accent badges */
+  --jl-blue-50: #eff6ff;
+  --jl-blue-100: #dbeafe;
+  --jl-blue-200: #bfdbfe;
+  --jl-blue-700: #1e40af;
+  --jl-amber-50: #fffbeb;
+  --jl-amber-800: #854d0e;
+  --jl-red-50: #fef2f2;
+  --jl-red-800: #991b1b;
+}
+
+/* ── Dark mode overrides (auto via OS preference) ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Surfaces */
+    --jl-bg: #0f172a;
+    --jl-card: #1e293b;
+    --jl-card-hover: #273449;
+    --jl-border: #334155;
+    --jl-border-light: #2a3447;
+
+    /* Text */
+    --jl-text-primary: #f1f5f9;
+    --jl-text-secondary: #cbd5e1;
+    --jl-text-muted: #94a3b8;
+    --jl-text-inverse: #0f172a;
+
+    /* Brand emerald — lift for contrast */
+    --jl-emerald-50: rgba(16, 185, 129, 0.12);
+    --jl-emerald-100: rgba(16, 185, 129, 0.22);
+    --jl-emerald-200: rgba(16, 185, 129, 0.35);
+    --jl-emerald-700: #34d399;
+    --jl-emerald-800: #6ee7b7;
+
+    /* State */
+    --jl-error: #f87171;
+    --jl-error-bg: rgba(239, 68, 68, 0.14);
+    --jl-error-border: rgba(239, 68, 68, 0.38);
+    --jl-success-bg: rgba(16, 185, 129, 0.14);
+    --jl-warning-bg: rgba(245, 158, 11, 0.14);
+
+    /* Neutrals */
+    --jl-neutral-bg: #273449;
+    --jl-neutral-border: #475569;
+    --jl-skeleton-start: #273449;
+    --jl-skeleton-mid: #334155;
+    --jl-toggle-off: #475569;
+    --jl-toggle-thumb: #e2e8f0;
+    --jl-warning-text: #fbbf24;
+    --jl-error-text: #fca5a5;
+
+    /* Accent badges — dark-friendly */
+    --jl-blue-50: rgba(59, 130, 246, 0.14);
+    --jl-blue-100: rgba(59, 130, 246, 0.24);
+    --jl-blue-200: rgba(59, 130, 246, 0.38);
+    --jl-blue-700: #93c5fd;
+    --jl-amber-50: rgba(245, 158, 11, 0.14);
+    --jl-amber-800: #fbbf24;
+    --jl-red-50: rgba(239, 68, 68, 0.14);
+    --jl-red-800: #fca5a5;
+
+    /* Shadows (deeper, more diffuse for dark) */
+    --jl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --jl-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+    --jl-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+  }
 }
 
 /* ── Reset ── */
@@ -244,7 +321,7 @@ body {
 
 .jl-btn--outline:hover:not(:disabled) {
   background: var(--jl-card-hover);
-  border-color: #d1d5db;
+  border-color: var(--jl-neutral-border);
 }
 
 .jl-btn--danger {
@@ -415,7 +492,7 @@ body {
 .jl-toggle-track {
   position: absolute;
   inset: 0;
-  background: #d1d5db;
+  background: var(--jl-toggle-off);
   border-radius: 10px;
   transition: background 200ms var(--jl-ease);
   cursor: pointer;
@@ -431,7 +508,7 @@ body {
   left: 2px;
   width: 16px;
   height: 16px;
-  background: white;
+  background: var(--jl-toggle-thumb);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   transition: transform 200ms var(--jl-spring);
@@ -520,7 +597,7 @@ body {
 
 .jl-badge--warning {
   background: var(--jl-warning-bg);
-  color: #92400e;
+  color: var(--jl-warning-text);
 }
 
 .jl-badge--error {
@@ -529,7 +606,7 @@ body {
 }
 
 .jl-badge--neutral {
-  background: #f3f4f6;
+  background: var(--jl-neutral-bg);
   color: var(--jl-text-muted);
 }
 
@@ -548,11 +625,19 @@ body {
 .jl-ats-chip--workday { background: #fef3c7; color: #92400e; }
 .jl-ats-chip--icims { background: #ede9fe; color: #5b21b6; }
 .jl-ats-chip--successfactors { background: #fce7f3; color: #9d174d; }
-.jl-ats-chip--generic { background: #f3f4f6; color: #6b7280; }
+.jl-ats-chip--generic { background: var(--jl-neutral-bg); color: var(--jl-text-muted); }
+
+@media (prefers-color-scheme: dark) {
+  .jl-ats-chip--greenhouse { background: rgba(34, 197, 94, 0.18); color: #86efac; }
+  .jl-ats-chip--lever { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
+  .jl-ats-chip--workday { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+  .jl-ats-chip--icims { background: rgba(139, 92, 246, 0.18); color: #c4b5fd; }
+  .jl-ats-chip--successfactors { background: rgba(236, 72, 153, 0.18); color: #f9a8d4; }
+}
 
 /* ── Skeleton shimmer ── */
 .jl-skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--jl-skeleton-start) 25%, var(--jl-skeleton-mid) 50%, var(--jl-skeleton-start) 75%);
   background-size: 200% 100%;
   animation: jl-shimmer 1.5s infinite;
   border-radius: var(--jl-radius-sm);
@@ -568,7 +653,7 @@ body {
   background: var(--jl-error-bg);
   border: 1px solid var(--jl-error-border);
   font-size: 12px;
-  color: #b91c1c;
+  color: var(--jl-error-text);
   line-height: 1.4;
   animation: jl-fadeIn 200ms var(--jl-ease);
 }
@@ -632,7 +717,7 @@ body {
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: #f3f4f6;
+  background: var(--jl-neutral-bg);
 }
 
 .jl-empty-title {

@@ -48,6 +48,87 @@ export function isWidgetMounted(): boolean {
 
 function getWidgetStyles(): string {
   return `
+    :host {
+      /* Light-mode tokens */
+      --jf-bg: #ffffff;
+      --jf-bg-subtle: #f9fafb;
+      --jf-bg-hover: #f3f4f6;
+      --jf-text: #111827;
+      --jf-text-secondary: #4b5563;
+      --jf-text-muted: #6b7280;
+      --jf-text-placeholder: #9ca3af;
+      --jf-text-disabled: #d1d5db;
+      --jf-border: #e5e7eb;
+      --jf-border-strong: #d1d5db;
+      --jf-border-light: #f3f4f6;
+      --jf-emerald-50: #ecfdf5;
+      --jf-emerald-100: #d1fae5;
+      --jf-emerald-500: #10b981;
+      --jf-emerald-600: #059669;
+      --jf-emerald-700: #047857;
+      --jf-emerald-800: #065f46;
+      --jf-blue-50: #eff6ff;
+      --jf-blue-200: #bfdbfe;
+      --jf-blue-700: #1e40af;
+      --jf-amber-500: #f59e0b;
+      --jf-amber-600: #d97706;
+      --jf-red-500: #ef4444;
+      --jf-red-600: #dc2626;
+      --jf-red-bg: #fef2f2;
+      --jf-red-border: #fecaca;
+      --jf-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+      --jf-shadow-toast: 0 4px 12px rgba(0, 0, 0, 0.15);
+      --jf-header-gradient: linear-gradient(135deg, #10b981, #047857);
+      --jf-collapsed-gradient: linear-gradient(135deg, #10b981, #047857);
+      --jf-collapsed-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+      --jf-collapsed-shadow-hover: 0 6px 20px rgba(5, 150, 105, 0.4);
+      --jf-progress-track: rgba(0, 0, 0, 0.05);
+      --jf-primary-hover-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+      --jf-toast-bg: #065f46;
+      --jf-toast-text: #ffffff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :host {
+        --jf-bg: #1e293b;
+        --jf-bg-subtle: #273449;
+        --jf-bg-hover: #334155;
+        --jf-text: #f1f5f9;
+        --jf-text-secondary: #cbd5e1;
+        --jf-text-muted: #94a3b8;
+        --jf-text-placeholder: #64748b;
+        --jf-text-disabled: #475569;
+        --jf-border: #334155;
+        --jf-border-strong: #475569;
+        --jf-border-light: #2a3447;
+        --jf-emerald-50: rgba(16, 185, 129, 0.14);
+        --jf-emerald-100: rgba(16, 185, 129, 0.24);
+        --jf-emerald-500: #34d399;
+        --jf-emerald-600: #10b981;
+        --jf-emerald-700: #6ee7b7;
+        --jf-emerald-800: #a7f3d0;
+        --jf-blue-50: rgba(59, 130, 246, 0.14);
+        --jf-blue-200: rgba(59, 130, 246, 0.38);
+        --jf-blue-700: #93c5fd;
+        --jf-amber-500: #fbbf24;
+        --jf-amber-600: #fcd34d;
+        --jf-red-500: #f87171;
+        --jf-red-600: #fca5a5;
+        --jf-red-bg: rgba(239, 68, 68, 0.14);
+        --jf-red-border: rgba(239, 68, 68, 0.38);
+        --jf-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+        --jf-shadow-toast: 0 4px 12px rgba(0, 0, 0, 0.5);
+        --jf-header-gradient: linear-gradient(135deg, #065f46, #064e3b);
+        --jf-collapsed-gradient: linear-gradient(135deg, #10b981, #065f46);
+        --jf-collapsed-shadow: 0 4px 16px rgba(5, 150, 105, 0.5);
+        --jf-collapsed-shadow-hover: 0 6px 20px rgba(5, 150, 105, 0.6);
+        --jf-progress-track: rgba(255, 255, 255, 0.08);
+        --jf-primary-hover-shadow: 0 2px 8px rgba(5, 150, 105, 0.45);
+        --jf-toast-bg: #064e3b;
+        --jf-toast-text: #ecfdf5;
+      }
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -61,12 +142,12 @@ function getWidgetStyles(): string {
       right: 20px;
       width: 320px;
       max-height: 480px;
-      background: #fff;
+      background: var(--jf-bg);
       border-radius: 14px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+      box-shadow: var(--jf-shadow-card);
       overflow: hidden;
       font-size: 13px;
-      color: #1a1a1a;
+      color: var(--jf-text);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -76,7 +157,7 @@ function getWidgetStyles(): string {
       align-items: center;
       justify-content: space-between;
       padding: 12px 14px;
-      background: linear-gradient(135deg, #10b981, #047857);
+      background: var(--jf-header-gradient);
       color: #fff;
     }
 
@@ -134,7 +215,7 @@ function getWidgetStyles(): string {
     /* ── Fill progress ── */
     .jf-fill-progress {
       height: 3px;
-      background: rgba(0, 0, 0, 0.05);
+      background: var(--jf-progress-track);
       overflow: hidden;
     }
 
@@ -145,11 +226,11 @@ function getWidgetStyles(): string {
     }
 
     .jf-fill-progress-bar--active {
-      background: #10b981;
+      background: var(--jf-emerald-500);
     }
 
     .jf-fill-progress-bar--done {
-      background: #10b981;
+      background: var(--jf-emerald-500);
     }
 
     /* ── Body ── */
@@ -168,7 +249,7 @@ function getWidgetStyles(): string {
       align-items: center;
       gap: 8px;
       padding: 7px 0;
-      border-bottom: 1px solid #f3f4f6;
+      border-bottom: 1px solid var(--jf-border-light);
       transition: background 100ms ease;
     }
 
@@ -177,7 +258,7 @@ function getWidgetStyles(): string {
     }
 
     .jf-field-item:hover {
-      background: #f9fafb;
+      background: var(--jf-bg-subtle);
       margin: 0 -14px;
       padding-left: 14px;
       padding-right: 14px;
@@ -185,7 +266,7 @@ function getWidgetStyles(): string {
 
     .jf-field-label {
       font-size: 12px;
-      color: #6b7280;
+      color: var(--jf-text-muted);
       max-width: 100px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -195,7 +276,7 @@ function getWidgetStyles(): string {
 
     .jf-field-value {
       font-size: 12px;
-      color: #111827;
+      color: var(--jf-text);
       font-weight: 500;
       max-width: 150px;
       overflow: hidden;
@@ -211,14 +292,14 @@ function getWidgetStyles(): string {
       flex-shrink: 0;
     }
 
-    .jf-confidence-high { background: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15); }
-    .jf-confidence-medium { background: #f59e0b; }
-    .jf-confidence-low { background: #d1d5db; }
+    .jf-confidence-high { background: var(--jf-emerald-500); box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15); }
+    .jf-confidence-medium { background: var(--jf-amber-500); }
+    .jf-confidence-low { background: var(--jf-text-disabled); }
 
     /* ── Footer ── */
     .jf-footer {
       padding: 10px 14px;
-      border-top: 1px solid #f3f4f6;
+      border-top: 1px solid var(--jf-border-light);
       display: flex;
       gap: 8px;
     }
@@ -230,7 +311,7 @@ function getWidgetStyles(): string {
       justify-content: center;
       gap: 6px;
       padding: 9px 16px;
-      background: #059669;
+      background: var(--jf-emerald-600);
       color: #fff;
       border: none;
       border-radius: 8px;
@@ -240,9 +321,9 @@ function getWidgetStyles(): string {
       transition: all 150ms ease;
     }
 
-    .jf-btn-primary:hover { background: #047857; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3); }
+    .jf-btn-primary:hover { background: var(--jf-emerald-700); box-shadow: var(--jf-primary-hover-shadow); }
     .jf-btn-primary:active { transform: scale(0.97); }
-    .jf-btn-primary:disabled { background: #6ee7b7; cursor: not-allowed; box-shadow: none; transform: none; opacity: 0.7; }
+    .jf-btn-primary:disabled { background: var(--jf-emerald-100); cursor: not-allowed; box-shadow: none; transform: none; opacity: 0.7; }
 
     .jf-spinner {
       display: inline-block;
@@ -258,9 +339,9 @@ function getWidgetStyles(): string {
       display: inline-flex;
       align-items: center;
       padding: 9px 14px;
-      background: #f8fafc;
-      color: #475569;
-      border: 1.5px solid #e5e7eb;
+      background: var(--jf-bg-subtle);
+      color: var(--jf-text-secondary);
+      border: 1.5px solid var(--jf-border);
       border-radius: 8px;
       font-size: 12px;
       font-weight: 600;
@@ -268,7 +349,7 @@ function getWidgetStyles(): string {
       transition: all 150ms ease;
     }
 
-    .jf-btn-secondary:hover { background: #f1f5f9; border-color: #d1d5db; }
+    .jf-btn-secondary:hover { background: var(--jf-bg-hover); border-color: var(--jf-border-strong); }
     .jf-btn-secondary:active { transform: scale(0.97); }
 
     .jf-footer-actions {
@@ -284,7 +365,7 @@ function getWidgetStyles(): string {
       width: 48px;
       height: 48px;
       border-radius: 14px;
-      background: linear-gradient(135deg, #10b981, #047857);
+      background: var(--jf-collapsed-gradient);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -292,13 +373,13 @@ function getWidgetStyles(): string {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+      box-shadow: var(--jf-collapsed-shadow);
       transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .jf-collapsed:hover {
       transform: scale(1.08);
-      box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+      box-shadow: var(--jf-collapsed-shadow-hover);
     }
 
     .jf-collapsed:active {
@@ -313,8 +394,8 @@ function getWidgetStyles(): string {
       position: absolute;
       top: -5px;
       right: -5px;
-      background: #fff;
-      color: #059669;
+      background: var(--jf-bg);
+      color: var(--jf-emerald-600);
       font-size: 10px;
       font-weight: 700;
       min-width: 18px;
@@ -336,7 +417,7 @@ function getWidgetStyles(): string {
     .jf-empty {
       text-align: center;
       padding: 24px;
-      color: #9ca3af;
+      color: var(--jf-text-placeholder);
       font-size: 13px;
     }
 
@@ -346,32 +427,32 @@ function getWidgetStyles(): string {
       align-items: center;
       gap: 6px;
       padding: 6px 14px;
-      background: #ecfdf5;
-      border-bottom: 1px solid #d1fae5;
+      background: var(--jf-emerald-50);
+      border-bottom: 1px solid var(--jf-emerald-100);
       font-size: 11px;
       font-weight: 500;
-      color: #047857;
+      color: var(--jf-emerald-700);
     }
 
     /* ── Status dots ── */
-    .jf-dot-filled { background: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15); }
-    .jf-dot-edited { background: #f59e0b; box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15); }
-    .jf-dot-unfilled { background: #d1d5db; }
-    .jf-dot-unknown { background: #e5e7eb; border: 1.5px dashed #9ca3af; }
+    .jf-dot-filled { background: var(--jf-emerald-500); box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15); }
+    .jf-dot-edited { background: var(--jf-amber-500); box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15); }
+    .jf-dot-unfilled { background: var(--jf-text-disabled); }
+    .jf-dot-unknown { background: var(--jf-border); border: 1.5px dashed var(--jf-text-placeholder); }
 
     /* ── Field value states ── */
     .jf-field-value--edited {
-      color: #d97706;
+      color: var(--jf-amber-600);
       font-style: italic;
     }
 
     .jf-field-value--empty {
-      color: #d1d5db;
+      color: var(--jf-text-disabled);
       cursor: pointer;
     }
 
     .jf-field-value--empty:hover {
-      color: #10b981;
+      color: var(--jf-emerald-500);
     }
 
     /* ── Edit button (hover reveal) ── */
@@ -383,8 +464,8 @@ function getWidgetStyles(): string {
       height: 22px;
       border: none;
       border-radius: 5px;
-      background: #f3f4f6;
-      color: #6b7280;
+      background: var(--jf-bg-hover);
+      color: var(--jf-text-muted);
       cursor: pointer;
       flex-shrink: 0;
       margin-left: 4px;
@@ -392,8 +473,8 @@ function getWidgetStyles(): string {
     }
 
     .jf-edit-btn:hover {
-      background: #e5e7eb;
-      color: #374151;
+      background: var(--jf-border);
+      color: var(--jf-text-secondary);
     }
 
     .jf-field-item:hover .jf-edit-btn {
@@ -402,7 +483,7 @@ function getWidgetStyles(): string {
 
     /* ── Inline edit ── */
     .jf-field-item--editing {
-      background: #f9fafb;
+      background: var(--jf-bg-subtle);
       margin: 0 -14px;
       padding: 6px 14px;
       border-radius: 0;
@@ -422,17 +503,17 @@ function getWidgetStyles(): string {
       min-width: 0;
       height: 26px;
       padding: 0 8px;
-      border: 1.5px solid #10b981;
+      border: 1.5px solid var(--jf-emerald-500);
       border-radius: 6px;
       font-size: 12px;
-      color: #111827;
-      background: #fff;
+      color: var(--jf-text);
+      background: var(--jf-bg);
       outline: none;
       box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
     }
 
     .jf-edit-input::placeholder {
-      color: #d1d5db;
+      color: var(--jf-text-placeholder);
     }
 
     .jf-edit-confirm, .jf-edit-cancel {
@@ -449,21 +530,21 @@ function getWidgetStyles(): string {
     }
 
     .jf-edit-confirm {
-      background: #ecfdf5;
-      color: #059669;
+      background: var(--jf-emerald-50);
+      color: var(--jf-emerald-600);
     }
 
     .jf-edit-confirm:hover {
-      background: #d1fae5;
+      background: var(--jf-emerald-100);
     }
 
     .jf-edit-cancel {
-      background: #fef2f2;
-      color: #dc2626;
+      background: var(--jf-red-bg);
+      color: var(--jf-red-600);
     }
 
     .jf-edit-cancel:hover {
-      background: #fecaca;
+      background: var(--jf-red-border);
     }
 
     /* ── Toast ── */
@@ -472,13 +553,13 @@ function getWidgetStyles(): string {
       bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
-      background: #065f46;
-      color: #fff;
+      background: var(--jf-toast-bg);
+      color: var(--jf-toast-text);
       font-size: 11px;
       font-weight: 500;
       padding: 6px 14px;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--jf-shadow-toast);
       white-space: nowrap;
       animation: jf-toast-in 200ms ease, jf-toast-out 300ms ease 1.7s forwards;
       z-index: 10;

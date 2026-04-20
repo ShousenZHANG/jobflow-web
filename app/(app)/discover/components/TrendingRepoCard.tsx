@@ -24,7 +24,7 @@ export function TrendingRepoCard({ repo }: { repo: TrendingRepo }) {
     : null;
 
   return (
-    <article className="group relative rounded-xl border border-border bg-white p-3 transition-all duration-150 hover:border-border hover:shadow-md sm:p-4">
+    <article className="group relative rounded-xl border border-border bg-card p-3 transition-all duration-150 hover:border-border hover:shadow-md sm:p-4">
       {/* Header: avatar + name + language */}
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">

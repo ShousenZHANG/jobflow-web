@@ -81,11 +81,11 @@ export function ExperienceSection({
                 setExpandedIndex(index);
               }
             }}
-            className="rounded-2xl border border-slate-900/10 bg-white/70 p-4"
+            className="rounded-2xl border border-border bg-card/70 p-4"
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-1 py-1">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-foreground">
                   {t("experienceN", { n: index + 1 })}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
@@ -152,9 +152,9 @@ export function ExperienceSection({
                   </Button>
                 ) : null}
                 {expandedIndex === index ? (
-                  <ChevronDown className="h-4 w-4 text-slate-500" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-slate-500" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 )}
               </div>
             </summary>
@@ -238,7 +238,7 @@ export function ExperienceSection({
                       <Button
                         type="button"
                         variant="ghost"
-                        className="text-xs text-slate-500 hover:text-slate-900"
+                        className="text-xs text-muted-foreground hover:text-foreground"
                         onClick={() => removeExperienceLink(index, linkIndex)}
                       >
                         {t("remove")}
@@ -296,7 +296,7 @@ export function ExperienceSection({
                         <Button
                           type="button"
                           variant="ghost"
-                          className="text-xs text-slate-500 hover:text-slate-900"
+                          className="text-xs text-muted-foreground hover:text-foreground"
                           onClick={() => removeExperienceBullet(index, bulletIndex)}
                         >
                           {t("remove")}

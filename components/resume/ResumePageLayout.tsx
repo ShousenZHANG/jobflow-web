@@ -188,7 +188,7 @@ function MobilePreviewDialog() {
           <DialogDescription>{t("pdfPreviewDesc")}</DialogDescription>
         </DialogHeader>
         <div className="flex h-full flex-col">
-          <div className="flex h-11 items-center justify-end border-b border-slate-900/10 bg-white/90 px-3 gap-2">
+          <div className="flex h-11 items-center justify-end border-b border-border bg-background/90 px-3 gap-2">
             {pdfUrl && previewStatus === "ready" && (
               <a
                 href={pdfUrl}
@@ -205,7 +205,7 @@ function MobilePreviewDialog() {
               </Button>
             </DialogClose>
           </div>
-          <div className="relative flex-1 overflow-hidden bg-white">
+          <div className="relative flex-1 overflow-hidden bg-card">
             {pdfUrl ? (
               <iframe title="Resume preview" src={pdfUrl} className="h-full w-full" />
             ) : (
@@ -214,7 +214,7 @@ function MobilePreviewDialog() {
               </div>
             )}
             {previewStatus === "loading" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/70 text-xs text-slate-500">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-xs text-muted-foreground">
                 Generating preview…
               </div>
             )}
@@ -263,7 +263,7 @@ export function ResumePageLayout() {
           collapsed={navCollapsed}
           onToggle={() => setNavCollapsed((prev) => !prev)}
           className={cn(
-            "hidden lg:flex shrink-0 border-r border-slate-900/10 flex-col p-3 gap-1 transition-[width] duration-200",
+            "hidden lg:flex shrink-0 border-r border-border flex-col p-3 gap-1 transition-[width] duration-200",
             navCollapsed ? "w-14" : "w-56",
           )}
         />
@@ -271,7 +271,7 @@ export function ResumePageLayout() {
         {/* Form content area */}
         <div className="flex flex-1 min-h-0 flex-col">
           {/* Mobile tab nav */}
-          <SectionNav className="lg:hidden border-b border-slate-900/10" />
+          <SectionNav className="lg:hidden border-b border-border" />
 
           {/* Scrollable form content */}
           <div className="flex-1 min-h-0 overflow-y-auto">
@@ -286,7 +286,7 @@ export function ResumePageLayout() {
 
         {/* Desktop preview panel */}
         <PreviewPanel className={cn(
-          "hidden md:flex shrink-0 border-l border-slate-900/10 flex-col transition-[width] duration-200",
+          "hidden md:flex shrink-0 border-l border-border flex-col transition-[width] duration-200",
           navCollapsed ? "w-[580px]" : "w-[480px]",
         )} />
       </div>

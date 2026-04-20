@@ -292,7 +292,7 @@ export function FetchProgressPanel() {
   );
 }
 
-function StepIndicator({ status }: { status: string }) {
+function StepIndicator({ status }: { status: string | null }) {
   const steps = [
     {
       label: "Queued",

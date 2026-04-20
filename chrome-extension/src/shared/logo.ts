@@ -43,9 +43,9 @@ export function errorIconSvg(size: number = 14): string {
 
 /** Key icon for token input */
 export function keyIconSvg(size: number = 14): string {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="5.5" cy="6.5" r="3" stroke="#9ca3af" stroke-width="1.5" fill="none"/>
-    <path d="M8 8.5l5 5M11 11.5l2 -2" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+  return `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--jl-text-muted);">
+    <circle cx="5.5" cy="6.5" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8 8.5l5 5M11 11.5l2 -2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
   </svg>`;
 }
 

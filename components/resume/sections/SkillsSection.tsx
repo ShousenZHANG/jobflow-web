@@ -41,9 +41,9 @@ export function SkillsSection({
         section="skill"
         onMove={onMove}
         renderItem={(group, index, dragHandleProps) => (
-          <div className="space-y-3 rounded-2xl border border-slate-900/10 bg-white/70 p-4">
+          <div className="space-y-3 rounded-2xl border border-border bg-card/70 p-4">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium text-slate-800">
+              <p className="text-sm font-medium text-foreground">
                 {t("groupN", { n: index + 1 })}
               </p>
               <div className="flex items-center gap-1">

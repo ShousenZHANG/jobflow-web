@@ -47,7 +47,7 @@ export function VersionSelector() {
           }
         }}
         disabled={isBusy}
-        className="min-h-9 min-w-[140px] flex-1 rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-900 shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-slate-100"
+        className="min-h-9 min-w-[140px] flex-1 rounded-lg border border-input bg-card px-2.5 text-sm text-foreground shadow-sm transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:bg-muted"
       >
         {profiles.length === 0 ? (
           <option value="">{t("unsavedVersion")}</option>

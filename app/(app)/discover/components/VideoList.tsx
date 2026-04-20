@@ -211,8 +211,8 @@ export function VideoList() {
               onClick={() => setCategory(c.value)}
               className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 active
-                  ? "bg-slate-900 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-slate-200"
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
               }`}
             >
               {c.label}
@@ -234,7 +234,7 @@ export function VideoList() {
                 onClick={() => setTimeWindow(w.value)}
                 className={`rounded-md px-3 py-1 text-[11px] font-semibold transition-all sm:text-xs ${
                   active
-                    ? "bg-white text-brand-emerald-700 shadow-sm"
+                    ? "bg-card text-brand-emerald-700 shadow-sm dark:text-brand-emerald-300"
                     : "text-muted-foreground hover:text-foreground/85"
                 }`}
               >
@@ -257,7 +257,7 @@ export function VideoList() {
                 onClick={() => setSort(s.value)}
                 className={`rounded-md px-3 py-1 text-[11px] font-semibold transition-all sm:text-xs ${
                   active
-                    ? "bg-white text-brand-emerald-700 shadow-sm"
+                    ? "bg-card text-brand-emerald-700 shadow-sm dark:text-brand-emerald-300"
                     : "text-muted-foreground hover:text-foreground/85"
                 }`}
               >
@@ -275,7 +275,7 @@ export function VideoList() {
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors sm:text-xs ${
             showFavoritesOnly
               ? "bg-amber-100 text-amber-700"
-              : "bg-muted text-muted-foreground hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+              : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
           }`}
           title={
             favCount === 0
