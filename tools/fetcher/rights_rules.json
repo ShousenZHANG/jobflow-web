@@ -1,0 +1,216 @@
+{
+  "_comment": "Declarative rules for ExclusionMatcher. Edit this file to tune regexes without code changes.",
+  "hard_anchors": [
+    "must be",
+    "must have",
+    "must hold",
+    "must possess",
+    "required to be",
+    "required to have",
+    "\\brequires?\\b",
+    "\\brequired\\b",
+    "mandatory",
+    "only open to",
+    "only available to",
+    "only eligible",
+    "only accepting",
+    "restricted to",
+    "limited to",
+    "eligible only if",
+    "applicants must",
+    "candidates must",
+    "you must",
+    "need to be",
+    "need to have",
+    "unable to sponsor",
+    "not (?:able|willing) to sponsor",
+    "will not provide sponsorship",
+    "cannot provide sponsorship",
+    "due to (?:the )?(?:nature of|security of|sensitive)"
+  ],
+  "strict_only_anchors": [
+    "open to",
+    "apply if",
+    "candidates who are",
+    "\\bonly\\b"
+  ],
+  "negation_guards": [
+    "no (?:specific )?(?:citizenship|pr|green card|work rights) (?:is )?required",
+    "does not require (?:any |specific )?(?:citizenship|pr|work authori[sz]ation)",
+    "not required",
+    "regardless of (?:citizenship|nationality|status|background|immigration|visa)",
+    "open to candidates (?:without|of any|regardless)",
+    "open to (?:international|global|overseas) (?:candidates|applicants)",
+    "we welcome (?:candidates|applicants) (?:from|regardless|without|of any)",
+    "welcome (?:international|global|overseas)",
+    "(?:international|global|overseas) (?:candidates|applicants) (?:welcome|encouraged|eligible)",
+    "citizens of the world",
+    "visa sponsorship (?:is )?(?:available|provided|offered|supported)",
+    "(?:we will|happy to|glad to) sponsor",
+    "(?:sponsors|provides|offers) (?:work )?visas?",
+    "relocation (?:assistance|support) (?:available|provided)"
+  ],
+  "soft_invite": [
+    "citizens of the world welcome",
+    "international candidates (?:encouraged|welcome|eligible)",
+    "will sponsor (?:the right|suitable|qualified)",
+    "(?:visa |work )?sponsorship available",
+    "visa sponsorship (?:is )?provided",
+    "h1b candidates (?:encouraged|welcome)",
+    "tn visa holders welcome",
+    "open to (?:remote|overseas|international)"
+  ],
+  "regions": {
+    "AU": {
+      "label": "Australia",
+      "tokens": [
+        "australian citiz\\w*",
+        "australian permanent residen\\w*",
+        "aus(?:tralian)?\\s+pr\\b",
+        "special category visa",
+        "\\bscv\\b",
+        "nz citiz\\w*",
+        "new zealand citiz\\w*",
+        "\\bpr\\s+(?:only|required|holder|status|of australia)",
+        "citiz\\w*\\s+(?:or\\s+pr\\s+)?of\\s+(?:australia|nz|new zealand)",
+        "permanent residen\\w*\\s+of\\s+(?:australia|nz|new zealand)",
+        "right to work in australia",
+        "work rights in australia",
+        "australian work rights"
+      ],
+      "standalone_tokens": []
+    },
+    "US": {
+      "label": "United States",
+      "tokens": [
+        "u\\.?s\\.? citiz\\w*",
+        "united states citiz\\w*",
+        "us person(?:s)?\\b",
+        "u\\.?s\\.? person(?:s)?\\b",
+        "green card (?:holder|required)",
+        "green card holders?",
+        "\\bgc\\s+holder",
+        "lawful permanent residen\\w*",
+        "\\blpr\\b",
+        "\\bead\\b holder",
+        "employment authori[sz]ation document",
+        "authori[sz]ed to work in the u\\.?s\\.?",
+        "authori[sz]ed to work in (?:the )?united states",
+        "right to work in the u\\.?s\\.?"
+      ],
+      "standalone_tokens": [
+        "five eyes",
+        "\\bfvey\\b"
+      ]
+    },
+    "CA": {
+      "label": "Canada",
+      "tokens": [
+        "canadian citiz\\w*",
+        "canadian permanent residen\\w*",
+        "canadian pr\\b",
+        "permanent residen\\w*\\s+of\\s+canada",
+        "right to work in canada",
+        "express entry"
+      ],
+      "standalone_tokens": []
+    },
+    "UK": {
+      "label": "United Kingdom",
+      "tokens": [
+        "british citiz\\w*",
+        "uk citiz\\w*",
+        "\\bilr\\b",
+        "indefinite leave to remain",
+        "settled status",
+        "pre-settled status",
+        "right to work in (?:the )?uk",
+        "right to work in (?:the )?united kingdom"
+      ],
+      "standalone_tokens": []
+    },
+    "NZ": {
+      "label": "New Zealand",
+      "tokens": [
+        "nz citiz\\w*",
+        "new zealand citiz\\w*",
+        "nz residen\\w*",
+        "new zealand residen\\w*",
+        "right to work in (?:nz|new zealand)"
+      ],
+      "standalone_tokens": []
+    },
+    "EU": {
+      "label": "European Union",
+      "tokens": [
+        "eu citiz\\w*",
+        "eea national",
+        "right to work in (?:the )?(?:eu|european union|eea)",
+        "schengen (?:work )?visa"
+      ],
+      "standalone_tokens": []
+    }
+  },
+  "generic_tokens": [
+    "work rights",
+    "work authori[sz]ation",
+    "right to work",
+    "right of residence",
+    "residency status",
+    "immigration status",
+    "\\bcitizen(?:ship)?\\b",
+    "permanent residen\\w*"
+  ],
+  "global_hard_patterns": [
+    "\\b(?:citizens?|nationals?|persons?)\\s+(?:(?:and|or)\\s+(?:permanent residents?|prs?|green card holders?|citizens?)\\s+)?only\\b",
+    "\\bonly\\s+(?:us |australian |canadian |british |nz |eu |uk )?(?:citizens?|nationals?|persons?|permanent residents?|prs?|pr holders?)\\s+(?:may|can|will|should)?",
+    "\\bunrestricted\\s+(?:work\\s+)?(?:authori[sz]ation|right|eligibility)",
+    "\\blegally\\s+authori[sz]ed\\s+to\\s+work",
+    "\\blegally\\s+entitled\\s+to\\s+work",
+    "\\blegally\\s+allowed\\s+to\\s+work",
+    "\\bemployment\\s+eligibility\\s+verification"
+  ],
+  "sponsorship_phrases": [
+    "no sponsorship (?:now )?or in the future",
+    "(?:without|no) (?:visa |work )?sponsorship",
+    "we (?:do not|will not|cannot|are unable to|are not able to) sponsor",
+    "unable to sponsor (?:visas?|applicants?|employees?)",
+    "will not provide sponsorship",
+    "cannot (?:provide|offer) sponsorship",
+    "sponsorship (?:is )?not (?:available|provided|offered)",
+    "this (?:role|position|company) does not (?:provide|offer) (?:visa )?sponsorship"
+  ],
+  "clearance_tokens": [
+    "baseline clearance",
+    "\\bnv1\\b",
+    "\\bnv2\\b",
+    "\\bnv-1\\b",
+    "\\bnv-2\\b",
+    "security clearance",
+    "top[\\-\\s]secret",
+    "\\bts[\\-\\s]?sci\\b",
+    "secret clearance",
+    "positive vetting"
+  ],
+  "scoring_weights": {
+    "region_anchor_token": 60,
+    "region_standalone_token": 60,
+    "global_hard_pattern": 60,
+    "generic_anchor_token": 35,
+    "sponsorship_phrase_with_identity": 60,
+    "sponsorship_phrase_standalone": 60,
+    "clearance_standalone": 60,
+    "local_only_no_remote_strict": 40,
+    "soft_invite_penalty": -50,
+    "negation_suppression": -999
+  },
+  "strictness_thresholds": {
+    "strict": 40,
+    "balanced": 60,
+    "loose": 80
+  },
+  "proximity": {
+    "anchor_to_token_chars": 60,
+    "negation_window_chars": 80
+  }
+}

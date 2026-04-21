@@ -845,6 +845,7 @@ def main():
 
     user_email = run["userEmail"]
     raw_queries = run["queries"] or {}
+    identity_filter: Dict[str, Any] = {}
     if isinstance(raw_queries, list):
         queries = raw_queries
         title_query = queries[0] if queries else ""
@@ -859,8 +860,17 @@ def main():
         exclude_title_terms = raw_queries.get("excludeTitleTerms") or []
         exclude_desc_rules = raw_queries.get("excludeDescriptionRules") or []
         source_options = raw_queries.get("sourceOptions") or {}
+        identity_filter = raw_queries.get("identityFilter") or {}
     else:
         raise RuntimeError("run.queries must be a list or object")
+
+    # identityFilter — v2 config (region, strictness). Falls back to legacy defaults.
+    identity_region = (identity_filter.get("region") or "AU").upper()
+    identity_strictness = (identity_filter.get("strictness") or "balanced").lower()
+    if identity_region not in ("AU", "US", "CA", "UK", "NZ", "EU"):
+        identity_region = "AU"
+    if identity_strictness not in ("strict", "balanced", "loose"):
+        identity_strictness = "balanced"
 
     location = run.get("location") or "Sydney, New South Wales, Australia"
     hours_old = int(run.get("hoursOld") or 48)
@@ -921,12 +931,44 @@ def main():
         # Clean before description exclusion for more consistent matching
         df = clean_description(df)
         if filter_desc:
-            df = filter_description(
-                df,
-                exclude_rights=exclude_rights,
-                exclude_clearance=exclude_clearance,
-                exclude_sponsorship=exclude_sponsorship,
-            )
+            # v2 matcher — layered regex + weighted scoring with audit trail.
+            try:
+                from rights_filter import filter_description_v2  # type: ignore
+            except ImportError:
+                # Fall back to legacy regex if the matcher module is unavailable
+                df = filter_description(
+                    df,
+                    exclude_rights=exclude_rights,
+                    exclude_clearance=exclude_clearance,
+                    exclude_sponsorship=exclude_sponsorship,
+                )
+            else:
+                active_rules: List[str] = []
+                if exclude_rights:
+                    active_rules.append("identity_requirement")
+                if exclude_clearance:
+                    active_rules.append("clearance_requirement")
+                if exclude_sponsorship:
+                    active_rules.append("sponsorship_unavailable")
+                df, audit_df = filter_description_v2(
+                    df,
+                    rules=active_rules,
+                    region=identity_region,
+                    strictness=identity_strictness,
+                )
+                if not audit_df.empty:
+                    audit_summary = (
+                        audit_df.groupby("rule")["score"].count().to_dict()
+                        if "rule" in audit_df.columns
+                        else {}
+                    )
+                    logger.info(
+                        "filter_description_v2 dropped=%s region=%s strictness=%s by_rule=%s",
+                        len(audit_df),
+                        identity_region,
+                        identity_strictness,
+                        audit_summary,
+                    )
             logger.info("Rows after description filter: %s", len(df))
         df = dedupe_jobs(df)
         items = df.to_dict(orient="records")
