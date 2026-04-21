@@ -212,7 +212,7 @@ export function KnowledgeBase() {
 
   if (loading) {
     return (
-      <div className="mt-4 rounded-xl border border-border bg-white p-8">
+      <div className="mt-4 rounded-xl border border-border bg-card p-8">
         <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground/70">
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading knowledge base...
@@ -223,7 +223,7 @@ export function KnowledgeBase() {
 
   return (
     <>
-      <div className="mt-4 rounded-xl border border-border bg-white">
+      <div className="mt-4 rounded-xl border border-border bg-card">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
           <div className="flex items-center gap-3">
@@ -245,7 +245,7 @@ export function KnowledgeBase() {
         {rules.length === 0 ? (
           <div className="px-5 py-12 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted/40">
-              <Brain className="h-6 w-6 text-slate-300" />
+              <Brain className="h-6 w-6 text-muted-foreground/40" />
             </div>
             <p className="text-sm font-medium text-muted-foreground">No rules yet</p>
             <p className="mt-1 text-xs text-muted-foreground/70">
@@ -264,7 +264,7 @@ export function KnowledgeBase() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search fields, answers, ATS..."
-                  className="h-8 w-full rounded-lg border border-border bg-muted/40 pl-9 pr-3 text-xs text-foreground/85 outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-brand-emerald-300 focus:bg-white focus:ring-1 focus:ring-brand-emerald-200"
+                  className="h-8 w-full rounded-lg border border-border bg-muted/40 pl-9 pr-3 text-xs text-foreground/85 outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-brand-emerald-300 focus:bg-card focus:ring-1 focus:ring-brand-emerald-200"
                 />
               </div>
             </div>
@@ -275,7 +275,7 @@ export function KnowledgeBase() {
                 No rules match your search.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border/60">
                 {groups.map((group) => {
                   const isCollapsed = collapsedGroups.has(group.key);
                   return (
@@ -342,7 +342,7 @@ export function KnowledgeBase() {
                                         if (editingId === rule.id) cancelEdit();
                                       }, 150);
                                     }}
-                                    className="h-6 w-full min-w-0 rounded border border-brand-emerald-300 bg-white px-2 text-xs text-foreground/90 outline-none ring-1 ring-brand-emerald-200"
+                                    className="h-6 w-full min-w-0 rounded border border-brand-emerald-300 bg-card px-2 text-xs text-foreground/90 outline-none ring-1 ring-brand-emerald-200"
                                   />
                                   <button
                                     onClick={() => saveEdit(rule.id)}
@@ -357,7 +357,7 @@ export function KnowledgeBase() {
                                   </button>
                                   <button
                                     onClick={cancelEdit}
-                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground hover:bg-slate-200"
+                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
@@ -370,12 +370,12 @@ export function KnowledgeBase() {
                                 >
                                   <span className="truncate">
                                     {rule.staticValue || (
-                                      <span className="italic text-slate-300">
+                                      <span className="italic text-muted-foreground/40">
                                         No value
                                       </span>
                                     )}
                                   </span>
-                                  <Pencil className="h-2.5 w-2.5 shrink-0 text-slate-300 opacity-0 transition-opacity group-hover/cell:opacity-100" />
+                                  <Pencil className="h-2.5 w-2.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover/cell:opacity-100" />
                                 </button>
                               )}
 
@@ -387,7 +387,7 @@ export function KnowledgeBase() {
                               {/* Delete */}
                               <button
                                 onClick={() => setDeletingRule(rule)}
-                                className="flex h-6 w-6 items-center justify-center rounded text-slate-300 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                                className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground/40 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
                                 title="Delete"
                               >
                                 <Trash2 className="h-3 w-3" />

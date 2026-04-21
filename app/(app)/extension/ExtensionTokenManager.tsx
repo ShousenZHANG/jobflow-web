@@ -48,10 +48,10 @@ function TokenSkeleton() {
           className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/40 px-4 py-3"
         >
           <div className="space-y-2">
-            <div className="h-4 w-32 animate-pulse rounded-md bg-slate-200" />
+            <div className="h-4 w-32 animate-pulse rounded-md bg-muted" />
             <div className="h-3 w-48 animate-pulse rounded-md bg-muted" />
           </div>
-          <div className="h-8 w-16 animate-pulse rounded-lg bg-slate-200" />
+          <div className="h-8 w-16 animate-pulse rounded-lg bg-muted" />
         </div>
       ))}
     </div>
@@ -330,13 +330,13 @@ export function ExtensionTokenManager() {
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
                         <span>Created {formatRelativeDate(token.createdAt)}</span>
-                        <span className="text-slate-300">·</span>
+                        <span className="text-muted-foreground/40">·</span>
                         <span>
                           {token.lastUsedAt
                             ? `Used ${formatRelativeDate(token.lastUsedAt)}`
                             : "Never used"}
                         </span>
-                        <span className="text-slate-300">·</span>
+                        <span className="text-muted-foreground/40">·</span>
                         <span className={`flex items-center gap-0.5 ${expiry.urgent ? "text-amber-600 font-medium" : ""}`}>
                           {expiry.urgent && <Clock className="h-2.5 w-2.5" />}
                           {expiry.text}
