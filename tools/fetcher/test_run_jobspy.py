@@ -225,6 +225,8 @@ class RunJobspyDedupeTests(unittest.TestCase):
         self.assertEqual(len(out), 2)
 
     def test_filter_description_only_drops_hard_rights_requirement(self):
+        from rights_filter import filter_description_v2
+
         df = pd.DataFrame(
             [
                 {
@@ -251,16 +253,13 @@ class RunJobspyDedupeTests(unittest.TestCase):
             ]
         )
 
-        out = rj.filter_description(
-            df,
-            exclude_rights=True,
-            exclude_clearance=False,
-            exclude_sponsorship=False,
-        )
+        out, _audit = filter_description_v2(df, rules=["identity_requirement"])
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
 
     def test_filter_description_only_drops_hard_clearance_requirement(self):
+        from rights_filter import filter_description_v2
+
         df = pd.DataFrame(
             [
                 {
@@ -278,16 +277,13 @@ class RunJobspyDedupeTests(unittest.TestCase):
             ]
         )
 
-        out = rj.filter_description(
-            df,
-            exclude_rights=False,
-            exclude_clearance=True,
-            exclude_sponsorship=False,
-        )
+        out, _audit = filter_description_v2(df, rules=["clearance_requirement"])
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
 
     def test_filter_description_only_drops_hard_sponsorship_requirement(self):
+        from rights_filter import filter_description_v2
+
         df = pd.DataFrame(
             [
                 {
@@ -305,12 +301,7 @@ class RunJobspyDedupeTests(unittest.TestCase):
             ]
         )
 
-        out = rj.filter_description(
-            df,
-            exclude_rights=False,
-            exclude_clearance=False,
-            exclude_sponsorship=True,
-        )
+        out, _audit = filter_description_v2(df, rules=["sponsorship_unavailable"])
         self.assertEqual(len(out), 1)
         self.assertEqual(out.iloc[0]["title"], "Frontend Engineer")
 

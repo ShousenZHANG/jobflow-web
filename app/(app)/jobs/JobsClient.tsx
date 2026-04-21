@@ -10,7 +10,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FilterPill } from "@/components/app-shell/FilterPill";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useGuide } from "@/app/GuideContext";
 import { useFetchStatus, type FetchRunStatus } from "@/app/FetchStatusContext";
@@ -25,6 +24,7 @@ import { useExternalGenerate } from "./hooks/useExternalGenerate";
 import { JobListItem } from "./components/JobListItem";
 import { VirtualJobList } from "./components/VirtualJobList";
 import { JobDeleteDialog } from "./components/JobDeleteDialog";
+import { JobBatchDeleteDialog } from "./components/JobBatchDeleteDialog";
 import { JobAddDialog } from "./components/JobAddDialog";
 import { JobSearchBar } from "./components/JobSearchBar";
 import { ExternalGenerateDialog } from "./components/ExternalGenerateDialog";
@@ -827,30 +827,13 @@ export function JobsClient({
         candidate={deleteCandidate}
         onConfirm={confirmDeleteCandidate}
       />
-      <AlertDialog
+      <JobBatchDeleteDialog
         open={batchDeleteConfirmOpen}
         onOpenChange={setBatchDeleteConfirmOpen}
-      >
-        <AlertDialogContent className="max-w-md rounded-2xl border-border">
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete {batchSelectedIds.size} {batchSelectedIds.size === 1 ? "job" : "jobs"}?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. The selected jobs will be permanently removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">{tc("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmBatchDelete}
-              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete {batchSelectedIds.size} {batchSelectedIds.size === 1 ? "job" : "jobs"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        count={batchSelectedIds.size}
+        onConfirm={confirmBatchDelete}
+        cancelLabel={tc("cancel")}
+      />
     </>
   );
 }

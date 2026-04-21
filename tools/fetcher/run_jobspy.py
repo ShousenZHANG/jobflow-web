@@ -40,62 +40,11 @@ CANCELLED_ERROR = "Cancelled by user"
 
 TITLE_EXCLUDE_PAT = re.compile(r'(?i)\b(?:senior|sr\.?|lead|principal|architect|manager|head|director|staff)\b')
 
-EXCLUDE_RIGHTS_RE = re.compile(
-    r'(?i)\b(?:'
-    r'permanent\s+resident|permanent\s+residency|PR\s*(?:only|required)?|'
-    r'citizen|citizenship|australian\s+citizen|au\s+citizen|nz\s+citizen'
-    r')\b'
-)
-
-EXCLUDE_CLEARANCE_RE = re.compile(
-    r'(?i)\b(?:baseline\s+clearance|NV1|NV2|security\s+clearance)\b'
-)
-
-EXCLUDE_SPONSORSHIP_RE = re.compile(
-    r'(?i)\b(?:'
-    r'sponsorship\s+not\s+available|'
-    r'sponsorship\s+unavailable|'
-    r'no\s+sponsorship|'
-    r'no\s+visa\s+sponsorship|'
-    r'will\s+not\s+sponsor|'
-    r'cannot\s+sponsor|'
-    r'unable\s+to\s+sponsor|'
-    r'not\s+able\s+to\s+sponsor'
-    r')\b'
-)
-
-HARD_CLEARANCE_RE = re.compile(
-    r'(?i)\b(?:baseline\s+clearance|NV1|NV2|security\s+clearance)\b'
-    r'(?:(?:[^.]{0,40})\b(?:required|must\s+have|mandatory|only)\b)'
-)
-
-SOFT_CLEARANCE_RE = re.compile(
-    r'(?i)\b(?:baseline\s+clearance|NV1|NV2|security\s+clearance)\b'
-    r'(?:(?:[^.]{0,40})\b(?:preferred|nice\s+to\s+have|bonus|a\s+plus)\b)'
-)
-
-HARD_RIGHTS_RE = re.compile(
-    r'(?i)\b(?:required|must\s+have|must\s+be|mandatory|only)\b'
-    r'(?:(?:[^.]{0,40})\b(?:'
-    r'(?:australian\s+)?citizen(?:ship)?|'
-    r'(?:permanent\s+resident|permanent\s+residency|PR)|'
-    r'(?:nz\s+citizen|new\s+zealand\s+citizen)'
-    r')\b)'
-    r'|'
-    r'\b(?:'
-    r'(?:australian\s+)?citizen(?:ship)?|'
-    r'(?:permanent\s+resident|permanent\s+residency|PR)|'
-    r'(?:nz\s+citizen|new\s+zealand\s+citizen)'
-    r')\b'
-    r'(?:(?:[^.]{0,40})\b(?:required|must\s+have|must\s+be|mandatory|only)\b)'
-)
-
-SOFT_RIGHTS_RE = re.compile(
-    r'(?i)\b(?:'
-    r'(?:citizen|citizenship|permanent\s+resident|permanent\s+residency|PR|nz\s+citizen|new\s+zealand\s+citizen)'
-    r')\b'
-    r'(?:(?:[^.]{0,40})\b(?:welcome|eligible|encouraged)\b)'
-)
+# Description-level rights/clearance/sponsorship filtering lives in
+# rights_filter.ExclusionMatcher (see rights_rules.json). The older regex
+# constants that previously lived here were retired with the v2 matcher —
+# keeping them around created a false safety net where a broken import
+# could silently downgrade filtering quality.
 
 
 def _build_query_phrases(queries: List[str]) -> List[str]:
@@ -384,35 +333,6 @@ def filter_title(
             )
             out = out[include_mask].copy()
     return out
-
-
-def filter_description(
-    df: pd.DataFrame,
-    exclude_rights: bool,
-    exclude_clearance: bool,
-    exclude_sponsorship: bool,
-) -> pd.DataFrame:
-    if df.empty or "description" not in df.columns:
-        return df
-    desc = df["description"].fillna("")
-    if exclude_rights:
-        hard_rights = desc.str.contains(HARD_RIGHTS_RE, na=False)
-        soft_rights = desc.str.contains(SOFT_RIGHTS_RE, na=False)
-        rights = hard_rights & ~soft_rights
-    else:
-        rights = pd.Series(False, index=desc.index)
-    if exclude_clearance:
-        hard_clearance = desc.str.contains(HARD_CLEARANCE_RE, na=False)
-        soft_clearance = desc.str.contains(SOFT_CLEARANCE_RE, na=False)
-        clearance = hard_clearance & ~soft_clearance
-    else:
-        clearance = pd.Series(False, index=desc.index)
-    sponsorship = (
-        desc.str.contains(EXCLUDE_SPONSORSHIP_RE, na=False)
-        if exclude_sponsorship
-        else pd.Series(False, index=desc.index)
-    )
-    return df[~(rights | clearance | sponsorship)].copy()
 
 
 def keep_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -927,43 +847,35 @@ def main():
         df = clean_description(df)
         if filter_desc:
             # v2 matcher — layered regex + weighted scoring with audit trail.
-            try:
-                from rights_filter import filter_description_v2  # type: ignore
-            except ImportError:
-                # Fall back to legacy regex if the matcher module is unavailable
-                df = filter_description(
-                    df,
-                    exclude_rights=exclude_rights,
-                    exclude_clearance=exclude_clearance,
-                    exclude_sponsorship=exclude_sponsorship,
+            # Import errors surface loudly; a silent fallback to the retired
+            # legacy regex would downgrade filter quality without warning.
+            from rights_filter import filter_description_v2  # type: ignore
+            active_rules: List[str] = []
+            if exclude_rights:
+                active_rules.append("identity_requirement")
+            if exclude_clearance:
+                active_rules.append("clearance_requirement")
+            if exclude_sponsorship:
+                active_rules.append("sponsorship_unavailable")
+            df, audit_df = filter_description_v2(
+                df,
+                rules=active_rules,
+                region=identity_region,
+                strictness=identity_strictness,
+            )
+            if not audit_df.empty:
+                audit_summary = (
+                    audit_df.groupby("rule")["score"].count().to_dict()
+                    if "rule" in audit_df.columns
+                    else {}
                 )
-            else:
-                active_rules: List[str] = []
-                if exclude_rights:
-                    active_rules.append("identity_requirement")
-                if exclude_clearance:
-                    active_rules.append("clearance_requirement")
-                if exclude_sponsorship:
-                    active_rules.append("sponsorship_unavailable")
-                df, audit_df = filter_description_v2(
-                    df,
-                    rules=active_rules,
-                    region=identity_region,
-                    strictness=identity_strictness,
+                logger.info(
+                    "filter_description_v2 dropped=%s region=%s strictness=%s by_rule=%s",
+                    len(audit_df),
+                    identity_region,
+                    identity_strictness,
+                    audit_summary,
                 )
-                if not audit_df.empty:
-                    audit_summary = (
-                        audit_df.groupby("rule")["score"].count().to_dict()
-                        if "rule" in audit_df.columns
-                        else {}
-                    )
-                    logger.info(
-                        "filter_description_v2 dropped=%s region=%s strictness=%s by_rule=%s",
-                        len(audit_df),
-                        identity_region,
-                        identity_strictness,
-                        audit_summary,
-                    )
             logger.info("Rows after description filter: %s", len(df))
         df = dedupe_jobs(df)
         items = df.to_dict(orient="records")

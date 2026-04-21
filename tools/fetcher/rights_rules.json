@@ -48,7 +48,12 @@
     "visa sponsorship (?:is )?(?:available|provided|offered|supported)",
     "(?:we will|happy to|glad to) sponsor",
     "(?:sponsors|provides|offers) (?:work )?visas?",
-    "relocation (?:assistance|support) (?:available|provided)"
+    "relocation (?:assistance|support) (?:available|provided)",
+    "\\b(?:is\\s+)?preferred\\b",
+    "\\bnice\\s+to\\s+have\\b",
+    "\\ba\\s+plus\\b",
+    "\\bgood\\s+to\\s+have\\b",
+    "\\bbonus\\b"
   ],
   "soft_invite": [
     "citizens of the world welcome",
@@ -122,8 +127,8 @@
         "uk citiz\\w*",
         "\\bilr\\b",
         "indefinite leave to remain",
-        "settled status",
-        "pre-settled status",
+        "\\bsettled\\s+status\\b",
+        "\\bpre-settled\\s+status\\b",
         "right to work in (?:the )?uk",
         "right to work in (?:the )?united kingdom"
       ],
@@ -189,8 +194,8 @@
         "uk citiz\\w*",
         "\\bilr\\b",
         "indefinite leave to remain",
-        "settled status",
-        "pre-settled status",
+        "\\bsettled\\s+status\\b",
+        "\\bpre-settled\\s+status\\b",
         "right to work in (?:the )?uk",
         "right to work in (?:the )?united kingdom",
         "nz residen\\w*",
@@ -218,7 +223,7 @@
   ],
   "global_hard_patterns": [
     "\\b(?:citizens?|nationals?|persons?)\\s+(?:(?:and|or)\\s+(?:permanent residents?|prs?|green card holders?|citizens?)\\s+)?only\\b",
-    "\\bonly\\s+(?:us |australian |canadian |british |nz |eu |uk )?(?:citizens?|nationals?|persons?|permanent residents?|prs?|pr holders?)\\s+(?:may|can|will|should)?",
+    "\\bonly\\s+(?:us |australian |canadian |british |nz |eu |uk )?(?:citizens?|nationals?|persons?|permanent residents?|prs?|pr holders?)(?:\\s+(?:may|can|will|should))?\\b",
     "\\bunrestricted\\s+(?:work\\s+)?(?:authori[sz]ation|right|eligibility)",
     "\\blegally\\s+authori[sz]ed\\s+to\\s+work",
     "\\blegally\\s+entitled\\s+to\\s+work",
@@ -256,8 +261,7 @@
     "sponsorship_phrase_standalone": 60,
     "clearance_standalone": 60,
     "local_only_no_remote_strict": 40,
-    "soft_invite_penalty": -50,
-    "negation_suppression": -999
+    "soft_invite_penalty": -50
   },
   "strictness_thresholds": {
     "strict": 40,
