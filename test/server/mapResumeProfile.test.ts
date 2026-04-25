@@ -5,10 +5,10 @@ describe("mapResumeProfile", () => {
   it("does not duplicate a single LinkedIn link into website", () => {
     const mapped = mapResumeProfile({
       basics: {
-        fullName: "Zetphy Deng",
+        fullName: "Alex Test",
         title: "Full Stack Software Engineer",
-        email: "de4rank@gmail.com",
-        phone: "0493 705 901",
+        email: "alex.test@example.com",
+        phone: "0400 000 001",
       },
       links: [{ label: "LinkedIn", url: "https://www.linkedin.com/in/example/" }],
       summary: "",

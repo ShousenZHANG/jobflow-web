@@ -224,15 +224,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   if (!ghRes.ok) {
     const text = await ghRes.text().catch(() => "");
+    // Log upstream detail server-side only — never forward to client.
+    console.error("[trigger] GitHub dispatch failed", { status: ghRes.status, runId, body: text });
     // Best-effort unlock so the user can retry.
     await prisma.fetchRun.updateMany({
       where: { id: runId, userId, status: "QUEUED" },
       data: { queries: txResult.queries as Prisma.InputJsonValue },
     });
-    return NextResponse.json(
-      { error: "GITHUB_DISPATCH_FAILED", status: ghRes.status, details: text },
-      { status: 502 },
-    );
+    return NextResponse.json({ error: "GITHUB_DISPATCH_FAILED" }, { status: 502 });
   }
 
   // Mark dispatch complete (still QUEUED until worker starts).
