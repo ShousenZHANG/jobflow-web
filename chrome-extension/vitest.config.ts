@@ -11,5 +11,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./test/setup.ts"],
+    // Vitest 4 default `forks` pool intermittently fails to register suites
+    // on Windows; `vmThreads` is stable for this jsdom-based test surface.
+    pool: "vmThreads",
   },
 });

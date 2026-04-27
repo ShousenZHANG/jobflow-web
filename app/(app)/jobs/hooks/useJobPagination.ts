@@ -27,18 +27,15 @@ export function useJobPagination({
     [],
   );
 
-  // Reactively reset pagination when the query string (filters/search) changes
-  const prevQueryStringRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (prevQueryStringRef.current === null) {
-      prevQueryStringRef.current = queryString;
-      return;
-    }
-    if (prevQueryStringRef.current !== queryString) {
-      prevQueryStringRef.current = queryString;
-      setLoadedCursors([null]);
-    }
-  }, [queryString]);
+  // Reset pagination when filters/search change. Adjusting state during
+  // render via the "store info from previous renders" pattern avoids the
+  // cascading-render side-effect of doing this work in useEffect.
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [prevQueryString, setPrevQueryString] = useState(queryString);
+  if (prevQueryString !== queryString) {
+    setPrevQueryString(queryString);
+    setLoadedCursors([null]);
+  }
 
   const initialQueryRef = useRef<string | null>(null);
   if (initialQueryRef.current === null) {

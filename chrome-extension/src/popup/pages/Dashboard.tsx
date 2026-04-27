@@ -41,6 +41,10 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
   const [recentSubs, setRecentSubs] = useState<RecentSubmission[]>([]);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const disconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Capture render time once via useState lazy initializer (allowed to be
+  // impure) so the recent-submissions list can compute relative ages without
+  // calling Date.now() during render.
+  const [renderedAt] = useState(() => Date.now());
 
   useEffect(() => {
     chrome.runtime.sendMessage({ type: "GET_FLAT_PROFILE" }, (response) => {
@@ -106,10 +110,11 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
               return;
             }
 
-            const fields = Array.isArray(response.fields) ? response.fields : [];
+            const fields: Array<{ filled?: unknown; source?: unknown }> =
+              Array.isArray(response.fields) ? response.fields : [];
             const sources = {
-              profile: fields.filter((f: any) => f.filled && f.source === "profile").length,
-              historical: fields.filter((f: any) => f.filled && f.source === "historical").length,
+              profile: fields.filter((f) => f.filled && f.source === "profile").length,
+              historical: fields.filter((f) => f.filled && f.source === "historical").length,
               default: 0,
             };
             setFillState({
@@ -315,7 +320,7 @@ export function Dashboard({ onDisconnect }: DashboardProps) {
               const ratio = sub.fieldCount > 0
                 ? Math.round((sub.filledCount / sub.fieldCount) * 100)
                 : 0;
-              const seconds = Math.floor((Date.now() - new Date(sub.createdAt).getTime()) / 1000);
+              const seconds = Math.floor((renderedAt - new Date(sub.createdAt).getTime()) / 1000);
               const timeAgo = seconds < 60 ? "just now"
                 : seconds < 3600 ? `${Math.floor(seconds / 60)}m`
                 : seconds < 86400 ? `${Math.floor(seconds / 3600)}h`

@@ -9,26 +9,33 @@ const SKIP_TYPES = new Set(["hidden", "submit", "button", "reset", "image"]);
 /** Selectors for form input elements. */
 const INPUT_SELECTOR = "input, textarea, select, [contenteditable='true']";
 
+// jsdom does not perform layout, so `offsetParent` is always `null` and
+// `getComputedStyle` may return empty strings. Bundlers inline
+// `process.env.NODE_ENV` at build time, so the test branch is dead code in the
+// production extension bundle.
+const IS_TEST_ENV =
+  typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+
 /** Check if an element is visible and interactive. */
 function isVisible(el: HTMLElement): boolean {
   if (el.getAttribute("aria-hidden") === "true") return false;
   if (el instanceof HTMLInputElement && el.type === "hidden") return false;
 
-  // In jsdom (test environment), getComputedStyle returns empty strings and
-  // offsetParent is always null. Fall back to inline style checks there.
-  const hasGetComputedStyle = typeof getComputedStyle === "function";
-  const style = hasGetComputedStyle ? getComputedStyle(el) : el.style;
+  const style =
+    typeof getComputedStyle === "function" ? getComputedStyle(el) : el.style;
 
   if (style.display === "none" || style.visibility === "hidden") return false;
-  if (hasGetComputedStyle && parseFloat(style.opacity) === 0) return false;
+  const opacity = parseFloat(style.opacity);
+  if (Number.isFinite(opacity) && opacity === 0) return false;
 
-  // offsetParent is null in jsdom for all elements — skip layout check in tests
+  // Skip layout-based offscreen check in jsdom — there is no layout engine,
+  // so every element has `offsetParent === null` regardless of CSS.
   if (
+    !IS_TEST_ENV &&
     typeof el.offsetParent !== "undefined" &&
     el.offsetParent === null &&
     style.position !== "fixed" &&
-    style.position !== "sticky" &&
-    style.display !== "" // In jsdom, computed display is "" — skip the check
+    style.position !== "sticky"
   ) {
     return false;
   }

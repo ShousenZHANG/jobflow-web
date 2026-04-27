@@ -37,13 +37,13 @@ describe("LocaleSwitcher", () => {
   it("highlights EN when locale is en", () => {
     renderWithLocale("en");
     const enBtn = screen.getByRole("button", { name: "EN" });
-    expect(enBtn.className).toContain("bg-slate-900");
+    expect(enBtn.className).toContain("bg-foreground");
   });
 
   it("highlights 中文 when locale is zh", () => {
     renderWithLocale("zh");
     const zhBtn = screen.getByRole("button", { name: "中文" });
-    expect(zhBtn.className).toContain("bg-slate-900");
+    expect(zhBtn.className).toContain("bg-foreground");
   });
 
   it("sets cookie and localStorage on switch to zh", async () => {

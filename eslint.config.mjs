@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Generated code:
     "lib/generated/**",
+    // Local tooling / vendored skill packs not part of the product:
+    "everything-claude-code/**",
+    // Chrome extension build artifacts (linted via its own pipeline):
+    "chrome-extension/dist/**",
   ]),
 ]);
 

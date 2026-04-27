@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, Loader2, Circle } from "lucide-react";
 
 type GenerateProgressProps = {
@@ -25,15 +25,16 @@ const PROGRESS_KEYFRAMES = [
 
 export function GenerateProgress({ target, isComplete }: GenerateProgressProps) {
   const [elapsed, setElapsed] = useState(0);
-  const startRef = useRef(Date.now());
+  // useState lazy initializer is allowed to be impure and runs only once.
+  const [start] = useState(() => Date.now());
 
   useEffect(() => {
     if (isComplete) return;
     const id = setInterval(() => {
-      setElapsed(Date.now() - startRef.current);
+      setElapsed(Date.now() - start);
     }, 100);
     return () => clearInterval(id);
-  }, [isComplete]);
+  }, [isComplete, start]);
 
   const activeStepIndex = isComplete
     ? STEPS.length

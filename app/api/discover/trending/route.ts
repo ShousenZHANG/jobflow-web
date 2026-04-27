@@ -5,6 +5,21 @@ import type { TrendingRepo, TrendingResponse } from "@/app/(app)/discover/types"
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
+// Narrowing helpers for untyped third-party JSON responses.
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+function asNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 const cache = new Map<string, { data: TrendingResponse; expiry: number }>();
 
 // ── Primary: OSS Insight Trending API (real weekly/monthly trending by activity score) ──
@@ -21,27 +36,32 @@ async function fetchOSSInsight(
   });
   if (!res.ok) throw new Error(`OSS Insight API ${res.status}`);
 
-  const json = await res.json();
-  const rows: any[] = json?.data?.rows ?? [];
+  const json = (await res.json()) as unknown;
+  const rawRows = asRecord(asRecord(json).data).rows;
+  const rows: unknown[] = Array.isArray(rawRows) ? rawRows : [];
 
-  return rows.map((row) => ({
-    id: Number(row.repo_id),
-    fullName: row.repo_name ?? "",
-    description: row.description ?? null,
-    url: `https://github.com/${row.repo_name}`,
-    stars: Number(row.stars) || 0,
-    forks: Number(row.forks) || 0,
-    language: row.primary_language ?? null,
-    topics: (row.collection_names ?? "")
-      .split(",")
-      .map((s: string) => s.trim())
-      .filter(Boolean)
-      .slice(0, 5),
-    ownerAvatar: row.repo_name
-      ? `https://github.com/${row.repo_name.split("/")[0]}.png?size=64`
-      : "",
-    pushedAt: "", // OSS Insight does not provide push date
-  }));
+  return rows.map((raw) => {
+    const row = asRecord(raw);
+    const repoName = asString(row.repo_name);
+    return {
+      id: asNumber(row.repo_id),
+      fullName: repoName,
+      description: asNullableString(row.description),
+      url: `https://github.com/${repoName}`,
+      stars: asNumber(row.stars),
+      forks: asNumber(row.forks),
+      language: asNullableString(row.primary_language),
+      topics: asString(row.collection_names)
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 5),
+      ownerAvatar: repoName
+        ? `https://github.com/${repoName.split("/")[0]}.png?size=64`
+        : "",
+      pushedAt: "", // OSS Insight does not provide push date
+    };
+  });
 }
 
 // ── Fallback: GitHub Search API ──
@@ -73,21 +93,29 @@ async function fetchGitHubSearch(
   const res = await fetch(url.toString(), { headers, signal: AbortSignal.timeout(8000) });
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${res.statusText}`);
 
-  const json = await res.json();
-  const items: any[] = json.items ?? [];
+  const json = (await res.json()) as unknown;
+  const rawItems = asRecord(json).items;
+  const items: unknown[] = Array.isArray(rawItems) ? rawItems : [];
 
-  return items.map((item) => ({
-    id: item.id,
-    fullName: item.full_name,
-    description: item.description ?? null,
-    url: item.html_url,
-    stars: item.stargazers_count,
-    forks: item.forks_count,
-    language: item.language ?? null,
-    topics: (item.topics ?? []).slice(0, 5),
-    ownerAvatar: item.owner?.avatar_url ?? "",
-    pushedAt: item.pushed_at,
-  }));
+  return items.map((raw) => {
+    const item = asRecord(raw);
+    const owner = asRecord(item.owner);
+    const topics = Array.isArray(item.topics)
+      ? (item.topics as unknown[]).filter((t): t is string => typeof t === "string")
+      : [];
+    return {
+      id: asNumber(item.id),
+      fullName: asString(item.full_name),
+      description: asNullableString(item.description),
+      url: asString(item.html_url),
+      stars: asNumber(item.stargazers_count),
+      forks: asNumber(item.forks_count),
+      language: asNullableString(item.language),
+      topics: topics.slice(0, 5),
+      ownerAvatar: asString(owner.avatar_url),
+      pushedAt: asString(item.pushed_at),
+    };
+  });
 }
 
 // ── Route handler ──

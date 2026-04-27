@@ -112,27 +112,41 @@ export function JobsClient({
   } | null>(null);
   const lastImportRefreshAtRef = useRef<number>(0);
 
-  // Reset batch mode on filter change
-  const prevQueryStringForBatchRef = useRef(queryString);
-  useEffect(() => {
-    if (prevQueryStringForBatchRef.current !== queryString) {
-      prevQueryStringForBatchRef.current = queryString;
-      if (batchSelectMode) {
-        setBatchSelectMode(false);
-        setBatchSelectedIds(new Set());
+  // Reset batch mode when filters change. Uses the "store info from previous
+  // renders" pattern recommended by React to adjust state during render
+  // instead of in an effect, avoiding cascading renders.
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [prevQueryStringForBatch, setPrevQueryStringForBatch] =
+    useState(queryString);
+  if (prevQueryStringForBatch !== queryString) {
+    setPrevQueryStringForBatch(queryString);
+    if (batchSelectMode) {
+      setBatchSelectMode(false);
+      setBatchSelectedIds(new Set());
+    }
+  }
+
+  // Prune batch selections when the visible items change (e.g. after delete or
+  // refetch). Compare by a content-stable id key — `items` is a fresh array
+  // reference on every render (it comes from a chain of useMemos whose deps
+  // include useQueries output), so reference comparison would loop forever.
+  const itemsIdKey = useMemo(
+    () => items.map((it) => it.id).join("|"),
+    [items],
+  );
+  const [prevItemsIdKey, setPrevItemsIdKey] = useState(itemsIdKey);
+  if (itemsIdKey !== prevItemsIdKey) {
+    setPrevItemsIdKey(itemsIdKey);
+    if (batchSelectMode && batchSelectedIds.size > 0) {
+      const currentIds = new Set(items.map((it) => it.id));
+      const pruned = new Set(
+        [...batchSelectedIds].filter((id) => currentIds.has(id)),
+      );
+      if (pruned.size !== batchSelectedIds.size) {
+        setBatchSelectedIds(pruned);
       }
     }
-  }, [queryString, batchSelectMode]);
-
-  // Prune batch selections when items change
-  useEffect(() => {
-    if (!batchSelectMode || batchSelectedIds.size === 0) return;
-    const currentIds = new Set(items.map((it) => it.id));
-    const pruned = new Set([...batchSelectedIds].filter((id) => currentIds.has(id)));
-    if (pruned.size !== batchSelectedIds.size) {
-      setBatchSelectedIds(pruned);
-    }
-  }, [items, batchSelectMode, batchSelectedIds]);
+  }
 
   // Lock scroll on the app shell.
   // Re-apply after any modal closes — Radix AlertDialog temporarily sets
