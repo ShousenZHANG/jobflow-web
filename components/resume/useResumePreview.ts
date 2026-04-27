@@ -25,6 +25,15 @@ export function useResumePreview({
   const previewScheduledKeyRef = useRef<string | null>(null);
   const previewInFlightKeyRef = useRef<string | null>(null);
   const previewLatestKeyRef = useRef<string | null>(null);
+  // Mirror pdfUrl into a ref so schedulePreview reads the latest value
+  // without listing pdfUrl as a useCallback dependency. Avoids
+  // re-instantiating schedulePreview on every PDF blob change and
+  // ensures the async error handler reads the current state, not the
+  // value captured at call time.
+  const pdfUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    pdfUrlRef.current = pdfUrl;
+  }, [pdfUrl]);
 
   // cleanup timer and abort on unmount
   useEffect(() => {
@@ -76,12 +85,11 @@ export function useResumePreview({
       }
       previewAbortRef.current?.abort();
 
-      const hasExistingPreview = Boolean(pdfUrl);
       // Manual force refresh: always show "loading" so the spinner gives
       // immediate feedback even when a stale preview is on screen.
       // Background autosave refresh (force === undefined): keep showing the
       // existing preview as "ready" to avoid flicker on every keystroke.
-      if (!hasExistingPreview || options?.force) {
+      if (!pdfUrlRef.current || options?.force) {
         setPreviewStatus("loading");
       } else {
         setPreviewStatus("ready");
@@ -126,7 +134,9 @@ export function useResumePreview({
               return runPreview(1);
             }
 
-            if (!hasExistingPreview) {
+            // Read the latest pdfUrl at error-handling time, not the value
+            // captured when schedulePreview was first called.
+            if (!pdfUrlRef.current) {
               setPreviewError(message);
               setPreviewStatus("error");
             }
@@ -143,7 +153,7 @@ export function useResumePreview({
           previewLatestKeyRef.current = payloadKey;
         } catch (err) {
           if ((err as Error).name === "AbortError") return;
-          if (!hasExistingPreview) {
+          if (!pdfUrlRef.current) {
             setPreviewError(t("previewFailed"));
             setPreviewStatus("error");
           }
@@ -159,7 +169,7 @@ export function useResumePreview({
         runPreview(0);
       }, delayMs);
     },
-    [buildPayload, hasAnyContent, pdfUrl, toast, t],
+    [buildPayload, hasAnyContent, toast, t],
   );
 
   const resetPreview = useCallback(() => {

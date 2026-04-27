@@ -18,7 +18,10 @@ export function ResumeActionBar() {
       data-guide-anchor="resume_setup"
       data-testid="resume-action-bar"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div
+        className="flex flex-wrap items-center justify-between gap-3"
+        data-testid="resume-action-bar-row"
+      >
         {/* Left: save status */}
         <div className="flex min-w-0 flex-1 items-center gap-2 text-sm text-muted-foreground">
           {saving ? (
@@ -30,7 +33,10 @@ export function ResumeActionBar() {
         </div>
 
         {/* Right: actions */}
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <div
+          className="flex shrink-0 flex-wrap items-center justify-end gap-2"
+          data-testid="resume-action-bar-actions"
+        >
           {/* Mobile only: preview toggle */}
           <Button
             type="button"

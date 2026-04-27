@@ -23,8 +23,8 @@ describe("ResumeActionBar", () => {
     render(<ResumeActionBar />);
 
     const actionBar = screen.getByTestId("resume-action-bar");
-    const row = actionBar.firstElementChild;
-    const actions = row?.lastElementChild;
+    const row = screen.getByTestId("resume-action-bar-row");
+    const actions = screen.getByTestId("resume-action-bar-actions");
 
     expect(actionBar).toHaveStyle({
       paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)",

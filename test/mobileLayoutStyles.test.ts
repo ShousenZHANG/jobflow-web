@@ -17,13 +17,16 @@ describe("mobile layout style contracts", () => {
     const cssPath = join(process.cwd(), "app", "globals.css");
     const css = readFileSync(cssPath, "utf8");
 
-    expect(css).toMatch(/\.app-shell\s*{[\s\S]*-webkit-overflow-scrolling:\s*touch;/);
-    expect(css).toMatch(/\.app-shell\s*{[\s\S]*overscroll-behavior-y:\s*contain;/);
+    // Block-scoped regex (`[^}]*`) keeps each assertion bound to its
+    // own CSS rule body so that adding the property to an unrelated
+    // selector elsewhere in the file cannot mask its removal here.
+    expect(css).toMatch(/\.app-shell\s*\{[^}]*-webkit-overflow-scrolling:\s*touch;/);
+    expect(css).toMatch(/\.app-shell\s*\{[^}]*overscroll-behavior-y:\s*contain;/);
     expect(css).toMatch(
-      /\.jobs-scroll-area \[data-radix-scroll-area-viewport\]\s*{[\s\S]*overscroll-behavior:\s*contain;/,
+      /\.jobs-scroll-area \[data-radix-scroll-area-viewport\]\s*\{[^}]*overscroll-behavior:\s*contain;/,
     );
     expect(css).toMatch(
-      /@media \(prefers-reduced-motion:\s*reduce\)\s*{[\s\S]*\.joblit-list-item[\s\S]*transition:\s*none;/,
+      /@media \(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.joblit-list-item\s*\{[^}]*transition:\s*none;/,
     );
   });
 });

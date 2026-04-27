@@ -30,9 +30,8 @@ export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) 
 
   return (
     <nav
-      className={cn("flex", className)}
+      className={cn("flex [contain:layout_style]", className)}
       aria-label="Resume sections"
-      style={{ contain: "layout style" }}
     >
       {/* Desktop: vertical list */}
       <div className="hidden lg:flex lg:w-full lg:flex-col lg:gap-1">
@@ -63,7 +62,7 @@ export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) 
                   "overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-out motion-reduce:transition-none",
                   collapsed ? "max-w-0 opacity-0" : "max-w-[12rem] opacity-100",
                 )}
-                aria-hidden={collapsed}
+                aria-hidden={collapsed || undefined}
               >
                 {t(tKey)}
               </span>
@@ -98,7 +97,7 @@ export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) 
                 "overflow-hidden whitespace-nowrap text-xs transition-[max-width,opacity] duration-200 ease-out motion-reduce:transition-none",
                 collapsed ? "max-w-0 opacity-0" : "max-w-[8rem] opacity-100",
               )}
-              aria-hidden={collapsed}
+              aria-hidden={collapsed || undefined}
             >
               Collapse
             </span>
@@ -119,7 +118,7 @@ export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) 
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
                 isActive
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
                   : "border-border bg-card text-muted-foreground hover:border-emerald-300",
               )}
             >
