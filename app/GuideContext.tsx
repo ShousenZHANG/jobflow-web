@@ -118,7 +118,7 @@ const COACHMARK_DISMISS_KEY = "joblit_guide_coachmark_dismissed";
 function readDismissedCoachmarks(): Set<string> {
   if (typeof window === "undefined") return new Set();
   try {
-    const raw = sessionStorage.getItem(COACHMARK_DISMISS_KEY);
+    const raw = window.sessionStorage.getItem(COACHMARK_DISMISS_KEY);
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? new Set(parsed.filter((s) => typeof s === "string")) : new Set();
@@ -130,9 +130,28 @@ function readDismissedCoachmarks(): Set<string> {
 function writeDismissedCoachmarks(set: Set<string>) {
   if (typeof window === "undefined") return;
   try {
-    sessionStorage.setItem(COACHMARK_DISMISS_KEY, JSON.stringify(Array.from(set)));
+    window.sessionStorage.setItem(COACHMARK_DISMISS_KEY, JSON.stringify(Array.from(set)));
   } catch {
     // sessionStorage may be disabled (privacy mode); fall through.
+  }
+}
+
+/** Safe guarded read for the once-per-session welcome flag. */
+function welcomeAlreadyShown(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.sessionStorage.getItem(WELCOME_SHOWN_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+
+function markWelcomeShown() {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(WELCOME_SHOWN_KEY, "1");
+  } catch {
+    // sessionStorage may be disabled; fall through.
   }
 }
 
@@ -154,6 +173,32 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     dismissedCoachmarksRef.current = readDismissedCoachmarks();
   }, []);
+
+  // Focus management — when the panel or coachmark opens, move focus into
+  // the new dialog so screen-reader users can immediately interact. WCAG
+  // 2.1 SC 4.1.3 / ARIA Authoring Practices.
+  const panelRef = useRef<HTMLElement | null>(null);
+  const coachmarkRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const node = panelRef.current;
+    if (!node) return;
+    const focusable = node.querySelector<HTMLElement>(
+      "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
+    );
+    focusable?.focus();
+  }, [panelOpen]);
+
+  useEffect(() => {
+    if (!coachmarkTaskId) return;
+    const node = coachmarkRef.current;
+    if (!node) return;
+    const focusable = node.querySelector<HTMLElement>(
+      "button, [href], [tabindex]:not([tabindex='-1'])",
+    );
+    focusable?.focus({ preventScroll: true });
+  }, [coachmarkTaskId, coachmarkRect]);
 
   useEffect(() => {
     const sync = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
@@ -183,10 +228,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
           !resolved.dismissed &&
           !resolved.completedAt &&
           !resolved.isComplete;
-        const alreadyShown = sessionStorage.getItem(WELCOME_SHOWN_KEY) === "1";
-        if (isNewUser && !alreadyShown) {
+        if (isNewUser && !welcomeAlreadyShown()) {
           setPanelOpen(true);
-          sessionStorage.setItem(WELCOME_SHOWN_KEY, "1");
+          markWelcomeShown();
         }
         return resolved;
       });
@@ -252,18 +296,23 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         };
       });
       // Auto-dismiss the coachmark when its task completes — user has
-      // visibly succeeded so the guidance has done its job.
-      if (taskId === coachmarkTaskId) {
-        setCoachmarkTaskId(null);
-        setCoachmarkRect(null);
-      }
+      // visibly succeeded so the guidance has done its job. Use a
+      // functional setter so the closure can never read a stale
+      // coachmarkTaskId value.
+      setCoachmarkTaskId((prev) => {
+        if (prev === taskId) {
+          setCoachmarkRect(null);
+          return null;
+        }
+        return prev;
+      });
       void patchState(
         checklistForPatch
           ? { type: "complete_task", taskId, checklist: checklistForPatch }
           : { type: "complete_task", taskId },
       );
     },
-    [coachmarkTaskId, patchState],
+    [patchState],
   );
 
   const openGuide = useCallback(() => {
@@ -338,6 +387,22 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [panelOpen, userId]);
 
+  // Stable callback so consumers passing isTaskHighlighted into
+  // React.memo'd children don't blow their memo cache on every render.
+  const isTaskHighlighted = useCallback(
+    (taskId: OnboardingTaskId) => {
+      if (!coachmarkTaskId || coachmarkTaskId !== taskId) return false;
+      const task = ONBOARDING_TASKS.find((t) => t.id === taskId);
+      if (!task) return false;
+      return pathname === task.href || pathname.startsWith(`${task.href}/`);
+    },
+    [coachmarkTaskId, pathname],
+  );
+
+  const noopStep = useCallback(() => {
+    // No-op — the new design has no sequential step navigation.
+  }, []);
+
   const value = useMemo<GuideContextValue>(
     () => ({
       loading,
@@ -350,26 +415,15 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       closeGuide,
       startTour: openGuide,
       stopTour: closeGuide,
-      nextStep: () => {
-        // No-op — the new design has no sequential step navigation.
-      },
-      prevStep: () => {
-        // No-op — the new design has no sequential step navigation.
-      },
+      nextStep: noopStep,
+      prevStep: noopStep,
       markTaskComplete,
-      // Highlight the actual target element when its coachmark is active
-      // and the user is on the right page — this drives the existing
-      // emerald ring on ResumeActionBar / FetchClient run buttons /
-      // JobDetailPanel generate, giving the user a visible "click here"
-      // signal that pairs with the floating coachmark.
-      isTaskHighlighted: (taskId: OnboardingTaskId) => {
-        if (!coachmarkTaskId || coachmarkTaskId !== taskId) return false;
-        const task = ONBOARDING_TASKS.find((t) => t.id === taskId);
-        if (!task) return false;
-        return pathname === task.href || pathname.startsWith(`${task.href}/`);
-      },
+      // Drives the existing emerald ring on ResumeActionBar /
+      // FetchClient run buttons / JobDetailPanel generate when the
+      // matching coachmark is active.
+      isTaskHighlighted,
     }),
-    [activeTaskId, closeGuide, coachmarkTaskId, loading, markTaskComplete, openGuide, panelOpen, pathname, state],
+    [activeTaskId, closeGuide, isTaskHighlighted, loading, markTaskComplete, noopStep, openGuide, panelOpen, state],
   );
 
   // Clear the coachmark if the user navigates to a page that isn't the
@@ -397,30 +451,41 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     const onTaskPage = pathname === task.href || pathname.startsWith(`${task.href}/`);
     if (!onTaskPage) return;
 
+    // Cap polling at 30 iterations (≈6 s) so a missing or never-rendering
+    // anchor cannot run a 200ms loop forever.
+    let attempts = 0;
+    let timeoutCleared = false;
     const locate = () => {
       const target = document.querySelector<HTMLElement>(`[data-guide-anchor="${coachmarkTaskId}"]`);
-      if (!target) {
-        setCoachmarkRect(null);
-        return;
-      }
-      const rect = target.getBoundingClientRect();
-      if (rect.width < 1 || rect.height < 1) {
-        setCoachmarkRect(null);
-        return;
-      }
-      setCoachmarkRect((prev) => {
-        const next = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
-        if (
-          prev &&
-          Math.abs(prev.top - next.top) < 1 &&
-          Math.abs(prev.left - next.left) < 1 &&
-          Math.abs(prev.width - next.width) < 1 &&
-          Math.abs(prev.height - next.height) < 1
-        ) {
-          return prev;
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        if (rect.width >= 1 && rect.height >= 1) {
+          setCoachmarkRect((prev) => {
+            const next = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
+            if (
+              prev &&
+              Math.abs(prev.top - next.top) < 1 &&
+              Math.abs(prev.left - next.left) < 1 &&
+              Math.abs(prev.width - next.width) < 1 &&
+              Math.abs(prev.height - next.height) < 1
+            ) {
+              return prev;
+            }
+            return next;
+          });
+          return;
         }
-        return next;
-      });
+      }
+      // Anchor not visible yet. Increment the attempt counter only when
+      // we still haven't located it; once located the early return above
+      // skips this branch and the loop simply tracks the existing rect.
+      setCoachmarkRect(null);
+      attempts++;
+      if (attempts >= 30 && !timeoutCleared) {
+        timeoutCleared = true;
+        window.clearInterval(interval);
+        setCoachmarkTaskId(null);
+      }
     };
 
     locate();
@@ -483,6 +548,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
               a clear "do this" instruction next to the actual control. */}
           {coachmarkTaskId && activeCoachmarkTask && coachmarkLayout && !panelOpen ? (
             <section
+              ref={(node) => {
+                coachmarkRef.current = node;
+              }}
               data-testid="guide-coachmark"
               role="dialog"
               aria-modal="false"
@@ -509,7 +577,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
               <div className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                    <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-extrabold text-white">
+                    <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-extrabold text-primary-foreground">
                       {coachmarkStepNumber}
                     </span>
                     {tg("stepOf", { current: coachmarkStepNumber, total: state.totalCount })}
@@ -601,6 +669,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                 aria-hidden
               />
               <section
+                ref={(node) => {
+                  panelRef.current = node;
+                }}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="guide-panel-title"
@@ -626,7 +697,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                     type="button"
                     onClick={closeGuide}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    aria-label="Close"
+                    aria-label={tg("dismissPanel")}
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -692,7 +763,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                             <div
                               className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                                 done
-                                  ? "border-emerald-500 bg-emerald-500 text-white"
+                                  ? "border-emerald-500 bg-emerald-500 text-primary-foreground"
                                   : current
                                     ? "border-emerald-500 bg-background text-emerald-600 dark:text-emerald-300"
                                     : "border-border bg-background text-muted-foreground"

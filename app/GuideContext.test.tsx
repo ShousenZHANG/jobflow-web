@@ -232,4 +232,60 @@ describe("GuideContext", () => {
       expect(screen.queryByTestId("guide-quickstart-panel")).not.toBeInTheDocument();
     });
   });
+
+  it("renders an inline coachmark on the task page and auto-dismisses on completion", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url === "/api/onboarding/state" && !init?.method) {
+        return new Response(JSON.stringify({ state: createState() }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (url === "/api/onboarding/state" && init?.method === "PATCH") {
+        return new Response(JSON.stringify({ state: createState() }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ error: "not mocked" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderWithIntl(
+      <GuideProvider>
+        <Harness />
+      </GuideProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("guide-count")).toHaveTextContent("0/5");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "open-guide" }));
+    await waitFor(() => {
+      expect(screen.getByTestId("guide-quickstart-panel")).toBeInTheDocument();
+    });
+
+    // "Take me there" navigates and arms the coachmark for resume_setup.
+    fireEvent.click(screen.getAllByRole("button", { name: /take me there/i })[0]);
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/resume");
+    });
+
+    // The Harness already mounts a [data-guide-anchor="resume_setup"]
+    // element, so the coachmark should locate it on the next poll tick.
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("guide-coachmark")).toBeInTheDocument();
+      },
+      { timeout: 1500 },
+    );
+
+    // Completing the task auto-dismisses the coachmark.
+    fireEvent.click(screen.getByRole("button", { name: "complete-first" }));
+    await waitFor(() => {
+      expect(screen.queryByTestId("guide-coachmark")).not.toBeInTheDocument();
+    });
+  });
 });
