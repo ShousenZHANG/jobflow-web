@@ -215,8 +215,6 @@
     "task_generate_first_pdf_desc": "Select a job and generate a tailored resume PDF from your master resume.",
     "task_mark_applied_title": "Track your first application",
     "task_mark_applied_desc": "Mark a job as Applied to keep your application status organised.",
-    "task_install_extension_title": "Install the AutoFill extension",
-    "task_install_extension_desc": "Get the Joblit Chrome Extension to auto-fill job applications on Greenhouse, Lever, Workday, and more — right from your browser.",
     "panelTitle": "Quick start",
     "panelSubtitle": "Get to your first tailored CV in 5 minutes.",
     "takeMeThere": "Take me there",

@@ -215,8 +215,6 @@
     "task_generate_first_pdf_desc": "选择一个职位，基于你的主简历生成定制版 PDF 简历。",
     "task_mark_applied_title": "追踪第一次投递",
     "task_mark_applied_desc": "将职位状态标记为「已投递」，保持申请状态井然有序。",
-    "task_install_extension_title": "安装自动填写插件",
-    "task_install_extension_desc": "安装 Joblit Chrome 插件，在 Greenhouse、Lever、Workday 等平台一键自动填写求职申请。",
     "panelTitle": "快速入门",
     "panelSubtitle": "5 分钟生成你的第一份定制简历。",
     "takeMeThere": "去这里",
