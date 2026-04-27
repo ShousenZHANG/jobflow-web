@@ -34,11 +34,13 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
             type="button"
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-7 w-7 transition-transform active:scale-90 disabled:cursor-not-allowed disabled:opacity-100"
             aria-label="Refresh preview"
+            aria-busy={previewStatus === "loading"}
+            disabled={previewStatus === "loading"}
             onClick={() => schedulePreview(0, false, { force: true })}
           >
-            <RefreshCw className={cn("h-3.5 w-3.5", previewStatus === "loading" && "animate-spin")} />
+            <RefreshCw className={cn("h-3.5 w-3.5 transition-colors", previewStatus === "loading" && "animate-spin text-emerald-600")} />
           </Button>
           {pdfUrl && previewStatus === "ready" ? (
             <a

@@ -77,7 +77,11 @@ export function useResumePreview({
       previewAbortRef.current?.abort();
 
       const hasExistingPreview = Boolean(pdfUrl);
-      if (!hasExistingPreview) {
+      // Manual force refresh: always show "loading" so the spinner gives
+      // immediate feedback even when a stale preview is on screen.
+      // Background autosave refresh (force === undefined): keep showing the
+      // existing preview as "ready" to avoid flicker on every keystroke.
+      if (!hasExistingPreview || options?.force) {
         setPreviewStatus("loading");
       } else {
         setPreviewStatus("ready");
