@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { t } from "@ext/shared/i18n";
-import { logoIconSvg, checkmarkSvg, spinnerSvg } from "@ext/shared/logo";
+import { checkmarkSvg, spinnerSvg } from "@ext/shared/logo";
 
 interface DashboardProps {
   onDisconnect: () => void;

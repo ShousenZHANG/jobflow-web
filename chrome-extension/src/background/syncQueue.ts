@@ -1,5 +1,3 @@
-import { STORAGE_KEYS } from "@ext/shared/constants";
-
 /** A queued item pending sync to the server. */
 export interface QueuedItem {
   id: string;

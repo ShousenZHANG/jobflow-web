@@ -17,7 +17,7 @@ interface UseResumeProfilesParams {
 export function useResumeProfiles({
   locale,
   applyProfileToDraft,
-  resetDraft,
+  resetDraft: _resetDraft,
   toast,
   t,
   setPdfUrl,

@@ -19,6 +19,24 @@ const eslintConfig = defineConfig([
     // Chrome extension build artifacts (linted via its own pipeline):
     "chrome-extension/dist/**",
   ]),
+  // Honor the standard underscore-prefix convention for intentionally unused
+  // bindings, and the rest-siblings pattern for "omit one field" destructuring.
+  // These are the conventions used by Next.js's own templates and most TS
+  // projects in the wild.
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

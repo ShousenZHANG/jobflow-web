@@ -26,7 +26,6 @@ import {
   normalizeBullets,
   normalizeCommaItems,
   remapFocusedIndex,
-  toSortableIndex,
 } from "./utils";
 
 export function useResumeForm(locale: string) {

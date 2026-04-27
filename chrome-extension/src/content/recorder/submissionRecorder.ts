@@ -75,7 +75,7 @@ export function interceptFormSubmits(
   fields: DetectedField[],
   atsProvider: string,
 ): () => void {
-  const handler = (e: SubmitEvent) => {
+  const handler = (_e: SubmitEvent) => {
     // Record asynchronously — don't block the submit
     recordSubmission(fields, atsProvider).catch(() => {
       // Silently fail — don't break the user's application

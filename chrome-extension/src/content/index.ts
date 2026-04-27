@@ -7,7 +7,7 @@ import { FloatingWidget, type FieldRuleData } from "./widget/FloatingWidget";
 import { recordSubmission, interceptFormSubmits } from "./recorder/submissionRecorder";
 import { generateFormSignature, matchFieldsFromHistory } from "./detector/similarity";
 import type { SubmissionRecord, MappingRule } from "./detector/similarity";
-import type { DetectedField, FormDetectionResult, SubmissionQueryParams, FieldMappingQueryParams } from "@ext/shared/types";
+import type { DetectedField, FormDetectionResult } from "@ext/shared/types";
 import { STORAGE_KEYS } from "@ext/shared/constants";
 
 let widget: FloatingWidget | null = null;

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -79,9 +80,11 @@ export function PersonalInfoSection({
               <div className="flex items-center gap-2">
                 {basics.photoUrl ? (
                   <>
-                    <img
+                    <Image
                       src={basics.photoUrl}
                       alt="证件照"
+                      width={48}
+                      height={64}
                       className="h-16 w-12 rounded border object-cover"
                     />
                     <Button

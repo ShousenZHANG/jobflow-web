@@ -113,7 +113,6 @@ export function parseExperienceGate(description: string): ExperienceRequirementS
   // Detect clearance requirements
   for (const segment of segments) {
     if (!CLEARANCE_RE.test(segment)) continue;
-    const match = segment.match(CLEARANCE_RE);
     emit(`Security clearance`, 0, segment, true);
     break;
   }

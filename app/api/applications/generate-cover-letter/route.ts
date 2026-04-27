@@ -4,7 +4,6 @@ import type { SessionContext } from "@/lib/server/auth/requireSession";
 import { unauthorizedError } from "@/lib/server/api/errorResponse";
 import { z } from "zod";
 import { prisma } from "@/lib/server/prisma";
-import { handleLatexError } from "@/lib/server/api/handleLatexError";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";

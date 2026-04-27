@@ -1,6 +1,7 @@
 
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, type HTMLAttributes, type ReactNode } from "react";
 import { ChevronDown, ChevronRight, GripVertical, MoveDown, MoveUp, Plus, Trash2, Download } from "lucide-react";
 import {
@@ -24,13 +25,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -269,7 +263,11 @@ export function ResumeForm() {
   const [profileDeleting, setProfileDeleting] = useState(false);
 
   const locale = globalLocale.startsWith("zh") ? "zh-CN" : "en-AU";
-  const steps = locale === "zh-CN" ? stepsCN : stepsEN;
+  // Stable across renders per-locale so it can be safely used as a hook dep.
+  const steps = useMemo(
+    () => (locale === "zh-CN" ? stepsCN : stepsEN),
+    [locale],
+  );
 
   const [basics, setBasics] = useState<ResumeBasics>(emptyBasics);
   const [links, setLinks] = useState<ResumeLink[]>(defaultLinks);
@@ -341,7 +339,6 @@ export function ResumeForm() {
         return;
       }
 
-      const profileRecord = profile as ResumeProfilePayload & { locale?: string };
       const rawBasics = (profile.basics ?? emptyBasics) as Record<string, unknown>;
       const sanitizedBasics: ResumeBasics = {
         fullName: typeof rawBasics.fullName === "string" ? rawBasics.fullName : "",
@@ -574,7 +571,7 @@ export function ResumeForm() {
       allowed += 1;
     }
     return allowed;
-  }, [isStepValid]);
+  }, [isStepValid, steps.length]);
 
   const canContinue = isStepValid(currentStep);
   const currentStepLabel = steps[currentStep];
@@ -591,7 +588,7 @@ export function ResumeForm() {
           available: index <= maxStep,
         };
       }),
-    [currentStep, maxStep],
+    [currentStep, maxStep, steps],
   );
 
   const updateBasics = (field: keyof ResumeBasics, value: string) => {
@@ -1130,7 +1127,7 @@ export function ResumeForm() {
         runPreview(0);
       }, delayMs);
     },
-    [buildPayload, hasAnyContent, pdfUrl, toast],
+    [buildPayload, hasAnyContent, pdfUrl, t, toast],
   );
 
   // Auto-generate (and live-update) the PDF preview whenever the draft
@@ -1476,9 +1473,11 @@ export function ResumeForm() {
                 <div className="flex items-center gap-2">
                   {basics.photoUrl ? (
                     <>
-                      <img
+                      <Image
                         src={basics.photoUrl}
                         alt="证件照"
+                        width={48}
+                        height={64}
                         className="h-16 w-12 rounded border object-cover"
                       />
                       <Button

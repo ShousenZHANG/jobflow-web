@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, ArrowRight, X } from "lucide-react";
+import { Download, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type GenerateSuccessProps = {

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Star, GitFork, ExternalLink } from "lucide-react";
 import type { TrendingRepo } from "../types";
 import { relativeTime, formatCount } from "../utils";
@@ -28,12 +29,21 @@ export function TrendingRepoCard({ repo }: { repo: TrendingRepo }) {
       {/* Header: avatar + name + language */}
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <img
-            src={repo.ownerAvatar}
-            alt=""
-            className="h-6 w-6 shrink-0 rounded-md"
-            loading="lazy"
-          />
+          {repo.ownerAvatar ? (
+            <Image
+              src={repo.ownerAvatar}
+              alt=""
+              width={24}
+              height={24}
+              className="h-6 w-6 shrink-0 rounded-md"
+              loading="lazy"
+            />
+          ) : (
+            <div
+              aria-hidden
+              className="h-6 w-6 shrink-0 rounded-md bg-muted"
+            />
+          )}
           <a
             href={repo.url}
             target="_blank"

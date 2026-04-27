@@ -157,7 +157,9 @@ export function VideoList() {
   }, [category, sort, timeWindow]);
 
   const { data, isLoading, error } = useVideos(category, timeWindow);
-  const rawItems = data?.items ?? [];
+  // Memoize so the `??` fallback doesn't allocate a fresh empty array on every
+  // render and force `items` (and downstream snapshotKey) to recompute.
+  const rawItems = useMemo(() => data?.items ?? [], [data?.items]);
   const noApiKey = data?.noApiKey === true;
   const isStale = data?.stale === true;
 
@@ -185,7 +187,6 @@ export function VideoList() {
       ? ranked.filter((v) => favorites.has(v.id))
       : ranked;
     // watched.ids intentionally omitted — see snapshotKey comment above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawItems, sort, category, favorites, showFavoritesOnly]);
 
   const favCount = favorites.ids.size;

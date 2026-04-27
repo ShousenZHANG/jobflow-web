@@ -298,9 +298,7 @@ describe("advanceMultiStepForm", () => {
   });
 
   it("clicks a Continue button", () => {
-    let clicked = false;
     document.body.innerHTML = `<button type="button">Continue</button>`;
-    document.querySelector("button")!.addEventListener("click", () => { clicked = true; });
     expect(advanceMultiStepForm(document)).toBe(true);
   });
 

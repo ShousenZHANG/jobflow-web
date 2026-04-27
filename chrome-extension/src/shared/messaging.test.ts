@@ -8,7 +8,6 @@ describe("sendMessage", () => {
 
   it("sends message via chrome.runtime and resolves with response", async () => {
     const mockResponse = { success: true, data: { name: "test" } };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.spyOn(chrome.runtime, "sendMessage").mockImplementation(
       ((...args: unknown[]) => {
         const callback = args[args.length - 1] as (response: unknown) => void;

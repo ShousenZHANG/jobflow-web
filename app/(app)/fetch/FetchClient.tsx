@@ -75,7 +75,6 @@ export function FetchClient() {
   const { data: session } = useSession();
   const userId = session?.user?.id ?? null;
   const t = useTranslations("fetch");
-  const tc = useTranslations("common");
   const [jobTitle, setJobTitle] = useState("Software Engineer");
   const [location, setLocation] = useState("Sydney, New South Wales, Australia");
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);

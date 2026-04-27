@@ -69,7 +69,7 @@ export async function DELETE(req: Request) {
     if (err instanceof UnauthorizedError) return unauthorizedError();
     throw err;
   }
-  const { userId, requestId } = ctx;
+  const { requestId } = ctx;
 
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) {

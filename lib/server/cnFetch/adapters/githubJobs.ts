@@ -21,13 +21,6 @@ export interface GithubAdapterOptions {
   timeoutMs?: number;
 }
 
-interface ParsedMdRow {
-  title: string | null;
-  company: string | null;
-  location: string | null;
-  url: string | null;
-}
-
 /**
  * Extract the first bare URL from a markdown cell, handling both
  * `[label](url)` and raw `https://...` forms.

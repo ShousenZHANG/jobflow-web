@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   Play,
   Eye,
@@ -54,10 +55,12 @@ export function VideoCard({
         className="group/thumb relative block aspect-video overflow-hidden bg-muted"
       >
         {item.thumbnailUrl ? (
-          <img
+          <Image
             src={item.thumbnailUrl}
             alt=""
-            className="h-full w-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-300 group-hover/thumb:scale-105"
             loading="lazy"
           />
         ) : (

@@ -42,6 +42,10 @@ export function VirtualJobList({
     return () => cancelAnimationFrame(raf);
   }, [scrollRootRef, items.length]);
 
+  // TanStack Virtual's `useVirtualizer()` returns functions whose identity is
+  // not memoization-safe; the React Compiler correctly skips this hook. The
+  // accompanying lint rule is informational only — silence it here.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement,

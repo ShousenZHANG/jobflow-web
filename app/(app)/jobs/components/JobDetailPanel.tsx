@@ -5,11 +5,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { ExternalLink, FileText, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { JobItem, JobStatus, CvSource, CoverSource } from "../types";
@@ -86,7 +85,6 @@ export function JobDetailPanel({
   onGenerateResume,
   onGenerateCover,
 }: JobDetailPanelProps) {
-  const t = useTranslations("jobs");
   const isAppliedSelected = selectedJob?.status === "APPLIED";
   const listOpacityClass = showLoadingOverlay ? "opacity-70" : "opacity-100";
 

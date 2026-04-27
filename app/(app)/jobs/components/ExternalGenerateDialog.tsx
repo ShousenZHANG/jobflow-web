@@ -51,7 +51,7 @@ export function ExternalGenerateDialog({
   dialogPhase,
   setDialogPhase,
   externalTarget,
-  externalStep,
+  externalStep: _externalStep,
   setExternalStep,
   externalSkillPackFresh,
   setExternalSkillPackFresh,

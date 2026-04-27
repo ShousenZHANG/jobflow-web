@@ -13,7 +13,7 @@ import {
 export function JobDeleteDialog({
   open,
   onOpenChange,
-  candidate,
+  candidate: _candidate,
   onConfirm,
 }: {
   open: boolean;

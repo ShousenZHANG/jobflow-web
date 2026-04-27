@@ -13,15 +13,7 @@ import {
   setActiveResumeProfile,
   upsertResumeProfile,
 } from "@/lib/server/resumeProfile";
-import {
-  ResumeBasicsSchema,
-  ResumeLinkSchema,
-  ResumeExperienceSchema,
-  ResumeProjectSchema,
-  ResumeEducationSchema,
-  ResumeSkillSchema,
-  ResumeProfileSchema,
-} from "@/lib/shared/schemas/resumeProfile";
+import { ResumeProfileSchema } from "@/lib/shared/schemas/resumeProfile";
 
 export const runtime = "nodejs";
 

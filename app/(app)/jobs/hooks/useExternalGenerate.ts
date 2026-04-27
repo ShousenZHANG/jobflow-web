@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useGuide } from "@/app/GuideContext";
-import type { JobItem, ExternalPromptMeta, CvSource, CoverSource, ResumeImportOutput, CoverImportOutput } from "../types";
+import type { JobItem, ExternalPromptMeta, CvSource, CoverSource } from "../types";
 import { getErrorMessage } from "../types";
 import type { DialogPhase } from "../components/StepIndicator";
 import { isSkillPackFresh, writeSavedSkillPackMeta } from "../utils/skillPackMeta";
@@ -132,7 +132,6 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
     } finally {
       setExternalPromptLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [successPdf?.url, setError, toast]);
 
   async function copySmartPrompt() {

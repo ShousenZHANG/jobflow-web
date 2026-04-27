@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { STORAGE_KEYS, DEFAULT_API_BASE } from "@ext/shared/constants";
 import { t } from "@ext/shared/i18n";
-import { checkmarkSvg, keyIconSvg, spinnerSvg, errorIconSvg } from "@ext/shared/logo";
+import { checkmarkSvg, keyIconSvg, errorIconSvg } from "@ext/shared/logo";
 
 interface TokenSetupProps {
   onConnected: () => void;

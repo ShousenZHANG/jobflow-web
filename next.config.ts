@@ -22,6 +22,25 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      // GitHub owner avatars (`https://github.com/{user}.png` 302 redirects to
+      // `avatars.githubusercontent.com`). The optimizer follows the redirect,
+      // but the lint/runtime hostname check uses the original URL — list both.
+      { protocol: "https", hostname: "github.com", pathname: "/**" },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        pathname: "/**",
+      },
+      // YouTube video thumbnails used on the discover page.
+      { protocol: "https", hostname: "i.ytimg.com", pathname: "/**" },
+      // User-uploaded resume photos served from Vercel Blob.
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
+    ],
   },
 };
 

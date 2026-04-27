@@ -90,7 +90,10 @@ export function JobsClient({
   });
 
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [pdfPreview, setPdfPreview] = useState<{
+  // setPdfPreview is intentionally unused at the moment — `pdfPreview` is wired
+  // through to PdfPreview but no caller currently triggers it. Kept here so the
+  // wiring is preserved when reintroduced.
+  const [pdfPreview, _setPdfPreview] = useState<{
     url: string;
     filename: string;
     label: string;
@@ -311,7 +314,6 @@ export function JobsClient({
   const selectedTailorSource = selectedJob ? ext.tailorSourceByJob[selectedJob.id] : undefined;
   const highlightGenerate = isTaskHighlighted("generate_first_pdf");
 
-  const detailsScrollRef = useRef<HTMLDivElement | null>(null);
   const detailQuery = useQuery({
     queryKey: ["job-details", effectiveSelectedId],
     queryFn: async () => {

@@ -62,7 +62,6 @@ export function JsonInputPanel({
   const [showPreview, setShowPreview] = useState(true);
   const hasInput = value.trim().length > 0;
   const isValid = hasInput && parsedOutput !== null;
-  const isInvalid = hasInput && parsedOutput === null;
 
   const handleAutoFix = useCallback(() => {
     const fixed = tryAutoFix(value);
