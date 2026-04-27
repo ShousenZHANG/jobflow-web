@@ -65,4 +65,21 @@ describe("MarketingPage", () => {
       ).toBeInTheDocument();
     }
   });
+
+  it("does not render nested list items in testimonials", () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <MarketingPage />
+      </NextIntlClientProvider>,
+    );
+
+    const invalidListWarning = errorSpy.mock.calls.some((call) =>
+      call.some((item) => String(item).includes("<li> cannot contain a nested <li>")),
+    );
+    errorSpy.mockRestore();
+
+    expect(invalidListWarning).toBe(false);
+  });
 });

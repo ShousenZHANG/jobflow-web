@@ -53,6 +53,7 @@ export async function POST(req: Request) {
       title: true,
       company: true,
       description: true,
+      market: true,
     },
   });
 
@@ -63,7 +64,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const profile = await getResumeProfile(userId);
+  const profileLocale = job.market === "CN" ? "zh-CN" : "en-AU";
+  const profile = await getResumeProfile(userId, { locale: profileLocale });
   if (!profile) {
     return NextResponse.json(
       {
@@ -88,7 +90,7 @@ export async function POST(req: Request) {
   }, {
     strictCoverQuality: true,
     maxCoverRewritePasses: 2,
-    localeProfile: "en-AU",
+    localeProfile: profileLocale,
     targetWordRange: { min: 280, max: 360 },
   });
   const coverQualityGatePassed = tailored.qualityReport?.passed ?? true;

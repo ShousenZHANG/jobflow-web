@@ -29,9 +29,10 @@ const ACCENT_BG: Record<Quote["accent"], string> = {
 
 const ACCENT_CYCLE: Quote["accent"][] = ["emerald", "teal", "amber"];
 
-function QuoteCard({ q }: { q: Quote }) {
+function QuoteCard({ q, ariaHidden = false }: { q: Quote; ariaHidden?: boolean }) {
   return (
     <li
+      aria-hidden={ariaHidden || undefined}
       className="group/card flex h-full min-h-[220px] w-[340px] shrink-0 flex-col rounded-2xl border border-border/60 bg-background/90 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-emerald-200 hover:shadow-[0_1px_2px_rgba(15,23,42,0.04),0_18px_36px_-18px_rgba(5,150,105,0.28)] sm:w-[380px]"
       role="listitem"
     >
@@ -119,11 +120,9 @@ export function Testimonials() {
           {QUOTES.map((q) => (
             <QuoteCard key={`a-${q.name}`} q={q} />
           ))}
-          <li aria-hidden className="contents">
-            {QUOTES.map((q) => (
-              <QuoteCard key={`b-${q.name}`} q={q} />
-            ))}
-          </li>
+          {QUOTES.map((q) => (
+            <QuoteCard key={`b-${q.name}`} q={q} ariaHidden />
+          ))}
         </ul>
       </div>
     </motion.section>

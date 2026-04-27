@@ -97,6 +97,7 @@ describe("applications generate cover letter api", () => {
     (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockReset();
     jobStore.findFirst.mockReset();
     applicationStore.upsert.mockReset();
+    tailorApplicationContent.mockClear();
   });
 
   it("returns 404 when job does not exist", async () => {
@@ -168,6 +169,59 @@ describe("applications generate cover letter api", () => {
       expect.objectContaining({
         strictCoverQuality: true,
         maxCoverRewritePasses: 2,
+      }),
+    );
+  });
+
+  it("uses zh-CN resume profile and locale profile for CN jobs", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "前端工程师",
+      company: "示例科技",
+      description: "负责前端产品开发",
+      market: "CN",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-cn",
+      userId: "user-1",
+      locale: "zh-CN",
+      basics: {
+        fullName: "张三",
+        title: "前端工程师",
+        email: "zhangsan@example.com",
+        phone: "13800000000",
+      },
+      summary: "中文简历摘要",
+      skills: [],
+      experiences: [],
+      projects: [],
+      education: [],
+    });
+    applicationStore.upsert.mockResolvedValueOnce({
+      id: "app-cn",
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/generate-cover-letter", {
+        method: "POST",
+        body: JSON.stringify({ jobId: VALID_JOB_ID }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(getResumeProfile).toHaveBeenCalledWith("user-1", { locale: "zh-CN" });
+    expect(tailorApplicationContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resumeSnapshot: expect.objectContaining({
+          id: "rp-cn",
+          locale: "zh-CN",
+        }),
+      }),
+      expect.objectContaining({
+        localeProfile: "zh-CN",
       }),
     );
   });

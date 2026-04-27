@@ -70,7 +70,7 @@ type ParsedModelPayload = {
 type TailorOptions = {
   strictCoverQuality?: boolean;
   maxCoverRewritePasses?: number;
-  localeProfile?: "en-AU" | "en-US" | "global";
+  localeProfile?: "en-AU" | "en-US" | "zh-CN" | "global";
   targetWordRange?: { min: number; max: number };
 };
 
@@ -165,7 +165,7 @@ function buildCoverRewritePrompt(input: {
   draft: CoverDraft;
   qualityReport: CoverQualityReport;
   context?: CoverEvidenceContext;
-  localeProfile: "en-AU" | "en-US" | "global";
+  localeProfile: "en-AU" | "en-US" | "zh-CN" | "global";
   targetWordRange: { min: number; max: number };
 }) {
   const localeLine =
@@ -173,7 +173,9 @@ function buildCoverRewritePrompt(input: {
       ? "Locale profile: en-AU (Australian market tone: concise, grounded, professional)."
       : input.localeProfile === "en-US"
         ? "Locale profile: en-US (direct, impact-focused, concise)."
-        : "Locale profile: global neutral business English.";
+        : input.localeProfile === "zh-CN"
+          ? "Locale profile: zh-CN (Chinese market tone: concise, grounded, professional Chinese)."
+          : "Locale profile: global neutral business English.";
   return [
     input.originalPrompt,
     "",
@@ -318,9 +320,10 @@ export async function tailorApplicationContent(
       }
 
       if (!qualityReport.passed) {
+        const failedFallback = buildFallback(input, "quality_gate_failed");
         return {
           cvSummary: parsed.cvSummary || fallback.cvSummary,
-          cover: finalCover,
+          cover: failedFallback.cover,
           source: {
             cv: parsed.cvSummary ? "ai" : "base",
             cover: "fallback",

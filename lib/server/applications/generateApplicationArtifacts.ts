@@ -60,6 +60,7 @@ export async function generateApplicationArtifactsForJob(input: GenerateArtifact
       title: true,
       company: true,
       description: true,
+      market: true,
     },
   });
   if (!job) {
@@ -79,7 +80,8 @@ export async function generateApplicationArtifactsForJob(input: GenerateArtifact
     },
   });
 
-  const profile = await getResumeProfile(input.userId);
+  const profileLocale = job.market === "CN" ? "zh-CN" : "en-AU";
+  const profile = await getResumeProfile(input.userId, { locale: profileLocale });
   if (!profile) {
     throw new Error("NO_PROFILE");
   }
@@ -109,7 +111,7 @@ export async function generateApplicationArtifactsForJob(input: GenerateArtifact
     {
       strictCoverQuality: true,
       maxCoverRewritePasses: 2,
-      localeProfile: "en-AU",
+      localeProfile: profileLocale,
       targetWordRange: { min: 280, max: 360 },
     },
   );

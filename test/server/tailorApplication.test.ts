@@ -213,4 +213,30 @@ describe("tailorApplicationContent", () => {
     expect(result.cover.paragraphTwo).toContain("TypeScript");
     expect(["ai_ok", "quality_gate_failed"]).toContain(result.reason);
   });
+
+  it("uses fallback cover text when strict cover quality still fails", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    vi.spyOn(providers, "callProvider").mockResolvedValueOnce(
+      JSON.stringify({
+        cvSummary: "AI Summary",
+        cover: {
+          paragraphOne: "Generic opening.",
+          paragraphTwo: "Generic body.",
+          paragraphThree: "Generic closing.",
+        },
+      }),
+    );
+
+    const result = await tailorApplicationContent(INPUT, {
+      strictCoverQuality: true,
+      maxCoverRewritePasses: 0,
+      localeProfile: "en-AU",
+      targetWordRange: { min: 280, max: 360 },
+    });
+
+    expect(result.reason).toBe("quality_gate_failed");
+    expect(result.source.cover).toBe("fallback");
+    expect(result.cover.paragraphOne).toContain("I am applying for the Software Engineer position at Example Co");
+    expect(result.cover.paragraphOne).not.toBe("Generic opening.");
+  });
 });

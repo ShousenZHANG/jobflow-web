@@ -146,7 +146,10 @@ describe("applications manual generate api", () => {
       company: "Example Co",
       description: "Build product features",
     });
-    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ id: "rp-1" });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
 
     const res = await POST(
       new Request("http://localhost/api/applications/manual-generate", {
@@ -155,6 +158,10 @@ describe("applications manual generate api", () => {
           jobId: VALID_JOB_ID,
           target: "resume",
           modelOutput: "invalid-output-invalid-output",
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
         }),
       }),
     );
@@ -162,6 +169,28 @@ describe("applications manual generate api", () => {
 
     expect(res.status).toBe(400);
     expect(json.error.code).toBe("PARSE_FAILED");
+  });
+
+  it("rejects imports that do not include promptMeta", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "resume",
+          modelOutput: VALID_OUTPUT,
+        }),
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.error.code).toBe("INVALID_BODY");
+    expect(jobStore.findFirst).not.toHaveBeenCalled();
   });
 
   it("generates resume pdf from imported JSON", async () => {
@@ -784,6 +813,10 @@ describe("applications manual generate api", () => {
           jobId: VALID_JOB_ID,
           target: "cover",
           modelOutput: weakCoverOutput,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
         }),
       }),
     );
@@ -840,6 +873,10 @@ describe("applications manual generate api", () => {
           jobId: VALID_JOB_ID,
           target: "cover",
           modelOutput: highQualityCoverOutput,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
         }),
       }),
     );
@@ -884,6 +921,10 @@ describe("applications manual generate api", () => {
           jobId: VALID_JOB_ID,
           target: "cover",
           modelOutput: highQualityCoverOutput,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
         }),
       }),
     );

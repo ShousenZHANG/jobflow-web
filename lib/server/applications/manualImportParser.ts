@@ -12,15 +12,13 @@ export const ManualGenerateSchema = z.object({
   jobId: z.string().uuid(),
   target: z.enum(["resume", "cover"]),
   modelOutput: z.string().min(20).max(80000),
-  promptMeta: z
-    .object({
-      ruleSetId: z.string().min(1),
-      resumeSnapshotUpdatedAt: z.string().min(1),
-      promptTemplateVersion: z.string().min(1).optional(),
-      schemaVersion: z.string().min(1).optional(),
-      promptHash: z.string().min(1).optional(),
-    })
-    .optional(),
+  promptMeta: z.object({
+    ruleSetId: z.string().min(1),
+    resumeSnapshotUpdatedAt: z.string().min(1),
+    promptTemplateVersion: z.string().min(1).optional(),
+    schemaVersion: z.string().min(1).optional(),
+    promptHash: z.string().min(1).optional(),
+  }),
 });
 
 const ResumeSkillAdditionSchema = z.object({

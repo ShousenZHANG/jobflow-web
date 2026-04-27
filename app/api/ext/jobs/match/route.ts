@@ -3,6 +3,7 @@ import { requireExtensionToken, ExtensionTokenError } from "@/lib/server/auth/re
 import { unauthorizedError, errorJson } from "@/lib/server/api/errorResponse";
 import { checkRateLimit, rateLimitKeyFromRequest, rateLimitHeaders } from "@/lib/server/api/rateLimit";
 import { prisma } from "@/lib/server/prisma";
+import { canonicalizeJobUrl } from "@/lib/shared/canonicalizeJobUrl";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ export async function GET(req: Request) {
   try {
     const { userId } = await requireExtensionToken(req);
     const url = new URL(req.url);
-    const jobUrl = url.searchParams.get("url");
+    const jobUrl = canonicalizeJobUrl(url.searchParams.get("url") ?? "");
 
     if (!jobUrl || jobUrl.length > 2000) {
       return errorJson("MISSING_PARAM", "Missing or invalid 'url' parameter", 400);
