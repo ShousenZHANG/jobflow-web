@@ -607,6 +607,18 @@ body {
   }
 }
 
+/* Subtle pulse on the tour spotlight ring so it gently breathes,
+   drawing attention without being distracting. */
+@keyframes guide-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.55), 0 0 0 0 rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.55), 0 0 0 6px rgba(16, 185, 129, 0.18);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .guide-fade-in,
   .guide-scale-in,

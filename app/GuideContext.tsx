@@ -13,7 +13,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Sparkles, X, Briefcase, FileText, Puzzle } from "lucide-react";
+import { Sparkles, X, Briefcase, FileText, Puzzle, CircleHelp, ChevronRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ONBOARDING_TASKS,
@@ -470,6 +470,31 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [nextStep, prevStep, stopTour, tourRunning]);
 
+  // Global "?" shortcut — open guide from anywhere when tour isn't already
+  // running and the user is not typing in an input. Matches the Linear /
+  // Vercel / GitHub keyboard convention.
+  useEffect(() => {
+    if (!userId) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      if (event.key !== "?" && !(event.shiftKey && event.key === "/")) return;
+      if (tourRunning) return;
+
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      const interactiveTag =
+        tag === "input" || tag === "textarea" || tag === "select";
+      if (target?.isContentEditable || interactiveTag) return;
+
+      event.preventDefault();
+      openGuide();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openGuide, tourRunning, userId]);
+
   const value = useMemo<GuideContextValue>(
     () => ({
       loading,
@@ -512,9 +537,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         <>
           {welcomeVisible && !tourRunning && state && !state.isComplete && !state.dismissed ? (
             <>
-              {/* Overlay */}
+              {/* Backdrop */}
               <div
-                className="fixed inset-0 z-[54] bg-slate-900/40 guide-fade-in"
+                className="fixed inset-0 z-[54] bg-foreground/40 backdrop-blur-sm guide-fade-in"
                 onClick={() => {
                   setWelcomeVisible(false);
                   void patchState({ type: "skip" });
@@ -523,79 +548,93 @@ export function GuideProvider({ children }: { children: ReactNode }) {
               {/* Centered modal */}
               <section
                 data-testid="guide-welcome-card"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="guide-welcome-title"
                 className="fixed inset-0 z-[55] flex items-center justify-center p-4 pointer-events-none"
               >
-                <div className="pointer-events-auto w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_32px_80px_-20px_rgba(15,23,42,0.35)] guide-scale-in">
-                  {/* Header */}
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                      <Sparkles className="h-3 w-3" />
-                      {tg("badge")}
-                    </div>
+                <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-[0_32px_80px_-20px_rgba(15,23,42,0.35)] guide-scale-in">
+                  {/* Hero gradient banner */}
+                  <div className="relative h-20 overflow-hidden bg-gradient-to-br from-emerald-500/15 via-emerald-400/10 to-transparent">
+                    <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500/20 blur-2xl" />
+                    <div className="absolute -left-4 bottom-0 h-16 w-16 rounded-full bg-emerald-400/15 blur-xl" />
                     <button
                       type="button"
                       onClick={() => {
                         setWelcomeVisible(false);
                         void patchState({ type: "skip" });
                       }}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                      aria-label="Close"
+                      className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-background/80 text-muted-foreground backdrop-blur transition-colors hover:bg-background hover:text-foreground"
+                      aria-label={tg("maybeLater")}
                     >
                       <X className="h-4 w-4" />
                     </button>
+                    <div className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-background/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 backdrop-blur dark:text-emerald-300">
+                      <Sparkles className="h-3 w-3" aria-hidden />
+                      {tg("badge")}
+                    </div>
                   </div>
 
-                  <h3 className="text-lg font-bold text-slate-900">{tg("welcomeTitle")}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-                    {tg("welcomeDesc")}
-                  </p>
+                  <div className="px-6 pb-6 pt-4">
+                    <h3 id="guide-welcome-title" className="text-lg font-bold text-foreground">{tg("welcomeTitle")}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                      {tg("welcomeDesc")}
+                    </p>
 
-                  {/* Feature highlights */}
-                  <div className="mt-5 space-y-3">
-                    {[
-                      { icon: Briefcase, key: "welcomeFeature1" as const },
-                      { icon: FileText, key: "welcomeFeature2" as const },
-                      { icon: Puzzle, key: "welcomeFeature3" as const },
-                    ].map(({ icon: Icon, key }) => (
-                      <div key={key} className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
-                          <Icon className="h-4 w-4 text-emerald-600" />
+                    {/* Feature highlights */}
+                    <div className="mt-5 space-y-3">
+                      {[
+                        { icon: Briefcase, key: "welcomeFeature1" as const },
+                        { icon: FileText, key: "welcomeFeature2" as const },
+                        { icon: Puzzle, key: "welcomeFeature3" as const },
+                      ].map(({ icon: Icon, key }) => (
+                        <div key={key} className="flex items-start gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+                            <Icon className="h-4 w-4" aria-hidden />
+                          </div>
+                          <p className="pt-1 text-sm text-foreground/80">{tg(key)}</p>
                         </div>
-                        <p className="pt-1 text-sm text-slate-600">{tg(key)}</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
 
-                  {/* Progress dots */}
-                  <div className="mt-5 flex gap-1">
-                    {Array.from({ length: tourTotalSteps }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-1.5 rounded-full transition-all ${i === 0 ? "bg-emerald-400 w-5" : "bg-slate-200 w-1.5"}`}
-                      />
-                    ))}
-                  </div>
+                    {/* Progress dots */}
+                    <div
+                      className="mt-5 flex gap-1"
+                      role="progressbar"
+                      aria-valuenow={1}
+                      aria-valuemin={1}
+                      aria-valuemax={tourTotalSteps}
+                      aria-label={tg("stepOf", { current: 1, total: tourTotalSteps })}
+                    >
+                      {Array.from({ length: tourTotalSteps }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-1.5 rounded-full transition-all duration-300 ease-out ${i === 0 ? "w-5 bg-emerald-500" : "w-1.5 bg-muted"}`}
+                        />
+                      ))}
+                    </div>
 
-                  {/* Actions */}
-                  <div className="mt-5 flex items-center gap-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-10 flex-1 rounded-xl text-sm font-semibold"
-                      onClick={openGuide}
-                    >
-                      {tg("startTour")}
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setWelcomeVisible(false);
-                        void patchState({ type: "skip" });
-                      }}
-                      className="h-10 rounded-xl px-4 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700"
-                    >
-                      {tg("maybeLater")}
-                    </button>
+                    {/* Actions */}
+                    <div className="mt-5 flex items-center gap-3">
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-10 flex-1 rounded-xl text-sm font-semibold"
+                        onClick={openGuide}
+                      >
+                        {tg("startTour")}
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWelcomeVisible(false);
+                          void patchState({ type: "skip" });
+                        }}
+                        className="h-10 rounded-xl px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        {tg("maybeLater")}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -607,8 +646,8 @@ export function GuideProvider({ children }: { children: ReactNode }) {
               <div className="pointer-events-none fixed inset-0 z-[60]">
                 {spotlightBox ? (
                   <div
-                    className={`absolute rounded-2xl border border-emerald-300/90 bg-transparent shadow-[0_0_0_9999px_rgba(15,23,42,0.35)] ${
-                      prefersReducedMotion ? "" : "transition-all duration-150 ease-out"
+                    className={`absolute rounded-2xl border-2 border-emerald-400/90 bg-transparent shadow-[0_0_0_9999px_rgba(15,23,42,0.55)] ${
+                      prefersReducedMotion ? "" : "transition-all duration-200 ease-out animate-[guide-pulse_2.4s_ease-in-out_infinite]"
                     }`}
                     style={{
                       top: spotlightBox.top,
@@ -618,13 +657,13 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                     }}
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-slate-900/35" />
+                  <div className="absolute inset-0 bg-foreground/45" />
                 )}
               </div>
 
               <section
-                className={`fixed z-[70] rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.45)] backdrop-blur guide-tour-enter ${
-                  prefersReducedMotion ? "" : "transition-[top,left] duration-150 ease-out"
+                className={`fixed z-[70] rounded-2xl border border-border bg-card/95 p-4 text-card-foreground shadow-[0_24px_60px_-34px_rgba(15,23,42,0.45)] backdrop-blur guide-tour-enter ${
+                  prefersReducedMotion ? "" : "transition-[top,left] duration-200 ease-out"
                 } ${shouldHideCoachUntilAnchored ? "pointer-events-none opacity-0" : ""}`}
                 style={
                   coachLayout
@@ -643,7 +682,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                 {coachLayout ? (
                   <div
                     className={[
-                      "absolute h-3 w-3 rotate-45 border border-slate-200 bg-white",
+                      "absolute h-3 w-3 rotate-45 border border-border bg-card",
                       coachLayout.placement === "top" ? "-top-1.5 border-l border-t border-r-0 border-b-0" : "-bottom-1.5 border-r border-b border-l-0 border-t-0",
                     ].join(" ")}
                     style={{ left: coachLayout.arrowLeft }}
@@ -652,47 +691,53 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
                 <section data-testid="guide-tour-card">
                   <div className="mb-2 flex items-start justify-between gap-3">
-                    <div className="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-                      <Sparkles className="h-3 w-3" />
+                    <div className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                      <Sparkles className="h-3 w-3" aria-hidden />
                       {tg("tourBadge")}
                     </div>
                     <button
                       type="button"
-                      aria-label="Exit tour"
+                      aria-label={tg("endTour")}
                       onClick={stopTour}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-border/80 hover:text-foreground"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
 
-                  <div className="mb-2 flex items-center justify-between text-[11px] text-slate-500">
+                  <div className="mb-2 flex items-center justify-between text-[11px] text-muted-foreground">
                     <span className="uppercase tracking-wide">
                       {tg("stepOf", { current: tourStepNumber, total: tourTotalSteps })}
                     </span>
                     {state ? (
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                         {state.completedCount}/{state.totalCount}
                       </span>
                     ) : null}
                   </div>
 
-                  <div className="mb-2 flex gap-1">
+                  <div
+                    className="mb-2 flex gap-1"
+                    role="progressbar"
+                    aria-valuenow={tourStepNumber}
+                    aria-valuemin={1}
+                    aria-valuemax={tourTotalSteps}
+                  >
                     {Array.from({ length: tourTotalSteps }).map((_, i) => (
                       <div
                         key={i}
-                        className={`h-1.5 rounded-full transition-all ${i < tourStepNumber ? "bg-emerald-500 w-4" : "bg-slate-200 w-1.5"}`}
+                        className={`h-1.5 rounded-full transition-all duration-300 ease-out ${i < tourStepNumber ? "w-4 bg-emerald-500" : "w-1.5 bg-muted"}`}
                       />
                     ))}
                   </div>
 
-                  <h3 className="text-sm font-semibold text-slate-900">{tg(`task_${activeTourTask.id}_title`)}</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{tg(`task_${activeTourTask.id}_title`)}</h3>
                   <p className="mt-1 text-xs text-muted-foreground">{tg(`task_${activeTourTask.id}_desc`)}</p>
 
                   {!isTourTaskOnCurrentPage ? (
-                    <p className="mt-2 text-[11px] text-slate-500">{tg("navigating")}</p>
+                    <p className="mt-2 text-[11px] text-muted-foreground">{tg("navigating")}</p>
                   ) : targetMissing ? (
-                    <p className="mt-2 text-[11px] text-slate-500">
+                    <p className="mt-2 text-[11px] text-muted-foreground">
                       {tg("waitingForElement")}
                     </p>
                   ) : null}
@@ -728,10 +773,61 @@ export function GuideProvider({ children }: { children: ReactNode }) {
                       </Button>
                     </div>
                   </div>
-                  <p className="mt-2 text-[11px] text-slate-500">{tg("shortcuts")}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <kbd className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted px-1 font-mono font-medium text-foreground/80">←</kbd>
+                    <kbd className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted px-1 font-mono font-medium text-foreground/80">→</kbd>
+                    <span className="px-0.5">·</span>
+                    <kbd className="inline-flex h-5 items-center justify-center rounded border border-border bg-muted px-1.5 font-mono font-medium text-foreground/80">Enter</kbd>
+                    <span className="px-0.5">·</span>
+                    <kbd className="inline-flex h-5 items-center justify-center rounded border border-border bg-muted px-1.5 font-mono font-medium text-foreground/80">Esc</kbd>
+                  </div>
                 </section>
               </section>
             </>
+          ) : null}
+
+          {/* Floating progress widget — visible when user dismissed the
+              welcome modal but tour is not running and progress is incomplete.
+              Always-on entry point matches the big-tech onboarding pattern
+              (Linear / Vercel / Stripe). */}
+          {!tourRunning && !welcomeVisible && state && !state.isComplete ? (
+            <button
+              type="button"
+              onClick={openGuide}
+              data-testid="guide-floating-widget"
+              aria-label={tg("startTour")}
+              className="group fixed bottom-5 right-5 z-[52] inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-card-foreground shadow-[0_12px_30px_-15px_rgba(15,23,42,0.45)] transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-20px_rgba(5,150,105,0.45)] active:scale-[0.97] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none"
+              style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+            >
+              <span className="relative flex h-7 w-7 items-center justify-center">
+                <svg className="absolute h-7 w-7 -rotate-90" viewBox="0 0 28 28" aria-hidden>
+                  <circle cx="14" cy="14" r="11" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="2.5" />
+                  <circle
+                    cx="14"
+                    cy="14"
+                    r="11"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(state.completedCount / state.totalCount) * 69.115} 69.115`}
+                    className="text-emerald-500 transition-[stroke-dasharray] duration-500 ease-out"
+                  />
+                </svg>
+                {state.completedCount === state.totalCount - 1 ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden />
+                ) : (
+                  <CircleHelp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden />
+                )}
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-semibold">
+                <span className="hidden sm:inline">{tg("badge")}</span>
+                <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                  {state.completedCount}/{state.totalCount}
+                </span>
+                <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </span>
+            </button>
           ) : null}
 
         </>
