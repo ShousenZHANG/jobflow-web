@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, RefreshCw } from "lucide-react";
+import { Download, ExternalLink, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useResumeContext } from "./ResumeContext";
@@ -22,46 +22,71 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
     return `${safeName}${connector}${safeTitle}.pdf`;
   })();
 
+  const isReady = pdfUrl && previewStatus === "ready";
+
   return (
-    <div className={cn("flex flex-col", className)}>
-      {/* Header */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-b border-border bg-background/90 px-3">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <div className={cn("flex flex-col bg-muted/40 dark:bg-muted/20", className)}>
+      {/* Header — design spec ".preview-head" 44px tall */}
+      <div className="flex h-11 shrink-0 items-center gap-1.5 border-b border-border bg-card px-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
           {t("pdfPreview")}
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="ml-auto flex items-center gap-1">
+          {/* Refresh */}
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-7 w-7 transition-transform active:scale-90 disabled:cursor-not-allowed disabled:opacity-100"
+            className="h-7 w-7 rounded-md transition-transform active:scale-90 disabled:cursor-not-allowed disabled:opacity-100"
             aria-label="Refresh preview"
             aria-busy={previewStatus === "loading"}
             disabled={previewStatus === "loading"}
             onClick={() => schedulePreview(0, false, { force: true })}
           >
-            <RefreshCw className={cn("h-3.5 w-3.5 transition-colors", previewStatus === "loading" && "animate-spin text-emerald-600")} />
+            <RefreshCw
+              className={cn(
+                "h-3.5 w-3.5 transition-colors",
+                previewStatus === "loading" && "animate-spin text-emerald-600",
+              )}
+            />
           </Button>
-          {pdfUrl && previewStatus === "ready" ? (
+
+          {/* Open in new tab */}
+          {isReady ? (
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open in new tab"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          ) : null}
+
+          <span aria-hidden className="mx-1 h-4 w-px bg-border" />
+
+          {/* Download primary */}
+          {isReady ? (
             <a
               href={pdfUrl}
               download={downloadFilename}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.97]"
+              className="inline-flex h-7 items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.97]"
             >
               <Download className="h-3.5 w-3.5" />
-              Download PDF
+              <span>PDF</span>
             </a>
           ) : (
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-muted px-3 text-xs font-medium text-muted-foreground/70 cursor-not-allowed">
+            <span className="inline-flex h-7 cursor-not-allowed items-center gap-1.5 rounded-md bg-muted px-2.5 text-xs font-medium text-muted-foreground/70">
               <Download className="h-3.5 w-3.5" />
-              PDF
+              <span>PDF</span>
             </span>
           )}
         </div>
       </div>
 
       {/* Preview area */}
-      <div className="relative flex-1 overflow-hidden bg-muted/40 dark:bg-muted/20">
+      <div className="relative flex-1 overflow-hidden">
         {/* A4 skeleton loading state */}
         {previewStatus === "idle" && !pdfUrl && (
           <div className="flex h-full items-center justify-center p-4">
