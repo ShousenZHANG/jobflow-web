@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { User, FileText, Briefcase, FolderKanban, GraduationCap, Wrench, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { User, FileText, Briefcase, FolderKanban, GraduationCap, Wrench } from "lucide-react";
 import { useResumeContext } from "./ResumeContext";
 import type { SectionId } from "./constants";
 import { getSectionIds } from "./constants";
@@ -20,17 +20,24 @@ const SECTION_CONFIG: Array<{ id: SectionId; tKey: SectionTranslationKey; icon: 
 
 interface SectionNavProps {
   className?: string;
-  collapsed?: boolean;
-  onToggle?: () => void;
 }
 
-export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) {
+/**
+ * SectionNav — primary section rail.
+ *
+ * Desktop: a fixed 56px-wide icon rail per the Joblit design system. Each
+ * item is a 40×40 button with a hover tooltip; the active item gets an
+ * emerald accent bar and tinted background.
+ *
+ * Mobile: a horizontal scrolling pill row with smooth scroll-into-view of
+ * the active tab.
+ */
+export function SectionNav({ className }: SectionNavProps) {
   const { activeSection, setActiveSection, locale, t } = useResumeContext();
   const visibleSectionIds = getSectionIds(locale);
   const visibleSections = SECTION_CONFIG.filter((s) => visibleSectionIds.includes(s.id));
 
-  // Mobile horizontal tab row: keep the active pill in view as the user
-  // hops between sections so the indicator never disappears off-screen.
+  // Keep the active mobile pill centered.
   const mobileTabRefs = useRef<Map<SectionId, HTMLButtonElement | null>>(new Map());
   useEffect(() => {
     const node = mobileTabRefs.current.get(activeSection);
@@ -47,76 +54,38 @@ export function SectionNav({ className, collapsed, onToggle }: SectionNavProps) 
       className={cn("flex [contain:layout_style]", className)}
       aria-label="Resume sections"
     >
-      {/* Desktop: vertical list */}
-      <div className="hidden lg:flex lg:w-full lg:flex-col lg:gap-1">
+      {/* Desktop: 56px icon-only rail */}
+      <div className="hidden lg:flex lg:w-full lg:flex-col lg:items-center lg:gap-1 lg:py-2.5">
         {visibleSections.map(({ id, tKey, icon: Icon }) => {
           const isActive = activeSection === id;
+          const label = t(tKey);
           return (
             <button
               key={id}
               type="button"
               onClick={() => setActiveSection(id)}
               aria-current={isActive ? "page" : undefined}
-              title={collapsed ? t(tKey) : undefined}
+              aria-label={label}
+              title={label}
               className={cn(
-                "flex h-10 w-full items-center overflow-hidden rounded-xl border text-sm",
-                "[transition-property:width,padding,gap,background-color,border-color,color] duration-200 ease-out",
-                "motion-reduce:transition-none",
-                collapsed
-                  ? "justify-center px-0"
-                  : "justify-start gap-3 px-3 text-left",
+                "group relative grid h-10 w-10 place-items-center rounded-[9px]",
+                "transition-colors duration-150 ease-out motion-reduce:transition-none",
+                "active:scale-[0.97] motion-reduce:active:scale-100",
                 isActive
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                  : "border-transparent bg-transparent text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground",
+                  ? "bg-emerald-500/12 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span
-                className={cn(
-                  "overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-out motion-reduce:transition-none",
-                  collapsed ? "max-w-0 opacity-0" : "max-w-[12rem] opacity-100",
-                )}
-                aria-hidden={collapsed || undefined}
-              >
-                {t(tKey)}
-              </span>
+              <Icon className="h-[18px] w-[18px]" />
+              {isActive ? (
+                <span
+                  aria-hidden
+                  className="absolute -left-2 top-2 bottom-2 w-[3px] rounded-r-[3px] bg-emerald-600 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
+                />
+              ) : null}
             </button>
           );
         })}
-
-        {/* Collapse/expand toggle */}
-        {onToggle ? (
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-pressed={collapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className={cn(
-              "mt-auto flex h-10 w-full items-center overflow-hidden rounded-xl border border-transparent text-muted-foreground/80 hover:border-border hover:bg-muted/60 hover:text-foreground",
-              "[transition-property:width,padding,gap,background-color,border-color,color] duration-200 ease-out",
-              "motion-reduce:transition-none",
-              collapsed
-                ? "justify-center px-0"
-                : "justify-start gap-3 px-3 text-sm",
-            )}
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="h-4 w-4 shrink-0" />
-            ) : (
-              <PanelLeftClose className="h-4 w-4 shrink-0" />
-            )}
-            <span
-              className={cn(
-                "overflow-hidden whitespace-nowrap text-xs transition-[max-width,opacity] duration-200 ease-out motion-reduce:transition-none",
-                collapsed ? "max-w-0 opacity-0" : "max-w-[8rem] opacity-100",
-              )}
-              aria-hidden={collapsed || undefined}
-            >
-              Collapse
-            </span>
-          </button>
-        ) : null}
       </div>
 
       {/* Mobile: horizontal scrollable tabs */}

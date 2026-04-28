@@ -19,8 +19,6 @@ type ResumeContextValue = UseResumeFormReturn &
     setActiveSection: (section: SectionId) => void;
     previewOpen: boolean;
     setPreviewOpen: (open: boolean) => void;
-    navCollapsed: boolean;
-    setNavCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
     saving: boolean;
     handleSave: () => Promise<void>;
     locale: string;
@@ -50,7 +48,6 @@ export function ResumeFormProvider({ children }: { children: ReactNode }) {
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [navCollapsed, setNavCollapsed] = useState(false);
 
   const form = useResumeForm(locale);
 
@@ -116,8 +113,6 @@ export function ResumeFormProvider({ children }: { children: ReactNode }) {
         setPreviewOpen,
         saving,
         handleSave,
-        navCollapsed,
-        setNavCollapsed,
         locale,
         t,
         isTaskHighlighted,

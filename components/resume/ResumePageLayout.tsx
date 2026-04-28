@@ -330,7 +330,7 @@ function MobilePreviewDialog() {
 }
 
 export function ResumePageLayout() {
-  const { activeSection, navCollapsed, setNavCollapsed } = useResumeContext();
+  const { activeSection } = useResumeContext();
 
   /* Lock outer shell scroll — Resume uses fixed-height panels with internal scroll */
   useEffect(() => {
@@ -352,17 +352,8 @@ export function ResumePageLayout() {
 
       {/* Content area */}
       <div className="flex flex-1 min-h-0">
-        {/* Desktop sidebar nav */}
-        <SectionNav
-          collapsed={navCollapsed}
-          onToggle={() => setNavCollapsed((prev) => !prev)}
-          className={cn(
-            "hidden lg:flex shrink-0 border-r border-border flex-col p-3 gap-1",
-            "[transition-property:width] duration-200 ease-out will-change-[width]",
-            "motion-reduce:transition-none",
-            navCollapsed ? "w-14" : "w-56",
-          )}
-        />
+        {/* Desktop section rail (56px, icon-only per design system) */}
+        <SectionNav className="hidden lg:flex w-14 shrink-0 border-r border-border flex-col" />
 
         {/* Form content area */}
         <div className="flex flex-1 min-h-0 flex-col">
@@ -386,13 +377,8 @@ export function ResumePageLayout() {
           </div>
         </div>
 
-        {/* Desktop preview panel */}
-        <PreviewPanel className={cn(
-          "hidden md:flex shrink-0 border-l border-border flex-col",
-          "[transition-property:width] duration-200 ease-out will-change-[width]",
-          "motion-reduce:transition-none",
-          navCollapsed ? "w-[580px]" : "w-[480px]",
-        )} />
+        {/* Desktop preview panel — fixed 440px per design spec */}
+        <PreviewPanel className="hidden md:flex w-[440px] shrink-0 border-l border-border flex-col xl:w-[480px]" />
       </div>
     </div>
   );
