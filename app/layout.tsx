@@ -36,6 +36,18 @@ export const metadata: Metadata = {
     template: "%s | Joblit",
   },
   description: "Job tracking and automated discovery dashboard.",
+  // Next.js auto-discovers app/icon.svg + app/apple-icon.svg.
+  // Setting an explicit shortcut + apple block keeps legacy crawlers
+  // happy and overrides any cached default favicon (e.g. Vercel).
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: ["/icon.svg"],
+    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
+  },
+};
+
+export const viewport = {
+  themeColor: "#047857",
 };
 
 export default async function RootLayout({

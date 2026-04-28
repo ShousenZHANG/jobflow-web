@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { JoblitMark } from "@/components/brand/JoblitMark";
 import { motion, useReducedMotion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -102,11 +103,7 @@ export function Nav() {
           aria-label="Joblit home"
         >
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-emerald-50 ring-1 ring-brand-emerald-100">
-            <Search
-              className="h-3.5 w-3.5 text-brand-emerald-700"
-              strokeWidth={2.5}
-              aria-hidden
-            />
+            <JoblitMark size={18} color="var(--brand-emerald-700, #047857)" ariaLabel={null} />
           </span>
           Joblit
         </Link>

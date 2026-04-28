@@ -43,19 +43,21 @@ export default function OgImage() {
         >
           <div
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              background: "#22c55e",
+              width: 56,
+              height: 56,
+              borderRadius: 16,
+              background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "white",
-              fontSize: 24,
-              fontWeight: 800,
             }}
           >
-            J
+            <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
+              <path
+                d="M 44 12 L 44 38 a 12 12 0 0 1 -12 12 a 12 12 0 0 1 -12 -12 L 20 36 a 8 8 0 0 0 8 8 a 8 8 0 0 0 8 -8 L 36 22 Z"
+                fill="#FFFFFF"
+              />
+            </svg>
           </div>
           <span style={{ fontSize: 36, fontWeight: 700, color: "#0f172a" }}>
             Joblit
