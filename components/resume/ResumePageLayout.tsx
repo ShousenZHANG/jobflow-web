@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { Download, Eye } from "lucide-react";
+import { Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,99 +23,6 @@ import { ProjectsSection } from "./sections/ProjectsSection";
 import { EducationSection } from "./sections/EducationSection";
 import { SkillsSection } from "./sections/SkillsSection";
 import type { SectionId } from "./constants";
-
-/**
- * ResumeHeader — page-level header that consolidates title, save status,
- * save button, and mobile preview toggle into one row. Replaces the old
- * sticky ResumeActionBar so the form area gains ~76px of vertical space
- * and matches the Linear / Notion / Figma "actions live in the header"
- * pattern rather than the dated bottom-bar.
- */
-function ResumeHeader() {
-  const {
-    saving,
-    handleSave,
-    setPreviewOpen,
-    hasAnyContent,
-    schedulePreview,
-    isTaskHighlighted,
-    t: tForm,
-  } = useResumeContext();
-  const tResume = useTranslations("resume");
-
-  const guideHighlight = isTaskHighlighted("resume_setup");
-
-  return (
-    <header className="shrink-0 border-b border-border bg-card px-4 py-2.5 lg:px-5 lg:py-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-base font-semibold leading-[1.25] tracking-[-0.01em] text-foreground">
-            {tResume("masterResumes")}
-          </h1>
-          <p className="hidden truncate text-xs text-muted-foreground sm:block">
-            {tResume("masterResumesDesc")}
-          </p>
-        </div>
-
-        {/* Action cluster — design spec ".ph-right" */}
-        <div className="flex shrink-0 items-center gap-1.5">
-          {/* Save state — 6px emerald dot with halo + label.
-              Saving state turns warning + 1.2s pulse per design. */}
-          {hasAnyContent ? (
-            <span
-              className="hidden items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex"
-              aria-live="polite"
-            >
-              <span
-                aria-hidden
-                className={cn(
-                  "h-1.5 w-1.5 rounded-full ring-[3px]",
-                  saving
-                    ? "bg-amber-500 ring-amber-500/20 animate-pulse"
-                    : "bg-emerald-500 ring-emerald-500/15",
-                )}
-              />
-              {saving ? tForm("saving") : tForm("toastSaved")}
-            </span>
-          ) : null}
-
-          <span className="mx-1 hidden h-5 w-px bg-border sm:inline-block" aria-hidden />
-
-          {/* Mobile-only preview toggle */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={!hasAnyContent}
-            className="md:hidden"
-            aria-label={tForm("preview")}
-            onClick={() => {
-              setPreviewOpen(true);
-              schedulePreview(0);
-            }}
-          >
-            <Eye className="h-3.5 w-3.5" aria-hidden />
-          </Button>
-
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            size="sm"
-            data-guide-anchor="resume_setup"
-            data-guide-highlight={guideHighlight ? "true" : "false"}
-            className={cn(
-              "edu-cta edu-cta--press min-w-[7rem] whitespace-nowrap",
-              guideHighlight &&
-                "ring-2 ring-emerald-400 ring-offset-2 ring-offset-background shadow-[0_0_0_4px_rgba(16,185,129,0.18)]",
-            )}
-          >
-            {saving ? tForm("saving") : tForm("saveSelectedResume")}
-          </Button>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function SectionContent({ sectionId }: { sectionId: SectionId }) {
   const {
@@ -346,9 +252,6 @@ export function ResumePageLayout() {
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      {/* Page header — title, save status, save action, mobile preview */}
-      <ResumeHeader />
-
       {/* Mobile preview dialog */}
       <MobilePreviewDialog />
 

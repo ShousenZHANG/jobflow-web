@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { ChevronDown, ChevronRight, GripVertical, MoveDown, MoveUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ReorderableList } from "../ReorderableList";
 import { SectionShell } from "../SectionShell";
@@ -276,14 +277,16 @@ export function ProjectsSection({
                             {t("boldSelected")}
                           </Button>
                         </div>
-                        <Input
+                        <Textarea
                           id={`project-bullet-${index}-${bulletIndex}`}
                           ref={registerMarkdownRef(`project-bullet-${index}-${bulletIndex}`)}
                           value={bullet}
+                          rows={1}
                           onChange={(e) =>
                             updateProjectBullet(index, bulletIndex, e.target.value)
                           }
                           placeholder={t("projectBulletPlaceholder")}
+                          className="min-h-9 resize-none py-1.5 leading-relaxed"
                         />
                       </div>
                       <div className="flex items-end">
