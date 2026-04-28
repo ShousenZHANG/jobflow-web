@@ -75,3 +75,4 @@ next-env.d.ts
 # Design reference docs (getdesign artifacts)
 docs/design-references/
 DESIGN.md
+design-system/
