@@ -34,7 +34,7 @@ vi.mock("next-themes", async () => {
 });
 
 describe("MarketingPage", () => {
-  it("renders all 14 landing sections", () => {
+  it("renders all 9 landing sections", () => {
     render(
       <NextIntlClientProvider locale="en" messages={messages}>
         <MarketingPage />
@@ -47,11 +47,6 @@ describe("MarketingPage", () => {
       "landing-logobar",
       "landing-howitworks",
       "landing-features",
-      "landing-deepdive-resume",
-      "landing-deepdive-ats",
-      "landing-deepdive-fetch",
-      "landing-stats",
-      "landing-testimonials",
       "landing-pricing",
       "landing-faq",
       "landing-cta",
@@ -64,22 +59,5 @@ describe("MarketingPage", () => {
         `missing section: ${testid}`,
       ).toBeInTheDocument();
     }
-  });
-
-  it("does not render nested list items in testimonials", () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    render(
-      <NextIntlClientProvider locale="en" messages={messages}>
-        <MarketingPage />
-      </NextIntlClientProvider>,
-    );
-
-    const invalidListWarning = errorSpy.mock.calls.some((call) =>
-      call.some((item) => String(item).includes("<li> cannot contain a nested <li>")),
-    );
-    errorSpy.mockRestore();
-
-    expect(invalidListWarning).toBe(false);
   });
 });

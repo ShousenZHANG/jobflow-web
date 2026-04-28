@@ -1,12 +1,10 @@
 "use client";
 
 import {
+  Bolt,
   CheckCircle2,
-  Clock,
   FileText,
-  Link2,
   MapPin,
-  Star,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
@@ -14,21 +12,16 @@ import { useTranslations } from "next-intl";
 import { fadeUp, stagger, useReveal } from "./lib/motion";
 import { SectionKicker } from "./SectionKicker";
 
-// Features — editorial bento grid.
+// Features — 2×2 equal grid, Linear-style. Four differentiators, each
+// carrying a distinct piece of the value prop:
+//   1. Honest match scoring   — what makes the score trustworthy
+//   2. Trustworthy by design  — ATS-safe + evidence-grounded combined
+//   3. Tailored in seconds    — speed
+//   4. Pro-grade output       — LaTeX + BYO LLM combined
 //
-// Row 1 (hero): `Match scoring` occupies full width as a banner-style
-// card with an inline score-bar flourish. This is the anchor feature —
-// the one thing Joblit owns and the one a visitor will remember.
-//
-// Row 2: three equal cards covering the differentiators that make the
-// match score trustworthy (ATS-safe, Evidence-grounded, 4-second tailor).
-//
-// Row 3: two equal cards covering the craft / flexibility angles
-// (LaTeX PDFs, BYO LLM).
-//
-// Heights align on each row so the eye can rest on a clean baseline;
-// the hero card breaks the rhythm on row 1 and carries extra visual
-// weight via its emerald gradient + inline mini-visual.
+// No hero card, no row hierarchy, no infinite animations. Cards are flat
+// surfaces with a single neutral hover lift. Color is reserved for the
+// icon chip (subtle emerald gradient) and the kicker line.
 
 interface Feature {
   icon: LucideIcon;
@@ -36,9 +29,8 @@ interface Feature {
   blurb: string;
 }
 
-/** Standard card chrome shared by hero and grid cards. */
 const CARD_BASE =
-  "landing-dynamic-frame landing-sheen group relative flex flex-col rounded-3xl border border-border/60 bg-background/80 p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-emerald-200 hover:shadow-[0_1px_2px_rgba(15,23,42,0.04),0_16px_36px_-14px_rgba(5,150,105,0.22)]";
+  "group relative flex h-full flex-col rounded-3xl border border-border/60 bg-card p-7 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/15 hover:shadow-[0_18px_36px_-18px_rgba(15,23,42,0.16)] sm:p-8";
 
 function IconChip({ icon: Icon }: { icon: LucideIcon }) {
   return (
@@ -51,60 +43,33 @@ function IconChip({ icon: Icon }: { icon: LucideIcon }) {
   );
 }
 
-/**
- * Inline mini score-bar displayed only on the hero card. Four vertical
- * pills with decreasing heights create a tiny data-viz flourish that
- * signals "this is the scoring feature" without needing a chart library.
- */
-function ScoreGlyph() {
-  return (
-    <div
-      aria-hidden
-      className="flex items-end gap-1"
-    >
-      {[65, 82, 92, 74].map((v, i) => (
-        <span
-          key={i}
-          className="w-1.5 rounded-full bg-gradient-to-t from-brand-emerald-500 to-brand-emerald-300"
-          style={{ height: `${v / 4}px` }}
-        />
-      ))}
-    </div>
-  );
-}
-
 export function Features() {
   const reveal = useReveal();
   const t = useTranslations("landing.features");
-  const SECONDARY: Feature[] = [
+
+  const FEATURES: Feature[] = [
+    {
+      icon: MapPin,
+      title: t("matchScoring.title"),
+      blurb: t("matchScoring.blurb"),
+    },
     {
       icon: CheckCircle2,
-      title: t("atsSafe.title"),
-      blurb: t("atsSafe.blurb"),
+      title: t("trustworthy.title"),
+      blurb: t("trustworthy.blurb"),
     },
     {
-      icon: Star,
-      title: t("evidence.title"),
-      blurb: t("evidence.blurb"),
-    },
-    {
-      icon: Clock,
+      icon: Bolt,
       title: t("tailor.title"),
       blurb: t("tailor.blurb"),
     },
-  ];
-  const TERTIARY: Feature[] = [
     {
       icon: FileText,
-      title: t("latex.title"),
-      blurb: t("latex.blurb"),
-    },
-    {
-      icon: Link2,
-      title: t("byoLlm.title"),
-      blurb: t("byoLlm.blurb"),
+      title: t("output.title"),
+      blurb: t("output.blurb"),
     },
   ];
+
   return (
     <motion.section
       {...reveal}
@@ -117,7 +82,7 @@ export function Features() {
         <SectionKicker>{t("kicker")}</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-[42px] sm:leading-[1.08]">
           {t("titlePrefix")}{" "}
-          <em className="font-serif italic text-brand-emerald-700">
+          <em className="font-serif italic text-foreground">
             {t("titleItalic")}
           </em>{" "}
           {t("titleSuffix")}
@@ -129,99 +94,22 @@ export function Features() {
 
       <motion.ul
         variants={stagger}
-        className="grid auto-rows-fr gap-5"
+        className="grid auto-rows-fr gap-5 md:grid-cols-2"
         role="list"
       >
-        {/* Hero row — Match scoring */}
-        <motion.li variants={fadeUp} className="list-none">
-          <div
-            className={
-              CARD_BASE +
-              " overflow-hidden bg-gradient-to-br from-brand-emerald-50/80 via-background to-background p-8 sm:p-10"
-            }
-          >
-            {/* Decorative corner glow — aids the "hero" emphasis without
-                a separate image asset. */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gradient-to-br from-brand-emerald-200/40 to-transparent blur-2xl"
-            />
-            <div className="relative flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
-              <IconChip icon={MapPin} />
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-                    {t("hero.title")}
-                  </h3>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-brand-emerald-200/70 bg-background/70 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-brand-emerald-700">
-                    <ScoreGlyph />
-                    {t("hero.rubric")}
-                  </span>
-                </div>
-                <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-                  {t("hero.blurb")}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-2 text-[12px]">
-                  {[
-                    t("hero.tagCoverage"),
-                    t("hero.tagSeniority"),
-                    t("hero.tagYoe"),
-                    t("hero.tagDomain"),
-                  ].map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-brand-emerald-50 px-2.5 py-1 font-medium text-brand-emerald-700 ring-1 ring-brand-emerald-100"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+        {FEATURES.map(({ icon, title, blurb }) => (
+          <motion.li key={title} variants={fadeUp} className="list-none">
+            <div className={CARD_BASE}>
+              <IconChip icon={icon} />
+              <div className="mt-6 text-[19px] font-semibold tracking-tight text-foreground">
+                {title}
               </div>
+              <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                {blurb}
+              </p>
             </div>
-          </div>
-        </motion.li>
-
-        {/* Row 2 — three equal differentiators */}
-        <motion.li variants={fadeUp} className="list-none">
-          <ul className="grid gap-5 md:grid-cols-3" role="list">
-            {SECONDARY.map(({ icon, title, blurb }) => (
-              <motion.li
-                key={title}
-                variants={fadeUp}
-                className={CARD_BASE}
-              >
-                <IconChip icon={icon} />
-                <div className="mt-5 text-[17px] font-semibold tracking-tight text-foreground">
-                  {title}
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {blurb}
-                </p>
-              </motion.li>
-            ))}
-          </ul>
-        </motion.li>
-
-        {/* Row 3 — two craft/flex cards */}
-        <motion.li variants={fadeUp} className="list-none">
-          <ul className="grid gap-5 md:grid-cols-2" role="list">
-            {TERTIARY.map(({ icon, title, blurb }) => (
-              <motion.li
-                key={title}
-                variants={fadeUp}
-                className={CARD_BASE}
-              >
-                <IconChip icon={icon} />
-                <div className="mt-5 text-[17px] font-semibold tracking-tight text-foreground">
-                  {title}
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {blurb}
-                </p>
-              </motion.li>
-            ))}
-          </ul>
-        </motion.li>
+          </motion.li>
+        ))}
       </motion.ul>
     </motion.section>
   );

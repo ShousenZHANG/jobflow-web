@@ -10,10 +10,13 @@ import { useCallback, useEffect, useState } from "react";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ThemeToggle } from "@/components/providers/ThemeProvider";
 
-// Glass navbar. Sits sticky at top 16px, becomes a touch more compact
-// (scale 0.98 + extra shadow) once the user scrolls past 20px. Smooth
-// scroll handler hijacks clicks on `#anchor` links so the jumps feel
-// native to the page.
+// Glass navbar. Sticky at top 16px, gains a deeper shadow once the user
+// scrolls past 20px. Smooth scroll handler hijacks clicks on `#anchor`
+// links so the jumps feel native to the page.
+//
+// The previous "scale 0.97 on scroll" effect has been removed: it caused
+// a visible "jump" at the threshold that read as glitchy rather than
+// premium. The shadow change alone communicates the scroll state.
 
 interface NavLink {
   label: string;
@@ -74,28 +77,22 @@ export function Nav() {
       aria-label="Primary"
       className="sticky top-3 z-50 mx-auto w-full max-w-6xl overflow-hidden px-3 sm:top-4 sm:px-6"
     >
-      {/* Inner pill: always on (bg + blur + border + shadow even at rest,
-          matching Landing.html baseline). Scrolling tightens padding,
-          shrinks scale 0.97, and swaps to an emerald-tinged elevated
-          shadow so the shift is unmistakable. */}
+      {/* Inner pill: backdrop-blur + thin border at rest. Scrolling deepens
+          the shadow only — no scale/padding change, no infinite sheen. */}
       <motion.div
         initial={reduced ? undefined : { opacity: 0, y: -12 }}
         animate={{
           opacity: 1,
           y: 0,
-          scale: scrolled ? 0.97 : 1,
-          paddingTop: scrolled ? 7 : 9,
-          paddingBottom: scrolled ? 7 : 9,
           boxShadow: scrolled
-            ? "0 14px 36px -16px rgba(5, 150, 105, 0.28), 0 4px 12px -4px rgba(15, 23, 42, 0.08)"
-            : "0 8px 24px -12px rgba(5, 150, 105, 0.14), 0 2px 6px -2px rgba(15, 23, 42, 0.04)",
+            ? "0 12px 32px -16px rgba(15, 23, 42, 0.18), 0 2px 6px -2px rgba(15, 23, 42, 0.06)"
+            : "0 6px 18px -12px rgba(15, 23, 42, 0.10), 0 1px 3px -1px rgba(15, 23, 42, 0.04)",
         }}
         transition={{
-          duration: reduced ? 0 : 0.38,
+          duration: reduced ? 0 : 0.32,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="landing-dynamic-frame landing-sheen flex w-full min-w-0 items-center justify-between rounded-full border border-border/60 bg-[var(--landing-nav-bg,rgba(255,255,255,0.82))] px-3 backdrop-blur-xl backdrop-saturate-150 sm:px-5"
-        style={{ transformOrigin: "top center", willChange: "transform" }}
+        className="flex w-full min-w-0 items-center justify-between rounded-full border border-border/60 bg-[var(--landing-nav-bg,rgba(255,255,255,0.82))] px-3 py-2 backdrop-blur-xl backdrop-saturate-150 sm:px-5"
       >
         <Link
           href="/"

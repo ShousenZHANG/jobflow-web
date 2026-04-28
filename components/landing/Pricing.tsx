@@ -92,7 +92,7 @@ export function Pricing() {
         <SectionKicker>{t("kicker")}</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           {t("titlePrefix")}{" "}
-          <em className="font-serif italic text-brand-emerald-700">
+          <em className="font-serif italic text-foreground">
             {t("titleItalic")}
           </em>
         </h2>

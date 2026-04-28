@@ -67,17 +67,17 @@ export function HowItWorks() {
         variants={stagger}
         className="relative grid gap-8 md:grid-cols-3"
       >
-        {/* Connecting rail */}
+        {/* Connecting rail — static gradient line, no animation. */}
         <div
           aria-hidden
-          className="landing-flow-rail pointer-events-none absolute left-0 right-0 top-12 hidden h-px bg-gradient-to-r from-transparent via-brand-emerald-500/40 to-transparent md:block"
+          className="pointer-events-none absolute left-0 right-0 top-12 hidden h-px bg-gradient-to-r from-transparent via-brand-emerald-500/40 to-transparent md:block"
         />
 
         {STEPS.map(({ num, title, blurb, icon: Icon }) => (
           <motion.li
             key={num}
             variants={fadeUp}
-            className="landing-dynamic-frame landing-sheen relative flex flex-col rounded-2xl border border-border/60 bg-background p-6 shadow-sm transition-transform duration-300 hover:-translate-y-1"
+            className="relative flex flex-col rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
           >
             <div className="mb-4 flex items-center gap-3">
               <span

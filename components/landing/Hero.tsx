@@ -5,15 +5,13 @@ import {
   ArrowRight,
   Briefcase,
   CheckCircle2,
-  MapPin,
   Play,
   Search,
-  Star,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { fadeUp, floatIn, stagger } from "./lib/motion";
+import { fadeUp, stagger } from "./lib/motion";
 import { useCtaHref } from "./lib/useCtaHref";
 
 // Run a layout effect on the client, noop on the server, so we can
@@ -22,19 +20,24 @@ import { useCtaHref } from "./lib/useCtaHref";
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-// Hero — the biggest single block on the page. Sections:
-//   1. Eyebrow + pulsing green dot ("New · Self-learning extension").
-//   2. Hero title with italic serif emphasis + subtitle + dual CTA.
-//   3. Meta strip — "4,281 applications tailored this week · Free forever".
-//   4. Hero canvas: 3-column product mock (sidebar + job list + detail)
-//      with a score bar that animates from 0 → 88% on mount.
-//   5. Three floating callouts that fade in around the canvas at
-//      staggered delays (0.3s / 0.6s / 0.9s).
+// Hero — Linear/Vercel pattern: centered headline, dual CTA, full-width
+// product mock as the visual anchor. Sections:
+//   1. Eyebrow + pulsing green dot.
+//   2. Hero title (huge, two lines, italic serif emphasis on second line).
+//   3. Subtitle.
+//   4. Dual CTA — primary "Start free" + secondary "Watch demo".
+//   5. Meta — "Free forever · Bring your own LLM key".
+//   6. Hero canvas: 3-column product mock (sidebar + job list + detail).
+//      Score bar fills 0 → 88% on enter view. Active job row rotates
+//      every 2.6s so the demo feels alive.
 //
-// Tilt / parallax from Landing.html is intentionally omitted — it looked
-// great on desktop but reads as noise on touch devices and introduces a
-// scroll-jank risk inside a Next.js page. The product mock is already
-// busy enough on its own.
+// Floating callouts ("Skills matched / Tailored / Roles found") have been
+// removed — they distracted from the mock itself and the value they
+// signaled is already visible inside the mock's detail panel.
+//
+// All infinite CSS animations on this section have been removed (no more
+// landing-scanline / landing-depth-lift / landing-dynamic-frame). The
+// only motion that runs at steady state is the eyebrow dot pulse.
 
 interface JobRow {
   title: string;
@@ -128,14 +131,14 @@ export function Hero() {
   const introItem = reduced
     ? {
         hidden: { opacity: 0 },
-        show: { opacity: 1, transition: { duration: 0.4 } },
+        show: { opacity: 1, transition: { duration: 0.3 } },
       }
     : {
-        hidden: { opacity: 0, y: 28 },
+        hidden: { opacity: 0, y: 24 },
         show: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.72, ease: [0.16, 1, 0.3, 1] as const },
+          transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const },
         },
       };
 
@@ -174,14 +177,17 @@ export function Hero() {
         </span>
       </motion.div>
 
-      {/* Title */}
+      {/* Title — Linear-style oversized headline. lg:text-[88px] is the
+          Vercel/Linear visual baseline; tracking-tight + leading-[0.95]
+          collapses the line gap so the two lines feel like one display
+          block. */}
       <motion.h1
         variants={introItem}
-        className="mx-auto mt-6 max-w-[21rem] text-balance text-center text-4xl font-bold tracking-tight text-foreground sm:max-w-3xl sm:text-6xl lg:text-7xl"
+        className="mx-auto mt-6 max-w-[21rem] text-balance text-center text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:max-w-3xl sm:text-6xl sm:leading-[1] lg:max-w-4xl lg:text-[88px] lg:leading-[0.95]"
       >
         {t("titleLine1")}
         <br />
-        <em className="bg-gradient-to-br from-brand-emerald-700 via-brand-emerald-600 to-[#14b8a6] bg-clip-text font-serif italic text-transparent">
+        <em className="font-serif italic text-foreground">
           {t("titleItalic")}
         </em>
       </motion.h1>
@@ -204,7 +210,7 @@ export function Hero() {
           aria-disabled={cta.disabled}
           tabIndex={cta.disabled ? -1 : undefined}
           className={
-            "landing-sheen inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-transform hover:-translate-y-px hover:bg-foreground/90 " +
+            "inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-transform hover:-translate-y-px hover:bg-foreground/90 " +
             (cta.disabled ? "pointer-events-none opacity-70" : "")
           }
         >
@@ -220,42 +226,44 @@ export function Hero() {
         </Link>
       </motion.div>
 
-      {/* Meta */}
+      {/* Meta — single honest line, no fabricated counters. */}
       <motion.div
         variants={introItem}
-        className="mt-6 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground sm:flex-row sm:gap-4"
+        className="mt-6 flex items-center justify-center text-xs text-muted-foreground"
       >
-        <span>
-          {t("metaCount", { count: "4,281" })}
-        </span>
-        <span aria-hidden className="hidden h-1 w-1 rounded-full bg-border sm:block" />
         <span>{t("metaFree")}</span>
       </motion.div>
 
-      {/* Canvas — frame lifts in with bigger rise + scale so it reads
-          as the hero visual settling into place. Still part of the
-          orchestrated intro cascade via variants. */}
+      {/* Canvas — frame lifts in with a single rise + scale settle, no
+          infinite floating animation behind it. */}
       <motion.div
         variants={{
           hidden: reduced
             ? { opacity: 0 }
-            : { opacity: 0, y: 56, scale: 0.98 },
+            : { opacity: 0, y: 48, scale: 0.985 },
           show: {
             opacity: 1,
             y: 0,
             scale: 1,
             transition: {
-              duration: 0.95,
+              duration: 0.7,
               ease: [0.16, 1, 0.3, 1] as const,
             },
           },
         }}
         className="relative mx-auto mt-16 max-w-5xl"
       >
-        <div className="landing-depth-lift landing-dynamic-frame landing-scanline relative overflow-hidden rounded-3xl border border-border/60 bg-background shadow-[var(--shadow-elevated-emerald)]">
+        {/* Static emerald glow behind the canvas — gives lift without an
+            animated shadow. Pointer-events-none + -z-10 so it never
+            interferes with mock interactions. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-x-6 -bottom-8 -z-10 h-72 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(16,185,129,0.12),transparent_70%)]"
+        />
+        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-card shadow-[0_30px_80px_-30px_rgba(15,23,42,0.18)]">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-brand-emerald-400/70 to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-brand-emerald-400/60 to-transparent"
           />
           {/* App mock: phones get a single stacked column; ≥sm gets
               list + detail (sidebar hidden); ≥md gets the full 3-col.
@@ -392,8 +400,8 @@ export function Hero() {
                   <motion.div
                     initial={reduced ? { width: "88%" } : { width: 0 }}
                     animate={{ width: "88%" }}
-                    transition={{ duration: 1.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                    className="landing-flow-rail h-full rounded-full bg-brand-emerald-600"
+                    transition={{ duration: 1.4, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full rounded-full bg-brand-emerald-600"
                   />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1">
@@ -433,51 +441,6 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* Floating callouts */}
-        <motion.div
-          variants={floatIn(0.8)}
-          initial={reduced ? undefined : "hidden"}
-          animate={mounted ? "show" : reduced ? undefined : "hidden"}
-          className="absolute -left-4 top-10 hidden items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-emerald-100 text-brand-emerald-700">
-            <CheckCircle2 className="h-4 w-4" aria-hidden />
-          </span>
-          <div className="text-xs">
-            <div className="font-semibold text-foreground">{t("floats.skillsMatched")}</div>
-            <div className="text-muted-foreground">{t("floats.skillsMatchedDesc")}</div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          variants={floatIn(1.1)}
-          initial={reduced ? undefined : "hidden"}
-          animate={mounted ? "show" : reduced ? undefined : "hidden"}
-          className="absolute -right-4 top-32 hidden items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[theme(colors.tier-fair-bg)] text-[theme(colors.tier-fair-fg)]">
-            <Star className="h-4 w-4" aria-hidden />
-          </span>
-          <div className="text-xs">
-            <div className="font-semibold text-foreground">{t("floats.tailored")}</div>
-            <div className="text-muted-foreground">{t("floats.tailoredDesc")}</div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          variants={floatIn(1.4)}
-          initial={reduced ? undefined : "hidden"}
-          animate={mounted ? "show" : reduced ? undefined : "hidden"}
-          className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 shadow-md md:flex"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-emerald-100 text-brand-emerald-700">
-            <MapPin className="h-4 w-4" aria-hidden />
-          </span>
-          <div className="text-xs">
-            <div className="font-semibold text-foreground">{t("floats.roles")}</div>
-            <div className="text-muted-foreground">{t("floats.rolesDesc")}</div>
-          </div>
-        </motion.div>
       </motion.div>
       </motion.div>
 

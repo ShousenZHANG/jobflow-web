@@ -1,23 +1,19 @@
 import type { Metadata } from "next";
-import {
-  Instrument_Serif,
-  JetBrains_Mono,
-  Source_Sans_3,
-} from "next/font/google";
+import { Instrument_Serif } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const geistSans = Source_Sans_3({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Geist Sans + Mono are Vercel's first-party font system designed for
+// hi-density UIs and big numerals. Replaces the previous Source Sans 3
+// + JetBrains Mono pairing that was masquerading under the same CSS
+// variable names. The `geist` npm package self-hosts the fonts so we
+// avoid an extra Google Fonts hop on first paint.
+const geistSans = GeistSans;
+const geistMono = GeistMono;
 
 // Italic serif display face used for the Hero title emphasis
 // ("re-engineered.") and every deep-dive / section heading <em>.

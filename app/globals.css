@@ -4,24 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --accent: oklch(0.96 0.01 250);
-  --muted: oklch(0.96 0.01 250);
+  /* Linear/Vercel-style neutrals: warm ivory background, near-black foreground,
+     stone-tinted borders. Hue shifted from cool blue (250°) to neutral-warm
+     (80°) for an upscale, less "tech-blue" feel. Magnitude is small so app
+     pages keep their existing contrast. */
+  --accent: oklch(0.96 0.005 80);
+  --muted: oklch(0.96 0.005 80);
   --radius: 0.625rem;
-  --background: oklch(0.985 0.005 250);
-  --foreground: oklch(0.17 0.02 255);
+  --background: oklch(0.99 0.003 80);
+  --foreground: oklch(0.12 0.005 250);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.17 0.02 255);
+  --card-foreground: oklch(0.12 0.005 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.17 0.02 255);
+  --popover-foreground: oklch(0.12 0.005 250);
   --primary: oklch(0.56 0.19 255);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.965 0.01 250);
-  --secondary-foreground: oklch(0.22 0.02 255);
-  --muted-foreground: oklch(0.5 0.02 255);
-  --accent-foreground: oklch(0.22 0.02 255);
+  --secondary: oklch(0.965 0.005 80);
+  --secondary-foreground: oklch(0.18 0.005 250);
+  --muted-foreground: oklch(0.48 0.012 250);
+  --accent-foreground: oklch(0.18 0.005 250);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.01 250);
-  --input: oklch(0.9 0.01 250);
+  --border: oklch(0.92 0.005 80);
+  --input: oklch(0.92 0.005 80);
   --ring: oklch(0.73 0.08 255);
   --chart-1: oklch(0.56 0.19 255);
   --chart-2: oklch(0.62 0.12 200);
@@ -153,46 +157,29 @@
   --ease-spring: var(--ease-spring);
 }
 
-/* Background atmosphere — multi-radial gradient mesh ported from
-   Landing.html `.atmos`. Fixed to the viewport so it never reflows on
-   scroll. Rendered behind the landing content (z-index: 0) while the
-   page itself sits at z-index: 1. Dark-mode swaps the palette to a
-   quieter emerald/teal wash. */
+/* Background atmosphere — single subtle emerald vignette anchored at the
+   top center, fading to transparent. Fixed to the viewport so it never
+   reflows on scroll. Reduced from 3 colors (emerald + teal + amber) to a
+   single emerald wash so brand color reads as "scarcity" rather than
+   "noise". Static — no animation. */
 .landing-atmos {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background:
-    radial-gradient(
-      ellipse 90% 50% at 12% 8%,
-      rgba(16, 185, 129, 0.09),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 70% 40% at 88% 32%,
-      rgba(20, 184, 166, 0.1),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 80% 60% at 92% 92%,
-      rgba(251, 191, 36, 0.05),
-      transparent 55%
-    );
+  background: radial-gradient(
+    ellipse 70% 50% at 50% 0%,
+    rgba(16, 185, 129, 0.05),
+    transparent 65%
+  );
 }
 
 .dark .landing-atmos {
-  background:
-    radial-gradient(
-      ellipse 90% 60% at 15% 10%,
-      rgba(16, 185, 129, 0.08),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 60% 40% at 85% 30%,
-      rgba(20, 184, 166, 0.06),
-      transparent 60%
-    );
+  background: radial-gradient(
+    ellipse 70% 50% at 50% 0%,
+    rgba(16, 185, 129, 0.07),
+    transparent 65%
+  );
 }
 
 /* Landing keyframes used by Tailwind animate-[...] arbitrary utilities. */
@@ -215,45 +202,18 @@
   50% { opacity: 0.5; }
 }
 
-@keyframes landing-border-flow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes landing-scanline {
-  0% { transform: translateY(-35%); opacity: 0; }
-  12% { opacity: 0.52; }
-  55% { opacity: 0.26; }
-  100% { transform: translateY(135%); opacity: 0; }
-}
-
-@keyframes landing-rail-flow {
-  from { transform: translateX(-45%); }
-  to { transform: translateX(145%); }
-}
-
-@keyframes landing-card-sheen {
-  from { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
-  22% { opacity: 0.55; }
-  55% { opacity: 0.18; }
-  to { transform: translateX(180%) skewX(-18deg); opacity: 0; }
-}
-
-@keyframes landing-soft-float {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -8px, 0); }
-}
+/* Removed (Linear/Vercel-style cleanup, killed perpetual paint cost):
+   landing-border-flow / landing-scanline / landing-rail-flow /
+   landing-card-sheen / landing-soft-float / landing-marquee.
+   The corresponding utility classes below are also removed; any lingering
+   className references are no-ops. */
 
 /* Horizontal auto-scrolling marquee used by the testimonials strip.
    Pair the animation with two back-to-back copies of the content so the
    -50% translate lands on the start of the second copy, producing a
    seamless loop. Duration is passed via a CSS var so consumers can slow
    it down on wider viewports. */
-@keyframes landing-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
+/* landing-marquee keyframe removed — Testimonials section was cut. */
 
 @theme inline {
   --color-background: var(--background);
@@ -306,11 +266,13 @@ body {
 
 
 .dark {
-  --background: oklch(0.16 0.02 255);
+  /* Linear-style dark: deeper near-black background (zinc-950), slightly
+     less blue-tinted card surfaces (zinc-900), tighter borders. */
+  --background: oklch(0.12 0.005 250);
   --foreground: oklch(0.98 0.005 250);
-  --card: oklch(0.2 0.02 255);
+  --card: oklch(0.16 0.005 250);
   --card-foreground: oklch(0.98 0.005 250);
-  --popover: oklch(0.2 0.02 255);
+  --popover: oklch(0.16 0.005 250);
   --popover-foreground: oklch(0.98 0.005 250);
   --primary: oklch(0.7 0.16 255);
   --primary-foreground: oklch(0.2 0.02 255);
@@ -321,8 +283,8 @@ body {
   --accent: oklch(0.26 0.02 255);
   --accent-foreground: oklch(0.98 0.005 250);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.7 0.12 255);
   --chart-1: oklch(0.62 0.18 255);
   --chart-2: oklch(0.68 0.12 200);
@@ -2358,104 +2320,17 @@ body::-webkit-scrollbar-thumb:hover {
   transform: translateY(-1px);
 }
 
-/* Landing: premium motion effects. Scoped to marketing surfaces so app
-   workflows keep their quieter interaction model. */
-.landing-dynamic-frame {
-  position: relative;
-  isolation: isolate;
-}
+/* Landing motion effects — DELETED for performance.
+   Previously this block defined `.landing-dynamic-frame::before`,
+   `.landing-scanline::after`, `.landing-flow-rail::after`,
+   `.landing-sheen::after`, and `.landing-depth-lift`, each running its
+   own infinite animation. With ~10 cards on the page, scroll-time paint
+   cost was the primary cause of the jank reported by users.
 
-.landing-dynamic-frame::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  z-index: -1;
-  border-radius: inherit;
-  background: linear-gradient(
-    115deg,
-    rgba(16, 185, 129, 0.18),
-    rgba(20, 184, 166, 0.46),
-    rgba(14, 165, 233, 0.24),
-    rgba(16, 185, 129, 0.18)
-  );
-  background-size: 260% 260%;
-  opacity: 0.72;
-  animation: landing-border-flow 7s ease-in-out infinite;
-}
-
-.landing-scanline {
-  position: relative;
-  overflow: hidden;
-}
-
-.landing-scanline::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(16, 185, 129, 0) 35%,
-    rgba(16, 185, 129, 0.18) 46%,
-    rgba(255, 255, 255, 0.46) 50%,
-    rgba(20, 184, 166, 0.16) 54%,
-    rgba(16, 185, 129, 0) 65%,
-    transparent 100%
-  );
-  transform: translateY(-35%);
-  animation: landing-scanline 5.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-}
-
-.landing-flow-rail {
-  position: relative;
-  overflow: hidden;
-}
-
-.landing-flow-rail::after {
-  content: "";
-  position: absolute;
-  inset-block: -2px;
-  left: 0;
-  width: 34%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(16, 185, 129, 0.88),
-    rgba(20, 184, 166, 0.92),
-    transparent
-  );
-  filter: blur(0.5px);
-  animation: landing-rail-flow 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-}
-
-.landing-sheen {
-  position: relative;
-  overflow: hidden;
-}
-
-.landing-sheen::after {
-  content: "";
-  position: absolute;
-  inset-block: -30%;
-  left: 0;
-  width: 32%;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.5),
-    transparent
-  );
-  transform: translateX(-140%) skewX(-18deg);
-  animation: landing-card-sheen 6.8s ease-in-out infinite;
-}
-
-.landing-depth-lift {
-  animation: landing-soft-float 7.2s ease-in-out infinite;
-}
+   The class names are intentionally NOT redeclared here — leftover
+   `className="landing-sheen ..."` references on components are now
+   harmless no-ops. The base classes `.landing-canvas-grid`, `.landing-card`,
+   and `.landing-section` (defined elsewhere) remain. */
 
 .landing-canvas-grid {
   background-image:
@@ -2569,13 +2444,7 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-dynamic-frame::before,
-  .landing-scanline::after,
-  .landing-flow-rail::after,
-  .landing-sheen::after,
-  .landing-depth-lift {
-    animation: none;
-  }
+  /* Landing motion effects deleted entirely; nothing to disable. */
 
   .edu-cta-shimmer::after {
     animation: none;

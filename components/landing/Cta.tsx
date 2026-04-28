@@ -22,16 +22,17 @@ export function Cta() {
       className="mx-auto my-16 w-full max-w-6xl px-6 sm:my-24 sm:px-10"
       variants={fadeUp}
     >
-      <div className="landing-dynamic-frame landing-scanline relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-brand-emerald-50 via-background to-background px-8 py-16 text-center sm:px-16 sm:py-20">
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-card px-8 py-16 text-center sm:px-16 sm:py-20">
+        {/* Subtle single-radial vignette behind the copy. Static. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_15%_10%,theme(colors.brand-emerald-100)/0.6,transparent_60%),radial-gradient(ellipse_60%_40%_at_85%_90%,theme(colors.brand-emerald-100)/0.5,transparent_60%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(16,185,129,0.10),transparent_70%)]"
         />
         <div className="relative mx-auto max-w-2xl">
           <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
             {t("titlePrefix")}
             <br />
-            <em className="font-serif italic text-brand-emerald-700">
+            <em className="font-serif italic text-foreground">
               {t("titleItalic")}
             </em>
           </h2>
@@ -45,7 +46,7 @@ export function Cta() {
               aria-disabled={cta.disabled}
               tabIndex={cta.disabled ? -1 : undefined}
               className={
-                "landing-sheen inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-transform hover:-translate-y-px hover:bg-foreground/90 " +
+                "inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-transform hover:-translate-y-px hover:bg-foreground/90 " +
                 (cta.disabled ? "pointer-events-none opacity-70" : "")
               }
             >

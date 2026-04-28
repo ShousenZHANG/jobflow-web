@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import { Cta } from "@/components/landing/Cta";
-import { DeepDiveATS } from "@/components/landing/DeepDiveATS";
-import { DeepDiveFetch } from "@/components/landing/DeepDiveFetch";
-import { DeepDiveResume } from "@/components/landing/DeepDiveResume";
 import { Faq } from "@/components/landing/Faq";
 import { Features } from "@/components/landing/Features";
 import { Footer } from "@/components/landing/Footer";
@@ -11,8 +8,6 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { LogoBar } from "@/components/landing/LogoBar";
 import { Nav } from "@/components/landing/Nav";
 import { Pricing } from "@/components/landing/Pricing";
-import { Stats } from "@/components/landing/Stats";
-import { Testimonials } from "@/components/landing/Testimonials";
 
 /* ── SEO ──────────────────────────────────────────────── */
 
@@ -48,10 +43,21 @@ const jsonLd = {
 /* ── Page ─────────────────────────────────────────────── */
 
 /**
- * Marketing landing page. Server component that stitches the 14 landing
+ * Marketing landing page. Server component that stitches the 9 landing
  * sections from `components/landing/`. Each section is "use client" so it
- * can run framer-motion reveals and count-ups — but the page shell
- * renders from the server so HTML arrives first for SEO and LCP.
+ * can run framer-motion reveals — but the page shell renders from the
+ * server so HTML arrives first for SEO and LCP.
+ *
+ * Section narrative (Linear/Vercel pattern):
+ *   Nav        — sticky navigation + primary CTA
+ *   Hero       — what + dual CTA + product mock
+ *   LogoBar    — credibility (job boards + LLM providers)
+ *   HowItWorks — 3-step flow
+ *   Features   — 2×2 differentiators
+ *   Pricing    — single free plan
+ *   Faq        — objections
+ *   Cta        — final push
+ *   Footer     — links + legal
  */
 export default function MarketingPage() {
   return (
@@ -60,9 +66,9 @@ export default function MarketingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* Atmosphere: fixed gradient mesh rendered behind the page. Kept
-          outside <main> so no ancestor transform/overflow establishes a
-          new containing block for the fixed Nav inside <main>. */}
+      {/* Atmosphere: fixed single-radial gradient rendered behind the page.
+          Kept outside <main> so no ancestor transform/overflow establishes
+          a new containing block for the fixed Nav inside <main>. */}
       <div aria-hidden className="landing-atmos" />
       <main className="relative z-[1] flex flex-col bg-transparent text-foreground">
         <Nav />
@@ -70,11 +76,6 @@ export default function MarketingPage() {
         <LogoBar />
         <HowItWorks />
         <Features />
-        <DeepDiveResume />
-        <DeepDiveATS />
-        <DeepDiveFetch />
-        <Stats />
-        <Testimonials />
         <Pricing />
         <Faq />
         <Cta />
