@@ -38,7 +38,7 @@ interface Feature {
 
 /** Standard card chrome shared by hero and grid cards. */
 const CARD_BASE =
-  "group relative flex flex-col rounded-3xl border border-border/60 bg-background/80 p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-emerald-200 hover:shadow-[0_1px_2px_rgba(15,23,42,0.04),0_16px_36px_-14px_rgba(5,150,105,0.22)]";
+  "landing-dynamic-frame landing-sheen group relative flex flex-col rounded-3xl border border-border/60 bg-background/80 p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-emerald-200 hover:shadow-[0_1px_2px_rgba(15,23,42,0.04),0_16px_36px_-14px_rgba(5,150,105,0.22)]";
 
 function IconChip({ icon: Icon }: { icon: LucideIcon }) {
   return (

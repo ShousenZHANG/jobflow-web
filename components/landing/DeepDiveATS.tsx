@@ -46,7 +46,7 @@ export function DeepDiveATS() {
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <motion.div
           variants={fadeUp}
-          className="relative order-last overflow-hidden rounded-3xl border border-border/60 bg-background shadow-[var(--shadow-card-emerald)] lg:order-first"
+          className="landing-dynamic-frame landing-scanline relative order-last overflow-hidden rounded-3xl border border-border/60 bg-background shadow-[var(--shadow-card-emerald)] lg:order-first"
         >
           {/* Browser chrome */}
           <div className="flex items-center gap-2 border-b border-border/60 bg-muted/40 px-4 py-2.5">
@@ -69,7 +69,7 @@ export function DeepDiveATS() {
                 </span>
                 <div
                   className={
-                    "flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-sm " +
+                    "flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-sm transition-transform duration-300 hover:translate-x-1 " +
                     (field.state === "filled" || field.state === "file"
                       ? "border-brand-emerald-200 bg-brand-emerald-50 text-brand-emerald-700"
                       : "border-border bg-background text-foreground")

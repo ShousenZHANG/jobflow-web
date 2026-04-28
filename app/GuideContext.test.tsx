@@ -96,6 +96,34 @@ describe("GuideContext", () => {
     vi.restoreAllMocks();
     mockPathname = "/resume";
     pushMock.mockReset();
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.dataset.guideAnchor === "resume_setup") {
+        return {
+          x: 96,
+          y: 80,
+          top: 80,
+          left: 96,
+          right: 236,
+          bottom: 116,
+          width: 140,
+          height: 36,
+          toJSON: () => ({}),
+        } as DOMRect;
+      }
+      return {
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: 0,
+        height: 0,
+        toJSON: () => ({}),
+      } as DOMRect;
+    });
   });
 
   afterEach(() => {

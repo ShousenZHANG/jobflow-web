@@ -80,11 +80,6 @@ const TASK_ICONS: Record<OnboardingTaskId, React.ElementType> = {
 
 const GuideContext = createContext<GuideContextValue | null>(null);
 
-function getTaskById(taskId: OnboardingTaskId | null): OnboardingTask | null {
-  if (!taskId) return null;
-  return ONBOARDING_TASKS.find((task) => task.id === taskId) ?? null;
-}
-
 function resolveGuideState(
   previousState: GuideState | null,
   nextState: GuideState,

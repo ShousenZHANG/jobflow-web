@@ -215,6 +215,36 @@
   50% { opacity: 0.5; }
 }
 
+@keyframes landing-border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes landing-scanline {
+  0% { transform: translateY(-35%); opacity: 0; }
+  12% { opacity: 0.52; }
+  55% { opacity: 0.26; }
+  100% { transform: translateY(135%); opacity: 0; }
+}
+
+@keyframes landing-rail-flow {
+  from { transform: translateX(-45%); }
+  to { transform: translateX(145%); }
+}
+
+@keyframes landing-card-sheen {
+  from { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  22% { opacity: 0.55; }
+  55% { opacity: 0.18; }
+  to { transform: translateX(180%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes landing-soft-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+
 /* Horizontal auto-scrolling marquee used by the testimonials strip.
    Pair the animation with two back-to-back copies of the content so the
    -50% translate lands on the start of the second copy, producing a
@@ -2328,6 +2358,114 @@ body::-webkit-scrollbar-thumb:hover {
   transform: translateY(-1px);
 }
 
+/* Landing: premium motion effects. Scoped to marketing surfaces so app
+   workflows keep their quieter interaction model. */
+.landing-dynamic-frame {
+  position: relative;
+  isolation: isolate;
+}
+
+.landing-dynamic-frame::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    rgba(16, 185, 129, 0.18),
+    rgba(20, 184, 166, 0.46),
+    rgba(14, 165, 233, 0.24),
+    rgba(16, 185, 129, 0.18)
+  );
+  background-size: 260% 260%;
+  opacity: 0.72;
+  animation: landing-border-flow 7s ease-in-out infinite;
+}
+
+.landing-scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0) 35%,
+    rgba(16, 185, 129, 0.18) 46%,
+    rgba(255, 255, 255, 0.46) 50%,
+    rgba(20, 184, 166, 0.16) 54%,
+    rgba(16, 185, 129, 0) 65%,
+    transparent 100%
+  );
+  transform: translateY(-35%);
+  animation: landing-scanline 5.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.landing-flow-rail {
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-flow-rail::after {
+  content: "";
+  position: absolute;
+  inset-block: -2px;
+  left: 0;
+  width: 34%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(16, 185, 129, 0.88),
+    rgba(20, 184, 166, 0.92),
+    transparent
+  );
+  filter: blur(0.5px);
+  animation: landing-rail-flow 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.landing-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-sheen::after {
+  content: "";
+  position: absolute;
+  inset-block: -30%;
+  left: 0;
+  width: 32%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transform: translateX(-140%) skewX(-18deg);
+  animation: landing-card-sheen 6.8s ease-in-out infinite;
+}
+
+.landing-depth-lift {
+  animation: landing-soft-float 7.2s ease-in-out infinite;
+}
+
+.landing-canvas-grid {
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.07) 1px, transparent 1px);
+  background-size: 34px 34px;
+  -webkit-mask-image: radial-gradient(ellipse 72% 58% at 50% 42%, black 0%, transparent 76%);
+  mask-image: radial-gradient(ellipse 72% 58% at 50% 42%, black 0%, transparent 76%);
+}
+
 /* ── Landing: liquid glass (warm adaptation — Mindloop pattern) ── */
 .liquid-glass-card {
   position: relative;
@@ -2431,6 +2569,14 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .landing-dynamic-frame::before,
+  .landing-scanline::after,
+  .landing-flow-rail::after,
+  .landing-sheen::after,
+  .landing-depth-lift {
+    animation: none;
+  }
+
   .edu-cta-shimmer::after {
     animation: none;
   }

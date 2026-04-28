@@ -71,7 +71,7 @@ export function Nav() {
     <nav
       data-testid="landing-nav"
       aria-label="Primary"
-      className="sticky top-3 z-50 mx-auto w-full max-w-6xl px-4 sm:top-4 sm:px-6"
+      className="sticky top-3 z-50 mx-auto w-full max-w-6xl overflow-hidden px-3 sm:top-4 sm:px-6"
     >
       {/* Inner pill: always on (bg + blur + border + shadow even at rest,
           matching Landing.html baseline). Scrolling tightens padding,
@@ -93,12 +93,12 @@ export function Nav() {
           duration: reduced ? 0 : 0.38,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="flex w-full items-center justify-between rounded-full border border-border/60 bg-[var(--landing-nav-bg,rgba(255,255,255,0.82))] px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-5"
+        className="landing-dynamic-frame landing-sheen flex w-full min-w-0 items-center justify-between rounded-full border border-border/60 bg-[var(--landing-nav-bg,rgba(255,255,255,0.82))] px-3 backdrop-blur-xl backdrop-saturate-150 sm:px-5"
         style={{ transformOrigin: "top center", willChange: "transform" }}
       >
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-[15px] font-semibold tracking-tight text-foreground transition-colors hover:text-brand-emerald-700 focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-emerald-600"
+          className="flex min-w-0 shrink-0 items-center gap-2 text-[15px] font-semibold tracking-tight text-foreground transition-colors hover:text-brand-emerald-700 focus-visible:outline focus-visible:ring-2 focus-visible:ring-brand-emerald-600"
           aria-label="Joblit home"
         >
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-emerald-50 ring-1 ring-brand-emerald-100">
@@ -125,11 +125,13 @@ export function Nav() {
           ))}
         </ul>
 
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
           <div className="hidden sm:inline-flex">
             <LocaleSwitcher />
           </div>
-          <ThemeToggle className="hidden sm:inline-flex" />
+          <div className="hidden sm:inline-flex">
+            <ThemeToggle />
+          </div>
           {status === "unauthenticated" && (
             <Link
               href="/login"
@@ -140,14 +142,15 @@ export function Nav() {
           )}
           <Link
             href={ctaHref}
+            aria-label={ctaLabel}
             aria-disabled={status === "loading"}
             tabIndex={status === "loading" ? -1 : undefined}
             className={
-              "inline-flex items-center gap-1 rounded-full bg-foreground px-4 py-1.5 text-[13px] font-semibold text-background shadow-sm transition-all hover:-translate-y-px hover:bg-foreground/90 hover:shadow-md " +
+              "inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground px-3 py-1.5 text-[13px] font-semibold text-background shadow-sm transition-all hover:-translate-y-px hover:bg-foreground/90 hover:shadow-md sm:px-4 " +
               (status === "loading" ? "pointer-events-none opacity-60" : "")
             }
           >
-            {ctaLabel}
+            <span className="hidden whitespace-nowrap sm:inline">{ctaLabel}</span>
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>

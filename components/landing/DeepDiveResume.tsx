@@ -79,7 +79,7 @@ export function DeepDiveResume() {
 
         <motion.div
           variants={fadeUp}
-          className="grid grid-cols-2 gap-3 rounded-3xl border border-border/60 bg-background p-5 shadow-[var(--shadow-card-emerald)]"
+          className="landing-dynamic-frame landing-scanline grid grid-cols-2 gap-3 overflow-hidden rounded-3xl border border-border/60 bg-background p-5 shadow-[var(--shadow-card-emerald)]"
         >
           {/* Before */}
           <div className="flex flex-col gap-3 rounded-xl bg-muted/40 p-4">
@@ -106,7 +106,7 @@ export function DeepDiveResume() {
           </div>
 
           {/* After */}
-          <div className="flex flex-col gap-3 rounded-xl border border-brand-emerald-200 bg-brand-emerald-50/40 p-4">
+          <div className="landing-sheen flex flex-col gap-3 rounded-xl border border-brand-emerald-200 bg-brand-emerald-50/40 p-4">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-emerald-700">
                 {t("after")}

@@ -142,8 +142,12 @@ export function Hero() {
   return (
     <section
       data-testid="landing-hero"
-      className="relative mx-auto w-full max-w-6xl px-6 pb-24 pt-16 sm:pt-24 lg:px-10"
+      className="relative isolate mx-auto w-full max-w-6xl overflow-hidden px-6 pb-24 pt-16 sm:pt-24 lg:px-10"
     >
+      <div
+        aria-hidden
+        className="landing-canvas-grid pointer-events-none absolute inset-x-0 top-10 -z-10 h-[620px] opacity-80"
+      />
       <motion.div
         variants={introStagger}
         initial="hidden"
@@ -173,7 +177,7 @@ export function Hero() {
       {/* Title */}
       <motion.h1
         variants={introItem}
-        className="mx-auto mt-6 max-w-3xl text-balance text-center text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl"
+        className="mx-auto mt-6 max-w-[21rem] text-balance text-center text-4xl font-bold tracking-tight text-foreground sm:max-w-3xl sm:text-6xl lg:text-7xl"
       >
         {t("titleLine1")}
         <br />
@@ -185,7 +189,7 @@ export function Hero() {
       {/* Subtitle */}
       <motion.p
         variants={introItem}
-        className="mx-auto mt-6 max-w-2xl text-balance text-center text-base leading-relaxed text-muted-foreground sm:text-lg"
+        className="mx-auto mt-6 max-w-[21rem] text-balance text-center text-base leading-relaxed text-muted-foreground sm:max-w-2xl sm:text-lg"
       >
         {t("subtitle")}
       </motion.p>
@@ -200,7 +204,7 @@ export function Hero() {
           aria-disabled={cta.disabled}
           tabIndex={cta.disabled ? -1 : undefined}
           className={
-            "inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-transform hover:-translate-y-px hover:bg-foreground/90 " +
+            "landing-sheen inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition-transform hover:-translate-y-px hover:bg-foreground/90 " +
             (cta.disabled ? "pointer-events-none opacity-70" : "")
           }
         >
@@ -248,7 +252,11 @@ export function Hero() {
         }}
         className="relative mx-auto mt-16 max-w-5xl"
       >
-        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-background shadow-[var(--shadow-elevated-emerald)]">
+        <div className="landing-depth-lift landing-dynamic-frame landing-scanline relative overflow-hidden rounded-3xl border border-border/60 bg-background shadow-[var(--shadow-elevated-emerald)]">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-brand-emerald-400/70 to-transparent"
+          />
           {/* App mock: phones get a single stacked column; ≥sm gets
               list + detail (sidebar hidden); ≥md gets the full 3-col.
               Columns mount with a 90/130/170 ms cascade after the
@@ -324,18 +332,26 @@ export function Hero() {
                     className={
                       "rounded-lg border border-l-4 px-3 py-2 transition-colors " +
                       (i === activeRow
-                        ? "border-l-brand-emerald-500 bg-brand-emerald-50/40"
+                        ? "border-l-brand-emerald-500 bg-brand-emerald-50/40 shadow-[0_12px_30px_-24px_rgba(5,150,105,0.55)]"
                         : "border-l-transparent bg-background/60")
                     }
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={
-                          "rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider " +
-                          TIER_BG[row.tier]
-                        }
-                      >
-                        {row.score}%
+                      <span className="flex items-center gap-1">
+                        {i === activeRow && (
+                          <span
+                            aria-hidden
+                            className="h-1.5 w-1.5 rounded-full bg-brand-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.14)]"
+                          />
+                        )}
+                        <span
+                          className={
+                            "rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider " +
+                            TIER_BG[row.tier]
+                          }
+                        >
+                          {row.score}%
+                        </span>
                       </span>
                       <span className="text-[10px] text-muted-foreground">
                         {row.timeAgo}
@@ -377,7 +393,7 @@ export function Hero() {
                     initial={reduced ? { width: "88%" } : { width: 0 }}
                     animate={{ width: "88%" }}
                     transition={{ duration: 1.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                    className="h-full rounded-full bg-brand-emerald-600"
+                    className="landing-flow-rail h-full rounded-full bg-brand-emerald-600"
                   />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1">

@@ -91,7 +91,7 @@ export function DeepDiveFetch() {
 
         <motion.div
           variants={fadeUp}
-          className="relative rounded-3xl border border-border/60 bg-background p-6 shadow-[var(--shadow-card-emerald)]"
+          className="landing-dynamic-frame landing-scanline relative overflow-hidden rounded-3xl border border-border/60 bg-background p-6 shadow-[var(--shadow-card-emerald)]"
         >
           <div className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {t("header")}
@@ -100,7 +100,7 @@ export function DeepDiveFetch() {
             {ROWS.map((row) => (
               <li
                 key={row.source}
-                className="flex items-center gap-4 rounded-xl border border-border/50 bg-muted/30 px-4 py-3"
+                className="flex items-center gap-4 rounded-xl border border-border/50 bg-muted/30 px-4 py-3 transition-transform duration-300 hover:translate-x-1"
               >
                 <span className="min-w-20 text-sm font-semibold text-foreground">
                   {row.source}

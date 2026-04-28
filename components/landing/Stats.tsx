@@ -73,7 +73,7 @@ export function Stats() {
       initial="hidden"
       animate={inView ? "show" : "hidden"}
     >
-      <div className="grid gap-10 rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#052f24] to-[#022c22] px-8 py-12 text-white sm:grid-cols-2 sm:px-12 sm:py-16 md:grid-cols-4">
+      <div className="landing-dynamic-frame landing-scanline grid gap-10 overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#052f24] to-[#022c22] px-8 py-12 text-white sm:grid-cols-2 sm:px-12 sm:py-16 md:grid-cols-4">
         {STATS.map((s) => (
           <StatCell key={s.label} stat={s} active={inView} />
         ))}
