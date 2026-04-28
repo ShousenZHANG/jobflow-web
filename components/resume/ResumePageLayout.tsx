@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Download, Eye, Loader2 } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,38 +47,40 @@ function ResumeHeader() {
   const guideHighlight = isTaskHighlighted("resume_setup");
 
   return (
-    <header className="shrink-0 border-b border-border/60 px-4 pb-3 pt-3 lg:px-6 lg:pb-4 lg:pt-5">
+    <header className="shrink-0 border-b border-border bg-card px-4 py-2.5 lg:px-5 lg:py-3">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h1 className="text-lg font-semibold text-foreground lg:text-2xl">
+          <h1 className="truncate text-base font-semibold leading-[1.25] tracking-[-0.01em] text-foreground">
             {tResume("masterResumes")}
           </h1>
-          <p className="hidden text-sm text-muted-foreground sm:block">
+          <p className="hidden truncate text-xs text-muted-foreground sm:block">
             {tResume("masterResumesDesc")}
           </p>
         </div>
 
-        {/* Action cluster — stays right-aligned at every viewport */}
-        <div className="flex shrink-0 items-center gap-2">
-          {/* Save status — compact icon + label, hidden when no content yet */}
+        {/* Action cluster — design spec ".ph-right" */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          {/* Save state — 6px emerald dot with halo + label.
+              Saving state turns warning + 1.2s pulse per design. */}
           {hasAnyContent ? (
             <span
-              className="hidden items-center gap-1.5 text-xs font-medium text-muted-foreground sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex"
               aria-live="polite"
             >
-              {saving ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
-                  {tForm("saving")}
-                </>
-              ) : (
-                <>
-                  <Check className="h-3 w-3 text-emerald-500" aria-hidden />
-                  {tForm("toastSaved")}
-                </>
-              )}
+              <span
+                aria-hidden
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full ring-[3px]",
+                  saving
+                    ? "bg-amber-500 ring-amber-500/20 animate-pulse"
+                    : "bg-emerald-500 ring-emerald-500/15",
+                )}
+              />
+              {saving ? tForm("saving") : tForm("toastSaved")}
             </span>
           ) : null}
+
+          <span className="mx-1 hidden h-5 w-px bg-border sm:inline-block" aria-hidden />
 
           {/* Mobile-only preview toggle */}
           <Button
@@ -103,7 +105,7 @@ function ResumeHeader() {
             data-guide-anchor="resume_setup"
             data-guide-highlight={guideHighlight ? "true" : "false"}
             className={cn(
-              "edu-cta edu-cta--press min-w-[8rem] whitespace-nowrap",
+              "edu-cta edu-cta--press min-w-[7rem] whitespace-nowrap",
               guideHighlight &&
                 "ring-2 ring-emerald-400 ring-offset-2 ring-offset-background shadow-[0_0_0_4px_rgba(16,185,129,0.18)]",
             )}
@@ -360,9 +362,10 @@ export function ResumePageLayout() {
           {/* Mobile tab nav */}
           <SectionNav className="lg:hidden border-b border-border" />
 
-          {/* Scrollable form content */}
+          {/* Scrollable form content — design spec form-canvas:
+              max-width 720px, padding 28px 40px 60px on desktop. */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="mx-auto max-w-2xl px-4 py-6 lg:px-8">
+            <div className="mx-auto max-w-[720px] px-4 pb-12 pt-6 lg:px-10 lg:pb-16 lg:pt-7">
               <VersionSelector />
               {/* `key` resets the subtree on section switch so the
                   fade-in always replays. `motion-reduce` opts out for
