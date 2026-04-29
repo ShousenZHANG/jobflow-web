@@ -260,7 +260,7 @@ export function ResumePageLayout() {
       {/* Content area */}
       <div className="flex flex-1 min-h-0">
         {/* Desktop section sidebar with persistent save action */}
-        <SectionNav className="hidden w-[184px] shrink-0 flex-col border-r border-border lg:flex" />
+        <SectionNav className="hidden w-16 shrink-0 flex-col border-r border-border lg:flex" />
 
         {/* Form content area */}
         <div className="flex flex-1 min-h-0 flex-col">
