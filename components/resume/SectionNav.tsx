@@ -139,7 +139,7 @@ export function SectionNav({ className }: SectionNavProps) {
             data-guide-highlight={guideHighlight ? "true" : "false"}
             className={cn(
               "relative grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white",
-              "shadow-[0_10px_24px_-14px_rgba(5,150,105,0.7)] transition-[transform,box-shadow,filter] duration-150 ease-out",
+              "shadow-[0_10px_24px_-14px_rgba(5,150,105,0.7)] transition-[transform,box-shadow,filter] duration-150 ease-out motion-reduce:transition-none",
               "hover:brightness-105 hover:shadow-[0_14px_28px_-14px_rgba(5,150,105,0.8)]",
               "active:scale-[0.97] motion-reduce:active:scale-100",
               "disabled:cursor-not-allowed disabled:opacity-60",
@@ -148,7 +148,7 @@ export function SectionNav({ className }: SectionNavProps) {
             )}
           >
             {saving ? (
-              <Loader2 className="h-[18px] w-[18px] animate-spin" aria-hidden />
+              <Loader2 className="h-[18px] w-[18px] animate-spin motion-reduce:animate-none" aria-hidden />
             ) : (
               <Save className="h-[18px] w-[18px]" aria-hidden />
             )}
@@ -244,7 +244,7 @@ export function SectionNav({ className }: SectionNavProps) {
             data-guide-highlight={guideHighlight ? "true" : "false"}
             className={cn(
               "grid h-9 w-9 place-items-center rounded-full bg-emerald-600 text-white shadow-sm",
-              "transition-[transform,filter] duration-150 ease-out",
+              "transition-[transform,filter] duration-150 ease-out motion-reduce:transition-none",
               "hover:brightness-105 active:scale-[0.97] motion-reduce:active:scale-100",
               "disabled:cursor-not-allowed disabled:opacity-60",
               guideHighlight &&
@@ -252,7 +252,7 @@ export function SectionNav({ className }: SectionNavProps) {
             )}
           >
             {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden />
             ) : (
               <Save className="h-4 w-4" aria-hidden />
             )}

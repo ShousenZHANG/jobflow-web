@@ -273,7 +273,7 @@ export function ResumePageLayout() {
           {/* Scrollable form content — design spec form-canvas:
               max-width 720px, padding 28px 40px 60px on desktop. */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="mx-auto max-w-[720px] px-4 pb-12 pt-6 lg:px-8 lg:pb-16 lg:pt-6">
+            <div className="mx-auto max-w-[720px] px-4 pb-12 pt-6 lg:px-6 lg:pb-16 lg:pt-6">
               <VersionSelector />
               {/* `key` resets the subtree on section switch so the
                   fade-in always replays. `motion-reduce` opts out for
@@ -288,17 +288,17 @@ export function ResumePageLayout() {
           </div>
         </div>
 
-        {/* Desktop preview panel — fixed-width column that never
-            shrinks. Three breakpoint stops keep the rendered PDF as
-            large as the viewport allows while leaving a usable form
-            column on each:
-              md  ≥ 768px  → 480px preview
-              lg  ≥ 1024px → 600px preview
-              xl  ≥ 1280px → 720px preview
-              2xl ≥ 1536px → 800px preview
-            `shrink-0` plus the form column's `min-w-0` keep this width
-            stable across every form section / option. */}
-        <PreviewPanel className="hidden md:flex w-[480px] shrink-0 border-l border-border flex-col lg:w-[600px] xl:w-[720px] 2xl:w-[800px]" />
+        {/* Desktop preview panel — viewport-fluid width via clamp() so
+            the form column always keeps a comfortable working area:
+
+              w = clamp(440px, 38vw, 720px)
+
+            That gives the preview at least 440px on smaller laptops
+            (form keeps ≥520px) and grows to 720px on ultra-wide
+            displays without ever stealing more than 38% of the
+            viewport. `shrink-0` plus the form column's `min-w-0`
+            keep this width identical across every section. */}
+        <PreviewPanel className="hidden md:flex w-[clamp(440px,38vw,720px)] shrink-0 border-l border-border flex-col" />
       </div>
     </div>
   );
