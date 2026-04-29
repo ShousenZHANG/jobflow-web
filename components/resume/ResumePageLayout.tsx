@@ -15,6 +15,7 @@ import {
 import { useResumeContext } from "./ResumeContext";
 import { SectionNav } from "./SectionNav";
 import { PreviewPanel } from "./PreviewPanel";
+import { ResumePdfPreview } from "./ResumePdfPreview";
 import { VersionSelector } from "./VersionSelector";
 import { PersonalInfoSection } from "./sections/PersonalInfoSection";
 import { SummarySection } from "./sections/SummarySection";
@@ -188,7 +189,7 @@ function MobilePreviewDialog() {
         </DialogHeader>
         <div className="flex h-full flex-col">
           <div className="flex h-11 items-center justify-end border-b border-border bg-background/90 px-3 gap-2">
-            {pdfUrl && previewStatus === "ready" && (
+            {pdfUrl && (
               <a
                 href={pdfUrl}
                 download={downloadFilename}
@@ -206,13 +207,15 @@ function MobilePreviewDialog() {
           </div>
           <div className="relative flex-1 overflow-hidden bg-card">
             {pdfUrl ? (
-              <iframe title="Resume preview" src={pdfUrl} className="h-full w-full" />
+              <div className="absolute inset-0 overflow-auto bg-gradient-to-b from-muted/40 via-muted/25 to-muted/15 px-3 py-4 sm:px-5 sm:py-5">
+                <ResumePdfPreview pdfUrl={pdfUrl} maxWidth={760} />
+              </div>
             ) : (
               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                 {t("preview")}
               </div>
             )}
-            {previewStatus === "loading" && (
+            {previewStatus === "loading" && !pdfUrl && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-xs text-muted-foreground">
                 Generating preview…
               </div>

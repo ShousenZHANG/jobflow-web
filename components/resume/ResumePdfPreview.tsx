@@ -9,6 +9,9 @@ import { cn } from "@/lib/utils";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
+const A4_HEIGHT_RATIO = 1.41421356237;
+const MIN_PREVIEW_WIDTH = 240;
+
 // Bundle the pdfjs web worker via the Next.js asset pipeline so it lives
 // next to the JS chunk that imports it. Avoids a runtime CDN fetch and
 // keeps offline / strict-CSP environments working.
@@ -56,15 +59,22 @@ export function ResumePdfPreview({ pdfUrl, maxWidth = 760, className }: ResumePd
   // pdfjs.getDocument() resolves successfully, which gives us a clean
   // atomic swap instead of a teardown-then-rebuild sequence.
   const [displayedDoc, setDisplayedDoc] = useState<PDFDocumentProxy | null>(null);
+  const displayedDocRef = useRef<PDFDocumentProxy | null>(null);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  useEffect(() => {
+    displayedDocRef.current = displayedDoc;
+  }, [displayedDoc]);
 
   // Track the available width so each Page renders at the right zoom.
   useEffect(() => {
     const node = containerRef.current;
     if (!node) return;
     const sync = () => {
-      const next = Math.min(node.clientWidth, maxWidth);
-      if (next > 0) setContainerWidth(next);
+      const measured = Math.floor(node.clientWidth);
+      if (measured <= 0) return;
+      const next = Math.max(MIN_PREVIEW_WIDTH, Math.min(measured, maxWidth));
+      setContainerWidth((current) => (Math.abs(current - next) > 1 ? next : current));
     };
     sync();
     const observer = new ResizeObserver(sync);
@@ -95,6 +105,7 @@ export function ResumePdfPreview({ pdfUrl, maxWidth = 760, className }: ResumePd
           if (prev && prev !== doc) {
             void prev.destroy();
           }
+          displayedDocRef.current = doc;
           return doc;
         });
         setIsFirstLoad(false);
@@ -113,10 +124,10 @@ export function ResumePdfPreview({ pdfUrl, maxWidth = 760, className }: ResumePd
   // Drop the latest document on unmount so pdfjs frees its workers.
   useEffect(() => {
     return () => {
-      setDisplayedDoc((prev) => {
-        if (prev) void prev.destroy();
-        return null;
-      });
+      if (displayedDocRef.current) {
+        void displayedDocRef.current.destroy();
+        displayedDocRef.current = null;
+      }
     };
   }, []);
 
@@ -136,13 +147,20 @@ export function ResumePdfPreview({ pdfUrl, maxWidth = 760, className }: ResumePd
       {displayedDoc
         ? Array.from({ length: numPages }, (_, index) => (
             <div
-              key={`${pdfUrl}-page-${index + 1}`}
+              key={`page-${index + 1}`}
               className="overflow-hidden rounded-sm bg-white shadow-[0_18px_40px_-22px_rgba(15,23,42,0.20),0_4px_12px_-4px_rgba(15,23,42,0.08)] ring-1 ring-border/60"
+              style={{
+                width: containerWidth,
+                minHeight: Math.round(containerWidth * A4_HEIGHT_RATIO),
+              }}
             >
               <Page
                 pdf={displayedDoc}
                 pageNumber={index + 1}
                 width={containerWidth}
+                loading={null}
+                error={null}
+                noData={null}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
                 className="!block"

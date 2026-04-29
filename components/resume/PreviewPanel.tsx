@@ -23,7 +23,7 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
     return `${safeName}${connector}${safeTitle}.pdf`;
   })();
 
-  const isReady = pdfUrl && previewStatus === "ready";
+  const currentPdfUrl = pdfUrl ?? null;
 
   return (
     <div className={cn("flex flex-col bg-muted/40 dark:bg-muted/20", className)}>
@@ -53,9 +53,9 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
           </Button>
 
           {/* Open in new tab */}
-          {isReady ? (
+          {currentPdfUrl ? (
             <a
-              href={pdfUrl}
+              href={currentPdfUrl}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Open in new tab"
@@ -68,9 +68,9 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
           <span aria-hidden className="mx-1 h-4 w-px bg-border" />
 
           {/* Download primary */}
-          {isReady ? (
+          {currentPdfUrl ? (
             <a
-              href={pdfUrl}
+              href={currentPdfUrl}
               download={downloadFilename}
               className="inline-flex h-7 items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.97]"
             >
