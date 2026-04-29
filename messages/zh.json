@@ -328,6 +328,7 @@
     "itemsPlaceholder": "React, Next.js, TypeScript, Tailwind CSS",
     "back": "上一步",
     "preview": "预览",
+    "download": "下载",
     "next": "下一步",
     "saving": "保存中...",
     "saveSelectedResume": "保存简历",

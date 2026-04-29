@@ -1,6 +1,6 @@
 "use client";
 
-import { useInView, type Variants } from "framer-motion";
+import { type Variants } from "framer-motion";
 import { useRef, type RefObject } from "react";
 
 // Shared framer-motion variants for the marketing landing. Import these
@@ -10,11 +10,11 @@ import { useRef, type RefObject } from "react";
 const SPRING_EASE = [0.16, 1, 0.3, 1] as const;
 
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 32 },
+  hidden: { opacity: 0, y: 18 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: SPRING_EASE },
+    transition: { duration: 0.52, ease: SPRING_EASE },
   },
 };
 
@@ -27,18 +27,18 @@ export const fadeIn: Variants = {
 };
 
 export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.96 },
+  hidden: { opacity: 0, scale: 0.98 },
   show: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.45, ease: SPRING_EASE },
+    transition: { duration: 0.36, ease: SPRING_EASE },
   },
 };
 
 export const stagger: Variants = {
   hidden: {},
   show: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.055, delayChildren: 0.03 },
   },
 };
 
@@ -74,17 +74,15 @@ export const revealOnce = {
 
 export interface RevealProps {
   ref: RefObject<HTMLElement | null>;
-  initial: "hidden";
+  initial: "hidden" | "show";
   animate: "hidden" | "show";
 }
 
 /**
- * Hook-based reveal trigger. Use instead of {@link revealOnce} when the
- * component needs deterministic reveal firing — this uses an explicit
- * `useInView` observer attached to the returned ref, and sets the
- * `animate` prop directly rather than relying on framer-motion's
- * internal `whileInView` watcher (which has shown timing bugs under
- * Next.js App Router hydration in our testing).
+ * Deterministic reveal props for long landing pages. Sections mount visible
+ * instead of waiting for an observer so fast scroll and hydration timing never
+ * leave content transparent in the viewport. Hero keeps the richer entrance
+ * animation; body sections prioritize scroll responsiveness.
  *
  * Usage:
  *   const reveal = useReveal();
@@ -92,14 +90,9 @@ export interface RevealProps {
  */
 export function useReveal(): RevealProps {
   const ref = useRef<HTMLElement | null>(null);
-  const inView = useInView(ref, {
-    once: true,
-    amount: 0.12,
-    margin: "0px 0px 15% 0px",
-  });
   return {
     ref,
-    initial: "hidden",
-    animate: inView ? "show" : "hidden",
+    initial: "show",
+    animate: "show",
   };
 }

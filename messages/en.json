@@ -328,6 +328,7 @@
     "itemsPlaceholder": "React, Next.js, TypeScript, Tailwind CSS",
     "back": "Back",
     "preview": "Preview",
+    "download": "Download",
     "next": "Next",
     "saving": "Saving...",
     "saveSelectedResume": "Save selected resume",

@@ -3,15 +3,14 @@ import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSess
 import type { SessionContext } from "@/lib/server/auth/requireSession";
 import { unauthorizedError } from "@/lib/server/api/errorResponse";
 import { put, del } from "@vercel/blob";
+import {
+  buildResumePhotoBlobPath,
+  MAX_RESUME_PHOTO_BYTES,
+  parseTrustedResumePhotoUrl,
+  toResumePhotoContentType,
+} from "@/lib/server/resumePhotoBlob";
 
 export const runtime = "nodejs";
-
-const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-
-function buildPhotoBlobPath(userId: string) {
-  return `resume-photos/${userId}/photo`;
-}
 
 export async function POST(req: Request) {
   let ctx: SessionContext;
@@ -31,8 +30,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const contentType = req.headers.get("content-type") ?? "";
-  if (!ALLOWED_TYPES.has(contentType)) {
+  const contentType = toResumePhotoContentType(req.headers.get("content-type"));
+  if (!contentType) {
     return NextResponse.json(
       { error: { code: "INVALID_TYPE", message: "Only JPEG, PNG, and WebP are allowed" }, requestId },
       { status: 400 },
@@ -40,15 +39,14 @@ export async function POST(req: Request) {
   }
 
   const body = await req.arrayBuffer();
-  if (body.byteLength > MAX_SIZE) {
+  if (body.byteLength > MAX_RESUME_PHOTO_BYTES) {
     return NextResponse.json(
       { error: { code: "TOO_LARGE", message: "Photo must be under 2 MB" }, requestId },
       { status: 400 },
     );
   }
 
-  const ext = contentType === "image/png" ? ".png" : contentType === "image/webp" ? ".webp" : ".jpg";
-  const blobPath = `${buildPhotoBlobPath(userId)}${ext}`;
+  const blobPath = buildResumePhotoBlobPath(userId, contentType);
 
   const blob = await put(blobPath, Buffer.from(body), {
     access: "public",
@@ -69,7 +67,7 @@ export async function DELETE(req: Request) {
     if (err instanceof UnauthorizedError) return unauthorizedError();
     throw err;
   }
-  const { requestId } = ctx;
+  const { userId, requestId } = ctx;
 
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) {
@@ -82,7 +80,14 @@ export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const photoUrl = searchParams.get("url");
   if (photoUrl) {
-    await del(photoUrl, { token }).catch(() => {});
+    const trustedPhotoUrl = parseTrustedResumePhotoUrl(photoUrl, userId);
+    if (!trustedPhotoUrl) {
+      return NextResponse.json(
+        { error: { code: "INVALID_PHOTO_URL", message: "Photo URL is not owned by this profile" }, requestId },
+        { status: 400 },
+      );
+    }
+    await Promise.resolve(del(trustedPhotoUrl.toString(), { token })).catch(() => {});
   }
 
   return NextResponse.json({ ok: true, requestId });

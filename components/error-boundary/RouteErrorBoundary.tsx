@@ -1,0 +1,96 @@
+"use client";
+
+import { useEffect, useMemo } from "react";
+import { AlertCircle, RefreshCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  CHUNK_RELOAD_STORAGE_KEY,
+  isChunkLoadError,
+} from "@/lib/shared/chunkLoadError";
+
+type RouteErrorBoundaryProps = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
+function readReloadAttempted() {
+  try {
+    return window.sessionStorage.getItem(CHUNK_RELOAD_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markReloadAttempted() {
+  try {
+    window.sessionStorage.setItem(CHUNK_RELOAD_STORAGE_KEY, "1");
+  } catch {
+    // Storage can be blocked; the manual reload button still works.
+  }
+}
+
+function clearReloadAttempted() {
+  try {
+    window.sessionStorage.removeItem(CHUNK_RELOAD_STORAGE_KEY);
+  } catch {
+    // Storage can be blocked; reset should not fail because of it.
+  }
+}
+
+export function RouteErrorBoundary({ error, reset }: RouteErrorBoundaryProps) {
+  const isChunkError = useMemo(() => isChunkLoadError(error), [error]);
+
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  useEffect(() => {
+    if (!isChunkError || readReloadAttempted()) return;
+    markReloadAttempted();
+    window.location.reload();
+  }, [isChunkError]);
+
+  const title = isChunkError ? "App update available" : "Something went wrong";
+  const message = isChunkError
+    ? "A newer app bundle is available. Reload the page to continue with the latest version."
+    : "We could not load this page. Try again, or refresh the app if the issue persists.";
+
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center p-6">
+      <div className="w-full max-w-md rounded-2xl border border-border/70 bg-background/90 p-6 shadow-sm backdrop-blur-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <AlertCircle className="size-5 text-brand-emerald-600" aria-hidden />
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        </div>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{message}</p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            onClick={() => {
+              clearReloadAttempted();
+              if (isChunkError) {
+                window.location.reload();
+                return;
+              }
+              reset();
+            }}
+            className="rounded-full bg-brand-emerald-600 px-4 text-white hover:bg-brand-emerald-700"
+          >
+            <RefreshCcw className="size-4" aria-hidden />
+            {isChunkError ? "Reload" : "Try again"}
+          </Button>
+          {!isChunkError && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="rounded-full px-4"
+            >
+              Refresh app
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

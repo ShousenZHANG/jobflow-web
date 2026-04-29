@@ -96,4 +96,97 @@ describe("resume pdf api", () => {
     expect(res.headers.get("content-type")).toBe("application/pdf");
     expect(res.headers.get("content-disposition")).toMatch(/attachment/);
   });
+
+  it("does not fetch untrusted CN profile photo URLs", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    activeResumeProfileStore.findUnique.mockResolvedValueOnce({ resumeProfileId: "rp-cn" });
+    resumeProfileStore.findFirst.mockResolvedValueOnce({
+      id: "rp-cn",
+      userId: "user-1",
+      locale: "zh-CN",
+      summary: "Summary",
+      basics: {
+        fullName: "张三",
+        title: "软件工程师",
+        email: "zhangsan@example.com",
+        phone: "13800138000",
+        photoUrl: "https://evil.example.com/photo.png",
+      },
+      links: [],
+      experiences: [],
+      projects: [],
+      education: [],
+      skills: [{ category: "技能", items: ["TypeScript"] }],
+    });
+
+    (fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      arrayBuffer: async () => mockPdf.buffer,
+      headers: new Headers({ "content-type": "application/pdf" }),
+    });
+
+    const res = await POST(new Request("http://localhost/api/resume-pdf?locale=zh-CN"));
+
+    expect(res.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe(
+      "https://latex.example.com/compile",
+    );
+    const compileBody = JSON.parse(
+      (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0][1].body,
+    );
+    expect(compileBody.files).toBeUndefined();
+  });
+
+  it("attaches only bounded trusted CN profile photos to the LaTeX render request", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    activeResumeProfileStore.findUnique.mockResolvedValueOnce({ resumeProfileId: "rp-cn" });
+    resumeProfileStore.findFirst.mockResolvedValueOnce({
+      id: "rp-cn",
+      userId: "user-1",
+      locale: "zh-CN",
+      summary: "Summary",
+      basics: {
+        fullName: "张三",
+        title: "软件工程师",
+        email: "zhangsan@example.com",
+        phone: "13800138000",
+        photoUrl:
+          "https://store.public.blob.vercel-storage.com/resume-photos/user-1/photo.png",
+      },
+      links: [],
+      experiences: [],
+      projects: [],
+      education: [],
+      skills: [{ category: "技能", items: ["TypeScript"] }],
+    });
+
+    (fetch as unknown as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3]), {
+          headers: {
+            "content-type": "image/png",
+            "content-length": "3",
+          },
+        }),
+      )
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: async () => mockPdf.buffer,
+        headers: new Headers({ "content-type": "application/pdf" }),
+      });
+
+    const res = await POST(new Request("http://localhost/api/resume-pdf?locale=zh-CN"));
+
+    expect(res.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    const compileBody = JSON.parse(
+      (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[1][1].body,
+    );
+    expect(compileBody.files).toEqual([{ name: "photo.png", base64: "AQID" }]);
+  });
 });

@@ -2,15 +2,17 @@ import { describe, it, expect } from "vitest";
 import { fadeUp, fadeIn, stagger, floatIn, revealOnce } from "./motion";
 
 // These assertions lock in the motion contract the landing sections
-// depend on. If any value drifts (e.g. fadeUp y shrinks to zero, or
-// revealOnce loses `once`), reveals stop feeling crisp on long pages.
+// depend on. Movement should stay visible but small enough to avoid
+// scroll-time jank on long pages.
 
 describe("landing motion variants", () => {
   it("fadeUp has a visible initial offset and spring ease", () => {
     const hidden = fadeUp.hidden as { opacity: number; y: number };
     expect(hidden.opacity).toBe(0);
-    // Offset must be >= 28px so the reveal reads as motion, not just fade.
-    expect(hidden.y).toBeGreaterThanOrEqual(28);
+    // Keep the lift subtle: enough to read as motion, not enough to
+    // make long-page scrolling feel delayed.
+    expect(hidden.y).toBeGreaterThanOrEqual(12);
+    expect(hidden.y).toBeLessThanOrEqual(20);
 
     const show = fadeUp.show as {
       opacity: number;

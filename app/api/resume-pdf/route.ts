@@ -11,6 +11,10 @@ import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { mapResumeProfileCN } from "@/lib/server/latex/mapResumeProfileCN";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
 import { ResumeProfileSchema } from "@/lib/shared/schemas/resumeProfile";
+import {
+  buildResumePhotoCompileFile,
+  parseTrustedResumePhotoUrl,
+} from "@/lib/server/resumePhotoBlob";
 
 export const runtime = "nodejs";
 
@@ -72,19 +76,20 @@ export async function POST(req: Request) {
     candidateName = input.candidate.name;
     candidateTitle = input.candidate.title;
 
-    // Download photo for LaTeX compilation
+    // Only fetch photos uploaded through this user's Vercel Blob path.
     const basics = (sourceProfile as Record<string, unknown>).basics as Record<string, unknown> | undefined;
     const photoUrl = typeof basics?.photoUrl === "string" ? basics.photoUrl.trim() : "";
-    if (photoUrl) {
+    const trustedPhotoUrl = photoUrl ? parseTrustedResumePhotoUrl(photoUrl, userId) : null;
+    if (trustedPhotoUrl) {
       try {
-        const photoRes = await fetch(photoUrl, { signal: AbortSignal.timeout(5000) });
+        const photoRes = await fetch(trustedPhotoUrl, { signal: AbortSignal.timeout(5000) });
         if (photoRes.ok) {
-          const buf = Buffer.from(await photoRes.arrayBuffer());
-          const ct = photoRes.headers.get("content-type") ?? "";
-          const ext = ct.includes("png") ? ".png" : ct.includes("webp") ? ".webp" : ".jpg";
-          files.push({ name: `photo${ext}`, base64: buf.toString("base64") });
+          const photoFile = await buildResumePhotoCompileFile(photoRes);
+          if (photoFile) files.push(photoFile);
         }
-      } catch { /* photo download failed — render without photo */ }
+      } catch {
+        // Photo fetch is best-effort; render the resume without it on failure.
+      }
     }
   } else {
     const input = mapResumeProfile(sourceProfile);
