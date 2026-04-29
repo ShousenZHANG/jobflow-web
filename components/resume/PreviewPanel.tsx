@@ -1,17 +1,40 @@
 "use client";
 
-import { Download, ExternalLink, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { Download, ExternalLink, RefreshCw, Maximize2, AlignVerticalJustifyCenter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useResumeContext } from "./ResumeContext";
+
+type ZoomMode = "page-width" | "page-fit";
 
 interface PreviewPanelProps {
   className?: string;
 }
 
+/**
+ * Build a clean PDF viewer URL.
+ *
+ * Chrome / Edge / Firefox built-in PDF viewers honour these URL hash
+ * parameters to hide their native toolbars and pick a default zoom:
+ *   - toolbar=0 / navpanes=0 / scrollbar=0 / statusbar=0 / messages=0
+ *     hide every chrome element so the iframe only renders the page.
+ *   - zoom=page-width fits the rendered page to the iframe width
+ *     (default — best for fitting on tall narrow viewports).
+ *   - zoom=page-fit fits one whole page in the visible area.
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#pdf
+ * https://datatracker.ietf.org/doc/html/rfc8118 — PDF URL fragments.
+ */
+function buildPdfViewerUrl(blobUrl: string, zoom: ZoomMode): string {
+  const params = `toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&view=FitH&zoom=${zoom}`;
+  return `${blobUrl}#${params}`;
+}
+
 export function PreviewPanel({ className }: PreviewPanelProps) {
   const { pdfUrl, previewStatus, previewError, schedulePreview, basics, locale, t } =
     useResumeContext();
+  const [zoom, setZoom] = useState<ZoomMode>("page-width");
 
   const downloadFilename = (() => {
     const fallback = locale === "zh-CN" ? "未命名简历" : "Unnamed_Resume";
@@ -32,6 +55,22 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
           {t("pdfPreview")}
         </span>
         <div className="ml-auto flex items-center gap-1">
+          {/* Zoom toggle — page-width vs page-fit */}
+          <button
+            type="button"
+            onClick={() => setZoom((z) => (z === "page-width" ? "page-fit" : "page-width"))}
+            aria-label={zoom === "page-width" ? "Fit page" : "Fit width"}
+            title={zoom === "page-width" ? "Fit page" : "Fit width"}
+            disabled={!isReady}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {zoom === "page-width" ? (
+              <AlignVerticalJustifyCenter className="h-3.5 w-3.5" />
+            ) : (
+              <Maximize2 className="h-3.5 w-3.5" />
+            )}
+          </button>
+
           {/* Refresh */}
           <Button
             type="button"
@@ -85,14 +124,15 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
         </div>
       </div>
 
-      {/* Preview area */}
-      <div className="relative flex-1 overflow-hidden">
+      {/* Preview area — soft gradient backdrop with the rendered PDF
+          centred and lifted on a subtle drop shadow, mirroring the
+          A4 paper feel of Linear / Resend / Notion preview panes. */}
+      <div className="relative flex-1 overflow-hidden bg-gradient-to-b from-muted/40 via-muted/25 to-muted/15 dark:from-muted/15 dark:via-muted/10 dark:to-muted/5">
         {/* A4 skeleton loading state */}
         {previewStatus === "idle" && !pdfUrl && (
-          <div className="flex h-full items-center justify-center p-4">
-            <div className="w-full max-w-[340px]">
-              {/* A4 proportioned rectangle (1:1.414) */}
-              <div className="aspect-[1/1.414] w-full rounded-sm bg-card shadow-sm border border-border flex items-center justify-center">
+          <div className="flex h-full items-center justify-center p-6">
+            <div className="w-full max-w-[420px]">
+              <div className="aspect-[1/1.414] w-full rounded-sm border border-border bg-card shadow-[0_18px_40px_-22px_rgba(15,23,42,0.18)] flex items-center justify-center">
                 <p className="text-xs text-muted-foreground px-4 text-center">
                   {t("preview")}
                 </p>
@@ -102,19 +142,23 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
         )}
 
         {previewStatus === "loading" && !pdfUrl && (
-          <div className="flex h-full items-center justify-center p-4">
-            <div className="w-full max-w-[340px]">
-              <div className="aspect-[1/1.414] w-full animate-pulse rounded-sm bg-muted" />
+          <div className="flex h-full items-center justify-center p-6">
+            <div className="w-full max-w-[420px]">
+              <div className="aspect-[1/1.414] w-full animate-pulse rounded-sm bg-muted shadow-[0_18px_40px_-22px_rgba(15,23,42,0.18)]" />
             </div>
           </div>
         )}
 
         {pdfUrl && (
-          <iframe
-            title="Resume preview"
-            src={pdfUrl}
-            className="h-full w-full"
-          />
+          <div className="absolute inset-0 overflow-auto px-3 py-4 sm:px-5 sm:py-5">
+            <div className="mx-auto w-full max-w-[760px] rounded-sm bg-white shadow-[0_18px_40px_-22px_rgba(15,23,42,0.20),0_4px_12px_-4px_rgba(15,23,42,0.08)] ring-1 ring-border/60 dark:bg-zinc-100">
+              <iframe
+                title="Resume preview"
+                src={buildPdfViewerUrl(pdfUrl, zoom)}
+                className="h-[calc(100dvh-9rem)] w-full rounded-sm border-0"
+              />
+            </div>
+          </div>
         )}
 
         {previewStatus === "loading" && pdfUrl && (
