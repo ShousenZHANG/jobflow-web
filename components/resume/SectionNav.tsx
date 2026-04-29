@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ElementType } from "react";
 import {
   User,
   FileText,
@@ -11,16 +11,21 @@ import {
   Save,
   Eye,
   Loader2,
-  Check,
 } from "lucide-react";
 import { useResumeContext } from "./ResumeContext";
 import type { SectionId } from "./constants";
 import { getSectionIds } from "./constants";
 import { cn } from "@/lib/utils";
 
-type SectionTranslationKey = "personalInfo" | "summary" | "experience" | "projects" | "education" | "skills";
+type SectionTranslationKey =
+  | "personalInfo"
+  | "summary"
+  | "experience"
+  | "projects"
+  | "education"
+  | "skills";
 
-const SECTION_CONFIG: Array<{ id: SectionId; tKey: SectionTranslationKey; icon: React.ElementType }> = [
+const SECTION_CONFIG: Array<{ id: SectionId; tKey: SectionTranslationKey; icon: ElementType }> = [
   { id: "personal", tKey: "personalInfo", icon: User },
   { id: "summary", tKey: "summary", icon: FileText },
   { id: "experience", tKey: "experience", icon: Briefcase },
@@ -34,19 +39,12 @@ interface SectionNavProps {
 }
 
 /**
- * SectionNav — primary section rail.
+ * Primary resume navigation.
  *
- * Desktop: a fixed 56px-wide icon rail per the Joblit Design System.
- * Each item is a 40×40 button with a hover tooltip; the active item
- * gets an emerald accent bar and tinted background. Below the section
- * list a thin divider separates the "rail foot" with the Save action
- * (and a saved-state pulse dot) — replaces the previous full-width
- * page header so the form canvas reclaims ~56px of vertical space.
- *
- * Mobile: a horizontal scrolling pill row with smooth scroll-into-view
- * of the active tab. Save and Preview move to a compact action cluster
- * at the trailing edge of the same row so the header bar can be
- * deleted on mobile too.
+ * Desktop uses a compact text sidebar: navigation stays in the top
+ * region, while the bottom dock owns the primary save action plus a
+ * persistent status dot. Mobile keeps the preview/save icon cluster
+ * beside the horizontal section tabs.
  */
 export function SectionNav({ className }: SectionNavProps) {
   const {
@@ -66,7 +64,6 @@ export function SectionNav({ className }: SectionNavProps) {
   const visibleSections = SECTION_CONFIG.filter((s) => visibleSectionIds.includes(s.id));
   const guideHighlight = isTaskHighlighted("resume_setup");
 
-  // Keep the active mobile pill centred.
   const mobileTabRefs = useRef<Map<SectionId, HTMLButtonElement | null>>(new Map());
   useEffect(() => {
     const node = mobileTabRefs.current.get(activeSection);
@@ -78,15 +75,22 @@ export function SectionNav({ className }: SectionNavProps) {
     });
   }, [activeSection]);
 
+  const saveStatusLabel = saving
+    ? t("saving")
+    : hasAnyContent
+      ? t("toastSaved")
+      : t("toastAddDetailsFirst");
+
   return (
-    <nav
-      className={cn("flex [contain:layout_style]", className)}
-      aria-label="Resume sections"
-    >
-      {/* Desktop: 56px icon-only rail with rail foot */}
-      <div className="hidden lg:flex lg:h-full lg:w-full lg:flex-col lg:items-center lg:py-2.5">
-        {/* Section list */}
-        <div className="flex flex-1 flex-col items-center gap-1">
+    <nav className={cn("flex [contain:layout_style]", className)} aria-label="Resume sections">
+      <div className="hidden lg:flex lg:h-full lg:w-full lg:flex-col lg:bg-card/35 lg:px-2.5 lg:py-3">
+        <div className="px-2 pb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            {t("resumeSetup")}
+          </p>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-1">
           {visibleSections.map(({ id, tKey, icon: Icon }) => {
             const isActive = activeSection === id;
             const label = t(tKey);
@@ -99,19 +103,20 @@ export function SectionNav({ className }: SectionNavProps) {
                 aria-label={label}
                 title={label}
                 className={cn(
-                  "group relative grid h-10 w-10 place-items-center rounded-[9px]",
+                  "group relative flex h-10 w-full items-center gap-2 rounded-xl px-2.5 text-left text-[13px] font-medium",
                   "transition-colors duration-150 ease-out motion-reduce:transition-none",
-                  "active:scale-[0.97] motion-reduce:active:scale-100",
+                  "active:scale-[0.98] motion-reduce:active:scale-100",
                   isActive
-                    ? "bg-emerald-500/12 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                    ? "bg-emerald-500/12 text-emerald-700 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.16)] dark:bg-emerald-500/15 dark:text-emerald-300"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <Icon className="h-[18px] w-[18px]" />
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 truncate">{label}</span>
                 {isActive ? (
                   <span
                     aria-hidden
-                    className="absolute -left-2 top-2 bottom-2 w-[3px] rounded-r-[3px] bg-emerald-600 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
+                    className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px] bg-emerald-600 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
                   />
                 ) : null}
               </button>
@@ -119,34 +124,53 @@ export function SectionNav({ className }: SectionNavProps) {
           })}
         </div>
 
-        {/* Rail foot — small saved-state indicator. Primary Save CTA
-            lives in the sticky ResumeSaveBar above the form so it is
-            always discoverable. */}
-        {hasAnyContent ? (
-          <div className="flex w-full flex-col items-center gap-1.5 pb-1">
-            <div aria-hidden className="h-px w-8 bg-border" />
+        <div className="mt-3 border-t border-border/70 pt-3">
+          <div className="mb-2 flex items-center gap-2 px-1 text-xs text-muted-foreground">
             <span
-              aria-live="polite"
-              aria-label={saving ? t("saving") : t("toastSaved")}
-              title={saving ? t("saving") : t("toastSaved")}
+              aria-hidden
               className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-full",
+                "h-2 w-2 shrink-0 rounded-full ring-[3px] transition-colors",
                 saving
-                  ? "bg-amber-500/10 text-amber-600"
-                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+                  ? "bg-amber-500 ring-amber-500/20 motion-safe:animate-pulse"
+                  : hasAnyContent
+                    ? "bg-emerald-500 ring-emerald-500/15"
+                    : "bg-muted-foreground/40 ring-muted-foreground/10",
               )}
-            >
-              {saving ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-              ) : (
-                <Check className="h-3.5 w-3.5" aria-hidden />
-              )}
+            />
+            <span aria-live="polite" className="min-w-0 truncate font-medium text-foreground/75">
+              {saveStatusLabel}
             </span>
           </div>
-        ) : null}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !hasAnyContent}
+            aria-label={saving ? t("saving") : t("saveSelectedResume")}
+            title={saving ? t("saving") : t("saveSelectedResume")}
+            data-guide-anchor="resume_setup"
+            data-guide-highlight={guideHighlight ? "true" : "false"}
+            className={cn(
+              "flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 text-[13px] font-semibold text-white",
+              "shadow-[0_10px_24px_-14px_rgba(5,150,105,0.7)] transition-[transform,box-shadow,filter] duration-150 ease-out",
+              "hover:brightness-105 hover:shadow-[0_14px_28px_-14px_rgba(5,150,105,0.8)]",
+              "active:scale-[0.98] motion-reduce:active:scale-100",
+              "disabled:cursor-not-allowed disabled:opacity-70",
+              guideHighlight &&
+                "ring-2 ring-emerald-400 ring-offset-2 ring-offset-background",
+            )}
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+            ) : (
+              <Save className="h-4 w-4 shrink-0" aria-hidden />
+            )}
+            <span className="min-w-0 truncate">
+              {saving ? t("saving") : t("saveSelectedResume")}
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* Mobile: horizontal scrollable tabs + trailing action cluster */}
       <div className="flex w-full items-center gap-2 px-3 py-2 lg:hidden">
         <div
           className="scrollbar-hide flex flex-1 gap-2 overflow-x-auto scroll-smooth"
@@ -180,7 +204,6 @@ export function SectionNav({ className }: SectionNavProps) {
           })}
         </div>
 
-        {/* Mobile action cluster — Eye preview + Save */}
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             type="button"
@@ -197,7 +220,7 @@ export function SectionNav({ className }: SectionNavProps) {
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !hasAnyContent}
             aria-label={saving ? t("saving") : t("saveSelectedResume")}
             data-guide-anchor="resume_setup"
             data-guide-highlight={guideHighlight ? "true" : "false"}
