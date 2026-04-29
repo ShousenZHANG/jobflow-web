@@ -151,11 +151,24 @@ export function PreviewPanel({ className }: PreviewPanelProps) {
 
         {pdfUrl && (
           <div className="absolute inset-0 overflow-auto px-3 py-4 sm:px-5 sm:py-5">
-            <div className="mx-auto w-full max-w-[760px] rounded-sm bg-white shadow-[0_18px_40px_-22px_rgba(15,23,42,0.20),0_4px_12px_-4px_rgba(15,23,42,0.08)] ring-1 ring-border/60 dark:bg-zinc-100">
+            {/*
+              A4 sheet: aspect-ratio 1:1.414 keeps the iframe exactly the
+              same shape as the rendered PDF page, so the browser's PDF
+              viewer never paints a dark gutter below the content.
+              Multi-page documents scroll inside the iframe via the
+              FitH/page-width zoom — the wrapper just guarantees no
+              empty backdrop is ever visible at the bottom.
+            */}
+            <div
+              className={cn(
+                "mx-auto w-full max-w-[760px] rounded-sm bg-white shadow-[0_18px_40px_-22px_rgba(15,23,42,0.20),0_4px_12px_-4px_rgba(15,23,42,0.08)] ring-1 ring-border/60 dark:bg-zinc-100",
+                zoom === "page-width" ? "aspect-[1/1.414]" : "aspect-[1/1.414] max-h-[calc(100dvh-10rem)]",
+              )}
+            >
               <iframe
                 title="Resume preview"
                 src={buildPdfViewerUrl(pdfUrl, zoom)}
-                className="h-[calc(100dvh-9rem)] w-full rounded-sm border-0"
+                className="block h-full w-full rounded-sm border-0"
               />
             </div>
           </div>
