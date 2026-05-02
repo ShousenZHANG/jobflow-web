@@ -1,18 +1,16 @@
-import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/server/prisma";
 import { requireSession, UnauthorizedError } from "@/lib/server/auth/requireSession";
 import type { SessionContext } from "@/lib/server/auth/requireSession";
 import { unauthorizedError } from "@/lib/server/api/errorResponse";
-import {
-  claimNextBatchTask,
-  getBatchProgress,
-  type BatchProgress,
-} from "@/lib/server/applicationBatches/runner";
-import { getActivePromptSkillRulesForUser } from "@/lib/server/promptRuleTemplates";
+import { getBatchProgress } from "@/lib/server/applicationBatches/runner";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
-import { buildPromptMeta } from "@/lib/server/ai/promptContract";
+import {
+  buildBatchRunContext,
+  claimBatchRunTasks,
+  deriveBatchStatusFromRun,
+} from "@/lib/server/applicationBatches/codexRunContext";
 
 export const runtime = "nodejs";
 
@@ -23,43 +21,6 @@ const ParamsSchema = z.object({
 const BodySchema = z.object({
   maxSteps: z.coerce.number().int().min(1).max(20).optional().default(1),
 });
-
-const TERMINAL_BATCH_STATUSES = new Set(["SUCCEEDED", "FAILED", "CANCELLED"]);
-
-type StopReason = "LIMIT_REACHED" | "BATCH_COMPLETE" | "BATCH_TERMINAL";
-
-function buildResumeSnapshotHash(profile: unknown) {
-  const record = profile as Record<string, unknown>;
-  const payload = {
-    summary: record.summary ?? null,
-    basics: record.basics ?? null,
-    links: record.links ?? null,
-    skills: record.skills ?? null,
-    experiences: record.experiences ?? null,
-    projects: record.projects ?? null,
-    education: record.education ?? null,
-    updatedAt:
-      record.updatedAt instanceof Date ? record.updatedAt.toISOString() : String(record.updatedAt ?? ""),
-  };
-  return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
-}
-
-function toBatchStatusFromRun(input: {
-  initialBatchStatus: string;
-  progress: BatchProgress;
-  claimedCount: number;
-  stopReason: StopReason;
-  claimedDoneStatus: string | null;
-  terminalStatus: string | null;
-}) {
-  if (input.terminalStatus) return input.terminalStatus;
-  if (input.claimedDoneStatus) return input.claimedDoneStatus;
-  if (input.progress.pending > 0 || input.progress.running > 0) return "RUNNING";
-  if (input.progress.failed > 0) return "FAILED";
-  if (input.progress.succeeded > 0 || input.progress.skipped > 0) return "SUCCEEDED";
-  if (input.claimedCount > 0 || input.stopReason === "LIMIT_REACHED") return "RUNNING";
-  return input.initialBatchStatus;
-}
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   let session: SessionContext;
@@ -109,94 +70,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     );
   }
 
-  const rules = await getActivePromptSkillRulesForUser(userId);
-  const resumeSnapshotHash = buildResumeSnapshotHash(profile);
-  const resumeSnapshotUpdatedAt = profile.updatedAt.toISOString();
-  const resumePromptMeta = buildPromptMeta({
-    target: "resume",
-    ruleSetId: rules.id,
-    resumeSnapshotUpdatedAt,
-  });
-  const coverPromptMeta = buildPromptMeta({
-    target: "cover",
-    ruleSetId: rules.id,
-    resumeSnapshotUpdatedAt,
-  });
   const maxSteps = parsedBody.data.maxSteps;
-  const tasks: Array<{
-    taskId: string;
-    jobId: string;
-    job: {
-      id: string;
-      title: string;
-      company: string | null;
-      jobUrl: string;
-      status: "NEW" | "APPLIED" | "REJECTED";
-      description: string | null;
-      updatedAt: string;
-    };
-  }> = [];
+  const runContext = await buildBatchRunContext({ userId, profile });
+  const claimed = await claimBatchRunTasks({
+    userId,
+    batchId: batch.id,
+    batchStatus: batch.status,
+    maxSteps,
+  });
 
-  let stopReason: StopReason = "LIMIT_REACHED";
-  let terminalStatus: string | null = null;
-  let doneStatus: string | null = null;
-
-  if (!TERMINAL_BATCH_STATUSES.has(batch.status)) {
-    for (let i = 0; i < maxSteps; i += 1) {
-      const claimed = await claimNextBatchTask({
-        userId,
-        batchId: batch.id,
-      });
-
-      if (claimed.kind === "not_found") {
-        return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
-      }
-      if (claimed.kind === "terminal") {
-        terminalStatus = claimed.batchStatus;
-        stopReason = "BATCH_TERMINAL";
-        break;
-      }
-      if (claimed.kind === "done") {
-        doneStatus = claimed.batchStatus;
-        stopReason = "BATCH_COMPLETE";
-        break;
-      }
-
-      const job = await prisma.job.findFirst({
-        where: {
-          id: claimed.task.jobId,
-          userId,
-        },
-        select: {
-          id: true,
-          title: true,
-          company: true,
-          jobUrl: true,
-          status: true,
-          description: true,
-          updatedAt: true,
-        },
-      });
-
-      if (job) {
-        tasks.push({
-          taskId: claimed.task.id,
-          jobId: claimed.task.jobId,
-          job: {
-            id: job.id,
-            title: job.title,
-            company: job.company,
-            jobUrl: job.jobUrl,
-            status: job.status,
-            description: job.description,
-            updatedAt: job.updatedAt.toISOString(),
-          },
-        });
-      }
-    }
-  } else {
-    terminalStatus = batch.status;
-    stopReason = "BATCH_TERMINAL";
+  if (claimed.kind === "not_found") {
+    return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
 
   const progress = await getBatchProgress({
@@ -204,13 +88,13 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     batchId: batch.id,
   });
 
-  const batchStatus = toBatchStatusFromRun({
+  const batchStatus = deriveBatchStatusFromRun({
     initialBatchStatus: batch.status,
     progress,
-    claimedCount: tasks.length,
-    stopReason,
-    claimedDoneStatus: doneStatus,
-    terminalStatus,
+    claimedCount: claimed.tasks.length,
+    stopReason: claimed.stopReason,
+    claimedDoneStatus: claimed.doneStatus,
+    terminalStatus: claimed.terminalStatus,
   });
 
   return NextResponse.json({
@@ -222,25 +106,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       error: batch.error,
     },
     progress,
-    context: {
-      promptMeta: resumePromptMeta,
-      promptMetaByTarget: {
-        resume: resumePromptMeta,
-        cover: coverPromptMeta,
-      },
-      rules: {
-        locale: rules.locale,
-        cvRules: rules.cvRules,
-        coverRules: rules.coverRules,
-        hardConstraints: rules.hardConstraints,
-      },
-      resumeSnapshotHash,
-    },
-    tasks,
+    context: runContext,
+    tasks: claimed.tasks,
     execution: {
       requestedMaxSteps: maxSteps,
-      claimedCount: tasks.length,
-      stopReason,
+      claimedCount: claimed.tasks.length,
+      stopReason: claimed.stopReason,
     },
   });
 }
