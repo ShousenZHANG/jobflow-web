@@ -80,6 +80,20 @@ After editing `prisma/schema.prisma`, always run `npx prisma generate`. The clie
 
 The `AGENTS.md` file documents the external orchestration protocol for the Codex batch workflow. Key API: `POST /api/application-batches/[id]/run-once` is atomic (claim next pending task + complete previous task in one call) and idempotent for the same `taskId`.
 
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues for `ShousenZHANG/jobflow-web`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The repo uses the default mattpocock/skills triage labels, with `bug` and `enhancement` as category labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repo: one root `CONTEXT.md` and root `docs/adr/` for architectural decisions. See `docs/agents/domain.md`.
+
 ## Skill routing
 
 When the user's request matches an available skill, ALWAYS invoke it using the Skill
