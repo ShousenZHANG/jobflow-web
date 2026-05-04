@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, RefreshCw, KeyRound, Star, Clock, Info } from "lucide-react";
+import { AlertCircle, RefreshCw, KeyRound, Star, Info } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
 import { useVideos } from "../hooks/useDiscoverData";
 import { relativeTime } from "../utils";
@@ -109,11 +116,6 @@ function rankVideos(
   return [...unseen, ...seen];
 }
 
-const HEADING = (
-  <h2 className="mb-4 flex items-center justify-between text-base font-semibold text-foreground lg:text-lg">
-    <span>AI Videos</span>
-  </h2>
-);
 
 export function VideoList() {
   const router = useRouter();
@@ -193,13 +195,82 @@ export function VideoList() {
 
   return (
     <section>
-      {HEADING}
+      {/* Header row — title + filter cluster on a single line, mirroring
+          the YouTube / Linear "page chrome stays calm, controls condense"
+          pattern. Sort + period are dropdowns (not pill rows) so the
+          row stays under 44px tall on every viewport. */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-base font-semibold text-foreground lg:text-lg">
+          AI Videos
+        </h2>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Select value={sort} onValueChange={(v) => setSort(v as VideoSort)}>
+            <SelectTrigger
+              className="h-8 w-auto min-w-[120px] gap-1.5 text-xs"
+              aria-label="Sort videos"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {SORTS.map((s) => (
+                <SelectItem key={s.value} value={s.value} className="text-xs">
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={timeWindow}
+            onValueChange={(v) => setTimeWindow(v as VideoTimeWindow)}
+          >
+            <SelectTrigger
+              className="h-8 w-auto min-w-[120px] gap-1.5 text-xs"
+              aria-label="Time period"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {TIME_WINDOWS.map((w) => (
+                <SelectItem key={w.value} value={w.value} className="text-xs">
+                  {w.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <button
+            type="button"
+            onClick={() => setShowFavoritesOnly((v) => !v)}
+            aria-pressed={showFavoritesOnly}
+            disabled={favCount === 0}
+            title={
+              favCount === 0
+                ? "Star a video to add it here"
+                : showFavoritesOnly
+                  ? "Show all"
+                  : "Show favorites only"
+            }
+            className={`inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-xs font-semibold transition-colors ${
+              showFavoritesOnly
+                ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            }`}
+          >
+            <Star
+              className={`h-3.5 w-3.5 ${
+                showFavoritesOnly ? "fill-amber-400 text-amber-500" : ""
+              }`}
+              aria-hidden
+            />
+            {favCount > 0 ? favCount : null}
+          </button>
+        </div>
+      </div>
 
-      {/* Category tabs */}
+      {/* Category chips */}
       <div
         role="tablist"
         aria-label="Video categories"
-        className="-mx-1 mb-3 flex gap-1 overflow-x-auto px-1 pb-1"
+        className="-mx-1 mb-4 flex gap-1 overflow-x-auto scrollbar-hide px-1 pb-1"
       >
         {CATEGORIES.map((c) => {
           const active = c.value === category;
@@ -220,79 +291,6 @@ export function VideoList() {
             </button>
           );
         })}
-      </div>
-
-      {/* Time window pills */}
-      <div className="mb-3 flex items-center gap-2">
-        <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
-        <div className="inline-flex gap-0.5 rounded-lg bg-muted/70 p-0.5">
-          {TIME_WINDOWS.map((w) => {
-            const active = w.value === timeWindow;
-            return (
-              <button
-                key={w.value}
-                type="button"
-                onClick={() => setTimeWindow(w.value)}
-                className={`rounded-md px-3 py-1 text-[11px] font-semibold transition-all sm:text-xs ${
-                  active
-                    ? "bg-card text-brand-emerald-700 shadow-sm dark:text-brand-emerald-300"
-                    : "text-muted-foreground hover:text-foreground/85"
-                }`}
-              >
-                {w.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Sort pills + favorites filter */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="inline-flex gap-0.5 rounded-lg bg-muted/70 p-0.5">
-          {SORTS.map((s) => {
-            const active = s.value === sort;
-            return (
-              <button
-                key={s.value}
-                type="button"
-                onClick={() => setSort(s.value)}
-                className={`rounded-md px-3 py-1 text-[11px] font-semibold transition-all sm:text-xs ${
-                  active
-                    ? "bg-card text-brand-emerald-700 shadow-sm dark:text-brand-emerald-300"
-                    : "text-muted-foreground hover:text-foreground/85"
-                }`}
-              >
-                {s.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowFavoritesOnly((v) => !v)}
-          aria-pressed={showFavoritesOnly}
-          disabled={favCount === 0}
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors sm:text-xs ${
-            showFavoritesOnly
-              ? "bg-amber-100 text-amber-700"
-              : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-          }`}
-          title={
-            favCount === 0
-              ? "Star a video to add it here"
-              : showFavoritesOnly
-                ? "Show all"
-                : "Show favorites only"
-          }
-        >
-          <Star
-            className={`h-3 w-3 ${
-              showFavoritesOnly ? "fill-amber-400 text-amber-500" : ""
-            }`}
-          />
-          {showFavoritesOnly ? "All" : `Favorites (${favCount})`}
-        </button>
       </div>
 
       {noApiKey && !isLoading ? (
