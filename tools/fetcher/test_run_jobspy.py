@@ -329,14 +329,14 @@ class RunJobspyDedupeTests(unittest.TestCase):
 
         out, audit = rj.filter_experience_requirements(
             df,
-            rules=["experience_requirement_5_plus"],
+            rules=["experience_requirement_4_plus"],
         )
 
         self.assertEqual(
             out["title"].tolist(),
             ["Frontend Engineer", "Graduate Engineer", "Full Stack Engineer"],
         )
-        self.assertEqual(audit["rule"].tolist(), ["experience_requirement_5_plus"])
+        self.assertEqual(audit["rule"].tolist(), ["experience_requirement_4_plus"])
 
     def test_filter_experience_requirements_supports_four_plus_and_chinese_jd(self):
         df = pd.DataFrame(

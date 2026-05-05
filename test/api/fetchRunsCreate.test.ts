@@ -80,7 +80,7 @@ describe("fetch runs create api", () => {
         method: "POST",
           body: JSON.stringify({
             title: "Software Engineer",
-          excludeDescriptionRules: ["identity_requirement", "experience_requirement_5_plus"],
+          excludeDescriptionRules: ["identity_requirement", "experience_requirement_4_plus"],
         }),
       }),
     );
@@ -88,8 +88,30 @@ describe("fetch runs create api", () => {
     const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data?.queries;
     expect(payload.excludeDescriptionRules).toEqual([
       "identity_requirement",
-      "experience_requirement_5_plus",
+      "experience_requirement_4_plus",
     ]);
+  });
+
+  it("strips deprecated 5+ years rule from payload", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    await POST(
+      new Request("http://localhost/api/fetch-runs", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Software Engineer",
+          excludeDescriptionRules: [
+            "identity_requirement",
+            "experience_requirement_5_plus",
+          ],
+        }),
+      }),
+    );
+
+    const payload = fetchRunStore.create.mock.calls[0]?.[0]?.data?.queries;
+    expect(payload.excludeDescriptionRules).toEqual(["identity_requirement"]);
   });
 
   it("keeps only supported description exclusion rules", async () => {

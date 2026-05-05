@@ -33,14 +33,7 @@
       "label": "Requires 4+ years experience",
       "category": "experience",
       "minYears": 4,
-      "help": "Excludes only when the description states a minimum requirement of 4 or more years of experience."
-    },
-    {
-      "value": "experience_requirement_5_plus",
-      "label": "Requires 5+ years experience",
-      "category": "experience",
-      "minYears": 5,
-      "help": "Excludes only when the description states a minimum requirement of 5 or more years of experience."
+      "help": "Excludes jobs whose description states a minimum requirement of 4 or more years of experience."
     }
   ]
 }

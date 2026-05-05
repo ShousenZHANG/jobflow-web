@@ -156,20 +156,28 @@ describe("FetchClient", () => {
     expect(screen.getByRole("button", { name: /start fetch/i })).toBeInTheDocument();
   });
 
-  it("renders title exclusions as inline chip toggles", () => {
+  it("opens title exclusions dropdown with bounded menu sizing and animation", async () => {
+    const user = userEvent.setup();
     renderFetch();
 
-    const menu = screen.getByTestId("title-exclusions-menu");
-    expect(menu).toBeInTheDocument();
-    const seniorChip = screen.getByRole("switch", { name: /senior/i });
-    expect(seniorChip).toHaveAttribute("aria-checked", "true");
-    expect(screen.getByRole("switch", { name: /lead/i })).toBeInTheDocument();
+    const trigger = screen.getByTestId("title-exclusions-trigger");
+    await user.click(trigger);
+
+    const menu = await screen.findByTestId("title-exclusions-menu");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(trigger).toHaveClass("h-11", "rounded-2xl");
+    expect(menu.className).toContain("w-[var(--radix-dropdown-menu-trigger-width)]");
+    expect(menu.className).toContain("data-[state=open]:animate-in");
+    expect(menu.className).toContain("data-[state=open]:zoom-in-95");
   });
 
-  it("shows explicit experience requirement exclusions inline in description cards", () => {
+  it("shows the experience requirement exclusion in the description menu", async () => {
+    const user = userEvent.setup();
     renderFetch();
 
-    expect(screen.getByText("Requires 5+ years experience")).toBeInTheDocument();
-    expect(screen.getByText(/minimum requirement of 5 or more years/i)).toBeInTheDocument();
+    await user.click(screen.getByTestId("description-exclusions-trigger"));
+
+    expect(await screen.findByText("Requires 4+ years experience")).toBeInTheDocument();
+    expect(screen.getByText(/minimum requirement of 4 or more years/i)).toBeInTheDocument();
   });
 });
