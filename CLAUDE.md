@@ -32,27 +32,43 @@ npm run deps:policy       # Check dependency policy
 1. **Job Intake**: `FetchRun` tasks dispatch GitHub Actions (Python JobSpy fetcher) → import via `/api/admin/import` with dedupe on `userId + jobUrl` and tombstone filtering (`DeletedJobUrl`)
 2. **Tailoring**: `Job` + `ResumeProfile` → AI prompt (via versioned `PromptRuleTemplate`) → external model or `/api/applications/generate` → import JSON artifact → PDF render via LaTeX external service
 3. **Batch (Codex)**: `ApplicationBatch` with `NEW` jobs → atomic claim+generate+import per task via `/api/application-batches/[id]/run-once`
+4. **Extension**: Chrome extension authenticates via `/api/ext/auth/token` → reads flat profile → logs field mappings and form submissions for learning auto-fill rules
 
 ### Route Groups
 
 - `app/(marketing)/` — Public landing pages, no auth
 - `app/(auth)/login/` — Authentication pages
-- `app/(app)/` — Protected workspace: `fetch/`, `jobs/`, `resume/`, `automation/`
+- `app/(app)/` — Protected workspace: `fetch/`, `jobs/`, `resume/`, `automation/`, `discover/`, `extension/`
 - `app/api/` — All API routes
 
 ### Backend (`lib/server/`)
 
-- `ai/` — Prompt building, Gemini API client, skill pack management
+- `ai/` — Prompt building, Gemini API client, skill pack management, CV/CL quality gates
 - `latex/` — LaTeX template rendering (`renderResume.ts` for EN, `renderResumeCN.ts` for CN)
 - `applications/` — Resume/cover artifact generation and storage
-- `applicationBatches/` — Batch task orchestration
+- `applicationBatches/` — Batch task orchestration (Codex protocol, progress tracking)
+- `jobs/` — Job CRUD, filtering, deletion cascade (jobListService, jobDeleteService, jobSearchService)
 - `files/` — Vercel Blob operations and PDF filename utilities
+- `discover/` — YouTube video pipeline: fetch, cache, refresh
+- `cnFetch/` — China job sources: GitHub repos, RSSHub, V2EX adapters
+- `api/` — Shared route utilities: `errorResponse`, `rateLimit`, `routeHandler`
+- `auth/` — Session middleware: `requireSession`, `requireExtensionToken`
 - `prisma.ts` — Prisma singleton with Neon serverless adapter
 
 ### Shared (`lib/shared/`)
 
-- `schemas/` — Zod v4 schemas (the canonical validation layer)
+- `schemas/` — Zod v4 schemas (canonical validation layer for all API boundaries)
+- `locales/` — i18n string tables for `en-AU` and `zh-CN`
+- `skillsGazetteer` — Canonical skills vocabulary used in prompt quality gates
+- `aiPromptDefaults` — Default AI prompt parameters
 - `fetchRolePacks.config.json` — Role category definitions
+- `canonicalizeJobUrl`, `parseCnSalary`, `fetchExclusionCriteria` — Job normalization helpers
+
+### Prisma Models (18)
+
+Core workflow: `Job`, `FetchRun`, `ApplicationBatch`, `ApplicationBatchTask`, `Application`, `ResumeProfile`, `ActiveResumeProfile`, `PromptRuleTemplate`  
+Auth: `User`, `Account`, `Session`, `ExtensionToken`  
+Supporting: `DeletedJobUrl` (dedup tombstone), `DailyCheckin`, `FormSubmission`, `FieldMappingRule`, `OnboardingState`, `DiscoverVideoCache`
 
 ### Internationalization
 
@@ -64,7 +80,11 @@ NextAuth v4 with GitHub + Google OAuth, Prisma adapter (database sessions). Sess
 
 ### Testing
 
-Tests live alongside source files (`.test.ts`/`.test.tsx`) or in `test/`. Setup file: `test/setup.ts`. Jsdom environment.
+Tests live alongside source files (`.test.ts`/`.test.tsx`) or in `test/`. Setup file: `test/setup.ts`. Jsdom environment. `test/api/` covers API routes; `test/server/` covers server modules.
+
+### TypeScript
+
+Path alias `@/*` maps to the project root. Import as `@/lib/...`, `@/app/...`, `@/components/...`, etc.
 
 ## Environment Variables
 
@@ -79,6 +99,10 @@ After editing `prisma/schema.prisma`, always run `npx prisma generate`. The clie
 ## Codex Batch Workflow
 
 The `AGENTS.md` file documents the external orchestration protocol for the Codex batch workflow. Key API: `POST /api/application-batches/[id]/run-once` is atomic (claim next pending task + complete previous task in one call) and idempotent for the same `taskId`.
+
+## Architecture Reference
+
+`docs/CODEMAPS/` contains architecture snapshots: `architecture.md`, `backend.md`, `data.md`, `frontend.md`, `dependencies.md`. Read these before making cross-cutting changes.
 
 ## Agent skills
 
