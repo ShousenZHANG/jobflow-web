@@ -53,12 +53,12 @@ export function HowItWorks() {
         <SectionKicker>{t("kicker")}</SectionKicker>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           {t("titlePrefix")}{" "}
-          <em className="font-serif italic text-brand-emerald-700">
+          <em className="font-serif italic text-foreground">
             {t("titleItalic")}
           </em>
           {t("titleSuffix")}
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
           {t("lede")}
         </p>
       </div>
@@ -77,22 +77,22 @@ export function HowItWorks() {
           <motion.li
             key={num}
             variants={fadeUp}
-            className="relative flex flex-col rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            className="group relative flex flex-col rounded-2xl border border-border/60 bg-card p-7 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-brand-emerald-200/70 hover:shadow-[0_18px_36px_-18px_rgba(5,150,105,0.22)]"
           >
-            <div className="mb-4 flex items-center gap-3">
+            <div className="mb-5 flex items-center gap-3">
               <span
-                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-brand-emerald-500 bg-background text-sm font-bold text-brand-emerald-700"
                 aria-hidden
+                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-brand-emerald-500 to-brand-emerald-600 text-sm font-bold text-white shadow-[0_6px_16px_-4px_rgba(5,150,105,0.45)] ring-4 ring-brand-emerald-50 transition-transform duration-300 group-hover:scale-105"
               >
                 {num}
               </span>
               <Icon
-                className="h-5 w-5 text-brand-emerald-600"
+                className="h-5 w-5 text-brand-emerald-600/80 transition-colors duration-300 group-hover:text-brand-emerald-700"
                 strokeWidth={1.8}
                 aria-hidden
               />
             </div>
-            <div className="text-lg font-semibold text-foreground">
+            <div className="text-[17px] font-semibold tracking-tight text-foreground">
               {title}
             </div>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

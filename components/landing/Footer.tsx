@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { JoblitMark } from "@/components/brand/JoblitMark";
 import { fadeUp, useReveal } from "./lib/motion";
 
 // Footer — 5-column grid (brand + 4 link sections) matching Landing.html
@@ -66,12 +66,8 @@ export function Footer() {
               href="/"
               className="inline-flex items-center gap-2 text-base font-semibold tracking-tight text-foreground"
             >
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-emerald-50 ring-1 ring-brand-emerald/20">
-                <Search
-                  className="h-3.5 w-3.5 text-brand-emerald-700"
-                  strokeWidth={2.5}
-                  aria-hidden
-                />
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-emerald-50 ring-1 ring-brand-emerald-100">
+                <JoblitMark size={18} color="var(--brand-emerald-700, #047857)" ariaLabel={null} />
               </span>
               Joblit
             </Link>
