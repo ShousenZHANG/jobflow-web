@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Check } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -77,114 +77,135 @@ const CN_COMMON_TITLES = [
   "产品经理",
 ];
 
-const exclusionDropdownContentClass =
-  "w-[var(--radix-dropdown-menu-trigger-width)] min-w-[18rem] max-h-[min(22rem,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto rounded-2xl border border-border/70 bg-background/95 p-2 text-foreground shadow-[0_18px_45px_-24px_rgba(15,23,42,0.45),0_8px_20px_-14px_rgba(5,150,105,0.28)] backdrop-blur-xl origin-[var(--radix-dropdown-menu-content-transform-origin)] will-change-[opacity,transform] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-1 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-1";
-
-const exclusionDropdownItemClass =
-  "min-h-10 rounded-xl py-2 pl-8 pr-2 text-sm transition-colors duration-150 focus:bg-brand-emerald-50 focus:text-brand-emerald-800 data-[state=checked]:bg-brand-emerald-50 data-[state=checked]:text-brand-emerald-800";
-
 type ExclusionOption = {
   value: string;
   label: string;
   help?: string;
 };
 
+type ExclusionVariant = "chips" | "cards";
+
 function ExclusionDropdown({
   label,
   values,
   options,
-  placeholder,
-  disabled,
   testId,
   onChange,
+  variant = "chips",
 }: {
   label: string;
   values: string[];
   options: readonly ExclusionOption[];
-  placeholder: string;
-  disabled?: boolean;
   testId: string;
   onChange: (next: string[]) => void;
+  variant?: ExclusionVariant;
 }) {
-  const [open, setOpen] = useState(false);
-  const summary = values.length ? `Selected (${values.length})` : placeholder;
+  function toggle(value: string, selected: boolean) {
+    onChange(
+      selected
+        ? values.filter((v) => v !== value)
+        : [...values, value],
+    );
+  }
 
-  return (
-    <div className="space-y-1.5">
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            className={cn(
-              "group h-12 w-full justify-between rounded-2xl border border-border/80 bg-background px-4 text-sm font-medium text-foreground/85 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-[background-color,border-color,box-shadow,transform] duration-200 hover:border-brand-emerald-300 hover:bg-brand-emerald-50/40 hover:shadow-[0_10px_24px_-18px_rgba(5,150,105,0.55)] focus-visible:border-brand-emerald-500 focus-visible:ring-brand-emerald-500/20 active:scale-[0.995] disabled:opacity-50",
-              open && "border-brand-emerald-300 bg-brand-emerald-50/50 shadow-[0_12px_28px_-20px_rgba(5,150,105,0.6)]",
-            )}
-            disabled={disabled}
-            aria-label={`${label}: ${summary}`}
-            aria-expanded={open}
-            data-testid={`${testId}-trigger`}
-          >
-            <span className="min-w-0 truncate text-left">{summary}</span>
-            <span className="ml-3 flex shrink-0 items-center gap-2">
-              {values.length ? (
-                <span className="rounded-full bg-brand-emerald-100 px-2 py-0.5 text-xs font-semibold text-brand-emerald-700">
-                  {values.length}
-                </span>
-              ) : null}
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform duration-200 ease-out group-hover:text-brand-emerald-700",
-                  open && "rotate-180 text-brand-emerald-700",
-                )}
-                aria-hidden
-              />
-            </span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="start"
-          sideOffset={8}
-          className={exclusionDropdownContentClass}
+  if (variant === "chips") {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          {values.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onChange([])}
+              aria-label={`Clear ${label.toLowerCase()}`}
+              className="text-xs text-muted-foreground/60 transition-colors hover:text-brand-emerald-600"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        <div
+          role="group"
+          aria-label={label}
           data-testid={`${testId}-menu`}
+          className="flex flex-wrap gap-1.5"
         >
-          <div className="px-2 pb-2 pt-1.5">
-            <div className="text-sm font-semibold text-foreground">{label}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">
-              Keep results focused by hiding matching jobs.
-            </div>
-          </div>
-          <div className="my-1 h-px bg-border/70" />
           {options.map((opt) => {
-            const checked = values.includes(opt.value);
+            const selected = values.includes(opt.value);
             return (
-              <DropdownMenuCheckboxItem
+              <button
                 key={opt.value}
-                checked={checked}
-                onSelect={(e) => e.preventDefault()}
-                onCheckedChange={(checkedValue) => {
-                  onChange(
-                    checkedValue === true
-                      ? Array.from(new Set([...values, opt.value]))
-                      : values.filter((value) => value !== opt.value),
-                  );
-                }}
-                className={exclusionDropdownItemClass}
+                type="button"
+                role="switch"
+                aria-checked={selected}
+                onClick={() => toggle(opt.value, selected)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-emerald-400/60 focus-visible:ring-offset-1",
+                  selected
+                    ? "bg-brand-emerald-100 text-brand-emerald-800 ring-1 ring-brand-emerald-300/80"
+                    : "bg-background text-muted-foreground ring-1 ring-border/80 hover:text-foreground hover:ring-brand-emerald-200",
+                )}
               >
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate">{opt.label}</span>
-                  {opt.help ? (
-                    <span className="mt-0.5 line-clamp-2 text-xs font-normal text-muted-foreground">
-                      {opt.help}
-                    </span>
-                  ) : null}
-                </span>
-              </DropdownMenuCheckboxItem>
+                {selected && <Check className="h-3 w-3 shrink-0" aria-hidden />}
+                {opt.label}
+              </button>
             );
           })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div
+        role="group"
+        aria-label={label}
+        data-testid={`${testId}-menu`}
+        className="grid gap-1.5"
+      >
+        {options.map((opt) => {
+          const selected = values.includes(opt.value);
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              role="checkbox"
+              aria-checked={selected}
+              onClick={() => toggle(opt.value, selected)}
+              className={cn(
+                "flex items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-emerald-400/60 focus-visible:ring-offset-1",
+                selected
+                  ? "border-brand-emerald-300 bg-brand-emerald-50/60"
+                  : "border-border/60 bg-background hover:border-brand-emerald-200 hover:bg-muted/30",
+              )}
+            >
+              <div
+                aria-hidden
+                className={cn(
+                  "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded transition-all duration-150",
+                  selected
+                    ? "bg-brand-emerald-500"
+                    : "border border-border/80 bg-background",
+                )}
+              >
+                {selected && <Check className="h-3 w-3 text-white" strokeWidth={2.5} />}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-medium leading-snug text-foreground">
+                  {opt.label}
+                </div>
+                {opt.help && (
+                  <div className="mt-0.5 line-clamp-2 text-xs leading-snug text-muted-foreground">
+                    {opt.help}
+                  </div>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -466,30 +487,30 @@ export function FetchClient() {
 
           {/* Collapsible exclusion filters */}
           {applyExcludes && (
-            <div className="rounded-2xl border border-border/60 bg-muted/30 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-border/60 bg-muted/30 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+              <div className="space-y-4">
                 <ExclusionDropdown
                   label="Title exclusions"
+                  variant="chips"
                   values={excludeTitleTerms}
                   options={TITLE_EXCLUSION_OPTIONS}
-                  placeholder="Select terms"
-                  disabled={!applyExcludes}
                   testId="title-exclusions"
                   onChange={setExcludeTitleTerms}
                 />
 
+                <div className="h-px bg-border/50" />
+
                 <ExclusionDropdown
                   label="Description exclusions"
+                  variant="cards"
                   values={excludeDescriptionRules}
                   options={DESCRIPTION_EXCLUSION_OPTIONS}
-                  placeholder="Select rules"
-                  disabled={!applyExcludes}
                   testId="description-exclusions"
                   onChange={setExcludeDescriptionRules}
                 />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Start Fetch button */}
         <div className="pt-2" data-testid="fetch-actions">
