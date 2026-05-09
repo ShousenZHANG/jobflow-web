@@ -3,6 +3,7 @@ import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
+import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { compileLatexToPdf } from "@/lib/server/latex/compilePdf";
 import { escapeLatexWithBold } from "@/lib/server/latex/escapeLatex";
 import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
@@ -35,7 +36,7 @@ export async function renderFinalApplication(input: {
   job: { id: string | null; title: string; company: string | null; market: string };
 }): Promise<{ resumePdfUrl: string; resumePdfName: string }> {
   const profileLocale = marketStringToResumeLocale(input.job.market);
-  const profile = await getResumeProfile(input.userId, profileLocale);
+  const profile = await getResumeProfile(input.userId, { locale: profileLocale });
   if (!profile) {
     throw new Error("MASTER_PROFILE_MISSING");
   }
@@ -80,8 +81,7 @@ export async function renderFinalApplication(input: {
     skills: nextSkills,
   });
 
-  const pdf = await compileLatexToPdf({
-    tex,
+  const pdf = await compileLatexToPdf(tex, {
     engine: profileLocale === "zh-CN" ? "xelatex" : "pdflatex",
   });
   const resumePdfName = buildPdfFilename(renderInput.candidate.name, input.job.title);
@@ -89,7 +89,6 @@ export async function renderFinalApplication(input: {
     userId: input.userId,
     jobId: input.job.id ?? input.applicationId,
     target: "resume",
-    filename: resumePdfName,
   });
   const blob = await put(blobPath, pdf, {
     access: "public",
@@ -120,3 +119,67 @@ function mergeAcceptedSkillAdditions(
 
 // Re-export prisma for the route's update path (keeps imports symmetric).
 export { prisma };
+
+/**
+ * Cover-letter finalize: render LaTeX from accepted aiContent.cover
+ * paragraphs, compile to PDF, upload to Blob.
+ */
+export async function renderFinalCoverLetter(input: {
+  applicationId: string;
+  userId: string;
+  aiContent: AiContent;
+  job: { id: string | null; title: string; company: string | null; market: string };
+}): Promise<{ coverPdfUrl: string; coverPdfName: string }> {
+  const profileLocale = marketStringToResumeLocale(input.job.market);
+  const profile = await getResumeProfile(input.userId, { locale: profileLocale });
+  if (!profile) {
+    throw new Error("MASTER_PROFILE_MISSING");
+  }
+  const renderInput = mapResumeProfile(profile);
+
+  const c = input.aiContent.cover;
+  const p1 = (c.paragraphOne.userEdit?.trim() || c.paragraphOne.aiText).trim();
+  const p2 = (c.paragraphTwo.userEdit?.trim() || c.paragraphTwo.aiText).trim();
+  const p3 = (c.paragraphThree.userEdit?.trim() || c.paragraphThree.aiText).trim();
+
+  if (!p1 || !p2 || !p3) {
+    throw new Error("COVER_PARAGRAPHS_INCOMPLETE");
+  }
+
+  const tex = renderCoverLetterTex({
+    candidate: {
+      name: renderInput.candidate.name,
+      title: renderInput.candidate.title,
+      phone: renderInput.candidate.phone,
+      email: renderInput.candidate.email,
+      linkedinUrl: renderInput.candidate.linkedinUrl,
+      linkedinText: renderInput.candidate.linkedinText,
+    },
+    company: input.job.company || "the company",
+    role: input.job.title,
+    paragraphOne: p1,
+    paragraphTwo: p2,
+    paragraphThree: p3,
+  });
+
+  const pdf = await compileLatexToPdf(tex, {
+    engine: profileLocale === "zh-CN" ? "xelatex" : "pdflatex",
+  });
+  const coverPdfName = buildPdfFilename(
+    renderInput.candidate.name,
+    input.job.title,
+    "Cover Letter",
+  );
+  const blobPath = buildApplicationArtifactBlobPath({
+    userId: input.userId,
+    jobId: input.job.id ?? input.applicationId,
+    target: "cover",
+  });
+  const blob = await put(blobPath, pdf, {
+    access: "public",
+    contentType: "application/pdf",
+    ...APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+  });
+
+  return { coverPdfUrl: blob.url, coverPdfName };
+}

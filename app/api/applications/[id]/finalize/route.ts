@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/server/prisma";
 import { withSessionRoute, parseJsonBody } from "@/lib/server/api/routeHandler";
-import { renderFinalApplication } from "@/lib/server/applications/finalizeApplication";
+import {
+  renderFinalApplication,
+  renderFinalCoverLetter,
+} from "@/lib/server/applications/finalizeApplication";
 import { aiContentSchema } from "@/lib/shared/schemas/aiContent";
 
 export const runtime = "nodejs";
@@ -16,6 +19,11 @@ const BodySchema = z.object({
    */
   expectedHash: z.string().nullable(),
 });
+
+function parseTarget(req: Request): "resume" | "cover" {
+  const url = new URL(req.url);
+  return url.searchParams.get("target") === "cover" ? "cover" : "resume";
+}
 
 /**
  * Render the current aiContent into a PDF and flip the Application
@@ -116,25 +124,43 @@ export async function POST(
       market: "AU",
     };
 
+    const target = parseTarget(req);
+    const renderJob = {
+      id: job.id ?? null,
+      title: job.title ?? "Untitled",
+      company: job.company,
+      market: job.market ?? "AU",
+    };
+
+    if (target === "cover") {
+      const { coverPdfUrl, coverPdfName } = await renderFinalCoverLetter({
+        applicationId: existing.id,
+        userId,
+        aiContent: aiContentParsed.data,
+        job: renderJob,
+      });
+      await prisma.application.update({
+        where: { id: existing.id },
+        data: { status: "FINAL", coverPdfUrl },
+      });
+      return NextResponse.json({
+        status: "FINAL",
+        coverPdfUrl,
+        coverPdfName,
+        requestId,
+      });
+    }
+
     const { resumePdfUrl, resumePdfName } = await renderFinalApplication({
       applicationId: existing.id,
       userId,
       aiContent: aiContentParsed.data,
-      job: {
-        id: job.id ?? null,
-        title: job.title ?? "Untitled",
-        company: job.company,
-        market: job.market ?? "AU",
-      },
+      job: renderJob,
     });
 
     await prisma.application.update({
       where: { id: existing.id },
-      data: {
-        status: "FINAL",
-        resumePdfUrl,
-        resumePdfName,
-      },
+      data: { status: "FINAL", resumePdfUrl, resumePdfName },
     });
 
     return NextResponse.json({

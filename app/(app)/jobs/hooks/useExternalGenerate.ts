@@ -229,10 +229,9 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
     setGenerateComplete(false);
     setError(null);
     try {
-      // Resume target enters the new draft -> edit -> finalize flow.
-      // Cover target keeps today's atomic generate behavior until
-      // Phase 2 lights up the Cover Letter tab on /tailor.
-      const useDraftFlow = target === "resume";
+      // Phase 2 unified flow: both resume and cover targets enter the
+      // draft -> edit -> finalize pipeline through the Tailor editor.
+      const useDraftFlow = true;
       const res = await fetch(
         `/api/applications/manual-generate${useDraftFlow ? "?finalize=false" : ""}`,
         {
@@ -259,45 +258,28 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
 
       // DRAFT mode: server returns JSON with applicationId. Close
       // dialog and route to the editor; the user will Finalize there.
-      if (useDraftFlow) {
-        const json = (await res.json().catch(() => null)) as
-          | { applicationId?: string }
-          | null;
-        const applicationId = json?.applicationId;
-        if (!applicationId) {
-          throw new Error("Unexpected response: missing applicationId");
-        }
-        markTaskComplete("generate_first_pdf");
-        setTailorSourceByJob((prev) => ({
-          ...prev,
-          [job.id]: { ...prev[job.id], cv: "manual_import" },
-        }));
-        await invalidateActiveJobsQueries(queryClient);
-        setExternalDialogOpen(false);
-        setDialogPhase(1);
-        router.push(`/jobs/${applicationId}/tailor`);
-        return;
+      const json = (await res.json().catch(() => null)) as
+        | { applicationId?: string }
+        | null;
+      const applicationId = json?.applicationId;
+      if (!applicationId) {
+        throw new Error("Unexpected response: missing applicationId");
       }
-
-      // FINAL mode (cover today): existing inline-PDF success flow.
-      const blob = await res.blob();
-      const filename =
-        filenameFromDisposition(res.headers.get("content-disposition")) ||
-        "cover-letter.pdf";
       markTaskComplete("generate_first_pdf");
-
       setTailorSourceByJob((prev) => ({
         ...prev,
-        [job.id]: { ...prev[job.id], cover: "manual_import" },
+        [job.id]: {
+          ...prev[job.id],
+          ...(target === "resume"
+            ? { cv: "manual_import" as const }
+            : { cover: "manual_import" as const }),
+        },
       }));
-
-      setGenerateComplete(true);
-      const pdfObjectUrl = URL.createObjectURL(blob);
-      setSuccessPdf({ url: pdfObjectUrl, filename });
-      if (successTimerRef.current) clearTimeout(successTimerRef.current);
-      successTimerRef.current = setTimeout(() => setDialogPhase("success"), 500);
-
       await invalidateActiveJobsQueries(queryClient);
+      setExternalDialogOpen(false);
+      setDialogPhase(1);
+      const tabSuffix = target === "cover" ? "?tab=cover" : "";
+      router.push(`/jobs/${applicationId}/tailor${tabSuffix}`);
     } catch (e) {
       setDialogPhase(3);
       const message = getErrorMessage(e, "Failed to generate PDF");

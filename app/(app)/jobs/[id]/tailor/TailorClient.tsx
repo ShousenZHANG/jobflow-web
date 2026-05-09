@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
 import { fetchJson, ApiError } from "@/lib/api/fetchJson";
 import type { AiContent } from "@/lib/shared/schemas/aiContent";
@@ -11,7 +11,13 @@ import { useTailorDraft } from "./useTailorDraft";
 import { SaveIndicator } from "./SaveIndicator";
 import { SummarySection } from "./SummarySection";
 import { BulletsSection } from "./BulletsSection";
+import { SkillsSection } from "./SkillsSection";
+import { CoverParagraphsSection } from "./CoverParagraphsSection";
 import { PdfPreview } from "./PdfPreview";
+import { ConflictDialog } from "./ConflictDialog";
+
+type DocTab = "resume" | "cover";
+type ViewTab = "edit" | "preview";
 
 interface TailorClientProps {
   applicationId: string;
@@ -35,6 +41,7 @@ export function TailorClient({
   initialAiContent,
   initialAiContentHash,
   resumePdfUrl,
+  coverPdfUrl,
   job,
 }: TailorClientProps) {
   const router = useRouter();
@@ -44,15 +51,46 @@ export function TailorClient({
     initialAiContentHash,
   });
 
+  const [docTab, setDocTab] = useState<DocTab>("resume");
+  const [viewTab, setViewTab] = useState<ViewTab>("edit");
   const [status, setStatus] = useState<"DRAFT" | "FINAL">(initialStatus);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(resumePdfUrl);
-  const [lastRefreshedAt, setLastRefreshedAt] = useState<number | null>(
+  const [resumePdf, setResumePdf] = useState<string | null>(resumePdfUrl);
+  const [coverPdf, setCoverPdf] = useState<string | null>(coverPdfUrl);
+  const [lastResumeRefreshAt, setLastResumeRefreshAt] = useState<number | null>(
     resumePdfUrl ? Date.now() : null,
+  );
+  const [lastCoverRefreshAt, setLastCoverRefreshAt] = useState<number | null>(
+    coverPdfUrl ? Date.now() : null,
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+
+  // Beforeunload guard: only warn if there are pending unsaved edits.
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (
+        draft.saveStatus.kind === "dirty" ||
+        draft.saveStatus.kind === "saving"
+      ) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [draft.saveStatus]);
+
+  // Surface 409 saves as the conflict dialog (Phase 3).
+  useEffect(() => {
+    if (
+      draft.saveStatus.kind === "error" &&
+      draft.saveStatus.message.includes("Another tab")
+    ) {
+      setShowConflictDialog(true);
+    }
+  }, [draft.saveStatus]);
 
   function patchSummary(summary: AiContent["cv"]["summary"]) {
     draft.setAiContent({
@@ -60,39 +98,53 @@ export function TailorClient({
       cv: { ...draft.aiContent.cv, summary },
     });
   }
-
   function patchLatestExperience(le: AiContent["cv"]["latestExperience"]) {
     draft.setAiContent({
       ...draft.aiContent,
       cv: { ...draft.aiContent.cv, latestExperience: le },
     });
   }
+  function patchSkills(sa: AiContent["cv"]["skillsAdditions"]) {
+    draft.setAiContent({
+      ...draft.aiContent,
+      cv: { ...draft.aiContent.cv, skillsAdditions: sa },
+    });
+  }
+  function patchCover(cover: AiContent["cover"]) {
+    draft.setAiContent({ ...draft.aiContent, cover });
+  }
+
+  async function callFinalize(target: DocTab) {
+    await draft.flushNow();
+    const json = await fetchJson<undefined>(
+      `/api/applications/${applicationId}/finalize?target=${target}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ expectedHash: draft.currentHash }),
+      },
+    );
+    return json as {
+      status: "FINAL";
+      resumePdfUrl?: string;
+      coverPdfUrl?: string;
+    };
+  }
 
   async function handleRefresh() {
     setActionError(null);
     setIsRefreshing(true);
     try {
-      await draft.flushNow();
-      const json = await fetchJson<undefined>(
-        `/api/applications/${applicationId}/finalize`,
-        {
-          method: "POST",
-          body: JSON.stringify({ expectedHash: draft.currentHash }),
-        },
-      );
-      const data = json as { resumePdfUrl: string; status: "FINAL" };
-      setPdfUrl(data.resumePdfUrl);
-      setLastRefreshedAt(Date.now());
-      // Refresh re-finalizes; flip back to DRAFT only if user keeps editing.
+      const data = await callFinalize(docTab);
+      if (docTab === "resume" && data.resumePdfUrl) {
+        setResumePdf(data.resumePdfUrl);
+        setLastResumeRefreshAt(Date.now());
+      } else if (docTab === "cover" && data.coverPdfUrl) {
+        setCoverPdf(data.coverPdfUrl);
+        setLastCoverRefreshAt(Date.now());
+      }
       setStatus("FINAL");
     } catch (err: unknown) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : "Refresh failed";
-      setActionError(message);
+      setActionError(extractMessage(err, "Refresh failed"));
     } finally {
       setIsRefreshing(false);
     }
@@ -102,26 +154,13 @@ export function TailorClient({
     setActionError(null);
     setIsFinalizing(true);
     try {
-      await draft.flushNow();
-      const json = await fetchJson<undefined>(
-        `/api/applications/${applicationId}/finalize`,
-        {
-          method: "POST",
-          body: JSON.stringify({ expectedHash: draft.currentHash }),
-        },
-      );
-      const data = json as { resumePdfUrl: string };
-      setPdfUrl(data.resumePdfUrl);
+      const data = await callFinalize(docTab);
+      if (data.resumePdfUrl) setResumePdf(data.resumePdfUrl);
+      if (data.coverPdfUrl) setCoverPdf(data.coverPdfUrl);
       setStatus("FINAL");
       router.push("/jobs");
     } catch (err: unknown) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : "Finalize failed";
-      setActionError(message);
+      setActionError(extractMessage(err, "Finalize failed"));
     } finally {
       setIsFinalizing(false);
     }
@@ -129,9 +168,7 @@ export function TailorClient({
 
   async function handleDiscard() {
     if (
-      !window.confirm(
-        "Discard your edits and reset to the original AI proposal?",
-      )
+      !window.confirm("Discard your edits and reset to the original AI proposal?")
     )
       return;
     setActionError(null);
@@ -145,17 +182,15 @@ export function TailorClient({
       draft.replaceFromServer(data.aiContent, data.aiContentHash);
       setStatus("DRAFT");
     } catch (err: unknown) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : "Discard failed";
-      setActionError(message);
+      setActionError(extractMessage(err, "Discard failed"));
     } finally {
       setIsDiscarding(false);
     }
   }
+
+  const currentPdf = docTab === "resume" ? resumePdf : coverPdf;
+  const currentRefreshAt =
+    docTab === "resume" ? lastResumeRefreshAt : lastCoverRefreshAt;
 
   return (
     <main className="mx-auto flex w-full max-w-[1400px] flex-col gap-4 px-4 pb-32 pt-6 lg:px-8">
@@ -186,6 +221,21 @@ export function TailorClient({
         </div>
       </header>
 
+      <DocTabs docTab={docTab} setDocTab={setDocTab} />
+
+      {/* Mobile Edit/Preview switcher (only visible <lg). */}
+      <div className="flex items-center gap-1 rounded-full border border-border/70 bg-background p-1 lg:hidden">
+        <ViewTabBtn active={viewTab === "edit"} onClick={() => setViewTab("edit")}>
+          Edit
+        </ViewTabBtn>
+        <ViewTabBtn
+          active={viewTab === "preview"}
+          onClick={() => setViewTab("preview")}
+        >
+          Preview
+        </ViewTabBtn>
+      </div>
+
       {actionError ? (
         <div
           role="alert"
@@ -196,25 +246,48 @@ export function TailorClient({
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        <div className="flex flex-col gap-4">
-          <SummarySection
-            summary={draft.aiContent.cv.summary}
-            onChange={patchSummary}
-          />
-          <BulletsSection
-            latestExperience={draft.aiContent.cv.latestExperience}
-            onChange={patchLatestExperience}
-          />
-          {/* Phase 2 unlocks Skills + Cover Letter sections here. */}
+        <div
+          className={cn(
+            "flex flex-col gap-4",
+            viewTab === "preview" && "hidden lg:flex",
+          )}
+        >
+          {docTab === "resume" ? (
+            <>
+              <SummarySection
+                summary={draft.aiContent.cv.summary}
+                onChange={patchSummary}
+              />
+              <BulletsSection
+                latestExperience={draft.aiContent.cv.latestExperience}
+                onChange={patchLatestExperience}
+              />
+              <SkillsSection
+                skillsAdditions={draft.aiContent.cv.skillsAdditions}
+                onChange={patchSkills}
+              />
+            </>
+          ) : (
+            <CoverParagraphsSection
+              cover={draft.aiContent.cover}
+              onChange={patchCover}
+            />
+          )}
         </div>
 
-        <PdfPreview
-          pdfUrl={pdfUrl}
-          jobTitle={job.title}
-          isRefreshing={isRefreshing}
-          lastRefreshedAt={lastRefreshedAt}
-          onRefresh={handleRefresh}
-        />
+        <div
+          className={cn(
+            viewTab === "edit" && "hidden lg:block",
+          )}
+        >
+          <PdfPreview
+            pdfUrl={currentPdf}
+            jobTitle={job.title}
+            isRefreshing={isRefreshing}
+            lastRefreshedAt={currentRefreshAt}
+            onRefresh={handleRefresh}
+          />
+        </div>
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 px-4 py-3 backdrop-blur-md sm:px-8">
@@ -240,12 +313,110 @@ export function TailorClient({
               "disabled:pointer-events-none disabled:opacity-60",
             )}
           >
-            {isFinalizing ? "Finalizing…" : "Finalize"}
+            {isFinalizing
+              ? "Finalizing…"
+              : `Finalize ${docTab === "resume" ? "Resume" : "Cover Letter"}`}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </button>
         </div>
       </div>
+
+      {showConflictDialog ? (
+        <ConflictDialog
+          onReload={() => {
+            window.location.reload();
+          }}
+          onOverwrite={() => {
+            setShowConflictDialog(false);
+            // Force a re-save by replacing the hash with current server hash.
+            // Simplest: reload — overwrite semantics are dangerous without
+            // an explicit server endpoint. Phase 4 may add /draft?force=true.
+            window.location.reload();
+          }}
+        />
+      ) : null}
     </main>
+  );
+}
+
+function DocTabs({
+  docTab,
+  setDocTab,
+}: {
+  docTab: DocTab;
+  setDocTab: (v: DocTab) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Document"
+      className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background p-1"
+    >
+      <DocTabBtn
+        active={docTab === "resume"}
+        onClick={() => setDocTab("resume")}
+      >
+        Resume
+      </DocTabBtn>
+      <DocTabBtn
+        active={docTab === "cover"}
+        onClick={() => setDocTab("cover")}
+      >
+        Cover Letter
+      </DocTabBtn>
+    </div>
+  );
+}
+
+function DocTabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-8 items-center rounded-full px-4 text-xs font-semibold transition-colors",
+        active
+          ? "bg-foreground text-background"
+          : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ViewTabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex h-8 flex-1 items-center justify-center rounded-full px-3 text-xs font-semibold transition-colors",
+        active
+          ? "bg-foreground text-background"
+          : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -262,4 +433,10 @@ function StatusPill({ status }: { status: "DRAFT" | "FINAL" }) {
       {status}
     </span>
   );
+}
+
+function extractMessage(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof Error) return err.message;
+  return fallback;
 }
