@@ -29,6 +29,7 @@ import { JobAddDialog } from "./components/JobAddDialog";
 import { JobSearchBar } from "./components/JobSearchBar";
 import { ExternalGenerateDialog } from "./components/ExternalGenerateDialog";
 import { PdfPreviewDialog } from "./components/PdfPreviewDialog";
+import { TailorReviewDialog } from "./components/TailorReviewDialog";
 import { JobDetailPanel } from "./components/JobDetailPanel";
 import { cn } from "@/lib/utils";
 import { AU_LOCATION_OPTIONS, CN_LOCATION_OPTIONS, getUserTimeZone } from "./utils/constants";
@@ -166,7 +167,13 @@ export function JobsClient({
   // Re-apply after any modal closes — Radix AlertDialog temporarily sets
   // `overflow: hidden` on <body> while open, which can desync the scroll
   // state of .app-shell when the dialog unmounts.
-  const anyDialogOpen = deleteConfirmOpen || batchDeleteConfirmOpen || addJobOpen || previewOpen || ext.externalDialogOpen;
+  const anyDialogOpen =
+    deleteConfirmOpen ||
+    batchDeleteConfirmOpen ||
+    addJobOpen ||
+    previewOpen ||
+    ext.externalDialogOpen ||
+    !!ext.tailorReviewDraft;
   useEffect(() => {
     if (typeof document === "undefined") return;
     const appShell = document.querySelector<HTMLElement>(".app-shell");
@@ -379,6 +386,15 @@ export function JobsClient({
       />
 
       <JobAddDialog open={addJobOpen} onOpenChange={setAddJobOpen} />
+
+      <TailorReviewDialog
+        open={!!ext.tailorReviewDraft}
+        draft={ext.tailorReviewDraft}
+        onOpenChange={(open) => {
+          if (!open) ext.closeTailorReview();
+        }}
+        onFinalized={ext.handleTailorReviewFinalized}
+      />
 
       <PdfPreviewDialog
         open={previewOpen}

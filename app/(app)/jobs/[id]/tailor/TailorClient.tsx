@@ -115,12 +115,12 @@ export function TailorClient({
   }
 
   async function callFinalize(target: DocTab) {
-    await draft.flushNow();
+    const expectedHash = await draft.flushNow();
     const json = await fetchJson<undefined>(
       `/api/applications/${applicationId}/finalize?target=${target}`,
       {
         method: "POST",
-        body: JSON.stringify({ expectedHash: draft.currentHash }),
+        body: JSON.stringify({ expectedHash }),
       },
     );
     return json as {

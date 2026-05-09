@@ -240,7 +240,7 @@ export function patchGeneratedJobArtifactInJobsCache({
 }: {
   queryClient: QueryClient;
   id: string;
-  patch: Pick<JobItem, "resumePdfUrl" | "resumePdfName">;
+  patch: Partial<Pick<JobItem, "resumePdfUrl" | "resumePdfName" | "coverPdfUrl">>;
 }) {
   for (const [key] of queryClient.getQueriesData<JobsResponse>({ queryKey: JOBS_QUERY_KEY })) {
     queryClient.setQueryData<JobsResponse>(key, (old) => {

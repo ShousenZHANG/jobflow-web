@@ -26,7 +26,7 @@ export interface UseTailorDraftReturn {
   setAiContent: (next: AiContent) => void;
   saveStatus: SaveStatus;
   /** Trigger an immediate flush of pending changes (e.g. before Finalize). */
-  flushNow: () => Promise<void>;
+  flushNow: () => Promise<string | null>;
   /** Replace state from server (e.g. after Discard). */
   replaceFromServer: (next: AiContent, hash: string | null) => void;
   currentHash: string | null;
@@ -46,10 +46,10 @@ export function useTailorDraft({
   const [currentHash, setCurrentHash] = useState<string | null>(initialAiContentHash);
   const lastSavedHashRef = useRef<string | null>(initialAiContentHash);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inFlightRef = useRef<Promise<void> | null>(null);
+  const inFlightRef = useRef<Promise<string | null> | null>(null);
 
   const persist = useCallback(
-    async (snapshot: AiContent) => {
+    async (snapshot: AiContent): Promise<string | null> => {
       const expectedHash = lastSavedHashRef.current;
       setSaveStatus({ kind: "saving" });
       try {
@@ -67,17 +67,19 @@ export function useTailorDraft({
         lastSavedHashRef.current = json.aiContentHash;
         setCurrentHash(json.aiContentHash);
         setSaveStatus({ kind: "saved", at: Date.now() });
+        return json.aiContentHash;
       } catch (err: unknown) {
         if (err instanceof ApiError && err.status === 409) {
           setSaveStatus({
             kind: "error",
             message: "Another tab updated this draft. Reload to continue.",
           });
-          return;
+          return lastSavedHashRef.current;
         }
         const message =
           err instanceof Error ? err.message : "Save failed — retry";
         setSaveStatus({ kind: "error", message });
+        return lastSavedHashRef.current;
       }
     },
     [applicationId],
@@ -101,8 +103,8 @@ export function useTailorDraft({
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
-    if (saveStatus.kind === "saved") return;
-    await persist(aiContent);
+    if (saveStatus.kind === "saved") return lastSavedHashRef.current;
+    return persist(aiContent);
   }, [aiContent, persist, saveStatus.kind]);
 
   const replaceFromServer = useCallback(

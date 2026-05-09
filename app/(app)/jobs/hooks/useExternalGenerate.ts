@@ -1,20 +1,26 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useGuide } from "@/app/GuideContext";
+import type { AiContent } from "@/lib/shared/schemas/aiContent";
 import type { JobItem, ExternalPromptMeta, CvSource, CoverSource } from "../types";
 import { getErrorMessage } from "../types";
 import type { DialogPhase } from "../components/StepIndicator";
+import type {
+  TailorReviewDraft,
+  TailorReviewFinalized,
+} from "../components/TailorReviewDialog";
 import { isSkillPackFresh, writeSavedSkillPackMeta } from "../utils/skillPackMeta";
 import { parseTailorOutput, filenameFromDisposition } from "../utils/tailorParser";
-import { invalidateActiveJobsQueries } from "../utils/jobsQueryCache";
+import {
+  invalidateActiveJobsQueries,
+  patchGeneratedJobArtifactInJobsCache,
+} from "../utils/jobsQueryCache";
 
 export function useExternalGenerate(setError: (e: string | null) => void) {
   const { toast } = useToast();
   const { markTaskComplete } = useGuide();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const [externalDialogOpen, setExternalDialogOpen] = useState(false);
   const [externalPromptLoading, setExternalPromptLoading] = useState(false);
@@ -35,6 +41,8 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
   const [tailorSourceByJob, setTailorSourceByJob] = useState<
     Record<string, { cv?: CvSource; cover?: CoverSource }>
   >({});
+  const [tailorReviewDraft, setTailorReviewDraft] =
+    useState<TailorReviewDraft | null>(null);
 
   async function loadTailorPrompt(job: JobItem, target: "resume" | "cover"): Promise<{
     promptText: string;
@@ -256,14 +264,22 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
         throw new Error(`${baseMessage}${detailText}`);
       }
 
-      // DRAFT mode: server returns JSON with applicationId. Close
-      // dialog and route to the editor; the user will Finalize there.
+      // DRAFT mode: server returns the persisted aiContent. Keep the
+      // review phase in the current Jobs surface instead of routing away.
       const json = (await res.json().catch(() => null)) as
         | { applicationId?: string }
         | null;
       const applicationId = json?.applicationId;
       if (!applicationId) {
         throw new Error("Unexpected response: missing applicationId");
+      }
+      const draftJson = json as {
+        status?: "DRAFT" | "FINAL";
+        aiContentHash?: string | null;
+        aiContent?: AiContent;
+      };
+      if (!draftJson.aiContent) {
+        throw new Error("Unexpected response: missing editable AI content");
       }
       markTaskComplete("generate_first_pdf");
       setTailorSourceByJob((prev) => ({
@@ -278,8 +294,22 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
       await invalidateActiveJobsQueries(queryClient);
       setExternalDialogOpen(false);
       setDialogPhase(1);
-      const tabSuffix = target === "cover" ? "?tab=cover" : "";
-      router.push(`/jobs/${applicationId}/tailor${tabSuffix}`);
+      setTailorReviewDraft({
+        applicationId,
+        target,
+        initialStatus: draftJson.status === "FINAL" ? "FINAL" : "DRAFT",
+        initialAiContent: draftJson.aiContent,
+        initialAiContentHash:
+          typeof draftJson.aiContentHash === "string" ? draftJson.aiContentHash : null,
+        resumePdfUrl: target === "resume" ? null : job.resumePdfUrl ?? null,
+        coverPdfUrl: target === "cover" ? null : job.coverPdfUrl ?? null,
+        job: {
+          id: job.id,
+          title: job.title,
+          company: job.company,
+          location: job.location,
+        },
+      });
     } catch (e) {
       setDialogPhase(3);
       const message = getErrorMessage(e, "Failed to generate PDF");
@@ -302,6 +332,38 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
     [externalModelOutput, externalTarget],
   );
 
+  function closeTailorReview() {
+    setTailorReviewDraft(null);
+  }
+
+  function handleTailorReviewFinalized(result: TailorReviewFinalized) {
+    const jobId = tailorReviewDraft?.job.id;
+    if (!jobId) return;
+
+    setTailorSourceByJob((prev) => ({
+      ...prev,
+      [jobId]: {
+        ...prev[jobId],
+        ...(result.target === "resume"
+          ? { cv: "manual_import" as const }
+          : { cover: "manual_import" as const }),
+      },
+    }));
+
+    patchGeneratedJobArtifactInJobsCache({
+      queryClient,
+      id: jobId,
+      patch:
+        result.target === "resume"
+          ? {
+              resumePdfUrl: result.resumePdfUrl ?? null,
+              resumePdfName: result.resumePdfName ?? null,
+            }
+          : { coverPdfUrl: result.coverPdfUrl ?? null },
+    });
+    void invalidateActiveJobsQueries(queryClient);
+  }
+
   return {
     externalDialogOpen, setExternalDialogOpen,
     externalPromptLoading,
@@ -320,10 +382,13 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
     successPdf,
     successTimerRef,
     tailorSourceByJob,
+    tailorReviewDraft,
     parsedExternalOutput,
     openExternalGenerateDialog,
     copySmartPrompt,
     downloadSkillPack,
     generateFromImportedJson,
+    closeTailorReview,
+    handleTailorReviewFinalized,
   };
 }
