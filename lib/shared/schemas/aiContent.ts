@@ -82,7 +82,13 @@ export const aiContentSchema = z
   .object({
     schemaVersion: z.literal(AI_CONTENT_SCHEMA_VERSION),
     generatedAt: z.string().datetime(),
-    promptMetaHash: z.string().min(1),
+    /**
+     * Hash of the prompt rule template + skill pack version that
+     * produced this content. Empty string while the prompt-version
+     * tracking is unwired (Phase 4 will populate). Tightening to
+     * `.min(1)` is intentionally deferred — see ADR-0001.
+     */
+    promptMetaHash: z.string(),
     cv: cvSchema,
     cover: coverSchema,
   })
