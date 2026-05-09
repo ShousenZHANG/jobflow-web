@@ -1,0 +1,135 @@
+import { z } from "zod";
+
+/**
+ * Versioned snapshot of every AI proposal made for an Application,
+ * paired with the user's accept/reject/edit decisions. Persisted on
+ * Application.aiContent (JSON column).
+ *
+ * See ADR-0001 for the rationale (persistence vs diff-time recompute).
+ *
+ * SCHEMA VERSIONING:
+ * Bump AI_CONTENT_SCHEMA_VERSION whenever the JSON shape changes in a
+ * non-additive way. The migration plan must convert older rows during
+ * deploy; readers should reject unknown versions explicitly.
+ */
+export const AI_CONTENT_SCHEMA_VERSION = 1;
+
+const qualityGateSchema = z
+  .object({
+    passed: z.boolean(),
+    reason: z.string().optional(),
+  })
+  .strict();
+
+const addedBulletSchema = z
+  .object({
+    text: z.string(),
+    userEdit: z.string().optional(),
+    accepted: z.boolean(),
+    qualityGate: qualityGateSchema.optional(),
+  })
+  .strict();
+
+const skillsAdditionSchema = z
+  .object({
+    label: z.string(),
+    items: z.array(z.string()),
+    accepted: z.boolean(),
+  })
+  .strict();
+
+const summarySchema = z
+  .object({
+    aiText: z.string(),
+    originalText: z.string(),
+    userEdit: z.string().optional(),
+    accepted: z.boolean().default(true),
+  })
+  .strict();
+
+const latestExperienceSchema = z
+  .object({
+    experienceIndex: z.number().int().nonnegative(),
+    addedBullets: z.array(addedBulletSchema),
+  })
+  .strict();
+
+const cvSchema = z
+  .object({
+    summary: summarySchema,
+    latestExperience: latestExperienceSchema,
+    skillsAdditions: z.array(skillsAdditionSchema),
+  })
+  .strict();
+
+const coverParagraphSchema = z
+  .object({
+    aiText: z.string(),
+    userEdit: z.string().optional(),
+    accepted: z.boolean(),
+  })
+  .strict();
+
+const coverSchema = z
+  .object({
+    paragraphOne: coverParagraphSchema,
+    paragraphTwo: coverParagraphSchema,
+    paragraphThree: coverParagraphSchema,
+  })
+  .strict();
+
+export const aiContentSchema = z
+  .object({
+    schemaVersion: z.literal(AI_CONTENT_SCHEMA_VERSION),
+    generatedAt: z.string().datetime(),
+    promptMetaHash: z.string().min(1),
+    cv: cvSchema,
+    cover: coverSchema,
+  })
+  .strict();
+
+export type AiContent = z.infer<typeof aiContentSchema>;
+export type AiAddedBullet = z.infer<typeof addedBulletSchema>;
+export type AiSkillsAddition = z.infer<typeof skillsAdditionSchema>;
+export type AiSummary = z.infer<typeof summarySchema>;
+export type AiCoverParagraph = z.infer<typeof coverParagraphSchema>;
+
+/* ───────────────────────── hashing ───────────────────────── */
+
+/**
+ * Stable, cross-runtime hash for stale-write detection on /draft and
+ * /finalize routes. Two clients editing the same Application from
+ * different tabs produce different hashes; the server rejects
+ * mismatched hashes with 409.
+ *
+ * Not cryptographic. Collision risk is acceptable for this UX guard.
+ */
+export function hashAiContent(content: unknown): string {
+  const stable = stableStringify(content);
+  return fnv1a32(stable).toString(16).padStart(8, "0");
+}
+
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(",")}]`;
+  }
+  const entries = Object.keys(value as Record<string, unknown>)
+    .sort()
+    .map((k) => {
+      const v = (value as Record<string, unknown>)[k];
+      return `${JSON.stringify(k)}:${stableStringify(v)}`;
+    });
+  return `{${entries.join(",")}}`;
+}
+
+function fnv1a32(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
