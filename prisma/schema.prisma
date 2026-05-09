@@ -55,6 +55,11 @@ enum ApplicationBatchTaskStatus {
   SKIPPED
 }
 
+enum ApplicationStatus {
+  DRAFT
+  FINAL
+}
+
 model User {
   id        String   @id @default(uuid()) @db.Uuid
   email     String?  @unique
@@ -306,6 +311,16 @@ model Application {
   resumePdfName String?
   coverTexUrl  String?
   coverPdfUrl  String?
+
+  // Tailor edit workflow (see ADR-0001 / ADR-0002).
+  // status:        DRAFT during user review, FINAL once PDF is rendered.
+  // aiContent:     persisted AI proposals + user accept/reject/edit decisions.
+  // aiContentHash: stable fnv1a32 hash for stale-write detection across tabs.
+  // Existing rows are backfilled to FINAL with NULL aiContent — opening
+  // them in the editor prompts re-generation since AI provenance is lost.
+  status        ApplicationStatus @default(FINAL)
+  aiContent     Json?
+  aiContentHash String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

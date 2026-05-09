@@ -165,6 +165,14 @@ export const ApplicationBatchTaskStatus: {
 
 export type ApplicationBatchTaskStatus = (typeof ApplicationBatchTaskStatus)[keyof typeof ApplicationBatchTaskStatus]
 
+
+export const ApplicationStatus: {
+  DRAFT: 'DRAFT',
+  FINAL: 'FINAL'
+};
+
+export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
+
 }
 
 export type JobStatus = $Enums.JobStatus
@@ -190,6 +198,10 @@ export const ApplicationBatchStatus: typeof $Enums.ApplicationBatchStatus
 export type ApplicationBatchTaskStatus = $Enums.ApplicationBatchTaskStatus
 
 export const ApplicationBatchTaskStatus: typeof $Enums.ApplicationBatchTaskStatus
+
+export type ApplicationStatus = $Enums.ApplicationStatus
+
+export const ApplicationStatus: typeof $Enums.ApplicationStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -15890,6 +15902,8 @@ export namespace Prisma {
     resumePdfName: string | null
     coverTexUrl: string | null
     coverPdfUrl: string | null
+    status: $Enums.ApplicationStatus | null
+    aiContentHash: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -15906,6 +15920,8 @@ export namespace Prisma {
     resumePdfName: string | null
     coverTexUrl: string | null
     coverPdfUrl: string | null
+    status: $Enums.ApplicationStatus | null
+    aiContentHash: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -15922,6 +15938,9 @@ export namespace Prisma {
     resumePdfName: number
     coverTexUrl: number
     coverPdfUrl: number
+    status: number
+    aiContent: number
+    aiContentHash: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -15940,6 +15959,8 @@ export namespace Prisma {
     resumePdfName?: true
     coverTexUrl?: true
     coverPdfUrl?: true
+    status?: true
+    aiContentHash?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -15956,6 +15977,8 @@ export namespace Prisma {
     resumePdfName?: true
     coverTexUrl?: true
     coverPdfUrl?: true
+    status?: true
+    aiContentHash?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -15972,6 +15995,9 @@ export namespace Prisma {
     resumePdfName?: true
     coverTexUrl?: true
     coverPdfUrl?: true
+    status?: true
+    aiContent?: true
+    aiContentHash?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -16061,6 +16087,9 @@ export namespace Prisma {
     resumePdfName: string | null
     coverTexUrl: string | null
     coverPdfUrl: string | null
+    status: $Enums.ApplicationStatus
+    aiContent: JsonValue | null
+    aiContentHash: string | null
     createdAt: Date
     updatedAt: Date
     _count: ApplicationCountAggregateOutputType | null
@@ -16094,6 +16123,9 @@ export namespace Prisma {
     resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
+    status?: boolean
+    aiContent?: boolean
+    aiContentHash?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -16113,6 +16145,9 @@ export namespace Prisma {
     resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
+    status?: boolean
+    aiContent?: boolean
+    aiContentHash?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -16132,6 +16167,9 @@ export namespace Prisma {
     resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
+    status?: boolean
+    aiContent?: boolean
+    aiContentHash?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -16151,11 +16189,14 @@ export namespace Prisma {
     resumePdfName?: boolean
     coverTexUrl?: boolean
     coverPdfUrl?: boolean
+    status?: boolean
+    aiContent?: boolean
+    aiContentHash?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobId" | "resumeProfileId" | "company" | "role" | "resumeTexUrl" | "resumePdfUrl" | "resumePdfName" | "coverTexUrl" | "coverPdfUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["application"]>
+  export type ApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "jobId" | "resumeProfileId" | "company" | "role" | "resumeTexUrl" | "resumePdfUrl" | "resumePdfName" | "coverTexUrl" | "coverPdfUrl" | "status" | "aiContent" | "aiContentHash" | "createdAt" | "updatedAt", ExtArgs["result"]["application"]>
   export type ApplicationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     job?: boolean | Application$jobArgs<ExtArgs>
@@ -16191,6 +16232,9 @@ export namespace Prisma {
       resumePdfName: string | null
       coverTexUrl: string | null
       coverPdfUrl: string | null
+      status: $Enums.ApplicationStatus
+      aiContent: Prisma.JsonValue | null
+      aiContentHash: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["application"]>
@@ -16630,6 +16674,9 @@ export namespace Prisma {
     readonly resumePdfName: FieldRef<"Application", 'String'>
     readonly coverTexUrl: FieldRef<"Application", 'String'>
     readonly coverPdfUrl: FieldRef<"Application", 'String'>
+    readonly status: FieldRef<"Application", 'ApplicationStatus'>
+    readonly aiContent: FieldRef<"Application", 'Json'>
+    readonly aiContentHash: FieldRef<"Application", 'String'>
     readonly createdAt: FieldRef<"Application", 'DateTime'>
     readonly updatedAt: FieldRef<"Application", 'DateTime'>
   }
@@ -23995,6 +24042,9 @@ export namespace Prisma {
     resumePdfName: 'resumePdfName',
     coverTexUrl: 'coverTexUrl',
     coverPdfUrl: 'coverPdfUrl',
+    status: 'status',
+    aiContent: 'aiContent',
+    aiContentHash: 'aiContentHash',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -24276,6 +24326,20 @@ export namespace Prisma {
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
+   * Reference to a field of type 'ApplicationStatus'
+   */
+  export type EnumApplicationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ApplicationStatus[]'
+   */
+  export type ListEnumApplicationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationStatus[]'>
     
 
 
@@ -25258,6 +25322,9 @@ export namespace Prisma {
     resumePdfName?: StringNullableFilter<"Application"> | string | null
     coverTexUrl?: StringNullableFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableFilter<"Application"> | string | null
+    status?: EnumApplicationStatusFilter<"Application"> | $Enums.ApplicationStatus
+    aiContent?: JsonNullableFilter<"Application">
+    aiContentHash?: StringNullableFilter<"Application"> | string | null
     createdAt?: DateTimeFilter<"Application"> | Date | string
     updatedAt?: DateTimeFilter<"Application"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -25277,6 +25344,9 @@ export namespace Prisma {
     resumePdfName?: SortOrderInput | SortOrder
     coverTexUrl?: SortOrderInput | SortOrder
     coverPdfUrl?: SortOrderInput | SortOrder
+    status?: SortOrder
+    aiContent?: SortOrderInput | SortOrder
+    aiContentHash?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -25300,6 +25370,9 @@ export namespace Prisma {
     resumePdfName?: StringNullableFilter<"Application"> | string | null
     coverTexUrl?: StringNullableFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableFilter<"Application"> | string | null
+    status?: EnumApplicationStatusFilter<"Application"> | $Enums.ApplicationStatus
+    aiContent?: JsonNullableFilter<"Application">
+    aiContentHash?: StringNullableFilter<"Application"> | string | null
     createdAt?: DateTimeFilter<"Application"> | Date | string
     updatedAt?: DateTimeFilter<"Application"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -25319,6 +25392,9 @@ export namespace Prisma {
     resumePdfName?: SortOrderInput | SortOrder
     coverTexUrl?: SortOrderInput | SortOrder
     coverPdfUrl?: SortOrderInput | SortOrder
+    status?: SortOrder
+    aiContent?: SortOrderInput | SortOrder
+    aiContentHash?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ApplicationCountOrderByAggregateInput
@@ -25341,6 +25417,9 @@ export namespace Prisma {
     resumePdfName?: StringNullableWithAggregatesFilter<"Application"> | string | null
     coverTexUrl?: StringNullableWithAggregatesFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableWithAggregatesFilter<"Application"> | string | null
+    status?: EnumApplicationStatusWithAggregatesFilter<"Application"> | $Enums.ApplicationStatus
+    aiContent?: JsonNullableWithAggregatesFilter<"Application">
+    aiContentHash?: StringNullableWithAggregatesFilter<"Application"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Application"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Application"> | Date | string
   }
@@ -26842,6 +26921,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutApplicationsInput
@@ -26861,6 +26943,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26874,6 +26959,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutApplicationsNestedInput
@@ -26893,6 +26981,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26909,6 +27000,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26922,6 +27016,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26938,6 +27035,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28500,6 +28600,13 @@ export namespace Prisma {
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
+  export type EnumApplicationStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationStatus | EnumApplicationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationStatusFilter<$PrismaModel> | $Enums.ApplicationStatus
+  }
+
   export type JobNullableScalarRelationFilter = {
     is?: JobWhereInput | null
     isNot?: JobWhereInput | null
@@ -28527,6 +28634,9 @@ export namespace Prisma {
     resumePdfName?: SortOrder
     coverTexUrl?: SortOrder
     coverPdfUrl?: SortOrder
+    status?: SortOrder
+    aiContent?: SortOrder
+    aiContentHash?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -28543,6 +28653,8 @@ export namespace Prisma {
     resumePdfName?: SortOrder
     coverTexUrl?: SortOrder
     coverPdfUrl?: SortOrder
+    status?: SortOrder
+    aiContentHash?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -28559,6 +28671,8 @@ export namespace Prisma {
     resumePdfName?: SortOrder
     coverTexUrl?: SortOrder
     coverPdfUrl?: SortOrder
+    status?: SortOrder
+    aiContentHash?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -28576,6 +28690,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type EnumApplicationStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationStatus | EnumApplicationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumApplicationStatusFilter<$PrismaModel>
+    _max?: NestedEnumApplicationStatusFilter<$PrismaModel>
   }
 
   export type PromptRuleTemplateUserIdVersionCompoundUniqueInput = {
@@ -30027,6 +30151,10 @@ export namespace Prisma {
     connect?: ResumeProfileWhereUniqueInput
   }
 
+  export type EnumApplicationStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ApplicationStatus
+  }
+
   export type UserUpdateOneRequiredWithoutApplicationsNestedInput = {
     create?: XOR<UserCreateWithoutApplicationsInput, UserUncheckedCreateWithoutApplicationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutApplicationsInput
@@ -30521,6 +30649,13 @@ export namespace Prisma {
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedEnumApplicationStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationStatus | EnumApplicationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationStatusFilter<$PrismaModel> | $Enums.ApplicationStatus
+  }
+
   export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -30533,6 +30668,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumApplicationStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ApplicationStatus | EnumApplicationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ApplicationStatus[] | ListEnumApplicationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumApplicationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ApplicationStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumApplicationStatusFilter<$PrismaModel>
+    _max?: NestedEnumApplicationStatusFilter<$PrismaModel>
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -30849,6 +30994,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     job?: JobCreateNestedOneWithoutApplicationsInput
@@ -30866,6 +31014,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31401,6 +31552,9 @@ export namespace Prisma {
     resumePdfName?: StringNullableFilter<"Application"> | string | null
     coverTexUrl?: StringNullableFilter<"Application"> | string | null
     coverPdfUrl?: StringNullableFilter<"Application"> | string | null
+    status?: EnumApplicationStatusFilter<"Application"> | $Enums.ApplicationStatus
+    aiContent?: JsonNullableFilter<"Application">
+    aiContentHash?: StringNullableFilter<"Application"> | string | null
     createdAt?: DateTimeFilter<"Application"> | Date | string
     updatedAt?: DateTimeFilter<"Application"> | Date | string
   }
@@ -31928,6 +32082,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutApplicationsInput
@@ -31945,6 +32102,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -32992,6 +33152,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutApplicationsInput
@@ -33009,6 +33172,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34406,6 +34572,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34778,6 +34947,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     job?: JobUpdateOneWithoutApplicationsNestedInput
@@ -34795,6 +34967,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34810,6 +34985,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35055,6 +35233,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -35094,6 +35275,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutApplicationsNestedInput
@@ -35111,6 +35295,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35126,6 +35313,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35271,6 +35461,9 @@ export namespace Prisma {
     resumePdfName?: string | null
     coverTexUrl?: string | null
     coverPdfUrl?: string | null
+    status?: $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -35291,6 +35484,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutApplicationsNestedInput
@@ -35308,6 +35504,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35323,6 +35522,9 @@ export namespace Prisma {
     resumePdfName?: NullableStringFieldUpdateOperationsInput | string | null
     coverTexUrl?: NullableStringFieldUpdateOperationsInput | string | null
     coverPdfUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
+    aiContent?: NullableJsonNullValueInput | InputJsonValue
+    aiContentHash?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
