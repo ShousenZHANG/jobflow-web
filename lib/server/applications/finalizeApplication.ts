@@ -1,0 +1,122 @@
+import { put } from "@vercel/blob";
+import { prisma } from "@/lib/server/prisma";
+import { getResumeProfile } from "@/lib/server/resumeProfile";
+import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
+import { renderResumeTex } from "@/lib/server/latex/renderResume";
+import { compileLatexToPdf } from "@/lib/server/latex/compilePdf";
+import { escapeLatexWithBold } from "@/lib/server/latex/escapeLatex";
+import { buildPdfFilename } from "@/lib/server/files/pdfFilename";
+import {
+  APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+  buildApplicationArtifactBlobPath,
+} from "@/lib/server/files/applicationArtifactBlob";
+import { marketStringToResumeLocale } from "@/lib/shared/market";
+import type { AiContent } from "@/lib/shared/schemas/aiContent";
+
+/**
+ * Render the committed aiContent of a DRAFT Application into a final
+ * PDF + persist it to Vercel Blob. Returns the public URL + filename
+ * for the route to write back onto the row.
+ *
+ * Composition order:
+ *   - Master profile is the spine (metadata, locked bullets, education).
+ *   - aiContent.cv.summary.userEdit ?? aiContent.cv.summary.aiText replaces the summary.
+ *   - aiContent.cv.latestExperience.addedBullets where accepted=true
+ *     are appended to the latest experience's bullet list (after the
+ *     base bullets the user did not delete).
+ *   - aiContent.cv.skillsAdditions where accepted=true merge into the
+ *     skills section. (Phase 2 wires the per-skill granularity; for
+ *     Phase 1 we accept the full additions list as-is.)
+ */
+export async function renderFinalApplication(input: {
+  applicationId: string;
+  userId: string;
+  aiContent: AiContent;
+  job: { id: string | null; title: string; company: string | null; market: string };
+}): Promise<{ resumePdfUrl: string; resumePdfName: string }> {
+  const profileLocale = marketStringToResumeLocale(input.job.market);
+  const profile = await getResumeProfile(input.userId, profileLocale);
+  if (!profile) {
+    throw new Error("MASTER_PROFILE_MISSING");
+  }
+  const renderInput = mapResumeProfile(profile);
+
+  // Compose final summary
+  const finalSummary =
+    input.aiContent.cv.summary.userEdit?.trim() ||
+    input.aiContent.cv.summary.aiText.trim() ||
+    renderInput.summary;
+
+  // Compose final latest-experience bullets: base bullets + accepted AI adds
+  const acceptedAdded = input.aiContent.cv.latestExperience.addedBullets
+    .filter((b) => b.accepted)
+    .map((b) => (b.userEdit?.trim() || b.text).trim())
+    .filter(Boolean);
+  const expIdx = input.aiContent.cv.latestExperience.experienceIndex;
+  const baseExperiences = renderInput.experiences;
+  const targetExp = baseExperiences[expIdx];
+  const nextExperiences = targetExp
+    ? baseExperiences.map((exp, i) =>
+        i === expIdx
+          ? {
+              ...exp,
+              bullets: [...exp.bullets, ...acceptedAdded.map((b) => escapeLatexWithBold(b))],
+            }
+          : exp,
+      )
+    : baseExperiences;
+
+  // Compose final skills: existing + accepted additions
+  const acceptedSkillAdditions = input.aiContent.cv.skillsAdditions.filter((s) => s.accepted);
+  const nextSkills =
+    acceptedSkillAdditions.length === 0
+      ? renderInput.skills
+      : mergeAcceptedSkillAdditions(renderInput.skills, acceptedSkillAdditions);
+
+  const tex = renderResumeTex({
+    ...renderInput,
+    summary: escapeLatexWithBold(finalSummary),
+    experiences: nextExperiences,
+    skills: nextSkills,
+  });
+
+  const pdf = await compileLatexToPdf({
+    tex,
+    engine: profileLocale === "zh-CN" ? "xelatex" : "pdflatex",
+  });
+  const resumePdfName = buildPdfFilename(renderInput.candidate.name, input.job.title);
+  const blobPath = buildApplicationArtifactBlobPath({
+    userId: input.userId,
+    jobId: input.job.id ?? input.applicationId,
+    target: "resume",
+    filename: resumePdfName,
+  });
+  const blob = await put(blobPath, pdf, {
+    access: "public",
+    contentType: "application/pdf",
+    ...APPLICATION_ARTIFACT_OVERWRITE_OPTIONS,
+  });
+
+  return { resumePdfUrl: blob.url, resumePdfName };
+}
+
+function mergeAcceptedSkillAdditions(
+  baseSkills: ReturnType<typeof mapResumeProfile>["skills"],
+  additions: AiContent["cv"]["skillsAdditions"],
+): ReturnType<typeof mapResumeProfile>["skills"] {
+  const byLabel = new Map(baseSkills.map((s) => [s.label, [...s.items]]));
+  for (const add of additions) {
+    const existing = byLabel.get(add.label);
+    if (existing) {
+      for (const item of add.items) {
+        if (!existing.includes(item)) existing.push(item);
+      }
+    } else {
+      byLabel.set(add.label, [...add.items]);
+    }
+  }
+  return Array.from(byLabel.entries()).map(([label, items]) => ({ label, items }));
+}
+
+// Re-export prisma for the route's update path (keeps imports symmetric).
+export { prisma };
