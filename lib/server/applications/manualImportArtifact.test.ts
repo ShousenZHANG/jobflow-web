@@ -12,6 +12,7 @@ vi.mock("@/lib/server/latex/renderResume", () => resumeRender);
 vi.mock("@/lib/server/latex/renderCoverLetter", () => coverRender);
 
 import { buildManualImportArtifact } from "./manualImportArtifact";
+import { AI_CONTENT_SCHEMA_VERSION } from "@/lib/shared/schemas/aiContent";
 
 const renderInput = {
   candidate: {
@@ -113,6 +114,49 @@ describe("manual import artifact builder", () => {
       "Maintained CI/CD pipelines on Linux.",
       "Built Java APIs.",
     ]);
+  });
+
+  it("emits aiContent provenance covering summary diff and per-bullet quality gate verdicts", () => {
+    const result = buildManualImportArtifact({
+      target: "resume",
+      modelOutput: JSON.stringify({
+        cvSummary: "Focused on Java services and reliable delivery.",
+        latestExperience: {
+          bullets: [
+            "Maintained CI/CD pipelines on Linux.",
+            "Built Java APIs.",
+            "Led unrelated M&A diligence.",
+          ],
+        },
+        skillsFinal: [{ label: "Backend", items: ["Java", "Spring Boot"] }],
+      }),
+      renderInput,
+      profile,
+      job,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.aiContent).toBeDefined();
+    expect(result.aiContent.schemaVersion).toBe(AI_CONTENT_SCHEMA_VERSION);
+
+    expect(result.aiContent.cv.summary).toEqual(
+      expect.objectContaining({
+        aiText: "Focused on Java services and reliable delivery.",
+        originalText: "Base summary",
+      }),
+    );
+
+    expect(result.aiContent.cv.latestExperience.experienceIndex).toBe(0);
+    const added = result.aiContent.cv.latestExperience.addedBullets;
+    expect(added).toHaveLength(1);
+    expect(added[0]).toEqual(
+      expect.objectContaining({
+        text: "Led unrelated M&A diligence.",
+        accepted: false,
+        qualityGate: expect.objectContaining({ passed: false }),
+      }),
+    );
   });
 
   it("builds cover artifacts with quality gate metadata", () => {

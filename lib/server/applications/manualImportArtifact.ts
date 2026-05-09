@@ -6,6 +6,11 @@ import type { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
 import { renderCoverLetterTex } from "@/lib/server/latex/renderCoverLetter";
 import { renderResumeTex } from "@/lib/server/latex/renderResume";
 import {
+  AI_CONTENT_SCHEMA_VERSION,
+  type AiAddedBullet,
+  type AiContent,
+} from "@/lib/shared/schemas/aiContent";
+import {
   canonicalizeLatestBullets,
   getLatestRawBullets,
   isGroundedAddedBullet,
@@ -44,11 +49,32 @@ export type ManualImportArtifactResult =
       filename: string;
       coverQualityGate: string;
       coverQualityIssueCount: number;
+      /**
+       * Provenance snapshot of every AI proposal + the user's
+       * accept/reject/edit decisions. Persisted on Application.aiContent.
+       * For Phase 1 the resume target populates cv.summary +
+       * cv.latestExperience; skills + cover paragraphs stay empty
+       * defaults until Phase 2 lights them up.
+       */
+      aiContent: AiContent;
     }
   | {
       ok: false;
       error: ManualImportArtifactError;
     };
+
+const EMPTY_AI_CONTENT_DEFAULTS = {
+  skillsAdditions: [] as AiContent["cv"]["skillsAdditions"],
+  emptyCoverParagraph: () => ({ aiText: "", accepted: false }),
+} as const;
+
+function emptyCover(): AiContent["cover"] {
+  return {
+    paragraphOne: EMPTY_AI_CONTENT_DEFAULTS.emptyCoverParagraph(),
+    paragraphTwo: EMPTY_AI_CONTENT_DEFAULTS.emptyCoverParagraph(),
+    paragraphThree: EMPTY_AI_CONTENT_DEFAULTS.emptyCoverParagraph(),
+  };
+}
 
 function parseFilename(candidate: string, role: string, target: ManualImportTarget) {
   return target === "cover"
@@ -98,6 +124,7 @@ function buildManualResumeArtifact(input: {
       : baseLatest?.bullets.map((item) => item.trim()).filter(Boolean) ?? [];
   const incomingBullets = resumeOutput.latestExperience?.bullets;
   let finalLatestBullets = incomingBullets ?? [];
+  const aiAddedBullets: AiAddedBullet[] = [];
 
   if (baseLatest && incomingBullets) {
     const maxAllowed = Math.max(baseBulletsForMatch.length + 3, 3);
@@ -121,10 +148,27 @@ function buildManualResumeArtifact(input: {
     const acceptedAddedBullets: string[] = [];
 
     for (const bullet of addedBullets) {
-      if (!isGroundedAddedBullet(bullet, baseBulletsForMatch)) continue;
-      if (!isNonRedundantAddedBullet(bullet, baseBulletsForMatch, acceptedAddedBullets)) continue;
-      acceptedAddedBullets.push(bullet);
-      allowedAddedKeys.add(normalizeBulletForCompare(bullet));
+      const grounded = isGroundedAddedBullet(bullet, baseBulletsForMatch);
+      const nonRedundant = grounded
+        ? isNonRedundantAddedBullet(bullet, baseBulletsForMatch, acceptedAddedBullets)
+        : false;
+      const passed = grounded && nonRedundant;
+      const reason = !grounded
+        ? "ungrounded: no JD or master-profile evidence"
+        : !nonRedundant
+          ? "redundant: too similar to an existing bullet"
+          : undefined;
+
+      aiAddedBullets.push({
+        text: bullet,
+        accepted: passed,
+        qualityGate: { passed, ...(reason ? { reason } : {}) },
+      });
+
+      if (passed) {
+        acceptedAddedBullets.push(bullet);
+        allowedAddedKeys.add(normalizeBulletForCompare(bullet));
+      }
     }
 
     const filteredCanonical =
@@ -157,6 +201,25 @@ function buildManualResumeArtifact(input: {
       ? sanitizedSkillsFinal
       : mergeSkillAdditions(input.renderInput.skills, sanitizedSkillAdditions);
 
+  const aiContent: AiContent = {
+    schemaVersion: AI_CONTENT_SCHEMA_VERSION,
+    generatedAt: new Date().toISOString(),
+    promptMetaHash: "",
+    cv: {
+      summary: {
+        aiText: cvSummary,
+        originalText: input.renderInput.summary ?? "",
+        accepted: true,
+      },
+      latestExperience: {
+        experienceIndex: 0,
+        addedBullets: aiAddedBullets,
+      },
+      skillsAdditions: EMPTY_AI_CONTENT_DEFAULTS.skillsAdditions,
+    },
+    cover: emptyCover(),
+  };
+
   return {
     ok: true,
     tex: renderResumeTex({
@@ -168,6 +231,7 @@ function buildManualResumeArtifact(input: {
     filename: parseFilename(input.renderInput.candidate.name, input.job.title, "resume"),
     coverQualityGate: "pass",
     coverQualityIssueCount: 0,
+    aiContent,
   };
 }
 
@@ -247,5 +311,20 @@ function buildManualCoverArtifact(input: {
     filename: parseFilename(input.renderInput.candidate.name, input.job.title, "cover"),
     coverQualityGate: qualityReport.passed ? "pass" : "soft-fail",
     coverQualityIssueCount: qualityReport.issues.length,
+    aiContent: {
+      schemaVersion: AI_CONTENT_SCHEMA_VERSION,
+      generatedAt: new Date().toISOString(),
+      promptMetaHash: "",
+      cv: {
+        summary: { aiText: "", originalText: input.renderInput.summary ?? "", accepted: false },
+        latestExperience: { experienceIndex: 0, addedBullets: [] },
+        skillsAdditions: EMPTY_AI_CONTENT_DEFAULTS.skillsAdditions,
+      },
+      cover: {
+        paragraphOne: { aiText: p1, accepted: true },
+        paragraphTwo: { aiText: p2, accepted: true },
+        paragraphThree: { aiText: p3, accepted: true },
+      },
+    },
   };
 }
