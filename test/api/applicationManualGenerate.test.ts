@@ -986,4 +986,60 @@ describe("applications manual generate api", () => {
       }),
     );
   });
+
+  it("?finalize=false skips PDF render and returns aiContent JSON for the editor", async () => {
+    (getServerSession as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    jobStore.findFirst.mockResolvedValueOnce({
+      id: VALID_JOB_ID,
+      title: "Software Engineer",
+      company: "Example Co",
+      description: "Build product features",
+      market: "AU",
+    });
+    (getResumeProfile as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: "rp-1",
+      updatedAt: new Date("2026-02-06T00:00:00.000Z"),
+    });
+    applicationStore.upsert.mockResolvedValueOnce({ id: "app-1" });
+
+    const res = await POST(
+      new Request("http://localhost/api/applications/manual-generate?finalize=false", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: VALID_JOB_ID,
+          target: "resume",
+          modelOutput: VALID_OUTPUT,
+          promptMeta: {
+            ruleSetId: "rules-1",
+            resumeSnapshotUpdatedAt: "2026-02-06T00:00:00.000Z",
+          },
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toMatch(/application\/json/);
+    const json = await res.json();
+    expect(json.applicationId).toBe("app-1");
+    expect(json.status).toBe("DRAFT");
+    expect(typeof json.aiContentHash).toBe("string");
+    expect(json.aiContent.cv.summary.aiText).toBe("Tailored summary");
+
+    expect(applicationStore.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          status: "DRAFT",
+          aiContent: expect.objectContaining({
+            cv: expect.any(Object),
+            cover: expect.any(Object),
+          }),
+          aiContentHash: expect.any(String),
+        }),
+      }),
+    );
+    // PDF compile + Blob put are skipped in DRAFT mode.
+    expect(blobStore.put).not.toHaveBeenCalled();
+  });
 });

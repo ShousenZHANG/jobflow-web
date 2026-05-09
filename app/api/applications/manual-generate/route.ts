@@ -15,10 +15,27 @@ import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { buildManualImportArtifact } from "@/lib/server/applications/manualImportArtifact";
 import { ManualGenerateSchema } from "@/lib/server/applications/manualImportParser";
+import { hashAiContent } from "@/lib/shared/schemas/aiContent";
 
 export const runtime = "nodejs";
 
+/**
+ * `?finalize` query flag (see ADR-0002):
+ *   true  (default)  Atomic: render PDF + commit Application status=FINAL.
+ *                     Codex Batch and any non-interactive caller path.
+ *   false             Persist aiContent + status=DRAFT, skip PDF render,
+ *                     return JSON { applicationId, status, aiContentHash }
+ *                     so the client can navigate to /jobs/[id]/tailor.
+ */
+function parseFinalizeFlag(req: Request): boolean {
+  const url = new URL(req.url);
+  const v = url.searchParams.get("finalize");
+  if (v === null) return true;
+  return v !== "false" && v !== "0";
+}
+
 export async function POST(req: Request) {
+  const finalize = parseFinalizeFlag(req);
   return withSessionRoute(async ({ userId, requestId }) => {
     const parsed = await parseJsonBody(req, ManualGenerateSchema, requestId);
     if (!parsed.ok) return parsed.response;
@@ -77,27 +94,71 @@ export async function POST(req: Request) {
 
   const renderInput = mapResumeProfile(profile);
 
+  // Build the artifact regardless of finalize mode — even DRAFT mode
+  // needs the aiContent provenance extracted from the AI output JSON.
+  const artifact = buildManualImportArtifact({
+    target: data.target,
+    modelOutput: data.modelOutput,
+    renderInput,
+    profile,
+    job,
+  });
+  if (!artifact.ok) {
+    return errorJson(
+      artifact.error.code,
+      artifact.error.message,
+      artifact.error.status,
+      { details: artifact.error.details, requestId },
+    );
+  }
+
+  // DRAFT mode: skip PDF compile + Blob upload. Just persist the
+  // aiContent snapshot and return JSON. Caller navigates to
+  // /jobs/[id]/tailor to review.
+  if (!finalize) {
+    const aiContentHash = hashAiContent(artifact.aiContent);
+    const application = await prisma.application.upsert({
+      where: { userId_jobId: { userId, jobId: job.id } },
+      create: {
+        userId,
+        jobId: job.id,
+        resumeProfileId: profile.id,
+        company: job.company,
+        role: job.title,
+        status: "DRAFT",
+        aiContent: artifact.aiContent,
+        aiContentHash,
+      },
+      update: {
+        resumeProfileId: profile.id,
+        company: job.company,
+        role: job.title,
+        status: "DRAFT",
+        aiContent: artifact.aiContent,
+        aiContentHash,
+      },
+      select: { id: true },
+    });
+    return NextResponse.json(
+      {
+        applicationId: application.id,
+        status: "DRAFT",
+        aiContentHash,
+        aiContent: artifact.aiContent,
+        coverQualityGate: artifact.coverQualityGate,
+        coverQualityIssueCount: artifact.coverQualityIssueCount,
+        requestId,
+      },
+      { status: 200 },
+    );
+  }
+
+  // FINAL mode: today's atomic behavior — render PDF + commit FINAL.
   let pdf: Buffer;
   let filename: string;
   let coverQualityGate = "pass";
   let coverQualityIssueCount = 0;
   try {
-    const artifact = buildManualImportArtifact({
-      target: data.target,
-      modelOutput: data.modelOutput,
-      renderInput,
-      profile,
-      job,
-    });
-    if (!artifact.ok) {
-      return errorJson(
-        artifact.error.code,
-        artifact.error.message,
-        artifact.error.status,
-        { details: artifact.error.details, requestId },
-      );
-    }
-
     pdf = await compileLatexToPdf(artifact.tex);
     filename = artifact.filename;
     coverQualityGate = artifact.coverQualityGate;
@@ -139,6 +200,9 @@ export async function POST(req: Request) {
     }
   }
 
+  // FINAL mode also persists aiContent so the user can later re-edit a
+  // committed Application without re-generating.
+  const aiContentHashFinal = hashAiContent(artifact.aiContent);
   const application = await prisma.application.upsert({
     where: { userId_jobId: { userId, jobId: job.id } },
     create: {
@@ -147,6 +211,9 @@ export async function POST(req: Request) {
       resumeProfileId: profile.id,
       company: job.company,
       role: job.title,
+      status: "FINAL",
+      aiContent: artifact.aiContent,
+      aiContentHash: aiContentHashFinal,
       ...(data.target === "resume" && persistedResumePdfUrl
         ? { resumePdfUrl: persistedResumePdfUrl, resumePdfName: filename }
         : {}),
@@ -158,6 +225,9 @@ export async function POST(req: Request) {
       resumeProfileId: profile.id,
       company: job.company,
       role: job.title,
+      status: "FINAL",
+      aiContent: artifact.aiContent,
+      aiContentHash: aiContentHashFinal,
       ...(data.target === "resume" && persistedResumePdfUrl
         ? { resumePdfUrl: persistedResumePdfUrl, resumePdfName: filename }
         : {}),
