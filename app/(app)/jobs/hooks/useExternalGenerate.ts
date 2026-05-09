@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useGuide } from "@/app/GuideContext";
@@ -13,6 +14,7 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
   const { toast } = useToast();
   const { markTaskComplete } = useGuide();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [externalDialogOpen, setExternalDialogOpen] = useState(false);
   const [externalPromptLoading, setExternalPromptLoading] = useState(false);
@@ -227,16 +229,23 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
     setGenerateComplete(false);
     setError(null);
     try {
-      const res = await fetch("/api/applications/manual-generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId: job.id,
-          target,
-          modelOutput,
-          promptMeta: externalPromptMeta,
-        }),
-      });
+      // Resume target enters the new draft -> edit -> finalize flow.
+      // Cover target keeps today's atomic generate behavior until
+      // Phase 2 lights up the Cover Letter tab on /tailor.
+      const useDraftFlow = target === "resume";
+      const res = await fetch(
+        `/api/applications/manual-generate${useDraftFlow ? "?finalize=false" : ""}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jobId: job.id,
+            target,
+            modelOutput,
+            promptMeta: externalPromptMeta,
+          }),
+        },
+      );
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
@@ -248,23 +257,39 @@ export function useExternalGenerate(setError: (e: string | null) => void) {
         throw new Error(`${baseMessage}${detailText}`);
       }
 
-      const blob = await res.blob();
-      const filename =
-        filenameFromDisposition(res.headers.get("content-disposition")) ||
-        (target === "resume" ? "resume.pdf" : "cover-letter.pdf");
-      markTaskComplete("generate_first_pdf");
-
-      if (target === "resume") {
+      // DRAFT mode: server returns JSON with applicationId. Close
+      // dialog and route to the editor; the user will Finalize there.
+      if (useDraftFlow) {
+        const json = (await res.json().catch(() => null)) as
+          | { applicationId?: string }
+          | null;
+        const applicationId = json?.applicationId;
+        if (!applicationId) {
+          throw new Error("Unexpected response: missing applicationId");
+        }
+        markTaskComplete("generate_first_pdf");
         setTailorSourceByJob((prev) => ({
           ...prev,
           [job.id]: { ...prev[job.id], cv: "manual_import" },
         }));
-      } else {
-        setTailorSourceByJob((prev) => ({
-          ...prev,
-          [job.id]: { ...prev[job.id], cover: "manual_import" },
-        }));
+        await invalidateActiveJobsQueries(queryClient);
+        setExternalDialogOpen(false);
+        setDialogPhase(1);
+        router.push(`/jobs/${applicationId}/tailor`);
+        return;
       }
+
+      // FINAL mode (cover today): existing inline-PDF success flow.
+      const blob = await res.blob();
+      const filename =
+        filenameFromDisposition(res.headers.get("content-disposition")) ||
+        "cover-letter.pdf";
+      markTaskComplete("generate_first_pdf");
+
+      setTailorSourceByJob((prev) => ({
+        ...prev,
+        [job.id]: { ...prev[job.id], cover: "manual_import" },
+      }));
 
       setGenerateComplete(true);
       const pdfObjectUrl = URL.createObjectURL(blob);

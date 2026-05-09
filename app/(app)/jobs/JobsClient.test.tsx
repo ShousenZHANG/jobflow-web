@@ -16,6 +16,19 @@ vi.mock("@/app/FetchStatusContext", () => ({
   useFetchStatus: () => fetchStatusMock.state,
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/jobs",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 afterEach(() => {
   cleanup();
 });
