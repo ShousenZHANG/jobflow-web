@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, FileText, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -114,6 +114,14 @@ function TailorReviewDialogBody({
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showConflictDialog, setShowConflictDialog] = useState(false);
+  const initialPreviewUrl =
+    initialDraft.target === "resume"
+      ? initialDraft.resumePdfUrl
+      : initialDraft.coverPdfUrl;
+  const previewRenderedHashRef = useRef<string | null>(
+    initialPreviewUrl ? initialDraft.initialAiContentHash : null,
+  );
+  const autoRenderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const target = initialDraft.target;
   const targetLabel = target === "resume" ? "CV" : "Cover Letter";
@@ -132,6 +140,7 @@ function TailorReviewDialogBody({
   }, [draft.saveStatus]);
 
   function patchSummary(summary: AiContent["cv"]["summary"]) {
+    setStatus("DRAFT");
     draft.setAiContent({
       ...draft.aiContent,
       cv: { ...draft.aiContent.cv, summary },
@@ -139,6 +148,7 @@ function TailorReviewDialogBody({
   }
 
   function patchLatestExperience(le: AiContent["cv"]["latestExperience"]) {
+    setStatus("DRAFT");
     draft.setAiContent({
       ...draft.aiContent,
       cv: { ...draft.aiContent.cv, latestExperience: le },
@@ -146,6 +156,7 @@ function TailorReviewDialogBody({
   }
 
   function patchSkills(sa: AiContent["cv"]["skillsAdditions"]) {
+    setStatus("DRAFT");
     draft.setAiContent({
       ...draft.aiContent,
       cv: { ...draft.aiContent.cv, skillsAdditions: sa },
@@ -153,6 +164,7 @@ function TailorReviewDialogBody({
   }
 
   function patchCover(cover: AiContent["cover"]) {
+    setStatus("DRAFT");
     draft.setAiContent({ ...draft.aiContent, cover });
   }
 
@@ -174,39 +186,13 @@ function TailorReviewDialogBody({
     };
   }, [draft, initialDraft.applicationId, target]);
 
-  async function handleRefresh() {
-    setActionError(null);
-    setIsRefreshing(true);
-    try {
-      const data = await callFinalize();
-      applyFinalizedResult(data);
-    } catch (err: unknown) {
-      setActionError(extractMessage(err, "Preview render failed"));
-    } finally {
-      setIsRefreshing(false);
-    }
-  }
-
-  async function handleFinalize() {
-    setActionError(null);
-    setIsFinalizing(true);
-    try {
-      const data = await callFinalize();
-      applyFinalizedResult(data);
-    } catch (err: unknown) {
-      setActionError(extractMessage(err, "Finalize failed"));
-    } finally {
-      setIsFinalizing(false);
-    }
-  }
-
-  function applyFinalizedResult(data: {
+  const applyFinalizedResult = useCallback((data: {
     status: "FINAL";
     resumePdfUrl?: string;
     resumePdfName?: string;
     coverPdfUrl?: string;
     coverPdfName?: string;
-  }) {
+  }) => {
     if (data.resumePdfUrl) {
       setResumePdf(data.resumePdfUrl);
       setLastResumeRefreshAt(Date.now());
@@ -223,6 +209,53 @@ function TailorReviewDialogBody({
       coverPdfUrl: data.coverPdfUrl,
       coverPdfName: data.coverPdfName,
     });
+  }, [onFinalized, target]);
+
+  const handleRefresh = useCallback(async () => {
+    setActionError(null);
+    setIsRefreshing(true);
+    try {
+      const data = await callFinalize();
+      previewRenderedHashRef.current = draft.currentHash;
+      applyFinalizedResult(data);
+    } catch (err: unknown) {
+      setActionError(extractMessage(err, "Preview render failed"));
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [applyFinalizedResult, callFinalize, draft.currentHash]);
+
+  useEffect(() => {
+    if (draft.saveStatus.kind !== "saved" || !draft.currentHash) return;
+    if (previewRenderedHashRef.current === draft.currentHash) return;
+
+    if (autoRenderTimerRef.current) {
+      clearTimeout(autoRenderTimerRef.current);
+    }
+    autoRenderTimerRef.current = setTimeout(() => {
+      previewRenderedHashRef.current = draft.currentHash;
+      void handleRefresh();
+    }, 700);
+
+    return () => {
+      if (autoRenderTimerRef.current) {
+        clearTimeout(autoRenderTimerRef.current);
+      }
+    };
+  }, [draft.currentHash, draft.saveStatus.kind, handleRefresh]);
+
+  async function handleFinalize() {
+    setActionError(null);
+    setIsFinalizing(true);
+    try {
+      const data = await callFinalize();
+      previewRenderedHashRef.current = draft.currentHash;
+      applyFinalizedResult(data);
+    } catch (err: unknown) {
+      setActionError(extractMessage(err, "Finalize failed"));
+    } finally {
+      setIsFinalizing(false);
+    }
   }
 
   async function handleDiscard() {

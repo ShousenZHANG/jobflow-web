@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RefreshCcw, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,10 @@ export function PdfPreview({
 }: PdfPreviewProps) {
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastLabel, setLastLabel] = useState<string | null>(null);
+  const previewSrc = useMemo(
+    () => (pdfUrl ? withPreviewCacheBust(pdfUrl, lastRefreshedAt) : null),
+    [lastRefreshedAt, pdfUrl],
+  );
 
   // Tick "Last refresh: Xs ago" every 5s. setState only fires inside
   // timer callbacks (subscription handlers), never synchronously in
@@ -104,11 +108,11 @@ export function PdfPreview({
       </header>
 
       <div className="relative flex-1 overflow-hidden rounded-xl border border-border/60 bg-muted/30">
-        {pdfUrl ? (
+        {previewSrc ? (
           <iframe
-            key={pdfUrl}
-            src={pdfUrl}
-            title={`Resume preview · ${jobTitle}`}
+            key={previewSrc}
+            src={previewSrc}
+            title={`PDF preview - ${jobTitle}`}
             className="h-full w-full"
           />
         ) : (
@@ -127,4 +131,10 @@ function formatRelative(diffMs: number): string {
   if (diffMs < 60_000) return `${Math.floor(diffMs / 1_000)}s ago`;
   if (diffMs < 3_600_000) return `${Math.floor(diffMs / 60_000)}m ago`;
   return `${Math.floor(diffMs / 3_600_000)}h ago`;
+}
+
+function withPreviewCacheBust(url: string, refreshedAt: number | null): string {
+  if (!refreshedAt) return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}preview=${refreshedAt}`;
 }
