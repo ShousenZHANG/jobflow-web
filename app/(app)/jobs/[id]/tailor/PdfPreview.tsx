@@ -151,7 +151,7 @@ export function PdfPreview({
       <div className="relative flex-1 overflow-hidden bg-gradient-to-b from-muted/40 via-muted/25 to-muted/15">
         {previewSrc ? (
           <div className="absolute inset-0 overflow-auto px-3 py-4 sm:px-4">
-            <ResumePdfPreview pdfUrl={previewSrc} maxWidth={620} />
+            <ResumePdfPreview pdfUrl={previewSrc} maxWidth={760} />
           </div>
         ) : (
           <div className="flex h-full items-center justify-center p-6">
