@@ -44,12 +44,15 @@ export function useTailorDraft({
     at: Date.now(),
   }));
   const [currentHash, setCurrentHash] = useState<string | null>(initialAiContentHash);
+  const aiContentRef = useRef<AiContent>(initialAiContent);
   const lastSavedHashRef = useRef<string | null>(initialAiContentHash);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlightRef = useRef<Promise<string | null> | null>(null);
+  const versionRef = useRef(0);
+  const savedVersionRef = useRef(0);
 
   const persist = useCallback(
-    async (snapshot: AiContent): Promise<string | null> => {
+    async (snapshot: AiContent, version: number): Promise<string | null> => {
       const expectedHash = lastSavedHashRef.current;
       setSaveStatus({ kind: "saving" });
       try {
@@ -66,7 +69,12 @@ export function useTailorDraft({
         const json = res as { aiContentHash: string };
         lastSavedHashRef.current = json.aiContentHash;
         setCurrentHash(json.aiContentHash);
-        setSaveStatus({ kind: "saved", at: Date.now() });
+        if (version === versionRef.current) {
+          savedVersionRef.current = version;
+          setSaveStatus({ kind: "saved", at: Date.now() });
+        } else {
+          setSaveStatus({ kind: "dirty" });
+        }
         return json.aiContentHash;
       } catch (err: unknown) {
         if (err instanceof ApiError && err.status === 409) {
@@ -85,17 +93,40 @@ export function useTailorDraft({
     [applicationId],
   );
 
+  const startPersist = useCallback(
+    (snapshot: AiContent, version: number) => {
+      const previousSave = inFlightRef.current;
+      const promise = (async () => {
+        if (previousSave) {
+          await previousSave;
+        }
+        return persist(snapshot, version);
+      })();
+      inFlightRef.current = promise;
+      void promise.finally(() => {
+        if (inFlightRef.current === promise) {
+          inFlightRef.current = null;
+        }
+      });
+      return promise;
+    },
+    [persist],
+  );
+
   const setAiContent = useCallback(
     (next: AiContent) => {
+      const nextVersion = versionRef.current + 1;
+      versionRef.current = nextVersion;
+      aiContentRef.current = next;
       setAiContentState(next);
       setSaveStatus({ kind: "dirty" });
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         const localSnapshot = next;
-        inFlightRef.current = persist(localSnapshot);
+        void startPersist(localSnapshot, nextVersion);
       }, debounceMs);
     },
-    [debounceMs, persist],
+    [debounceMs, startPersist],
   );
 
   const flushNow = useCallback(async () => {
@@ -103,13 +134,25 @@ export function useTailorDraft({
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
-    if (saveStatus.kind === "saved") return lastSavedHashRef.current;
-    return persist(aiContent);
-  }, [aiContent, persist, saveStatus.kind]);
+    if (savedVersionRef.current === versionRef.current) {
+      return lastSavedHashRef.current;
+    }
+    const activeSave = inFlightRef.current;
+    if (activeSave) {
+      await activeSave;
+      if (savedVersionRef.current === versionRef.current) {
+        return lastSavedHashRef.current;
+      }
+    }
+    return startPersist(aiContentRef.current, versionRef.current);
+  }, [startPersist]);
 
   const replaceFromServer = useCallback(
     (next: AiContent, hash: string | null) => {
       const resolvedHash = hash ?? hashAiContent(next);
+      versionRef.current += 1;
+      savedVersionRef.current = versionRef.current;
+      aiContentRef.current = next;
       setAiContentState(next);
       lastSavedHashRef.current = resolvedHash;
       setCurrentHash(resolvedHash);

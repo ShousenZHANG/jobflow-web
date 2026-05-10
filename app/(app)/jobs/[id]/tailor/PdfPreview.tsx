@@ -18,6 +18,10 @@ interface PdfPreviewProps {
    * "Last refresh: Xs ago" hint.
    */
   lastRefreshedAt: number | null;
+  /** Whether the preview has a debounced render queued. */
+  isPending?: boolean;
+  /** Enable legacy idle refresh. Disabled in the Jobs review dialog. */
+  autoRefresh?: boolean;
 }
 
 const IDLE_REFRESH_MS = 30_000;
@@ -28,6 +32,8 @@ export function PdfPreview({
   onRefresh,
   isRefreshing,
   lastRefreshedAt,
+  isPending = false,
+  autoRefresh = true,
 }: PdfPreviewProps) {
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastLabel, setLastLabel] = useState<string | null>(null);
@@ -56,6 +62,7 @@ export function PdfPreview({
   // when the timer expires, kick a refresh once. Only re-arms when
   // the user resumes activity.
   useEffect(() => {
+    if (!autoRefresh) return;
     function arm() {
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       idleTimerRef.current = setTimeout(() => {
@@ -73,7 +80,7 @@ export function PdfPreview({
       window.removeEventListener("keydown", onActivity);
       window.removeEventListener("pointermove", onActivity);
     };
-  }, [onRefresh]);
+  }, [autoRefresh, onRefresh]);
 
   return (
     <aside className="flex h-full min-h-[500px] flex-col gap-3 rounded-2xl border border-border/60 bg-background p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
@@ -83,7 +90,11 @@ export function PdfPreview({
           PDF preview
         </div>
         <div className="flex items-center gap-2">
-          {lastLabel ? (
+          {isPending ? (
+            <span className="text-[11px] font-medium text-brand-emerald-700">
+              Updating soon
+            </span>
+          ) : lastLabel ? (
             <span className="text-[11px] text-muted-foreground">
               Last: {lastLabel}
             </span>

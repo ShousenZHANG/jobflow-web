@@ -23,6 +23,10 @@ import { SummarySection } from "../[id]/tailor/SummarySection";
 import { useTailorDraft } from "../[id]/tailor/useTailorDraft";
 
 type TailorTarget = "resume" | "cover";
+type PreviewSyncStatus = "synced" | "pending" | "rendering";
+
+const AUTO_PREVIEW_DEBOUNCE_MS = 1400;
+const QUEUED_PREVIEW_DEBOUNCE_MS = 500;
 
 export type TailorReviewDraft = {
   applicationId: string;
@@ -110,6 +114,8 @@ function TailorReviewDialogBody({
     initialDraft.coverPdfUrl ? Date.now() : null,
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [previewSyncStatus, setPreviewSyncStatus] =
+    useState<PreviewSyncStatus>("synced");
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -122,13 +128,36 @@ function TailorReviewDialogBody({
     initialPreviewUrl ? initialDraft.initialAiContentHash : null,
   );
   const autoRenderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const renderInFlightRef = useRef(false);
+  const renderQueuedRef = useRef(false);
+  const latestHashRef = useRef<string | null>(draft.currentHash);
+  const saveKindRef = useRef(draft.saveStatus.kind);
+  const previewRenderRef = useRef<() => void>(() => {});
 
   const target = initialDraft.target;
   const targetLabel = target === "resume" ? "CV" : "Cover Letter";
   const currentPdf = target === "resume" ? resumePdf : coverPdf;
   const currentRefreshAt =
     target === "resume" ? lastResumeRefreshAt : lastCoverRefreshAt;
-  const canClose = !isRefreshing && !isFinalizing;
+  const flushDraftNow = draft.flushNow;
+  const canClose = !isFinalizing;
+
+  useEffect(() => {
+    latestHashRef.current = draft.currentHash;
+  }, [draft.currentHash]);
+
+  useEffect(() => {
+    saveKindRef.current = draft.saveStatus.kind;
+  }, [draft.saveStatus.kind]);
+
+  useEffect(
+    () => () => {
+      if (autoRenderTimerRef.current) {
+        clearTimeout(autoRenderTimerRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (
@@ -169,7 +198,7 @@ function TailorReviewDialogBody({
   }
 
   const callFinalize = useCallback(async () => {
-    const expectedHash = await draft.flushNow();
+    const expectedHash = await flushDraftNow();
     const json = await fetchJson<undefined>(
       `/api/applications/${initialDraft.applicationId}/finalize?target=${target}`,
       {
@@ -177,14 +206,17 @@ function TailorReviewDialogBody({
         body: JSON.stringify({ expectedHash }),
       },
     );
-    return json as {
-      status: "FINAL";
-      resumePdfUrl?: string;
-      resumePdfName?: string;
-      coverPdfUrl?: string;
-      coverPdfName?: string;
+    return {
+      expectedHash,
+      data: json as {
+        status: "FINAL";
+        resumePdfUrl?: string;
+        resumePdfName?: string;
+        coverPdfUrl?: string;
+        coverPdfName?: string;
+      },
     };
-  }, [draft, initialDraft.applicationId, target]);
+  }, [flushDraftNow, initialDraft.applicationId, target]);
 
   const applyFinalizedResult = useCallback((data: {
     status: "FINAL";
@@ -211,45 +243,98 @@ function TailorReviewDialogBody({
     });
   }, [onFinalized, target]);
 
-  const handleRefresh = useCallback(async () => {
+  const schedulePreviewRender = useCallback(
+    (delayMs = AUTO_PREVIEW_DEBOUNCE_MS) => {
+      if (!latestHashRef.current) return;
+      if (renderInFlightRef.current) {
+        renderQueuedRef.current = true;
+        setPreviewSyncStatus("pending");
+        return;
+      }
+      if (autoRenderTimerRef.current) {
+        clearTimeout(autoRenderTimerRef.current);
+      }
+      setPreviewSyncStatus("pending");
+      autoRenderTimerRef.current = setTimeout(() => {
+        autoRenderTimerRef.current = null;
+        previewRenderRef.current();
+      }, delayMs);
+    },
+    [],
+  );
+
+  const renderPreview = useCallback(async () => {
+    if (renderInFlightRef.current) {
+      renderQueuedRef.current = true;
+      setPreviewSyncStatus("pending");
+      return;
+    }
+    if (autoRenderTimerRef.current) {
+      clearTimeout(autoRenderTimerRef.current);
+      autoRenderTimerRef.current = null;
+    }
+
     setActionError(null);
+    renderInFlightRef.current = true;
+    setPreviewSyncStatus("rendering");
     setIsRefreshing(true);
     try {
-      const data = await callFinalize();
-      previewRenderedHashRef.current = draft.currentHash;
+      const { data, expectedHash } = await callFinalize();
+      previewRenderedHashRef.current = expectedHash;
       applyFinalizedResult(data);
     } catch (err: unknown) {
       setActionError(extractMessage(err, "Preview render failed"));
     } finally {
+      renderInFlightRef.current = false;
       setIsRefreshing(false);
+      const latestHash = latestHashRef.current;
+      const needsFollowUp =
+        renderQueuedRef.current ||
+        (saveKindRef.current === "saved" &&
+          !!latestHash &&
+          previewRenderedHashRef.current !== latestHash);
+      renderQueuedRef.current = false;
+
+      if (needsFollowUp && latestHash && saveKindRef.current === "saved") {
+        schedulePreviewRender(QUEUED_PREVIEW_DEBOUNCE_MS);
+      } else {
+        setPreviewSyncStatus("synced");
+      }
     }
-  }, [applyFinalizedResult, callFinalize, draft.currentHash]);
+  }, [applyFinalizedResult, callFinalize, schedulePreviewRender]);
+
+  useEffect(() => {
+    previewRenderRef.current = () => {
+      void renderPreview();
+    };
+  }, [renderPreview]);
+
+  const handleRefresh = useCallback(async () => {
+    await renderPreview();
+  }, [renderPreview]);
 
   useEffect(() => {
     if (draft.saveStatus.kind !== "saved" || !draft.currentHash) return;
-    if (previewRenderedHashRef.current === draft.currentHash) return;
-
-    if (autoRenderTimerRef.current) {
-      clearTimeout(autoRenderTimerRef.current);
+    if (previewRenderedHashRef.current === draft.currentHash) {
+      if (!renderInFlightRef.current) setPreviewSyncStatus("synced");
+      return;
     }
-    autoRenderTimerRef.current = setTimeout(() => {
-      previewRenderedHashRef.current = draft.currentHash;
-      void handleRefresh();
-    }, 700);
+    schedulePreviewRender();
 
     return () => {
       if (autoRenderTimerRef.current) {
         clearTimeout(autoRenderTimerRef.current);
+        autoRenderTimerRef.current = null;
       }
     };
-  }, [draft.currentHash, draft.saveStatus.kind, handleRefresh]);
+  }, [draft.currentHash, draft.saveStatus.kind, schedulePreviewRender]);
 
   async function handleFinalize() {
     setActionError(null);
     setIsFinalizing(true);
     try {
-      const data = await callFinalize();
-      previewRenderedHashRef.current = draft.currentHash;
+      const { data, expectedHash } = await callFinalize();
+      previewRenderedHashRef.current = expectedHash;
       applyFinalizedResult(data);
     } catch (err: unknown) {
       setActionError(extractMessage(err, "Finalize failed"));
@@ -349,6 +434,8 @@ function TailorReviewDialogBody({
             pdfUrl={currentPdf}
             jobTitle={initialDraft.job.title}
             isRefreshing={isRefreshing}
+            isPending={previewSyncStatus === "pending"}
+            autoRefresh={false}
             lastRefreshedAt={currentRefreshAt}
             onRefresh={handleRefresh}
           />
@@ -359,7 +446,9 @@ function TailorReviewDialogBody({
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <FileText className="h-4 w-4 text-brand-emerald-700" />
           <span className="hidden sm:inline">
-            Edit AI proposals here, then render the final PDF without leaving Jobs.
+            {previewSyncStatus === "pending"
+              ? "Preview will update after you stop editing."
+              : "Edit AI proposals here, then render the final PDF without leaving Jobs."}
           </span>
           <span className="sm:hidden">Edit here, then finalize.</span>
         </div>
