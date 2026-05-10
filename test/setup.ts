@@ -34,6 +34,18 @@ if (!("IntersectionObserver" in globalThis)) {
   ).IntersectionObserver = IntersectionObserverMock;
 }
 
+class DOMMatrixMock {
+  constructor(_init?: string | number[]) {}
+}
+
+if (!("DOMMatrix" in globalThis)) {
+  Object.defineProperty(globalThis, "DOMMatrix", {
+    configurable: true,
+    writable: true,
+    value: DOMMatrixMock,
+  });
+}
+
 Object.defineProperty(window, "scrollTo", {
   value: () => {},
   writable: true,

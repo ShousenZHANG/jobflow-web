@@ -7,6 +7,16 @@ import { ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
 import { fetchJson, ApiError } from "@/lib/api/fetchJson";
 import type { AiContent } from "@/lib/shared/schemas/aiContent";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useTailorDraft } from "./useTailorDraft";
 import { SaveIndicator } from "./SaveIndicator";
 import { SummarySection } from "./SummarySection";
@@ -67,6 +77,7 @@ export function TailorClient({
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showConflictDialog, setShowConflictDialog] = useState(false);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
 
   // Beforeunload guard: only warn if there are pending unsaved edits.
   useEffect(() => {
@@ -167,10 +178,6 @@ export function TailorClient({
   }
 
   async function handleDiscard() {
-    if (
-      !window.confirm("Discard your edits and reset to the original AI proposal?")
-    )
-      return;
     setActionError(null);
     setIsDiscarding(true);
     try {
@@ -294,7 +301,7 @@ export function TailorClient({
         <div className="mx-auto flex w-full max-w-[1400px] items-center justify-end gap-3">
           <button
             type="button"
-            onClick={handleDiscard}
+            onClick={() => setDiscardDialogOpen(true)}
             disabled={isDiscarding}
             className={cn(
               "inline-flex h-10 items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:border-brand-emerald-300/60 hover:bg-muted",
@@ -335,6 +342,27 @@ export function TailorClient({
           }}
         />
       ) : null}
+
+      <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
+        <AlertDialogContent className="max-w-md rounded-2xl border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard draft changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This resets the draft to the original AI proposal. Your current
+              edits in this review step will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleDiscard()}
+              className="rounded-xl bg-destructive text-white hover:bg-destructive"
+            >
+              Discard changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

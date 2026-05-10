@@ -151,12 +151,6 @@ export function useResumeProfiles({
       return;
     }
 
-    const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId);
-    const confirmed = window.confirm(
-      t("confirmDeleteVersion", { name: selectedProfile?.name ?? t("thisVersion") }),
-    );
-    if (!confirmed) return;
-
     setProfileDeleting(true);
     try {
       const res = await fetch("/api/resume-profile", {

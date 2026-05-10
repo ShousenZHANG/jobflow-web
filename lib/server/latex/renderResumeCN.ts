@@ -218,7 +218,7 @@ export function renderResumeCNTex(input: RenderResumeCNInput) {
   return sanitizeRendered(rendered);
 }
 
-/** Reset internal template cache �?for testing only. */
+/** Reset internal template cache for testing only. */
 export function __resetTemplateCache() {
   templateCache = undefined;
 }
