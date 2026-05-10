@@ -4,8 +4,10 @@ export function buildApplicationArtifactBlobPath(input: {
   userId: string;
   jobId: string;
   target: ApplicationArtifactTarget;
+  version?: string | null;
 }) {
-  return `applications/${input.userId}/${input.jobId}/${input.target}.latest.pdf`;
+  const version = sanitizeArtifactVersion(input.version ?? "latest");
+  return `applications/${input.userId}/${input.jobId}/${input.target}.${version}.pdf`;
 }
 
 export const APPLICATION_ARTIFACT_OVERWRITE_OPTIONS = {
@@ -13,3 +15,6 @@ export const APPLICATION_ARTIFACT_OVERWRITE_OPTIONS = {
   allowOverwrite: true,
 } as const;
 
+function sanitizeArtifactVersion(version: string) {
+  return version.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 80) || "latest";
+}

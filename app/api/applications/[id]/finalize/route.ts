@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/server/prisma";
 import { withSessionRoute, parseJsonBody } from "@/lib/server/api/routeHandler";
 import {
+  deleteApplicationArtifact,
   renderFinalApplication,
   renderFinalCoverLetter,
 } from "@/lib/server/applications/finalizeApplication";
@@ -60,6 +61,8 @@ export async function POST(
         userId: true,
         aiContent: true,
         aiContentHash: true,
+        resumePdfUrl: true,
+        coverPdfUrl: true,
         jobId: true,
         company: true,
         role: true,
@@ -125,6 +128,7 @@ export async function POST(
     };
 
     const target = parseTarget(req);
+    const artifactVersion = existing.aiContentHash ?? `${Date.now()}`;
     const renderJob = {
       id: job.id ?? null,
       title: job.title ?? "Untitled",
@@ -137,12 +141,16 @@ export async function POST(
         applicationId: existing.id,
         userId,
         aiContent: aiContentParsed.data,
+        artifactVersion,
         job: renderJob,
       });
       await prisma.application.update({
         where: { id: existing.id },
         data: { status: "FINAL", coverPdfUrl },
       });
+      if (existing.coverPdfUrl && existing.coverPdfUrl !== coverPdfUrl) {
+        await deleteApplicationArtifact(existing.coverPdfUrl).catch(() => undefined);
+      }
       return NextResponse.json({
         status: "FINAL",
         coverPdfUrl,
@@ -155,6 +163,7 @@ export async function POST(
       applicationId: existing.id,
       userId,
       aiContent: aiContentParsed.data,
+      artifactVersion,
       job: renderJob,
     });
 
@@ -162,6 +171,9 @@ export async function POST(
       where: { id: existing.id },
       data: { status: "FINAL", resumePdfUrl, resumePdfName },
     });
+    if (existing.resumePdfUrl && existing.resumePdfUrl !== resumePdfUrl) {
+      await deleteApplicationArtifact(existing.resumePdfUrl).catch(() => undefined);
+    }
 
     return NextResponse.json({
       status: "FINAL",

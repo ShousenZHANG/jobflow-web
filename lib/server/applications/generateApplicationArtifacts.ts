@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { buildResumePdfForJob } from "@/lib/server/applications/buildResumePdf";
@@ -38,6 +39,7 @@ async function uploadPdfToBlob(input: {
       userId: input.userId,
       jobId: input.jobId,
       target: input.target,
+      version: `${Date.now()}-${randomUUID().slice(0, 8)}`,
     }),
     input.pdf,
     {

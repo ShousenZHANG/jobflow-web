@@ -7,7 +7,9 @@ const prisma = vi.hoisted(() => ({
   },
 }));
 const renderer = vi.hoisted(() => ({
+  deleteApplicationArtifact: vi.fn(),
   renderFinalApplication: vi.fn(),
+  renderFinalCoverLetter: vi.fn(),
 }));
 
 vi.mock("@/lib/server/prisma", () => ({ prisma }));
@@ -60,6 +62,9 @@ describe("POST /api/applications/[id]/finalize", () => {
     prisma.application.findFirst.mockReset();
     prisma.application.update.mockReset();
     renderer.renderFinalApplication.mockReset();
+    renderer.renderFinalCoverLetter.mockReset();
+    renderer.deleteApplicationArtifact.mockReset();
+    renderer.deleteApplicationArtifact.mockResolvedValue(undefined);
   });
 
   it("renders PDF, flips status to FINAL, returns the new resumePdfUrl", async () => {
@@ -73,6 +78,8 @@ describe("POST /api/applications/[id]/finalize", () => {
       userId: USER_ID,
       aiContent: ai,
       aiContentHash: hash,
+      resumePdfUrl: "https://blob/old.pdf",
+      coverPdfUrl: null,
     });
     renderer.renderFinalApplication.mockResolvedValueOnce({
       resumePdfUrl: "https://blob/r.pdf",
@@ -86,6 +93,14 @@ describe("POST /api/applications/[id]/finalize", () => {
     expect(res.status).toBe(200);
     expect(json.status).toBe("FINAL");
     expect(json.resumePdfUrl).toBe("https://blob/r.pdf");
+    expect(renderer.renderFinalApplication).toHaveBeenCalledWith(
+      expect.objectContaining({
+        applicationId: APP_ID,
+        userId: USER_ID,
+        aiContent: ai,
+        artifactVersion: hash,
+      }),
+    );
     expect(prisma.application.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: APP_ID },
@@ -94,6 +109,9 @@ describe("POST /api/applications/[id]/finalize", () => {
           resumePdfUrl: "https://blob/r.pdf",
         }),
       }),
+    );
+    expect(renderer.deleteApplicationArtifact).toHaveBeenCalledWith(
+      "https://blob/old.pdf",
     );
   });
 

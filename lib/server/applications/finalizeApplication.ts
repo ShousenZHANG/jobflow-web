@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob";
+import { del, put } from "@vercel/blob";
 import { prisma } from "@/lib/server/prisma";
 import { getResumeProfile } from "@/lib/server/resumeProfile";
 import { mapResumeProfile } from "@/lib/server/latex/mapResumeProfile";
@@ -33,6 +33,7 @@ export async function renderFinalApplication(input: {
   applicationId: string;
   userId: string;
   aiContent: AiContent;
+  artifactVersion?: string | null;
   job: { id: string | null; title: string; company: string | null; market: string };
 }): Promise<{ resumePdfUrl: string; resumePdfName: string }> {
   const profileLocale = marketStringToResumeLocale(input.job.market);
@@ -89,6 +90,7 @@ export async function renderFinalApplication(input: {
     userId: input.userId,
     jobId: input.job.id ?? input.applicationId,
     target: "resume",
+    version: input.artifactVersion,
   });
   const blob = await put(blobPath, pdf, {
     access: "public",
@@ -128,6 +130,7 @@ export async function renderFinalCoverLetter(input: {
   applicationId: string;
   userId: string;
   aiContent: AiContent;
+  artifactVersion?: string | null;
   job: { id: string | null; title: string; company: string | null; market: string };
 }): Promise<{ coverPdfUrl: string; coverPdfName: string }> {
   const profileLocale = marketStringToResumeLocale(input.job.market);
@@ -174,6 +177,7 @@ export async function renderFinalCoverLetter(input: {
     userId: input.userId,
     jobId: input.job.id ?? input.applicationId,
     target: "cover",
+    version: input.artifactVersion,
   });
   const blob = await put(blobPath, pdf, {
     access: "public",
@@ -182,4 +186,9 @@ export async function renderFinalCoverLetter(input: {
   });
 
   return { coverPdfUrl: blob.url, coverPdfName };
+}
+
+export async function deleteApplicationArtifact(url: string | null | undefined) {
+  if (!url || !process.env.BLOB_READ_WRITE_TOKEN) return;
+  await del(url, { token: process.env.BLOB_READ_WRITE_TOKEN });
 }
