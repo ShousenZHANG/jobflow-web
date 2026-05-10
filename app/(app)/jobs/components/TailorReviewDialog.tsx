@@ -65,7 +65,7 @@ export function TailorReviewDialog({
     <Dialog open={open && !!draft} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="flex h-[94dvh] w-[96vw] max-w-[1440px] grid-rows-none flex-col gap-0 overflow-hidden rounded-3xl border-border/70 bg-background p-0 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.55)]"
+        className="fixed left-2 top-2 flex h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-none translate-x-0 translate-y-0 grid-rows-none flex-col gap-0 overflow-hidden rounded-2xl border-border/70 bg-background p-0 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.55)] sm:left-4 sm:top-4 sm:h-[calc(100dvh-2rem)] sm:w-[calc(100vw-2rem)] sm:max-w-none sm:rounded-3xl"
       >
         {draft ? (
           <TailorReviewDialogBody
