@@ -412,7 +412,7 @@ function TailorReviewDialogBody({
         </div>
       ) : null}
 
-      <div className="grid min-h-0 flex-1 gap-5 overflow-hidden bg-[radial-gradient(circle_at_10%_0%,rgba(16,185,129,0.10),transparent_28%),radial-gradient(circle_at_84%_8%,rgba(59,130,246,0.08),transparent_30%)] p-4 md:p-6 lg:grid-cols-[minmax(410px,0.88fr)_minmax(560px,1.12fr)]">
+      <div className="grid min-h-0 flex-1 gap-5 overflow-hidden bg-[radial-gradient(circle_at_6%_0%,rgba(16,185,129,0.09),transparent_28%),radial-gradient(circle_at_82%_8%,rgba(59,130,246,0.055),transparent_30%)] p-4 md:p-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.75fr)] 2xl:grid-cols-[minmax(0,1.65fr)_minmax(420px,0.75fr)]">
         <div className="flex min-h-0 flex-col overflow-hidden rounded-[1.65rem] border border-white/80 bg-white/75 p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.55),0_8px_20px_-18px_rgba(15,23,42,0.20)] ring-1 ring-slate-900/5 backdrop-blur">
           <div className="mb-3 flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-2.5 shadow-[0_10px_28px_-25px_rgba(15,23,42,0.42)]">
             <div className="min-w-0">
