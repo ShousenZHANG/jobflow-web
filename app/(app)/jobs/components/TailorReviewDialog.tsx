@@ -69,7 +69,7 @@ export function TailorReviewDialog({
     <Dialog open={open && !!draft} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="fixed left-2 top-2 flex h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-none translate-x-0 translate-y-0 grid-rows-none flex-col gap-0 overflow-hidden rounded-2xl border-border/70 bg-background p-0 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.55)] sm:left-4 sm:top-4 sm:h-[calc(100dvh-2rem)] sm:w-[calc(100vw-2rem)] sm:max-w-none sm:rounded-3xl"
+        className="fixed left-2 top-2 flex h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-none translate-x-0 translate-y-0 grid-rows-none flex-col gap-0 overflow-hidden rounded-[1.65rem] border border-white/70 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_44%,#edf7f2_100%)] p-0 shadow-[0_34px_110px_-44px_rgba(15,23,42,0.70),0_16px_42px_-34px_rgba(15,23,42,0.45)] ring-1 ring-slate-900/5 sm:left-4 sm:top-4 sm:h-[calc(100dvh-2rem)] sm:w-[calc(100vw-2rem)] sm:max-w-none sm:rounded-[2rem]"
       >
         {draft ? (
           <TailorReviewDialogBody
@@ -141,6 +141,12 @@ function TailorReviewDialogBody({
     target === "resume" ? lastResumeRefreshAt : lastCoverRefreshAt;
   const flushDraftNow = draft.flushNow;
   const canClose = !isFinalizing;
+  const previewStatusLabel =
+    previewSyncStatus === "rendering"
+      ? "Rendering preview"
+      : previewSyncStatus === "pending"
+        ? "Queued after edit"
+        : "Preview in sync";
 
   useEffect(() => {
     latestHashRef.current = draft.currentHash;
@@ -363,7 +369,11 @@ function TailorReviewDialogBody({
 
   return (
     <>
-      <DialogHeader className="shrink-0 border-b border-border/70 bg-background/95 px-5 py-4 text-left backdrop-blur md:px-6">
+      <DialogHeader className="relative shrink-0 border-b border-slate-200/70 bg-white/90 px-5 py-4 text-left shadow-[0_12px_34px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl md:px-7">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-8 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-emerald-300/70 to-transparent"
+        />
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 space-y-1">
             <DialogTitle className="flex flex-wrap items-center gap-2 text-base md:text-lg">
@@ -384,7 +394,7 @@ function TailorReviewDialogBody({
               size="icon-sm"
               disabled={!canClose}
               onClick={onClose}
-              className="rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="rounded-full text-muted-foreground transition-all hover:bg-slate-100 hover:text-foreground active:scale-95"
               aria-label="Close review dialog"
             >
               <X className="h-4 w-4" />
@@ -396,15 +406,27 @@ function TailorReviewDialogBody({
       {actionError ? (
         <div
           role="alert"
-          className="mx-5 mt-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive md:mx-6"
+          className="mx-5 mt-4 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive shadow-sm md:mx-7"
         >
           {actionError}
         </div>
       ) : null}
 
-      <div className="grid min-h-0 flex-1 gap-4 overflow-hidden p-5 md:p-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(440px,1.05fr)]">
-        <div className="min-h-0 overflow-y-auto pr-1">
-          <div className="flex flex-col gap-4 pb-2">
+      <div className="grid min-h-0 flex-1 gap-5 overflow-hidden bg-[radial-gradient(circle_at_10%_0%,rgba(16,185,129,0.10),transparent_28%),radial-gradient(circle_at_84%_8%,rgba(59,130,246,0.08),transparent_30%)] p-4 md:p-6 lg:grid-cols-[minmax(410px,0.88fr)_minmax(560px,1.12fr)]">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-[1.65rem] border border-white/80 bg-white/75 p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.55),0_8px_20px_-18px_rgba(15,23,42,0.20)] ring-1 ring-slate-900/5 backdrop-blur">
+          <div className="mb-3 flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-2.5 shadow-[0_10px_28px_-25px_rgba(15,23,42,0.42)]">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">AI proposals</p>
+              <p className="truncate text-xs text-muted-foreground">
+                Review edits, then the preview renders the accepted version.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
+              {previewStatusLabel}
+            </span>
+          </div>
+          <div className="min-h-0 overflow-y-auto pr-1">
+            <div className="flex flex-col gap-4 pb-2">
             {target === "resume" ? (
               <>
                 <SummarySection
@@ -426,6 +448,7 @@ function TailorReviewDialogBody({
                 onChange={patchCover}
               />
             )}
+            </div>
           </div>
         </div>
 
@@ -442,8 +465,8 @@ function TailorReviewDialogBody({
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col gap-3 border-t border-border/70 bg-background/95 px-5 py-4 backdrop-blur md:flex-row md:items-center md:justify-between md:px-6">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <div className="flex shrink-0 flex-col gap-3 border-t border-slate-200/70 bg-white/90 px-5 py-4 shadow-[0_-18px_48px_-42px_rgba(15,23,42,0.55)] backdrop-blur-xl md:flex-row md:items-center md:justify-between md:px-7">
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-3 py-2 text-xs text-muted-foreground shadow-sm">
           <FileText className="h-4 w-4 text-brand-emerald-700" />
           <span className="hidden sm:inline">
             {previewSyncStatus === "pending"
@@ -452,14 +475,14 @@ function TailorReviewDialogBody({
           </span>
           <span className="sm:hidden">Edit here, then finalize.</span>
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2.5">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleDiscard}
             disabled={isDiscarding}
-            className="h-9 rounded-xl border-border bg-background px-3 text-sm font-medium text-foreground/85 shadow-sm hover:bg-muted/50"
+            className="h-10 rounded-full border-slate-200 bg-white px-4 text-sm font-semibold text-foreground/85 shadow-sm transition-all hover:-translate-y-px hover:bg-slate-50 hover:shadow-md active:translate-y-0"
           >
             <RotateCcw className="h-4 w-4" />
             {isDiscarding ? "Discarding..." : "Discard"}
@@ -470,7 +493,7 @@ function TailorReviewDialogBody({
             size="sm"
             onClick={canClose ? onClose : undefined}
             disabled={!canClose}
-            className="h-9 rounded-xl border-border bg-background px-3 text-sm font-medium text-foreground/85 shadow-sm hover:bg-muted/50"
+            className="h-10 rounded-full border-slate-200 bg-white px-4 text-sm font-semibold text-foreground/85 shadow-sm transition-all hover:-translate-y-px hover:bg-slate-50 hover:shadow-md active:translate-y-0"
           >
             Close
           </Button>
@@ -480,7 +503,7 @@ function TailorReviewDialogBody({
             onClick={handleFinalize}
             disabled={isFinalizing}
             className={cn(
-              "h-9 rounded-xl border border-brand-emerald-500 bg-brand-emerald-500 px-4 text-sm font-semibold text-white shadow-sm hover:border-brand-emerald-600 hover:bg-brand-emerald-600",
+              "h-10 rounded-full border border-brand-emerald-500 bg-brand-emerald-500 px-5 text-sm font-semibold text-white shadow-[0_14px_30px_-16px_rgba(16,185,129,0.85)] transition-all hover:-translate-y-px hover:border-brand-emerald-600 hover:bg-brand-emerald-600 hover:shadow-[0_18px_34px_-16px_rgba(16,185,129,0.95)] active:translate-y-0",
               "disabled:border-border disabled:bg-muted disabled:text-muted-foreground",
             )}
           >

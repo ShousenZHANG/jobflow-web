@@ -20,10 +20,10 @@ export function SkillsSection({ skillsAdditions, onChange }: SkillsSectionProps)
   }
 
   return (
-    <section className="space-y-3 rounded-2xl border border-border/60 bg-background p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+    <section className="space-y-3 rounded-[1.35rem] border border-slate-200/80 bg-white/90 p-4 shadow-[0_18px_46px_-36px_rgba(15,23,42,0.45),0_1px_0_rgba(255,255,255,0.9)_inset] ring-1 ring-white/80">
       <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-brand-emerald-50 px-2 text-[11px] font-semibold uppercase tracking-wider text-brand-emerald-700">
+          <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-brand-emerald-50 px-2.5 text-[11px] font-semibold uppercase tracking-wider text-brand-emerald-700 ring-1 ring-brand-emerald-100">
             <Sparkles className="h-3 w-3" aria-hidden />
             AI proposed
           </span>
@@ -41,10 +41,10 @@ export function SkillsSection({ skillsAdditions, onChange }: SkillsSectionProps)
           <li
             key={`${group.label}-${i}`}
             className={cn(
-              "flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors",
+              "flex items-start gap-3 rounded-2xl border px-3 py-2.5 transition-all",
               group.accepted
-                ? "border-brand-emerald-200 bg-brand-emerald-50/40"
-                : "border-border/60 bg-muted/30",
+                ? "border-brand-emerald-200 bg-brand-emerald-50/60 shadow-[0_14px_34px_-30px_rgba(16,185,129,0.65)]"
+                : "border-slate-200/80 bg-slate-50/70 hover:bg-white",
             )}
           >
             <input
@@ -62,7 +62,7 @@ export function SkillsSection({ skillsAdditions, onChange }: SkillsSectionProps)
                 {group.items.map((item) => (
                   <span
                     key={item}
-                    className="inline-flex h-5 items-center rounded-full bg-background px-2 text-[11px] font-medium text-muted-foreground ring-1 ring-border/70"
+                    className="inline-flex h-5 items-center rounded-full bg-white px-2 text-[11px] font-medium text-muted-foreground ring-1 ring-slate-200/80"
                   >
                     {item}
                   </span>

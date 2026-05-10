@@ -83,19 +83,25 @@ export function PdfPreview({
   }, [autoRefresh, onRefresh]);
 
   return (
-    <aside className="flex h-full min-h-[500px] flex-col gap-3 rounded-2xl border border-border/60 bg-background p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-      <header className="flex items-center justify-between gap-3">
+    <aside className="relative flex h-full min-h-[560px] flex-col overflow-hidden rounded-[1.65rem] border border-slate-200/80 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-3 shadow-[0_26px_70px_-44px_rgba(15,23,42,0.62),0_8px_24px_-20px_rgba(15,23,42,0.28)] ring-1 ring-white/80">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-brand-emerald-300/70 to-transparent"
+      />
+      <header className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/90 px-3 py-2.5 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] backdrop-blur">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <FileText className="h-4 w-4 text-brand-emerald-700" aria-hidden />
-          PDF preview
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-brand-emerald-50 text-brand-emerald-700 ring-1 ring-brand-emerald-100">
+            <FileText className="h-4 w-4" aria-hidden />
+          </span>
+          <span>PDF preview</span>
         </div>
         <div className="flex items-center gap-2">
           {isPending ? (
-            <span className="text-[11px] font-medium text-brand-emerald-700">
+            <span className="rounded-full bg-brand-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-brand-emerald-700 ring-1 ring-brand-emerald-100">
               Updating soon
             </span>
           ) : lastLabel ? (
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Last: {lastLabel}
             </span>
           ) : null}
@@ -104,8 +110,9 @@ export function PdfPreview({
             onClick={() => void onRefresh()}
             disabled={isRefreshing}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 text-xs font-semibold text-foreground transition-colors",
-              "hover:border-brand-emerald-300/60 hover:bg-muted",
+              "inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-foreground shadow-sm transition-all",
+              "hover:-translate-y-px hover:border-brand-emerald-200 hover:bg-brand-emerald-50/60 hover:text-brand-emerald-800 hover:shadow-md",
+              "active:translate-y-0 active:shadow-sm",
               "disabled:pointer-events-none disabled:opacity-60",
             )}
           >
@@ -113,23 +120,27 @@ export function PdfPreview({
               className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
               aria-hidden
             />
-            {isRefreshing ? "Rendering…" : "Refresh"}
+            {isRefreshing ? "Rendering..." : "Refresh"}
           </button>
         </div>
       </header>
 
-      <div className="relative flex-1 overflow-hidden rounded-xl border border-border/60 bg-muted/30">
+      <div className="relative flex-1 overflow-hidden rounded-[1.35rem] bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.14),transparent_34%),linear-gradient(180deg,#e9f1f4_0%,#f8fafc_42%,#eef2f7_100%)] p-3 shadow-inner ring-1 ring-slate-900/10">
         {previewSrc ? (
-          <iframe
-            key={previewSrc}
-            src={previewSrc}
-            title={`PDF preview - ${jobTitle}`}
-            className="h-full w-full"
-          />
+          <div className="h-full overflow-hidden rounded-xl bg-white shadow-[0_22px_56px_-30px_rgba(15,23,42,0.62),0_8px_18px_-12px_rgba(15,23,42,0.26)] ring-1 ring-slate-900/10">
+            <iframe
+              key={previewSrc}
+              src={previewSrc}
+              title={`PDF preview - ${jobTitle}`}
+              className="h-full w-full"
+            />
+          </div>
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
-            <FileText className="h-8 w-8 text-muted-foreground/50" aria-hidden />
-            <span>No preview yet — click Refresh to render.</span>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300/80 bg-white/70 text-sm text-muted-foreground shadow-inner">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+              <FileText className="h-6 w-6" aria-hidden />
+            </span>
+            <span>No preview yet - click Refresh to render.</span>
           </div>
         )}
       </div>
