@@ -3,6 +3,7 @@ import type {
   TrendingResponse,
   VideosResponse,
   VideoCategory,
+  VideoSort,
   VideoTimeWindow,
 } from "../types";
 
@@ -22,18 +23,20 @@ export function useTrendingRepos(period: "weekly" | "monthly" = "weekly") {
   });
 }
 
-/**
- * Fetch videos for a single category. Sort is applied client-side from the
- * cached candidate pool — switching sort never re-hits the YouTube API.
- */
+/** Fetch videos for a category, time window, and upstream search strategy. */
 export function useVideos(
   category: VideoCategory = "all",
   timeWindow: VideoTimeWindow = "month",
+  sort: VideoSort = "trending",
 ) {
   return useQuery<VideosResponse>({
-    queryKey: ["discover-videos", category, timeWindow],
+    queryKey: ["discover-videos", category, timeWindow, sort],
     queryFn: async () => {
-      const params = new URLSearchParams({ category, window: timeWindow });
+      const params = new URLSearchParams({
+        category,
+        window: timeWindow,
+        sort,
+      });
       const res = await fetch(`/api/discover/videos?${params.toString()}`);
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));

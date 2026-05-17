@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import type {
+  VideoItem,
   VideoCategory,
+  VideoSort,
   VideoTimeWindow,
   VideosResponse,
 } from "@/app/(app)/discover/types";
@@ -19,6 +21,7 @@ const DB_CACHE_TTL_MS = 25 * 60 * 60 * 1000; // 25 h — slightly > 24h cron cad
 
 const VALID_CATEGORIES: VideoCategory[] = [
   "all",
+  "codex",
   "claude",
   "anthropic",
   "rag",
@@ -27,6 +30,7 @@ const VALID_CATEGORIES: VideoCategory[] = [
   "harness-engineering",
 ];
 const VALID_WINDOWS: VideoTimeWindow[] = ["week", "month"];
+const VALID_SORTS: VideoSort[] = ["trending", "latest", "most_viewed"];
 
 function parseCategory(raw: string | null): VideoCategory {
   const v = (raw ?? "all").toLowerCase();
@@ -42,6 +46,11 @@ function parseWindow(raw: string | null): VideoTimeWindow {
     : "month";
 }
 
+function parseSort(raw: string | null): VideoSort {
+  const v = (raw ?? "trending").toLowerCase();
+  return (VALID_SORTS as string[]).includes(v) ? (v as VideoSort) : "trending";
+}
+
 /**
  * Shared edge-cache headers. `s-maxage` lets Vercel's CDN serve the same
  * JSON for the next hour without re-invoking the function; `stale-while-
@@ -52,6 +61,25 @@ function parseWindow(raw: string | null): VideoTimeWindow {
 const EDGE_CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
 } as const;
+
+function sortCachedItems(items: VideoItem[], sort: VideoSort): VideoItem[] {
+  if (sort === "latest") {
+    return [...items].sort(
+      (a, b) =>
+        new Date(b.publishedAt).getTime() -
+        new Date(a.publishedAt).getTime(),
+    );
+  }
+  if (sort === "most_viewed") {
+    return [...items].sort(
+      (a, b) =>
+        b.viewCount - a.viewCount ||
+        new Date(b.publishedAt).getTime() -
+          new Date(a.publishedAt).getTime(),
+    );
+  }
+  return items;
+}
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -72,7 +100,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = parseCategory(searchParams.get("category"));
   const timeWindow = parseWindow(searchParams.get("window"));
-  const cacheKey = buildCacheKey(category, timeWindow);
+  const sort = parseSort(searchParams.get("sort"));
+  const cacheKey = buildCacheKey(category, timeWindow, sort);
+  const defaultCacheKey =
+    sort === "trending" ? cacheKey : buildCacheKey(category, timeWindow);
 
   // ── L2: DB cache (fast path) ──────────────────────────
   const existing = await readCache(cacheKey).catch(() => null);
@@ -89,7 +120,12 @@ export async function GET(request: Request) {
 
   // ── Upstream fetch with quota-aware graceful fallback ─
   try {
-    const items = await fetchVideosFromYouTube(category, timeWindow, apiKey);
+    const items = await fetchVideosFromYouTube(
+      category,
+      timeWindow,
+      apiKey,
+      sort,
+    );
     const fresh: VideosResponse = {
       items,
       cached: false,
@@ -113,6 +149,21 @@ export async function GET(request: Request) {
         } satisfies VideosResponse,
         { headers: EDGE_CACHE_HEADERS },
       );
+    }
+    if (isQuotaExceededError(err) && defaultCacheKey !== cacheKey) {
+      const fallback = await readCache(defaultCacheKey).catch(() => null);
+      if (fallback) {
+        return NextResponse.json(
+          {
+            ...fallback.payload,
+            items: sortCachedItems(fallback.payload.items, sort),
+            cached: true,
+            stale: true,
+            fetchedAt: fallback.fetchedAt.toISOString(),
+          } satisfies VideosResponse,
+          { headers: EDGE_CACHE_HEADERS },
+        );
+      }
     }
     const message =
       err instanceof Error ? err.message : "Failed to fetch videos";

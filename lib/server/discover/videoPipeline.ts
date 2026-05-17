@@ -6,6 +6,7 @@
 import type {
   VideoItem,
   VideoCategory,
+  VideoSort,
   VideoTimeWindow,
 } from "@/app/(app)/discover/types";
 import trustedChannelsConfig from "@/lib/shared/trustedChannels.config.json";
@@ -18,15 +19,16 @@ import trustedChannelsConfig from "@/lib/shared/trustedChannels.config.json";
 //   channels.list  =   1
 //
 // Free tier is 10,000 units/day. Worst-case refresh-cycle budget per day:
-//   "all"          × 2 windows × 6 queries × 100 =  1,200
-//   6 categories   × 2 windows × 4 queries × 100 =  4,800
+//   "all"          × 2 windows × 7 queries × 100 =  1,400
+//   7 categories   × 2 windows × 4 queries × 100 =  5,600
 //   videos.list + channels.list overhead per key  =    ~30
 //   -------------------------------------------------------
-//   Total ≈ 6,030 units/day for a single 6h cron cycle.
+//   Total ≈ 7,030 units/day for one daily refresh cycle.
 // One full cycle per day fits comfortably; two cycles is tight but viable.
 
 const QUERIES_PER_CATEGORY = 4; // reduced from 6 to stay under quota
 const VIDEO_ID_LIMIT = 50; // videos.list caps at 50 IDs per call
+const MIN_VIDEO_SECONDS = 90; // avoid Shorts dominating "most viewed"
 
 // ── Category query banks ──────────────────────────────────
 
@@ -34,6 +36,12 @@ const CATEGORY_QUERIES: Record<
   Exclude<VideoCategory, "all">,
   string[]
 > = {
+  codex: [
+    "OpenAI Codex coding agent",
+    "ChatGPT Codex tutorial",
+    "Codex CLI programming",
+    "OpenAI Codex software engineering",
+  ],
   claude: [
     "Claude AI tutorial",
     "Claude Code programming",
@@ -74,6 +82,17 @@ const CATEGORY_QUERIES: Record<
 // Titles+descriptions must plausibly contain one of these for a video to
 // be scored as "relevant" to the category (soft signal — no hard filter).
 const CATEGORY_KEYWORDS: Record<Exclude<VideoCategory, "all">, string[]> = {
+  codex: [
+    "codex",
+    "openai codex",
+    "chatgpt codex",
+    "codex cli",
+    "coding agent",
+    "software engineering agent",
+    "code agent",
+    "terminal agent",
+    "pull request",
+  ],
   claude: ["claude", "anthropic", "sonnet", "opus", "haiku"],
   anthropic: ["anthropic", "claude", "constitutional ai"],
   rag: [
@@ -185,17 +204,26 @@ function daysAgoISO(n: number): string {
   return d.toISOString();
 }
 
+type YouTubeSearchOrder = "date" | "relevance" | "viewCount";
+
+export function searchOrderForSort(sort: VideoSort): YouTubeSearchOrder {
+  if (sort === "latest") return "date";
+  if (sort === "most_viewed") return "viewCount";
+  return "relevance";
+}
+
 async function searchYouTube(
   query: string,
   apiKey: string,
   publishedAfter: string,
   maxResults: number,
+  order: YouTubeSearchOrder,
 ): Promise<string[]> {
   const url = new URL("https://www.googleapis.com/youtube/v3/search");
   url.searchParams.set("part", "snippet");
   url.searchParams.set("q", query);
   url.searchParams.set("type", "video");
-  url.searchParams.set("order", "relevance");
+  url.searchParams.set("order", order);
   url.searchParams.set("publishedAfter", publishedAfter);
   url.searchParams.set("maxResults", String(maxResults));
   url.searchParams.set("relevanceLanguage", "en");
@@ -335,17 +363,19 @@ export async function fetchVideosFromYouTube(
   category: VideoCategory,
   timeWindow: VideoTimeWindow,
   apiKey: string,
+  sort: VideoSort = "trending",
 ): Promise<VideoItem[]> {
   const queries = queriesForCategory(category);
   const perQuery = category === "all" ? 4 : 6;
   const publishedAfter = daysAgoISO(timeWindow === "week" ? 7 : 30);
+  const order = searchOrderForSort(sort);
 
   // Sequential — parallel bursts can trigger rateLimitExceeded even when
   // the day budget is nowhere near drained.
   const idLists: string[][] = [];
   for (const q of queries) {
     idLists.push(
-      await searchYouTube(q, apiKey, publishedAfter, perQuery),
+      await searchYouTube(q, apiKey, publishedAfter, perQuery, order),
     );
   }
 
@@ -371,31 +401,53 @@ export async function fetchVideosFromYouTube(
   );
   const subsByChannel = await fetchChannelSubscribers(channelIds, apiKey);
 
-  return stats.map((s) => {
-    const trusted = TRUSTED_CHANNEL_MAP.get(s.channelId);
-    const relevance = scoreRelevance(
-      `${s.title} ${s.description}`,
-      category,
+  const videos = stats
+    .filter(
+      (s) =>
+        s.durationSeconds === 0 || s.durationSeconds >= MIN_VIDEO_SECONDS,
+    )
+    .map((s) => {
+      const trusted = TRUSTED_CHANNEL_MAP.get(s.channelId);
+      const relevance = scoreRelevance(
+        `${s.title} ${s.description}`,
+        category,
+      );
+      return {
+        id: s.id,
+        title: s.title,
+        url: `https://www.youtube.com/watch?v=${s.id}`,
+        thumbnailUrl: s.thumbnailUrl,
+        channelName: s.channelName,
+        channelId: s.channelId,
+        channelSubscriberCount: subsByChannel.get(s.channelId) ?? 0,
+        isTrusted: Boolean(trusted),
+        trustTier: (trusted?.tier ?? 0) as 0 | 1 | 2 | 3,
+        expertiseTags: trusted?.expertiseTags ?? [],
+        viewCount: s.viewCount,
+        likeCount: s.likeCount,
+        publishedAt: s.publishedAt,
+        description: s.description.slice(0, 300),
+        durationSeconds: s.durationSeconds,
+        relevanceScore: relevance,
+      };
+    });
+
+  if (sort === "latest") {
+    return videos.sort(
+      (a, b) =>
+        new Date(b.publishedAt).getTime() -
+        new Date(a.publishedAt).getTime(),
     );
-    return {
-      id: s.id,
-      title: s.title,
-      url: `https://www.youtube.com/watch?v=${s.id}`,
-      thumbnailUrl: s.thumbnailUrl,
-      channelName: s.channelName,
-      channelId: s.channelId,
-      channelSubscriberCount: subsByChannel.get(s.channelId) ?? 0,
-      isTrusted: Boolean(trusted),
-      trustTier: (trusted?.tier ?? 0) as 0 | 1 | 2 | 3,
-      expertiseTags: trusted?.expertiseTags ?? [],
-      viewCount: s.viewCount,
-      likeCount: s.likeCount,
-      publishedAt: s.publishedAt,
-      description: s.description.slice(0, 300),
-      durationSeconds: s.durationSeconds,
-      relevanceScore: relevance,
-    };
-  });
+  }
+  if (sort === "most_viewed") {
+    return videos.sort(
+      (a, b) =>
+        b.viewCount - a.viewCount ||
+        new Date(b.publishedAt).getTime() -
+          new Date(a.publishedAt).getTime(),
+    );
+  }
+  return videos;
 }
 
 /** Every combination the cron pre-warmer needs to cover. */
@@ -405,6 +457,7 @@ export const ALL_VIDEO_CACHE_COMBOS: Array<{
 }> = (() => {
   const categories: VideoCategory[] = [
     "all",
+    "codex",
     "claude",
     "anthropic",
     "rag",
@@ -420,4 +473,3 @@ export const ALL_VIDEO_CACHE_COMBOS: Array<{
   }
   return combos;
 })();
-

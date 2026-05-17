@@ -53,6 +53,11 @@ export function isQuotaExceededError(err: unknown): boolean {
  * must agree on the exact string; keeping this in one tiny pure helper
  * prevents drift.
  */
-export function buildCacheKey(category: string, timeWindow: string): string {
-  return `videos:${category}:${timeWindow}`;
+export function buildCacheKey(
+  category: string,
+  timeWindow: string,
+  sort = "trending",
+): string {
+  const base = `videos:${category}:${timeWindow}`;
+  return sort === "trending" ? base : `${base}:${sort}`;
 }

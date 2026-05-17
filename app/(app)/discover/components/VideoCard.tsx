@@ -21,6 +21,17 @@ interface VideoCardProps {
   onMarkWatched: (id: string) => void;
 }
 
+function getQualitySignals(item: VideoItem): string[] {
+  const signals: string[] = [];
+  if (item.relevanceScore >= 0.67) signals.push("High match");
+  if (item.viewCount >= 100_000) signals.push("Popular");
+  if (item.trustTier > 0) signals.push("Trusted source");
+  if (item.durationSeconds >= 5 * 60 && item.durationSeconds <= 30 * 60) {
+    signals.push("Practical length");
+  }
+  return signals.slice(0, 2);
+}
+
 export function VideoCard({
   item,
   isWatched,
@@ -38,6 +49,7 @@ export function VideoCard({
     e.stopPropagation();
     onToggleFavorite(item.id);
   };
+  const qualitySignals = getQualitySignals(item);
 
   return (
     <article
@@ -180,6 +192,18 @@ export function VideoCard({
             )}
           </span>
         </div>
+        {qualitySignals.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {qualitySignals.map((signal) => (
+              <span
+                key={signal}
+                className="rounded-full border border-brand-emerald-100 bg-brand-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-brand-emerald-700 dark:border-brand-emerald-500/20 dark:bg-brand-emerald-500/10 dark:text-brand-emerald-300"
+              >
+                {signal}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </article>
   );

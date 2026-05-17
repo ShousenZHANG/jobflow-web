@@ -2,7 +2,7 @@
   "$comment": "Curated AI/engineering creators. tier1 = official/foundational (+2.0), tier2 = top independent voices (+1.0), tier3 = niche experts (+0.3). expertiseTags boost the video inside matching categories by +0.5.",
   "channels": [
     { "id": "UCrDwWp7EBBv4NwvScIpBDOA", "name": "Anthropic", "tier": 1, "expertiseTags": ["claude", "anthropic", "agents", "agent-skills"] },
-    { "id": "UCXZCJLdBC09xxGZ6gcdrc6A", "name": "OpenAI", "tier": 1, "expertiseTags": ["agents", "rag"] },
+    { "id": "UCXZCJLdBC09xxGZ6gcdrc6A", "name": "OpenAI", "tier": 1, "expertiseTags": ["codex", "agents", "rag"] },
     { "id": "UCbfYPyITQ-7l4upoX8nvctg", "name": "Two Minute Papers", "tier": 1, "expertiseTags": [] },
     { "id": "UCa-vrCLQHviTOVnEKDOdetQ", "name": "LangChain", "tier": 1, "expertiseTags": ["agents", "rag", "harness-engineering"] },
     { "id": "UC9OZ7BfqEW9CW4eU0AsAKKw", "name": "LlamaIndex", "tier": 1, "expertiseTags": ["rag", "agents"] },

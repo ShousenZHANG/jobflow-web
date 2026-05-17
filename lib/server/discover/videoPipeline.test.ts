@@ -2,15 +2,15 @@ import { describe, it, expect } from "vitest";
 import {
   queriesForCategory,
   scoreRelevance,
+  searchOrderForSort,
   ALL_VIDEO_CACHE_COMBOS,
 } from "./videoPipeline";
 
 describe("queriesForCategory", () => {
   it('"all" returns exactly one query per sub-category (quota-safe)', () => {
     const queries = queriesForCategory("all");
-    // Six sub-categories (claude, anthropic, rag, agents, agent-skills,
-    // harness-engineering) → 6 queries — well under the previous 25.
-    expect(queries.length).toBe(6);
+    // Seven sub-categories, one query each, well under the previous 25.
+    expect(queries.length).toBe(7);
     // No duplicates.
     expect(new Set(queries).size).toBe(queries.length);
   });
@@ -18,6 +18,7 @@ describe("queriesForCategory", () => {
   it("returns at most 4 queries per specific category", () => {
     for (const cat of [
       "claude",
+      "codex",
       "anthropic",
       "rag",
       "agents",
@@ -32,6 +33,12 @@ describe("queriesForCategory", () => {
 
   it("is deterministic for the same input", () => {
     expect(queriesForCategory("claude")).toEqual(queriesForCategory("claude"));
+  });
+
+  it("includes Codex-specific search intent", () => {
+    const text = queriesForCategory("codex").join(" ").toLowerCase();
+    expect(text).toContain("codex");
+    expect(text).toContain("openai");
   });
 });
 
@@ -66,11 +73,25 @@ describe("scoreRelevance", () => {
   it("is case-insensitive", () => {
     expect(scoreRelevance("CLAUDE SONNET", "claude")).toBeGreaterThan(0);
   });
+
+  it("scores Codex coding-agent content", () => {
+    expect(
+      scoreRelevance("OpenAI Codex CLI coding agent tutorial", "codex"),
+    ).toBeGreaterThan(0);
+  });
+});
+
+describe("searchOrderForSort", () => {
+  it("maps UI sort options to YouTube search orders", () => {
+    expect(searchOrderForSort("trending")).toBe("relevance");
+    expect(searchOrderForSort("latest")).toBe("date");
+    expect(searchOrderForSort("most_viewed")).toBe("viewCount");
+  });
 });
 
 describe("ALL_VIDEO_CACHE_COMBOS", () => {
-  it("covers 14 (cat, window) pairs — 7 categories × 2 windows", () => {
-    expect(ALL_VIDEO_CACHE_COMBOS.length).toBe(14);
+  it("covers 16 (cat, window) pairs: 8 categories x 2 windows", () => {
+    expect(ALL_VIDEO_CACHE_COMBOS.length).toBe(16);
   });
 
   it("contains every category exactly twice (once per window)", () => {

@@ -72,6 +72,15 @@ describe("buildCacheKey", () => {
     expect(buildCacheKey("all", "month")).toBe("videos:all:month");
   });
 
+  it("keeps default trending keys backward-compatible and scopes alternate sorts", () => {
+    expect(buildCacheKey("codex", "month", "trending")).toBe(
+      "videos:codex:month",
+    );
+    expect(buildCacheKey("codex", "month", "most_viewed")).toBe(
+      "videos:codex:month:most_viewed",
+    );
+  });
+
   it("is stable for same inputs (no surprise normalization)", () => {
     const a = buildCacheKey("agent-skills", "week");
     const b = buildCacheKey("agent-skills", "week");

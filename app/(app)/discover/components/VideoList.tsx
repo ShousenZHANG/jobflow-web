@@ -28,6 +28,7 @@ import { VideoSkeleton } from "./DiscoverSkeleton";
 
 const CATEGORIES: { value: VideoCategory; label: string }[] = [
   { value: "all", label: "All" },
+  { value: "codex", label: "Codex" },
   { value: "claude", label: "Claude" },
   { value: "anthropic", label: "Anthropic" },
   { value: "rag", label: "RAG" },
@@ -104,7 +105,12 @@ function rankVideos(
             new Date(a.publishedAt).getTime(),
         )
       : sort === "most_viewed"
-        ? [...items].sort((a, b) => b.viewCount - a.viewCount)
+        ? [...items].sort(
+            (a, b) =>
+              b.viewCount - a.viewCount ||
+              new Date(b.publishedAt).getTime() -
+                new Date(a.publishedAt).getTime(),
+          )
         : [...items]
             .map((v) => ({ video: v, score: trendingScore(v, category) }))
             .sort((a, b) => b.score - a.score)
@@ -158,7 +164,7 @@ export function VideoList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, sort, timeWindow]);
 
-  const { data, isLoading, error } = useVideos(category, timeWindow);
+  const { data, isLoading, error } = useVideos(category, timeWindow, sort);
   // Memoize so the `??` fallback doesn't allocate a fresh empty array on every
   // render and force `items` (and downstream snapshotKey) to recompute.
   const rawItems = useMemo(() => data?.items ?? [], [data?.items]);

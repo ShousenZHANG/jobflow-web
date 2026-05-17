@@ -13,6 +13,7 @@ export interface TrendingRepo {
 
 export type VideoCategory =
   | "all"
+  | "codex"
   | "claude"
   | "anthropic"
   | "rag"
